@@ -1,0 +1,20 @@
+= Session 089 — Préparation publication Maven Central (bloquée par codex-plugin SNAPSHOT)
+:sessions: 089
+:date: 2026-06-11
+:type: ops
+:score: N/A
+
+== Summary
+Configuration nmcp pour codebase-plugin :
+- Version hardcodée 0.0.1 dans build.gradle.kts (ex-catalogue)
+- Ajout nmcp settings plugin 1.5.0 + creds
+- POM propagé à toutes les publications (withType<MavenPublication>)
+- Repo mavenCentral() (plus l'ancien staging Sonatype)
+- Build OK
+
+== Bloquant
+Maven Central rejette : dépendance `education.cccp:codex-plugin:0.1.0-SNAPSHOT` non autorisée.
+Nécessite publication préalable de codex-plugin en version release (0.0.1) sur Central.
+
+== Architecture
+codebase-plugin dépend de codebase-contracts:0.1.0 (dans libs.versions.toml) → doit être 0.0.1.

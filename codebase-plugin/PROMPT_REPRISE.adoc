@@ -1,34 +1,15 @@
-= PROMPT_REPRISE — Session 088 : EPIC OCR — OCR-3b P1 Config YAML/CLI/DSL + P2 CI/CD
-:sessions: 088
-:date: 2026-05-30
-:prerequis: OCR-3b P0 FakeVisionProvider ✅ (session 087)
-:max-lines: 35
+= PROMPT_REPRISE — Codebase — Session 090
+:session: 090
+:sessions_precedente: 089 — Préparation Maven Central (bloquée codex SNAPSHOT)
 
-== Quick Start
+== Contexte Hérité
 
-```
-cd /home/cheroliv/workspace/foundry/public/codebase-gradle
-./gradlew :codebase-plugin:compileKotlin
-./gradlew :codebase-plugin:test --tests "codebase.ocr.*" --tests "codebase.koog.llm.*"
-```
+- codebase-plugin build OK, nmcp configuré
+- Bloquant : dépendance codex-plugin:0.1.0-SNAPSHOT → doit être publiée en release d'abord
+- codebase-contracts:0.1.0 dans libs.versions.toml → doit être 0.0.1
 
-== Contexte
+== Prochaine Session (090)
 
-OCR-3b P0 terminé : VisionProvider interface + FakeVisionProvider + injection OcrTask OK.
-Zéro régression. publishToMavenLocal OK. Cross-borough codex + planner OK.
-
-== P1 — Config YAML/CLI/DSL (prioritaire)
-
-- `llm-config.yml` → GeminiConfig → FakeVisionProvider injecté dans OcrTask
-- CLI : `./gradlew ocrDocument -PinputFile=x.png` via ProjectBuilder
-- DSL : `codebaseOcr { provider, model }` via gradle.properties
-
-== P2 — CI/CD
-
-Fichier : `.github/workflows/ocr.yml` — compile + tests OCR uniquement
-
-== Références
-
-- `BACKLOG.adoc § OCR-3b`
-- `src/main/kotlin/codebase/ocr/CodebaseOcrExtension.kt` (DSL existant)
-- `src/main/kotlin/codebase/rag/GeminiConfig.kt` (config base)
+- Attendre publication codex-plugin:0.0.1 sur Central
+- Corriger codebase-contracts:0.1.0 → 0.0.1
+- Publier codebase-plugin:0.0.1
