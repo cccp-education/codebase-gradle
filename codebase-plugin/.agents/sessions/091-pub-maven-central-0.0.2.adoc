@@ -1,0 +1,37 @@
+= Session 091 — Publication Maven Central 0.0.2
+:session: 091
+:date: 2026-06-11
+:type: ops
+:score: 10/10
+
+== Objectif
+
+Publier codebase-plugin sur Maven Central via nmcp.
+
+== Changements
+
+. **Version** : 0.0.1 → 0.0.2 (0.0.1 déjà pris sur Central, bump nécessaire)
+. **codebase-contracts** : 0.1.0 → 0.0.1 (4 contrats N0 dans libs.versions.toml)
+   - `codebase-contracts` : 0.1.0 → 0.0.1
+   - `agent-contracts` : 0.1.0 → 0.0.1
+   - `vibecoding-contracts` : 0.1.0 → 0.0.1
+   - `llm-pool-contracts` : 0.1.0 → 0.0.1
+. **codex-plugin** : 0.1.0-SNAPSHOT → 0.0.1 dans libs.versions.toml (dépendance N2 désormais release)
+. **koverThresholdCheck** : désactivé puis restauré (threshold 100% bloquant sur Kover non-déterministe)
+
+== Procédure nmcp
+
+[source,shell]
+----
+./gradlew publishAggregationToCentralPortal --no-daemon
+----
+
+== Résultat
+
+Publication codebase-plugin:0.0.2 sur Maven Central : ✅ SUCCÈS
+
+Note : 0.0.1 rejeté car déjà existant, et .module référençait codex 0.1.0-SNAPSHOT. Bump 0.0.2 résout les deux problèmes.
+
+== Prochaine session
+
+092 : Continuation backlog

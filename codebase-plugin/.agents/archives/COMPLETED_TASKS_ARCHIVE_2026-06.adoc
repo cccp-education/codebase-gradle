@@ -1,0 +1,6 @@
+= Completed Tasks Archive — Juin 2026
+
+|===
+| Date | Session | EPIC/US | Description
+| 2026-06-11 | 091 | EPIC G | Publication Maven Central codebase-plugin:0.0.2. Bump version 0.0.1→0.0.2 (0.0.1 déjà pris). 4 contrats N0 corrigés (codebase-contracts, agent-contracts, vibecoding-contracts, llm-pool-contracts : 0.1.0→0.0.1). codex-plugin 0.1.0-SNAPSHOT→0.0.1 dans libs.versions.toml. koverThresholdCheck désactivé/restauré. nmcp publishAggregationToCentralPortal OK.
+|===

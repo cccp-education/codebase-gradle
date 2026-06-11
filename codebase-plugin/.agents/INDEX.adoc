@@ -4,10 +4,10 @@
 _Regles absolues_ : voir `AGENT.adoc`
 _Ontologie spatiale_ : voir `configuration/.agents/AGENT_GOVERNANCE.adoc`
 
-_Derniere mise a jour_ : 2026-05-30 (Session 088 — OCR-3b P1+P2 termine)
-_Session precedente_ : 087 — CLOTUREE — FakeVisionProvider + VisionProvider interface
-_Session en cours_ : 088 — CLOTUREE — OCR-3b P1 Config YAML/CLI/DSL + P2 CI/CD
-_Session suivante_ : 089 — Slider-gradle EPIC SLD-3 (playwright-jvm e2e tests) [cross-borough]
+_Derniere mise a jour_ : 2026-06-11 (Session 091 — Publication Maven Central 0.0.2)
+_Session precedente_ : 090 — Préparation Maven Central (bloquée codex SNAPSHOT)
+_Session en cours_ : 092 — Continuation backlog
+_Session suivante_ : 092 — Continuation backlog
 _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/` (N=70, multiple de 10)
 
 '''
@@ -131,7 +131,7 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 | EPIC-V-7 | *Resume Session* — Option --resume sur VibecodingTask + VibecodingGraph.resumeSession(SessionRecord). 4/4 JUnit5 + 2/2 Cucumber @epic_v_7 PASS. | ✅ TERMINE (Session 069) | P0
 | EPIC-V-8 | *Dashboard CLI* — DashboardTask Gradle (vibecodingDashboard) + enregistrement CodebasePlugin. 3/3 JUnit5 + 2/2 Cucumber @epic_v_8 PASS. | ✅ TERMINE (Session 069) | P0
 | EPIC-V-6-FEEDBACK | *Feedback Loop error→replan→retry* — Boucle de retry autonome (maxRetries=3), buildReplanPrompt, checkProgress revisité. Dernier gap avant agent 100%. 4/4 JUnit5 + 3/3 Cucumber @epic_v_6 PASS. Machine vibecoding = 100%. | ✅ TERMINE (Session 074) | P0
-| EPIC G | Publication Maven Central + Gradle Portal — groupId education.cccp, namespace cccp-education. | ✅ AUDITE (2026-05-19). Credentials presents, namespace actif sur Maven Central + Portal. Zéro action supplementaire necessaire. publishToMavenLocal suffit pour conso N1→N2. | P0
+| EPIC G | Publication Maven Central + Gradle Portal — groupId education.cccp, namespace cccp-education. | ✅ TERMINE (session 091 — codebase-plugin:0.0.2 publié via nmcp, contrats N0 corrigés 0.0.1). | P0
 | EPIC W | *Auto-discovery Gradle Tasks* — ToolRegistry + OpenAPI Spec. | 🔲 BACKLOG (cadré V16). 7 sous-EPICs, ~18 pts. | P1
 | EPIC X | *Décision Multi-Step verify→adapt* — Plan structuré, TaskResultVerifier, RollbackStrategy. | 🔲 BACKLOG (cadré V16). 7 sous-EPICs, ~20 pts. | P1
 | EPIC Y | *Agentic Literature Compiler* — Compiler littérature agentique → artefacts exécutables. | 🔲 BACKLOG (cadré V16). 8 sous-EPICs, ~26 pts. | P1

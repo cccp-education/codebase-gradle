@@ -1,6 +1,6 @@
 = Test Coverage Analysis — Codebase Gradle
 
-_Statut session 088_ : OCR-3b P1+P2 TERMINE. Config YAML/CLI/DSL + CI/CD. 22/22 tests PASS (16 existants + 6 nouveaux), zero régression. publishToMavenLocal OK. Cross-borough codex+planner OK.
+_Statut session 091_ : Publication Maven Central codebase-plugin:0.0.2. Aucun test modifié (session ops).
 
 ✅ **Gaps OCR comblés (session 088)** :
 - ✅ CI/CD OCR (`.github/workflows/ocr.yml`)

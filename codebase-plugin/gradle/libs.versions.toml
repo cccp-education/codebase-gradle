@@ -1,5 +1,5 @@
 [versions]
-codebase = "0.0.1"
+codebase = "0.0.2"
 kotlin = "2.3.20"
 kotlinx-serial = "1.7.3"
 jackson = "2.21.2"
@@ -16,7 +16,7 @@ r2dbc-spi = "1.0.0.RELEASE"
 arrow = "2.2.2"
 plugin-publish = "2.1.0"
 kover = "0.9.8"
-codex-plugin = "0.1.0-SNAPSHOT"
+codex-plugin = "0.0.1"
 planner-plugin = "0.0.1"
 koog = "0.8.0"
 

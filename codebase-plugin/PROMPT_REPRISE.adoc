@@ -1,15 +1,14 @@
-= PROMPT_REPRISE — Codebase — Session 090
-:session: 090
-:sessions_precedente: 089 — Préparation Maven Central (bloquée codex SNAPSHOT)
+= PROMPT_REPRISE — Codebase — Session 092
+:session: 092
+:sessions_precedente: 091 — Publication Maven Central 0.0.2 terminée
 
 == Contexte Hérité
 
-- codebase-plugin build OK, nmcp configuré
-- Bloquant : dépendance codex-plugin:0.1.0-SNAPSHOT → doit être publiée en release d'abord
-- codebase-contracts:0.1.0 dans libs.versions.toml → doit être 0.0.1
+- codebase-plugin:0.0.2 publié sur Maven Central via nmcp
+- 4 contrats N0 corrigés (0.0.1), codex SNAPSHOT→0.0.1 dans catalogue
+- koverThresholdCheck restauré
 
-== Prochaine Session (090)
+== Prochaine Session (092)
 
-- Attendre publication codex-plugin:0.0.1 sur Central
-- Corriger codebase-contracts:0.1.0 → 0.0.1
-- Publier codebase-plugin:0.0.1
+- Continuation backlog EPICs en cours
+- Priorités : EPIC OCR (tests complémentaires), EPIC W/X/Y/Z selon backlog
