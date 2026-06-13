@@ -1,18 +1,27 @@
-= PROMPT_REPRISE — Codebase — Session 094
-:session: 094
-:sessions_precedente: 093 — Finalisation Y-1 (18/18 PASS) + Y-2 AgenticOntologizer (20/20 PASS)
+= PROMPT_REPRISE — Codebase — Session 095
+:session: 095
+:sessions_precedente: 094 — Y-3 AgenticSchema (31/31 PASS) + Y-4 AgenticCompiler (27/27 PASS)
 
 == Contexte Hérité
 
-- EPIC Y-1 AgenticChunker : 18/18 PASS (extractParagraphs, fix circle regex, fix DAG test)
-- EPIC Y-2 AgenticOntologizer : 20/20 PASS (12 sections TAXONOMIE_WORKSPACE, confidence, relations)
-- Total agentic : 38/38 PASS, compileKotlin OK, publishToMavenLocal OK
-- Package codebase.koog.agentic/ : 5 fichiers (AgenticChunk, AgenticChunker, OntologizedChunk, AgenticOntologizer + 2 tests)
+- EPIC Y-1 AgenticChunker : 18/18 PASS
+- EPIC Y-2 AgenticOntologizer : 20/20 PASS
+- EPIC Y-3 AgenticSchema : 20 JUnit5 + 11 Cucumber = 31/31 PASS
+  * V3__agentic_chunks.sql (agentic_chunks + chunk_relations)
+  * AgenticChunkRepository (R2DBC, pattern SessionRepository)
+  * cucumberTestEpicY3 Gradle task
+- EPIC Y-4 AgenticCompiler : 18 JUnit5 + 9 Cucumber = 27/27 PASS
+  * CompiledArtifact (8 ArtifactTypes)
+  * AgenticCompiler (RULE→PRE_HOOK, PROCEDURE→GRADLE_TASK/VALIDATION, etc.)
+  * cucumberTestEpicY4 Gradle task
+- Total agentic : 96/96 PASS, compileKotlin OK, publishToMavenLocal OK
+- Package codebase.koog.agentic/ : 8 fichiers (AgenticChunk, AgenticChunker, OntologizedChunk,
+  AgenticOntologizer, AgenticChunkRepository, CompiledArtifact, AgenticCompiler + 4 tests)
 
-== Prochaine Session (094)
+== Prochaine Session (095)
 
-- Y-3 AgenticSchema — Modèle relationnel pgvector pour stocker les chunks ontologisés
-  * Table `agentic_chunks` (embedding vector(384), valid_from/valid_until)
-  * Table `chunk_relations` (ENFORCES/CONFLICTS_WITH/DEPENDS_ON/REFINES)
-  * Migration Flyway V3__agentic_chunks.sql
-  * AgenticChunkRepository (R2DBC)
+- Y-5 AgenticIngestor — Pipeline complet d'ingestion :
+  * Scanner les fichiers .adoc connus (AGENT.adoc, INDEX.adoc, etc.)
+  * Détecter les changements via checksum
+  * Pipeline chunk → ontologize → store → compile
+  * AgenticIngestor (orchestrateur)

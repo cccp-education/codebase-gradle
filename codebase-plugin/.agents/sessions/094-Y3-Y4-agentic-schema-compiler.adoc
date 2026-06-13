@@ -1,0 +1,85 @@
+= Session 094 — Y-3 AgenticSchema + Y-4 AgenticCompiler
+:date: 2026-06-13
+:type: feat+tdd+ddd+bdd
+:score: 10/10
+
+== Contexte
+
+EPIC Y Agentic Literature Compiler — Y-1 (18/18) + Y-2 (20/20) terminés session 093.
+Suite logique : Y-3 (stockage pgvector) + Y-4 (compilation chunks → artefacts).
+
+== Actions
+
+=== Y-3 AgenticSchema — Modèle relationnel pgvector
+
+. V3__agentic_chunks.sql — Migration Flyway :
+  * Table `agentic_chunks` (id TEXT PK, source_file, source_lines, chunk_type,
+    content, verb, domain, dag_level, circle, weight, checksum, taxonomy_section,
+    ontology_confidence, embedding vector(384), valid_from, valid_until, created_at)
+  * Table `chunk_relations` (id BIGSERIAL PK, source_chunk_id, target_chunk_id,
+    relation_type ENFORCES/CONFLICTS_WITH/DEPENDS_ON/REFINES, confidence, UNIQUE)
+  * Indexes : domain, verb, dag_level, taxonomy_section, valid, relations source/target
+  * CREATE EXTENSION IF NOT EXISTS vector
+
+. AgenticChunkRepository.kt — Interface + R2dbcAgenticChunkRepository :
+  * Pattern SessionRepository (interface default error, companion invoke, withConnection)
+  * initSchema() → MigrationRunner.migrate()
+  * insertChunk/insertChunks, getChunk, listChunks, listChunksByDomain/Verb/DagLevel/TaxonomySection
+  * insertRelation/insertRelations, getRelations, updateEmbedding, countChunks/countRelations
+  * ON CONFLICT DO NOTHING (idempotent), ON CONFLICT DO UPDATE (upsert relations)
+  * mapToOntologizedChunk, mapToChunkRelation
+
+. AgenticChunkRepositoryTest.kt — 20/20 PASS (Testcontainers pgvector/pgvector:pg17) :
+  * initSchema, insert+retrieve, batch insert, idempotent duplicate, null non-existent
+  * listChunks ordered, listByDomain/Verb/DagLevel/TaxonomySection, limit
+  * insertRelation+getRelations, upsert conflict, multiple types, batch relations
+  * updateEmbedding vector(384), countChunks/countRelations, nullable fields, all chunk types, all taxonomy sections
+
+. Cucumber BDD — 11/11 PASS (@epic_y_3) :
+  * AgenticSchemaWorld.kt (Testcontainers shared), AgenticSchemaSteps.kt
+  * epic_y_3_agentic_schema.feature (11 scenarios)
+  * EpicY3CucumberRunner.kt, cucumberTestEpicY3 Gradle task
+
+=== Y-4 AgenticCompiler — Transformation chunk → artefact exécutable
+
+. CompiledArtifact.kt — ArtifactType enum (PRE_HOOK, POST_HOOK, CI_GATE, GRADLE_TASK,
+  VALIDATION, METADATA, PROMPT_TEMPLATE, CONSTRAINT_CHECK) + data class
+
+. AgenticCompiler.kt — compile(OntologizedChunk) → CompiledArtifact :
+  * RULE+INTERDIRE → PRE_HOOK, RULE+autre → CI_GATE
+  * PROCEDURE+GENERER/DEPLOYER/TRANSFORMER/COLLECTER → GRADLE_TASK
+  * PROCEDURE+VALIDER → VALIDATION, PROCEDURE+sans verbe → VALIDATION
+  * CONSTRAINT → CONSTRAINT_CHECK
+  * CONCEPT+INTERDIRE → PROMPT_TEMPLATE, CONCEPT+autre → METADATA
+  * METADATA → METADATA
+  * Confidence = ontologyConfidence*0.6 + weight*0.4
+
+. AgenticCompilerTest.kt — 18/18 PASS :
+  * RULE INTERDIRE → PRE_HOOK, RULE NE_JAMAIS → PRE_HOOK
+  * PROCEDURE VALIDER → VALIDATION, PROCEDURE GENERER → GRADLE_TASK
+  * CONSTRAINT VALIDER → CONSTRAINT_CHECK
+  * CONCEPT → METADATA, CONCEPT INTERDIRE → PROMPT_TEMPLATE
+  * METADATA → METADATA, RULE sans verbe → CI_GATE
+  * PROCEDURE sans verbe → VALIDATION, CONSTRAINT sans verbe → CONSTRAINT_CHECK
+  * Domain as targetHint, confidence computation, secrets, DEPLOYER/TRANSFORMER/COLLECTER
+
+. Cucumber BDD — 9/9 PASS (@epic_y_4) :
+  * AgenticCompilerWorld.kt, AgenticCompilerSteps.kt
+  * epic_y_4_agentic_compiler.feature (9 scenarios)
+  * EpicY4CucumberRunner.kt, cucumberTestEpicY4 Gradle task
+
+== Résultats
+
+* Y-3 : 20 JUnit5 + 11 Cucumber = 31/31 PASS
+* Y-4 : 18 JUnit5 + 9 Cucumber = 27/27 PASS
+* Total session : 58/58 PASS
+* compileKotlin OK, publishToMavenLocal OK
+* Fichiers créés : 14 (3 main + 2 resources + 9 test)
+* Fichier modifié : build.gradle.kts (+2 cucumberTestEpic tasks)
+
+== Prochaine session (095)
+
+Y-5 AgenticIngestor — Pipeline complet d'ingestion :
+* Scanner les fichiers .adoc connus (AGENT.adoc, INDEX.adoc, etc.)
+* Détecter les changements via checksum
+* Pipeline chunk → ontologize → store → compile
