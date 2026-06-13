@@ -82,6 +82,7 @@ class AgenticChunker {
         val rulePatterns = listOf(
             "INTERDICTION FORMELLE",
             "INTERDICTION",
+            "INTERDIRE",
             "NE DOIT JAMAIS",
             "NE JAMAIS",
             "OBLIGATOIRE",
@@ -335,7 +336,7 @@ class AgenticChunker {
     private fun extractVerbFromContent(content: String): TaxonomyVerb? {
         val lower = content.lowercase()
         return when {
-            lower.contains("interdiction") || lower.contains("ne doit jamais") || lower.contains("ne jamais") -> TaxonomyVerb.INTERDIRE
+            lower.contains("interdiction") || lower.contains("interdire") || lower.contains("ne doit jamais") || lower.contains("ne jamais") -> TaxonomyVerb.INTERDIRE
             lower.contains("generate") || lower.contains("generer") || lower.contains("produit") -> TaxonomyVerb.GENERER
             lower.contains("collect") || lower.contains("importe") || lower.contains("acquisition") -> TaxonomyVerb.COLLECTER
             lower.contains("transform") || lower.contains("convertit") || lower.contains("conversion") -> TaxonomyVerb.TRANSFORMER

@@ -1,6 +1,6 @@
-= PROMPT_REPRISE — Codebase — Session 097
-:session: 097
-:sessions_precedente: 096 — Y-6 AgenticExternalImporter (7 unit + 5 Cucumber = 12/12 PASS)
+= PROMPT_REPRISE — Codebase — Session 098
+:session: 098
+:sessions_precedente: 097 — Y-7 AgenticChunkEnforcement (10 unit + 7 Cucumber = 17/17 PASS)
 
 == Contexte Hérité
 
@@ -10,20 +10,20 @@
 - EPIC Y-4 AgenticCompiler : 18 JUnit5 + 9 Cucumber = 27/27 PASS
 - EPIC Y-5 AgenticIngestor : 7 JUnit5 + 5 Cucumber = 12/12 PASS
 - EPIC Y-6 AgenticExternalImporter : 7 JUnit5 + 5 Cucumber = 12/12 PASS
-  * AgenticExternalImporter.kt (55 lignes)
-  * import(externalSystem, sourceName, content) → IngestionReport
-  * normalizeContent() : convertit markdown→AsciiDoc (##→==, YAML frontmatter)
-  * Délègue à AgenticIngestor.ingest()
-  * cucumberTestEpicY6 Gradle task
-- Total agentic : 90 unit + 30 Cucumber = 120/120 PASS
-- Package codebase.koog.agentic/ : 11 fichiers
+- EPIC Y-7 AgenticChunkEnforcement : 10 JUnit5 + 7 Cucumber = 17/17 PASS
+  * EnforcementRule.kt (data class + EnforcementResult)
+  * AgenticChunkEnforcement.kt (133 lignes) — registerFromCompiled + check
+  * Pipeline complet : règle AGENT.adoc → chunk → ontologize → compile → enforce → ToolRegistry bloque/allow
+  * cucumberTestEpicY7 Gradle task
+- Total agentic : 100 unit + 37 Cucumber = 137/137 PASS
+- Package codebase.koog.agentic/ : 13 fichiers
 
-== Prochaine Session (097)
+== Prochaine Session (098)
 
-- Y-7 AgenticChunkEnforcement — Tests end-to-end : "une règle AGENT.adoc → contrainte ToolRegistry exécutée"
-  OU
-- EPIC W (Auto-discovery Gradle Tasks)
+- EPIC W (Auto-discovery Gradle Tasks → ToolRegistry + OpenAPI Spec)
   OU
 - EPIC X (Décision Multi-Step verify→adapt)
   OU
 - EPIC OCR suite (Gemini réel)
+  OU
+- EPIC V-8 (Resume Session + Dashboard CLI)

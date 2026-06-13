@@ -389,6 +389,34 @@ val cucumberTestEpicY6 = tasks.register<Test>("cucumberTestEpicY6") {
     filter { includeTestsMatching("codebase.scenarios.EpicY6CucumberRunner") }
 }
 
+val cucumberTestEpicY7 = tasks.register<Test>("cucumberTestEpicY7") {
+    description = "Runs Cucumber BDD tests — EPIC Y-7 (AgenticChunkEnforcement) only"
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = configurations.testRuntimeClasspath.get() +
+        sourceSets.test.get().output +
+        sourceSets.main.get().output +
+        files(tasks.jar.get().archiveFile)
+
+    dependsOn(tasks.classes)
+    useJUnitPlatform { excludeEngines("junit-jupiter") }
+    systemProperty("cucumber.junit-platform.naming-strategy", "long")
+    maxHeapSize = "1g"
+    maxParallelForks = 1
+    forkEvery = 1
+    jvmArgs("-XX:+UseSerialGC", "-XX:MaxMetaspaceSize=256m", "-XX:TieredStopAtLevel=1")
+    timeout.set(Duration.ofMinutes(15))
+
+    testLogging {
+        events("passed", "skipped", "failed")
+        showStandardStreams = true
+        exceptionFormat = FULL
+    }
+    outputs.upToDateWhen { false }
+
+    filter { includeTestsMatching("codebase.scenarios.EpicY7CucumberRunner") }
+}
+
 tasks.withType<Test>().configureEach {
     ignoreFailures = true
     useJUnitPlatform()

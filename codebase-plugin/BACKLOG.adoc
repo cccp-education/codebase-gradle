@@ -554,12 +554,11 @@ Source : Littérature textuelle agentique
       - Objectif : *tout* texte agentique peut être compilé en tâches Gradle
         sur le système de contexte augmenté
 
-* [ ] Y-7 : Tests — Scénario Cucumber "une règle écrite dans AGENT.adoc devient
-      une contrainte exécutée par le ToolRegistry" :
-      1. Écrire une règle "INTERDIRE git push sans flag --dry-run" dans un test AGENT.adoc
-      2. Lancer l'AgenticIngestor
-      3. Vérifier que ToolRegistry bloque `exec_gradle("git", "push")`
-      4. Vérifier que `exec_gradle("git", "push --dry-run")` passe
+* [x] Y-7 : AgenticChunkEnforcement — 10 unit + 7 Cucumber = 17/17 PASS
+      (session 097). Pipeline complet : règle AGENT.adoc → chunk → ontologize →
+      compile → enforce → ToolRegistry bloque/allow. 3 fichiers production
+      (EnforcementRule.kt, AgenticChunkEnforcement.kt) + 4 fichiers test
+      (AgenticChunkEnforcementTest.kt, feature, World, Steps, Runner).
 
 === Pourquoi c'est la brique la plus stratégique
 
