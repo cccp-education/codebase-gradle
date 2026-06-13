@@ -2,6 +2,7 @@
 
 |===
 | # | Date | Type | Sujet | Score
+| 092 | 2026-06-13 | feat+tdd | EPIC Y-1 AgenticChunker TDD — Package codebase.koog.agentic/, AgenticChunk.kt (data classes ChunkType/TaxonomyVerb/DagLevel), AgenticChunker.kt (371 lignes, segmentation sémantique .adoc), AgenticChunkerTest.kt (18 tests, 14 PASS/4 FAIL). Bugfix KoogPlanningOrchestratorWorld.kt manquant + typo string→String. compileKotlin OK, publishToMavenLocal OK. | 7/10
 | 091 | 2026-06-11 | ops | Publication Maven Central 0.0.2 — bump version, 4 contrats N0 corrigés (0.0.1), codex SNAPSHOT→0.0.1, koverThresholdCheck désactivé/restauré, nmcp publishAggregationToCentralPortal OK | 10/10
 | 090 | 2026-06-11 | ops | Préparation publication Maven Central — version hardcodée 0.0.1, nmcp configuré, POM étendu. Bloqué par codex-plugin:0.1.0-SNAPSHOT. | N/A
 | 089 | 2026-06-11 | ops | Preparation publication Maven Central — nmcp + version hardcodée + mavenCentral(). Bloqué par codex-plugin:0.1.0-SNAPSHOT. | N/A

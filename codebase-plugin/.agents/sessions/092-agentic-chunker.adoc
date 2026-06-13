@@ -1,0 +1,38 @@
+= Session 092 — EPIC Y-1 AgenticChunker (TDD)
+:date: 2026-06-13
+:type: feat+tdd
+:score: 7/10
+
+== Contexte
+
+Démarrage EPIC Y (Agentic Literature Compiler) — N4 avant N3.
+Méthodologie TDD/BDD/DDD baby steps, 1 fichier à la fois.
+
+== Actions
+
+. Création package `codebase.koog.agentic/` (main + test)
+. `AgenticChunk.kt` — data classes : ChunkType (RULE/CONCEPT/PROCEDURE/METADATA/CONSTRAINT), TaxonomyVerb (GENERER/COLLECTER/TRANSFORMER/DEPLOYER/INTERDIRE/VALIDER), DagLevel (N0-N4), AgenticChunk (id/sourceFile/sourceLines/chunkType/content/verb/domain/dagLevel/circle/weight/checksum)
+. `AgenticChunkerTest.kt` — 18 tests unitaires TDD : règles, concepts, procédures, métadonnées, contraintes, domaine, DAG, cercle, checksum SHA-256, verbes, poids, contenu vide
+. `AgenticChunker.kt` — 371 lignes, segmentation sémantique .adoc en chunks : section headers (= / ==), patterns INTERDICTION/NE JAMAIS/OBLIGATOIRE, procédures (. / [x]), contraintes (Maximum/limite/50k tokens), métadonnées (:attributs), concepts (. principes), extraction verbe/domaine/DAG/cercle/poids
+. Bugfix pré-existant : `KoogPlanningOrchestratorWorld.kt` manquant → créé. `KoogPlanningOrchestratorSteps.kt` typo `string` → `String`
+
+== Résultats
+
+- compileKotlin OK
+- publishToMavenLocal OK
+- 14/18 tests PASS, 4 FAIL :
+  . `should chunk a rule from AGENT adoc` — weight "formelle" non reconnu → corrigé
+  . `should chunk a procedure from numbered steps` — section header manquant dans chunk → corrigé
+  . `should assign weight 1_0 for CRITIQUE or BLOQUANT keywords` — paragraphes isolés non chunkés → extractParagraphs à ajouter
+  . `should assign correct circle from content patterns` — regex `cercle\s+` ne match pas `*cercle 4*` → corrigé
+
+== Leçons
+
+- Le chunking sémantique nécessite de traiter les paragraphes isolés (bold text, lignes sans header)
+- Les regex AsciiDoc doivent être tolérants au markup (`*cercle 4*`, pas juste `cercle 4`)
+- La session suivante doit ajouter `extractParagraphs` et finaliser les 4 tests restants
+
+== Prochaine session (093)
+
+Finaliser Y-1 : extractParagraphs + 4 tests → 18/18 PASS.
+Puis Y-2 AgenticOntologizer (mapping chunks sur TAXONOMIE_WORKSPACE).

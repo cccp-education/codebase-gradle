@@ -1,6 +1,9 @@
 = Test Coverage Analysis — Codebase Gradle
 
-_Statut session 091_ : Publication Maven Central codebase-plugin:0.0.2. Aucun test modifié (session ops).
+_Statut session 092_ : EPIC Y-1 AgenticChunker TDD. 18 nouveaux tests JUnit5 (14 PASS, 4 FAIL à corriger).
+
+| Session | Fichiers testés | Couverture | Notes
+| 092 | `AgenticChunkerTest.kt` — 18 tests (règle, concept, procédure, métadonnée, contrainte, domaine, DAG, cercle, checksum SHA-256, verbes GENERER/COLLECTER/TRANSFORMER/DEPLOYER/INTERDIRE/VALIDER, poids CRITIQUE/BLOQUANT, contenu vide/whitespace). | 14/18 PASS. 4 FAIL : weight "formelle" corrigé, section header procédure corrigé, extractParagraphs à ajouter, regex cercle corrigé. | Package codebase.koog.agentic/. AgenticChunk.kt (4 data classes), AgenticChunker.kt (371 lignes). compileKotlin OK.
 
 ✅ **Gaps OCR comblés (session 088)** :
 - ✅ CI/CD OCR (`.github/workflows/ocr.yml`)

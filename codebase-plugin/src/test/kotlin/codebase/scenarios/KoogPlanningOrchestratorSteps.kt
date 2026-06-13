@@ -60,7 +60,7 @@ class KoogPlanningOrchestratorSteps(private val world: KoogPlanningOrchestratorW
     }
 
     @When("I plan an architecture with intention {string}")
-    fun `plan an architecture`(intention: string) {
+    fun `plan an architecture`(intention: String) {
         world.intention = intention
 
         val initialState = AugmentedState(
