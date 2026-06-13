@@ -1,27 +1,29 @@
-= PROMPT_REPRISE — Codebase — Session 095
-:session: 095
-:sessions_precedente: 094 — Y-3 AgenticSchema (31/31 PASS) + Y-4 AgenticCompiler (27/27 PASS)
+= PROMPT_REPRISE — Codebase — Session 096
+:session: 096
+:sessions_precedente: 095 — Y-5 AgenticIngestor (7 unit + 5 Cucumber = 12/12 PASS)
 
 == Contexte Hérité
 
 - EPIC Y-1 AgenticChunker : 18/18 PASS
 - EPIC Y-2 AgenticOntologizer : 20/20 PASS
 - EPIC Y-3 AgenticSchema : 20 JUnit5 + 11 Cucumber = 31/31 PASS
-  * V3__agentic_chunks.sql (agentic_chunks + chunk_relations)
-  * AgenticChunkRepository (R2DBC, pattern SessionRepository)
-  * cucumberTestEpicY3 Gradle task
 - EPIC Y-4 AgenticCompiler : 18 JUnit5 + 9 Cucumber = 27/27 PASS
-  * CompiledArtifact (8 ArtifactTypes)
-  * AgenticCompiler (RULE→PRE_HOOK, PROCEDURE→GRADLE_TASK/VALIDATION, etc.)
-  * cucumberTestEpicY4 Gradle task
-- Total agentic : 96/96 PASS, compileKotlin OK, publishToMavenLocal OK
-- Package codebase.koog.agentic/ : 8 fichiers (AgenticChunk, AgenticChunker, OntologizedChunk,
-  AgenticOntologizer, AgenticChunkRepository, CompiledArtifact, AgenticCompiler + 4 tests)
+- EPIC Y-5 AgenticIngestor : 7 JUnit5 + 5 Cucumber = 12/12 PASS
+  * AgenticIngestor.kt (orchestrateur, 63 lignes)
+  * IngestionReport : filesScanned, chunksAdded, chunksSkipped, chunksModified, artifactsCompiled
+  * Pipeline complet : chunk(content, sourceFile) → ontologize → diff detection by sourceLines+checksum → store → compile
+  * cucumberTestEpicY5 Gradle task
+  * FakeAgenticChunkRepository (in-memory pour TDD sans Testcontainers)
+- Total agentic : 83 unit + 25 Cucumber = 108/108 PASS
+- Package codebase.koog.agentic/ : 10 fichiers (AgenticChunk, AgenticChunker, AgenticIngestor,
+  IngestionReport, OntologizedChunk, AgenticOntologizer, AgenticChunkRepository,
+  CompiledArtifact, AgenticCompiler + 5 tests)
 
-== Prochaine Session (095)
+== Prochaine Session (096)
 
-- Y-5 AgenticIngestor — Pipeline complet d'ingestion :
-  * Scanner les fichiers .adoc connus (AGENT.adoc, INDEX.adoc, etc.)
-  * Détecter les changements via checksum
-  * Pipeline chunk → ontologize → store → compile
-  * AgenticIngestor (orchestrateur)
+- Y-6 Migration de la littérature agentique externe — Pipeline d'import
+  pour les systèmes textuels non-workspace
+  OU
+- EPIC W (Auto-discovery Gradle Tasks)
+  OU
+- EPIC X (Décision Multi-Step verify→adapt)

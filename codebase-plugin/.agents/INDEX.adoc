@@ -4,10 +4,10 @@
 _Regles absolues_ : voir `AGENT.adoc`
 _Ontologie spatiale_ : voir `configuration/.agents/AGENT_GOVERNANCE.adoc`
 
-_Derniere mise a jour_ : 2026-06-13 (Session 094 — Y-3 AgenticSchema + Y-4 AgenticCompiler)
-_Session precedente_ : 093 — Finalisation Y-1 + Y-2 AgenticOntologizer
-_Session en cours_ : 094 — Y-3 AgenticSchema + Y-4 AgenticCompiler
-_Session suivante_ : 095 — Y-5 AgenticIngestor
+_Derniere mise a jour_ : 2026-06-13 (Session 095 — Y-5 AgenticIngestor)
+_Session precedente_ : 094 — Y-3 AgenticSchema + Y-4 AgenticCompiler
+_Session en cours_ : 095 — Y-5 AgenticIngestor
+_Session suivante_ : 096 — Y-6 Migration littérature agentique externe ou EPIC W/X
 _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/` (N=70, multiple de 10)
 
 '''
@@ -38,6 +38,7 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 
 |===
 | # | Date | Type | Sujet | Score
+| 095 | 2026-06-13 | feat+tdd+ddd+bdd | Y-5 AgenticIngestor — Pipeline ingestion complet (chunk→ontologize→diff detection→store→compile). AgenticIngestor.kt, IngestionReport. 7 JUnit5 + 5 Cucumber = 12/12 PASS. cucumberTestEpicY5 task. Total agentic 83 unit + 25 Cucumber = 108/108 PASS. | 10/10
 | 088 | 2026-05-30 | feat+tests+infra | OCR-3b P1 Config YAML/CLI/DSL + P2 CI/CD — -PinputFile CLI mappe CodebasePlugin → OcrTask, llm-config.yml → GeminiConfig → OcrTask, chaîne priorite CLI>DSL>YAML>convention, YAML corrompu fallback, .github/workflows/ocr.yml (push/PR JDK 24 OCR), 22/22 tests PASS (16 existants + 6 nouveaux), zero regression, publishToMavenLocal OK | 10/10
 | 087 | 2026-05-30 | feat+tests+refactor | OCR-3b FakeVisionProvider + VisionProvider interface — P0 terminé, 6 tests PASS, ZERO regression, publishToMavenLocal OK, cross-borough codex+planner compile OK | 10/10
 | 085 | 2026-05-30 | feat+tests | OCR-2 GeminiVisionProvider (multimodal) — 95 lignes, package codebase.koog.llm. `suspend fun processImage(bytes, mimeType, lang, model, maxTokens)`. Cache lazy GoogleAiGeminiChatModel, encode base64 → ImageContent, prompt OCR AsciiDoc structuré. 6 tests JUnit5 PASS (image PNG synthétique, erreur sans clé API, grande image 2000×2000). Zéro régression. | 10/10
@@ -134,7 +135,7 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 | EPIC G | Publication Maven Central + Gradle Portal — groupId education.cccp, namespace cccp-education. | ✅ TERMINE (session 091 — codebase-plugin:0.0.2 publié via nmcp, contrats N0 corrigés 0.0.1). | P0
 | EPIC W | *Auto-discovery Gradle Tasks* — ToolRegistry + OpenAPI Spec. | 🔲 BACKLOG (cadré V16). 7 sous-EPICs, ~18 pts. | P1
 | EPIC X | *Décision Multi-Step verify→adapt* — Plan structuré, TaskResultVerifier, RollbackStrategy. | 🔲 BACKLOG (cadré V16). 7 sous-EPICs, ~20 pts. | P1
-| EPIC Y | *Agentic Literature Compiler* — Compiler littérature agentique → artefacts exécutables. | 🔄 EN COURS (Y-1 18/18 ✅, Y-2 20/20 ✅, Y-3 31/31 ✅, Y-4 27/27 ✅, session 094). 8 sous-EPICs, ~26 pts. | P1
+| EPIC Y | *Agentic Literature Compiler* — Compiler littérature agentique → artefacts exécutables. | 🔄 EN COURS (Y-1 18/18 ✅, Y-2 20/20 ✅, Y-3 31/31 ✅, Y-4 27/27 ✅, Y-5 12/12 ✅, session 095). 8 sous-EPICs, ~26 pts. | P1
 | EPIC-V-6-POOL | *Adaptation Ollama Cloud Pool* — Le pool 11437-11465 ne contient que gemma4:31b-cloud (pas de modèles premium qwen3.5/deepseek-v4/glm-5.1/minimax-m2.7/kimi-k2.6). Adaptation OllamaLlmProvider pour utiliser gemma4:31b-cloud. Script scan-ollama-cloud.sh. 4 sous-EPICs (V-6-POOL-0→V-6-POOL-3, ~5 pts). | 🔴 EN ATTENTE (cadré Session 077). | P0
 | EPIC Z | *Autofocus* — Accommodation contextuelle programmatique (zoom x1↔x1000). 11ème doc Jardin Secret. Package `autofocus/` dans `codebase/koog/`. 5ème verbe ZOOMER. | 🔲 BACKLOG (cadré Session 073). 7 sous-EPICs, ~23 pts. Voir `AUTOFOCUS_CAPABILITY.adoc`. | P1
 |===

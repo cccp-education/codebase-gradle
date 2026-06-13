@@ -1,0 +1,69 @@
+= Session 095 — Y-5 AgenticIngestor (Pipeline Complet d'Ingestion)
+:session: 095
+:date: 2026-06-13
+:type: feat+tdd+ddd+bdd
+:epic: Y-5
+:score: 10/10
+
+== Contexte
+EPIC Y-5 AgenticIngestor — Pipeline complet d'ingestion des fichiers .adoc agentiques
+(AGENT.adoc, INDEX.adoc, TAXONOMIE_WORKSPACE.adoc, etc.) :
+chunk → ontologize → store (R2DBC) → compile.
+
+== Actions
+
+. **Y-5.1-2 TDD AgenticIngestorTest** — 7 tests JUnit5 :
+  * ingest nouveau fichier → chunks added + artifacts compiled
+  * re-ingest identique → all chunks skipped
+  * fichier modifié → chunksModified détecté
+  * fichier vide → report zéro
+  * contenu whitespace → report zéro
+  * batch 2 fichiers → multi-source
+  * totals report cohérents
+
+. **Y-5.3 Implémentation AgenticIngestor.kt** (63 lignes) :
+  * `IngestionReport` : filesScanned, chunksAdded, chunksSkipped, chunksModified, artifactsCompiled
+  * Pipeline : chunk(content, sourceFile) → ontologizer.ontologize(chunks) → diff detection (sourceFile+sourceLines + checksum) → repository.insertChunk() → compiler.compile()
+  * Chunks modifiés détectés par sourceLines + checksum (pas par ID — l'ID change avec le contenu)
+
+. **Y-5.4-5 Cucumber BDD** — 5 scénarios @epic_y_5 :
+  * @ingest — Ingest single AGENT.adoc
+  * @idempotent — Re-ingest same file → all skipped
+  * @modification — Modified file → chunksModified > 0
+  * @batch — Ingest 2 files (AGENT + INDEX) → multi-source
+  * @taxonomy — Ingest TAXONOMIE_WORKSPACE → 11 taxonomy sections vérifiées
+
+. **Y-5.6 Gradle task** — `cucumberTestEpicY5` ajoutée dans `build.gradle.kts`
+
+. **Fichier support** : `FakeAgenticChunkRepository.kt` (in-memory pour TDD sans Testcontainers)
+
+== Résultats
+
+[cols="2,3"]
+|===
+| Métrique | Valeur
+| Tests unitaires | 7/7 PASS (AgenticIngestorTest)
+| Scénarios Cucumber | 5/5 PASS (epic_y_5_agentic_ingestor.feature)
+| Compilation | compileKotlin OK
+| Total agentic | 83 unit + 25 Cucumber = 108/108 PASS
+|===
+
+== Fichiers créés
+
+* `codebase-plugin/src/main/kotlin/codebase/koog/agentic/AgenticIngestor.kt` — 63 lignes
+* `codebase-plugin/src/test/kotlin/codebase/koog/agentic/AgenticIngestorTest.kt` — 7 tests
+* `codebase-plugin/src/test/kotlin/codebase/koog/agentic/FakeAgenticChunkRepository.kt` — fake repo
+* `codebase-plugin/src/test/kotlin/codebase/scenarios/EpicY5CucumberRunner.kt` — runner
+* `codebase-plugin/src/test/kotlin/codebase/scenarios/AgenticIngestorSteps.kt` — steps
+* `codebase-plugin/src/test/kotlin/codebase/scenarios/AgenticIngestorWorld.kt` — world
+* `codebase-plugin/src/test/features/epic_y_5_agentic_ingestor.feature` — 5 scénarios
+
+== Fichiers modifiés
+
+* `codebase-plugin/build.gradle.kts` — cucumberTestEpicY5 task
+
+== Leçons
+
+* Les chunks modifiés changent d'ID (SHA-256 inclut le contenu). La détection doit se faire par sourceFile + sourceLines, pas par ID.
+* L'utilisation d'un FakeAgenticChunkRepository (in-memory) permet des tests TDD rapides sans dépendre de Testcontainers.
+* Le pattern TDD → Cucumber reproduit fidèlement le pipeline : 7 tests unitaires → 5 scénarios d'intégration.
