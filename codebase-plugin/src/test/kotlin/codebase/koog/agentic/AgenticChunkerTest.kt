@@ -141,7 +141,7 @@ class AgenticChunkerTest {
 
         val chunks = chunker.chunk(content, sourceFile = "AGENT.adoc")
 
-        val concept = chunks.first { it.chunkType == ChunkType.CONCEPT }
+        val concept = chunks.first { it.chunkType == ChunkType.CONCEPT && it.content.contains("N1") }
         assertEquals(DagLevel.N1, concept.dagLevel)
     }
 

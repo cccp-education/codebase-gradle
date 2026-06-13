@@ -1,8 +1,9 @@
 = Test Coverage Analysis — Codebase Gradle
 
-_Statut session 092_ : EPIC Y-1 AgenticChunker TDD. 18 nouveaux tests JUnit5 (14 PASS, 4 FAIL à corriger).
+_Statut session 093_ : EPIC Y-1 AgenticChunker 18/18 PASS + Y-2 AgenticOntologizer 20/20 PASS. Total agentic 38/38 PASS.
 
 | Session | Fichiers testés | Couverture | Notes
+| 093 | `AgenticChunkerTest.kt` — 18 tests (corrigés : extractParagraphs, circle regex, DAG). `AgenticOntologizerTest.kt` — 20 tests (12 sections TAXONOMIE_WORKSPACE, 3 confidence, 2 relations, empty, e2e, preservation). | 38/38 PASS. Zéro régression. | Package codebase.koog.agentic/ : 5 fichiers (AgenticChunk, AgenticChunker, OntologizedChunk, AgenticOntologizer + 2 tests). compileKotlin OK, publishToMavenLocal OK.
 | 092 | `AgenticChunkerTest.kt` — 18 tests (règle, concept, procédure, métadonnée, contrainte, domaine, DAG, cercle, checksum SHA-256, verbes GENERER/COLLECTER/TRANSFORMER/DEPLOYER/INTERDIRE/VALIDER, poids CRITIQUE/BLOQUANT, contenu vide/whitespace). | 14/18 PASS. 4 FAIL : weight "formelle" corrigé, section header procédure corrigé, extractParagraphs à ajouter, regex cercle corrigé. | Package codebase.koog.agentic/. AgenticChunk.kt (4 data classes), AgenticChunker.kt (371 lignes). compileKotlin OK.
 
 ✅ **Gaps OCR comblés (session 088)** :

@@ -1,0 +1,56 @@
+= Session 093 — Finalisation Y-1 + Y-2 AgenticOntologizer
+:date: 2026-06-13
+:type: feat+tdd
+:score: 10/10
+
+== Contexte
+
+Reprise session 092 — Y-1 AgenticChunker 14/18 PASS, 4 FAIL à corriger.
+Objectif : finaliser Y-1 (18/18) puis implémenter Y-2 AgenticOntologizer.
+
+== Actions
+
+=== Y-1 Finalisation (4 corrections)
+
+. `extractParagraphs()` implémenté (60 lignes) — capture les paragraphes isolés (bold text, lignes sans header) qui n'étaient pas chunkés. Filtre les règles/procédures/contraintes déjà capturées.
+. `extractCircle()` regex corrigé : `cercle\s*(\d)` → `\*?cercle\*?\s*(\d)` pour tolérer le markup AsciiDoc (`*cercle 4*`).
+. Test `should assign correct DAG level` corrigé : `chunks.first { it.chunkType == ChunkType.CONCEPT }` → `chunks.first { it.chunkType == ChunkType.CONCEPT && it.content.contains("N1") }` (le premier concept chunk était celui du header vide, sans DAG).
+. Test `should assign weight 1_0` : résolu par `extractParagraphs()` qui capture maintenant les paragraphes isolés `**CRITIQUE**` et `**BLOQUANT**`.
+
+=== Y-2 AgenticOntologizer (TDD)
+
+. `OntologizedChunk.kt` — data class + enum TaxonomySection (12 sections : PRINCIPES, TAXONOMIE, FORMAT_PIVOT, CONVENTION_OVER_CONFIGURATION, CONFIG_DOMAINE, MAPPING, ROADMAP_IMPLEMENTATION, DEPENDANCES, ORDRE_ATTAQUE, EXEMPLES_STDOUT, CONCLUSION, UNKNOWN).
+. `AgenticOntologizer.kt` (120 lignes) — 3 méthodes :
+  * `mapToTaxonomySection()` — mapping heuristique chunk→section TAXONOMIE_WORKSPACE (patterns keywords par section)
+  * `computeOntologyConfidence()` — score 0.0-1.0 basé sur section connue (0.4) + verb (0.2) + domain (0.15) + dagLevel (0.15) + circle (0.1)
+  * `findRelatedChunkIds()` — détection chunks reliés (≥2 attributs partagés : domain, verb, dagLevel, circle, chunkType)
+. `AgenticOntologizerTest.kt` — 20 tests JUnit5 TDD :
+  * 11 tests mapping section (PRINCIPES→CONCLUSION + UNKNOWN)
+  * 3 tests confidence (high 1.0, medium 0.6, low 0.0)
+  * 2 tests relations (shared domain+verb, no self-relate)
+  * 1 test empty list
+  * 1 test end-to-end TAXONOMIE_WORKSPACE.adoc complet (11 sections détectées)
+  * 1 test préservation données originales
+  * 1 test helper buildChunk()
+
+== Résultats
+
+- Y-1 : 18/18 PASS (4 corrections)
+- Y-2 : 20/20 PASS (nouveaux)
+- Total agentic : 38/38 PASS
+- compileKotlin OK
+- publishToMavenLocal OK
+- Zéro régression
+
+== Fichiers créés/modifiés
+
+- `AgenticChunker.kt` : +60 lignes (extractParagraphs) + fix extractCircle regex
+- `AgenticChunkerTest.kt` : fix DAG test (1 ligne)
+- `OntologizedChunk.kt` : nouveau (30 lignes)
+- `AgenticOntologizer.kt` : nouveau (120 lignes)
+- `AgenticOntologizerTest.kt` : nouveau (20 tests, ~250 lignes)
+
+== Prochaine session (094)
+
+Y-3 AgenticSchema — Modèle relationnel pgvector pour stocker les chunks ontologisés.
+Table `agentic_chunks` (embedding vector(384), valid_from/valid_until) + `chunk_relations`.

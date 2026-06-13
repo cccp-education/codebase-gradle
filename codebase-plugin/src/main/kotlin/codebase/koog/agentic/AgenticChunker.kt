@@ -230,6 +230,53 @@ class AgenticChunker {
         return chunks
     }
 
+    private fun extractParagraphs(content: String, sectionTitle: String, startLine: Int, sourceFile: String): List<AgenticChunk> {
+        val chunks = mutableListOf<AgenticChunk>()
+        val lines = content.lines()
+
+        for ((i, line) in lines.withIndex()) {
+            val trimmed = line.trim()
+
+            if (trimmed.isEmpty() || trimmed.startsWith("=") || trimmed.startsWith(":") || trimmed.startsWith("_")) continue
+
+            val isRule = trimmed.contains("INTERDICTION", ignoreCase = true) ||
+                trimmed.contains("NE DOIT JAMAIS", ignoreCase = true) ||
+                trimmed.contains("NE JAMAIS", ignoreCase = true) ||
+                trimmed.contains("OBLIGATOIRE", ignoreCase = true) ||
+                trimmed.contains("INTERDIT", ignoreCase = true)
+            val isProcedure = trimmed.matches(Regex("^\\.\\s+.+")) || trimmed.matches(Regex("^\\[\\s*[x ]\\s*\\].+"))
+            val isConstraint = trimmed.contains("Maximum", ignoreCase = true) ||
+                trimmed.contains("limite", ignoreCase = true) ||
+                trimmed.contains("50k tokens", ignoreCase = true) ||
+                trimmed.contains("~3000 lignes", ignoreCase = true) ||
+                trimmed.contains("1 fichier a la fois", ignoreCase = true) ||
+                trimmed.contains("Contexte leger", ignoreCase = true)
+            val isConceptBullet = trimmed.matches(Regex("^\\.\\s+.+"))
+
+            if (isRule || isProcedure || isConstraint || isConceptBullet) continue
+
+            val paraLines = mutableListOf<String>()
+            if (sectionTitle.isNotBlank()) {
+                paraLines.add("== $sectionTitle")
+            }
+            paraLines.add(line)
+
+            val lineRange = "${startLine + i}-${startLine + i}"
+            val chunkContent = paraLines.joinToString("\n").trim()
+
+            chunks.add(buildChunk(
+                content = chunkContent,
+                sourceFile = sourceFile,
+                sourceLines = lineRange,
+                chunkType = ChunkType.CONCEPT,
+                verb = extractVerbFromContent(chunkContent),
+                sectionTitle = sectionTitle
+            ))
+        }
+
+        return chunks
+    }
+
     private fun extractConcepts(content: String, sectionTitle: String, startLine: Int, sourceFile: String): List<AgenticChunk> {
         val chunks = mutableListOf<AgenticChunk>()
 
@@ -340,7 +387,7 @@ class AgenticChunker {
     }
 
     private fun extractCircle(content: String): Int? {
-        val match = Regex("cercle\\s*(\\d)", RegexOption.IGNORE_CASE).find(content)
+        val match = Regex("\\*?cercle\\*?\\s*(\\d)", RegexOption.IGNORE_CASE).find(content)
         return match?.groupValues?.get(1)?.toIntOrNull()
     }
 

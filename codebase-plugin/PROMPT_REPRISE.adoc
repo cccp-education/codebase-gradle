@@ -1,14 +1,18 @@
-= PROMPT_REPRISE — Codebase — Session 092
-:session: 092
-:sessions_precedente: 091 — Publication Maven Central 0.0.2 terminée
+= PROMPT_REPRISE — Codebase — Session 094
+:session: 094
+:sessions_precedente: 093 — Finalisation Y-1 (18/18 PASS) + Y-2 AgenticOntologizer (20/20 PASS)
 
 == Contexte Hérité
 
-- codebase-plugin:0.0.2 publié sur Maven Central via nmcp
-- 4 contrats N0 corrigés (0.0.1), codex SNAPSHOT→0.0.1 dans catalogue
-- koverThresholdCheck restauré
+- EPIC Y-1 AgenticChunker : 18/18 PASS (extractParagraphs, fix circle regex, fix DAG test)
+- EPIC Y-2 AgenticOntologizer : 20/20 PASS (12 sections TAXONOMIE_WORKSPACE, confidence, relations)
+- Total agentic : 38/38 PASS, compileKotlin OK, publishToMavenLocal OK
+- Package codebase.koog.agentic/ : 5 fichiers (AgenticChunk, AgenticChunker, OntologizedChunk, AgenticOntologizer + 2 tests)
 
-== Prochaine Session (092)
+== Prochaine Session (094)
 
-- Continuation backlog EPICs en cours
-- Priorités : EPIC OCR (tests complémentaires), EPIC W/X/Y/Z selon backlog
+- Y-3 AgenticSchema — Modèle relationnel pgvector pour stocker les chunks ontologisés
+  * Table `agentic_chunks` (embedding vector(384), valid_from/valid_until)
+  * Table `chunk_relations` (ENFORCES/CONFLICTS_WITH/DEPENDS_ON/REFINES)
+  * Migration Flyway V3__agentic_chunks.sql
+  * AgenticChunkRepository (R2DBC)

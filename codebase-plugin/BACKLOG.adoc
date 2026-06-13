@@ -479,7 +479,7 @@ Source : Littérature textuelle agentique
       GLOBAL_CODE_REVIEW v1→v16, TAXONOMIE_WORKSPACE.adoc.
       Objectif : typologie des chunks (règle, concept, procédure, metadata, contrainte).
 
-* [ ] Y-1 : `AgenticChunker` — Analyse un fichier .adoc et le segmente en chunks
+* [x] Y-1 : `AgenticChunker` — Analyse un fichier .adoc et le segmente en chunks
       avec signature sémantique :
       ```kotlin
       data class AgenticChunk(
@@ -496,7 +496,7 @@ Source : Littérature textuelle agentique
       )
       ```
 
-* [ ] Y-2 : `AgenticOntologizer` — Mappe chaque chunk sur la TAXONOMIE_WORKSPACE :
+* [x] Y-2 : `AgenticOntologizer` — Mappe chaque chunk sur la TAXONOMIE_WORKSPACE :
       - Extrait le verbe dominant (patterns regex : "NE DOIT JAMAIS" → INTERDIRE)
       - Identifie le domaine (patterns : "codebase-plugin", "training-plugin")
       - Détermine le DAG niveau (patterns : "N1", "N2", "DAG N3")

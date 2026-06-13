@@ -52,8 +52,8 @@ le système de contexte augmenté (koog+langchain4j+RAG).
 |===
 | # | Description | Pts
 | Y-0 | Spécification : GLOBAL_CODE_REVIEW.adoc §23.8.3 | 1
-| Y-1 | AgenticChunker — segmentation sémantique en unités atomiques | 3
-| Y-2 | AgenticOntologizer — mapping sur TAXONOMIE_WORKSPACE | 3
+| Y-1 | AgenticChunker — segmentation sémantique en unités atomiques | 3 ✅
+| Y-2 | AgenticOntologizer — mapping sur TAXONOMIE_WORKSPACE | 3 ✅
 | Y-3 | Schema SQL generation — stockage relationnel + embeddings pgvector | 3
 | Y-4 | Transformation — chunk → ToolRegistry pre/post hook | 5
 | Y-5 | AgenticIngestor — la machine s'ingère elle-même | 5
