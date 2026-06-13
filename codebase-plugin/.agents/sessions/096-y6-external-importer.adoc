@@ -1,0 +1,67 @@
+= Session 096 — Y-6 AgenticExternalImporter
+:session: 096
+:date: 2026-06-13
+:type: feat+tdd+ddd+bdd
+:precedente: 095 — Y-5 AgenticIngestor
+:score: 10/10
+
+== Contexte
+
+Y-6 = Migration de la littérature agentique externe — Pipeline d'import
+pour les systèmes textuels non-workspace (Copilot, Cursor, Claude, Gemini).
+
+== Actions
+
+=== TDD — AgenticExternalImporterTest.kt (7 tests)
+- should import a copilot prompt markdown
+- should import cursor rules in yaml frontmatter format
+- should import claude agent rules
+- should import gemini system prompt
+- should handle empty external content
+- should normalize external format before delegating to ingestor
+- should set correct source file prefix in chunked content
+
+=== Implémentation — AgenticExternalImporter.kt (55 lignes)
+- `suspend fun import(externalSystem, sourceName, content): IngestionReport`
+- `normalizeContent()` : convertit markdown→AsciiDoc (##→==, ---→YAML metadata)
+- `formatForChunking()` : headernormalisation format externe
+- Délègue à `AgenticIngestor.ingest()` existant
+
+=== BDD — Cucumber 5 scénarios @epic_y_6
+- @copilot : Import Copilot rules + détection INTERDICTION
+- @cursor : Import Cursor rules avec YAML frontmatter
+- @claude : Import Claude agent system prompt + contraintes
+- @batch : Import séquentiel multi-sources
+- @edge : Contenu vide → zéro report
+
+=== Gradle — cucumberTestEpicY6 task
+- `build.gradle.kts` : 32 lignes ajoutées après cucumberTestEpicY5
+
+== Résultats
+
+[cols="2,2,2"]
+|===
+| Niveau | Tests | Résultat
+| JUnit5 | 7 | ✅ PASS
+| Cucumber (@epic_y_6) | 5 | ✅ PASS
+| Régression agentic package | 7+ tests existants | ✅ PASS
+|===
+
+*Total agentic* : 90 unit + 30 Cucumber = *120/120 PASS*
+(vs 83+25=108 avant Y-6)
+
+== Fichiers créés/modifiés
+
+- `src/main/kotlin/codebase/koog/agentic/AgenticExternalImporter.kt` (créé)
+- `src/test/kotlin/codebase/koog/agentic/AgenticExternalImporterTest.kt` (créé)
+- `src/test/features/epic_y_6_external_importer.feature` (créé)
+- `src/test/kotlin/codebase/scenarios/AgenticExternalImporterSteps.kt` (créé)
+- `src/test/kotlin/codebase/scenarios/EpicY6CucumberRunner.kt` (créé)
+- `build.gradle.kts` (+32 lignes : cucumberTestEpicY6)
+
+== Commandes
+
+- `./gradlew compileKotlin` → BUILD SUCCESSFUL
+- `./gradlew test --tests "codebase.koog.agentic.AgenticExternalImporterTest"` → 7/7 PASS
+- `./gradlew cucumberTestEpicY6` → 5/5 PASS
+- `./gradlew publishToMavenLocal` → BUILD SUCCESSFUL

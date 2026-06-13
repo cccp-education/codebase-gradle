@@ -1,6 +1,6 @@
-= PROMPT_REPRISE — Codebase — Session 096
-:session: 096
-:sessions_precedente: 095 — Y-5 AgenticIngestor (7 unit + 5 Cucumber = 12/12 PASS)
+= PROMPT_REPRISE — Codebase — Session 097
+:session: 097
+:sessions_precedente: 096 — Y-6 AgenticExternalImporter (7 unit + 5 Cucumber = 12/12 PASS)
 
 == Contexte Hérité
 
@@ -9,21 +9,21 @@
 - EPIC Y-3 AgenticSchema : 20 JUnit5 + 11 Cucumber = 31/31 PASS
 - EPIC Y-4 AgenticCompiler : 18 JUnit5 + 9 Cucumber = 27/27 PASS
 - EPIC Y-5 AgenticIngestor : 7 JUnit5 + 5 Cucumber = 12/12 PASS
-  * AgenticIngestor.kt (orchestrateur, 63 lignes)
-  * IngestionReport : filesScanned, chunksAdded, chunksSkipped, chunksModified, artifactsCompiled
-  * Pipeline complet : chunk(content, sourceFile) → ontologize → diff detection by sourceLines+checksum → store → compile
-  * cucumberTestEpicY5 Gradle task
-  * FakeAgenticChunkRepository (in-memory pour TDD sans Testcontainers)
-- Total agentic : 83 unit + 25 Cucumber = 108/108 PASS
-- Package codebase.koog.agentic/ : 10 fichiers (AgenticChunk, AgenticChunker, AgenticIngestor,
-  IngestionReport, OntologizedChunk, AgenticOntologizer, AgenticChunkRepository,
-  CompiledArtifact, AgenticCompiler + 5 tests)
+- EPIC Y-6 AgenticExternalImporter : 7 JUnit5 + 5 Cucumber = 12/12 PASS
+  * AgenticExternalImporter.kt (55 lignes)
+  * import(externalSystem, sourceName, content) → IngestionReport
+  * normalizeContent() : convertit markdown→AsciiDoc (##→==, YAML frontmatter)
+  * Délègue à AgenticIngestor.ingest()
+  * cucumberTestEpicY6 Gradle task
+- Total agentic : 90 unit + 30 Cucumber = 120/120 PASS
+- Package codebase.koog.agentic/ : 11 fichiers
 
-== Prochaine Session (096)
+== Prochaine Session (097)
 
-- Y-6 Migration de la littérature agentique externe — Pipeline d'import
-  pour les systèmes textuels non-workspace
+- Y-7 AgenticChunkEnforcement — Tests end-to-end : "une règle AGENT.adoc → contrainte ToolRegistry exécutée"
   OU
 - EPIC W (Auto-discovery Gradle Tasks)
   OU
 - EPIC X (Décision Multi-Step verify→adapt)
+  OU
+- EPIC OCR suite (Gemini réel)
