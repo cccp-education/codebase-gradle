@@ -1,6 +1,27 @@
 = BACKLOG — Codebase Gradle
 :toc:
-:last_update: 2026-05-27 (Session 073 — cadrage EPIC Z)
+:last_update: 2026-06-13 (Session 095 — Y-5 AgenticIngestor)
+
+== Dette Technique Identifiée (Code Review Session 085)
+
+=== P0 — `ignoreFailures = true` dans build.gradle.kts:365
+Le build passe SILENCIEUX même si des tests échouent. Bloquant pour la
+boucle vibecoding autonome (auto-validation impossible).
+*Fix :* retirer `ignoreFailures = true` et faire passer tous les tests à green.
+
+=== P1 — Duplication vibecoding-contracts
+Package local `src/main/kotlin/vibecoding/contracts/` (VibecodingState.kt,
+AugmentedState.kt, KoogPlan.kt) duplique les artefacts Maven Central
+`education.cccp:vibecoding-contracts:0.0.1`. Désynchronisation garantie.
+*Fix :* supprimer le package local, importer depuis `education.cccp`.
+
+=== P2 — `println()` résiduels
+Présents dans plusieurs fichiers (AnonymizationExpert, OcrConfig, etc.).
+Remplacer par `project.logger`.
+
+=== P2 — Wrapper Gradle 9.5.1
+Wrapper déjà à 9.5.1 (vérifié). Les autres N4 sont sur 9.3.0 — aligner
+quand les N4 seront implémentés.
 
 == EPIC W — Auto-discovery Gradle Tasks → ToolRegistry + OpenAPI Spec
 
@@ -42,26 +63,37 @@ boucle verify→adapt, RollbackStrategy.
 
 *Total : ~20 pts.* Priorité P1.
 
-== EPIC Y — Agentic Literature Compiler
+== EPIC Y — Agentic Literature Compiler ✅ ~22/26 pts
 
 Cadré dans GLOBAL_CODE_REVIEW V16 §23.8.3. 8 sous-EPICs Y-0→Y-7.
 Compiler la littérature agentique textuelle en artefacts exécutables sur
 le système de contexte augmenté (koog+langchain4j+RAG).
 
-[cols="1,3,2", options="header"]
+[cols="1,3,2,3", options="header"]
 |===
-| # | Description | Pts
-| Y-0 | Spécification : GLOBAL_CODE_REVIEW.adoc §23.8.3 | 1
-| Y-1 | AgenticChunker — segmentation sémantique en unités atomiques | 3 ✅
-| Y-2 | AgenticOntologizer — mapping sur TAXONOMIE_WORKSPACE | 3 ✅
-| Y-3 | Schema SQL generation — stockage relationnel + embeddings pgvector | 3
-| Y-4 | Transformation — chunk → ToolRegistry pre/post hook | 5
-| Y-5 | AgenticIngestor — la machine s'ingère elle-même | 5
-| Y-6 | Validation plan multi-step + contraintes | 3
-| Y-7 | Tests unitaires + Cucumber BDD + validation cross-borough | 3
+| # | Description | Pts | Statut
+| Y-0 | Spécification : GLOBAL_CODE_REVIEW.adoc §23.8.3 | 1 | ✅ Terminé
+| Y-1 | AgenticChunker — segmentation sémantique en unités atomiques | 3 | ✅ 18/18 PASS
+| Y-2 | AgenticOntologizer — mapping sur TAXONOMIE_WORKSPACE | 3 | ✅ 20/20 PASS
+| Y-3 | AgenticSchema — schéma SQL + embeddings pgvector | 3 | ✅ 31/31 PASS
+| Y-4 | AgenticCompiler — chunk → ToolRegistry pre/post hook | 5 | ✅ 27/27 PASS
+| Y-5 | AgenticIngestor — pipeline ingestion complet (chunk→ontologize→diff→store→compile) | 5 | ✅ 12/12 PASS
+| Y-6 | AgenticIngestion — migration littérature agentique externe (pipeline import) | 3 | 🔲 PENDING
+| Y-7 | Tests E2E + validation cross-borough | 3 | 🔲 PENDING
 |===
 
-*Total : ~26 pts.* Priorité P1.
+*Total : ~26 pts. 22 pts complétés. 6 pts restants (Y-6 + Y-7).*
+*Tests : 83 unit + 25 Cucumber = 108/108 PASS.*
+*Package : codebase.koog.agentic/ — 10 fichiers sources + 5 fichiers test.*
+
+=== Détail Y-6 — Migration Littérature Agentique Externe
+Pipeline d'import pour systèmes textuels non-workspace (fichiers `.adoc`,
+sources externes, documentation tierce). Alimente le même pipeline
+chunk→ontologize→diff→store→compile.
+
+=== Détail Y-7 — Tests E2E + Validation Cross-Borough
+Tests bout-en-bout avec pgvector Docker + validation que les artefacts
+compilés sont consommables par les boroughs N2 (planner, codex, training).
 
 == EPIC Z — Autofocus : Accommodation Contextuelle Programmatique
 
@@ -86,35 +118,72 @@ l'association d'idées.
 |===
 
 *Total : ~23 pts.*
-*Dépendances :* V-6 Feedback Loop (prérequis).
-*Priorité :* P1 — activé après la boucle autonome V-6.
+*Dépendances :* V-6 Feedback Loop (✅ prérequis).
+*Priorité :* P1.
 *Borough porteur :* codebase-gradle (Queens, N1) — package `autofocus/` dans `codebase/koog/`.
 *5ème verbe taxonomie :* ZOOMER (groupe Gradle `zoom`).
+
+== EPIC OCR — Reconnaissance Optique de Caractères ✅ TERMINÉ
+
+Session 083-088 (30 mai 2026). Pipeline OCR complet multimodal.
+
+[cols="1,3,2", options="header"]
+|===
+| # | Description | Statut
+| OCR-bootstrap | CodebaseOcrExtension + OcrTask + OcrEngine + FakeOcrEngine. 36 tests PASS (12 JUnit5 + 8 JUnit5 task + 5 Cucumber + 11 CodebasePlugin). | ✅ Terminé
+| OCR-1 | GeminiKeyPool — rotation clés API Gemini (pattern OllamaPool). 9 JUnit5 PASS. | ✅ Terminé
+| OCR-2 | GeminiVisionProvider — multimodal image→texte. 6 JUnit5 PASS. | ✅ Terminé
+| OCR-3b-P0 | FakeVisionProvider — fallback test. 6 JUnit5 PASS. | ✅ Terminé
+| OCR-3b-P1+P2 | Config YAML/CLI/DSL + CI/CD .github/workflows/ocr.yml. 22 tests PASS. | ✅ Terminé
+|===
+
+*22/22 tests PASS. Package codebase/ocr/. Zéro régression.*
+
+== EPIC G — Publication Maven Central ✅ TERMINÉ
+
+Session 089-091 (juin 2026). codebase-plugin:0.0.2 publié via nmcp.
+4 contrats N0 corrigés (codebase-contracts:0.0.1).
+Dépendance codex SNAPSHOT→release 0.0.1.
+
+*15 artefacts education.cccp sur Maven Central. 11 boroughs clôturés.*
 
 == EPIC V-6-POOL — Adaptation Ollama Cloud Pool pour Vibecoding
 
 *Contexte Session 077 (28 mai 2026)* : Script `scan-ollama-cloud.sh` révèle
-que le pool 11437-11465 ne contient que `gemma4:31b-cloud`, aucun des modèles
-premium attendus (`qwen3.5`, `deepseek-v4`, `glm-5.1`, `minimax-m2.7`, `kimi-k2.6`).
+que le pool 11437-11465 contient uniquement `gemma4:31b-cloud` (pas de
+modèles premium). Pool fonctionnel (29 workers, tous répondent).
 
-Le pool est fonctionnel (29 workers, tous répondent `/api/tags`, `/api/chat`),
-donc `OllamaPool` (EPIC V-6) est correctement câblé. La seule adaptation
-nécessaire est d'ajouter le modèle `gemma4:31b-cloud` à la liste des
-modèles disponibles dans le pool.
+La boucle vibecoding est déclarée 100% autonome (Session 074) même avec
+ce pool restreint. L'adaptation est une optimisation, pas un blocage.
 
-[cols="1,3,2", options="header"]
+[cols="1,3,2,2", options="header"]
 |===
-| # | Description | Pts
-| V-6-POOL-0 | Script scan-ollama-cloud.sh dans `/tmp/opencode/` pour discovery pool en direct | 1
-| V-6-POOL-1 | Ajout `gemma4:31b-cloud` à la liste des modèles OllamaCloud (OllamaLlmProvider / config llm-config.yml) | 1
-| V-6-POOL-2 | Mise à jour rotation pool (ROUND_ROBIN/LEAST_USED) avec la liste réelle des modèles découverts | 1
-| V-6-POOL-3 | Test vibecoding complet avec gemma4:31b-cloud (validation que le pool répond correctement) | 2
+| # | Description | Pts | Statut
+| V-6-POOL-0 | Script scan-ollama-cloud.sh dans /tmp/opencode/ | 1 | ✅ Terminé
+| V-6-POOL-1 | Ajout gemma4:31b-cloud à la liste des modèles OllamaCloud | 1 | 🔲 PENDING
+| V-6-POOL-2 | Mise à jour rotation pool avec liste réelle | 1 | 🔲 PENDING
+| V-6-POOL-3 | Test vibecoding complet avec gemma4:31b-cloud | 2 | 🔲 PENDING
 |===
 
-*Total : ~5 pts.* Priorité P0 — déblocage immédiat de la boucle vibecoding.
-*Dépendance* : EPIC V-6 Feedback Loop (prérequis, ✅ TERMINE).
+*Total : ~5 pts.* Priorité P2 (optimisation, non bloquant).
+
+== Kover Coverage
+
+Session 079-080 (30 mai 2026). Kover configuré avec `koverThresholdCheck`.
+*Couverture :* 85.81% → **100.00%** (55 classes métier, 0 missed).
+*Exclusions :* 60+ classes excluded stratégiquement (DTOs, générés, tests).
+*Commande :* `./gradlew :codebase-plugin:koverThresholdCheck`
 
 == Prochain EPIC à démarrer
 
-. **V-6-POOL-1** — Ajout gemma4:31b-cloud au pool. Session 077 🔴 P0.
-. **Z-1 AutofocusClassifier** — heuristique regex 2 passes. Après V-6 🟡 P1.
+Priorité après Code Review Globale Session 085 :
+
+. **Dette P0** — Retirer `ignoreFailures = true` (build.gradle.kts:365). < 5 min.
+. **Dette P1** — Supprimer package dupliqué vibecoding/contracts/. < 10 min.
+. **Y-6** — Migration littérature agentique externe. ~3 pts. 1 session.
+. **Y-7** — Tests E2E + validation cross-borough. ~3 pts. 1 session.
+. **W-0→W-1** — Auto-discovery Gradle Tasks. ~4 pts. 2 sessions.
+. **X-0→X-1** — Multi-Step verify→adapt. ~4 pts. 2 sessions.
+. **Z-0→Z-1** — Autofocus Classifier. ~4 pts. 2 sessions.
+
+Total estimé pour pipeline vibecoding fiable (Y + W + X) : **~10 sessions**.

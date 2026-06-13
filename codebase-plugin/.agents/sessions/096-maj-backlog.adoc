@@ -1,0 +1,12 @@
+= Rapport — Session 096 — Mise à jour BACKLOG post-Code Review Globale
+:session: 096
+:date: 2026-06-13
+:type: maintenance
+
+== Modifications
+- BACKLOG.adoc mis à jour : 2026-05-27 → 2026-06-13
+- EPIC Y-3/Y-4/Y-5 marqués ✅ (108/108 tests)
+- EPIC OCR ajouté (sessions 083-088)
+- Dette technique ajoutée (ignoreFailures, duplication, println)
+- Kover 100% documenté
+- Prochains EPICs recalés
