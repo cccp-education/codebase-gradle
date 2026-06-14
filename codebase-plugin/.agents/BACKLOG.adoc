@@ -174,6 +174,118 @@ Session 079-080 (30 mai 2026). Kover configuré avec `koverThresholdCheck`.
 *Exclusions :* 60+ classes excluded stratégiquement (DTOs, générés, tests).
 *Commande :* `./gradlew :codebase-plugin:koverThresholdCheck`
 
+== EPIC SP — Session Protocol : opencode↔Gradle
+
+Protocole thin-client opencode↔Gradle. Contrats N0 dans workspace-bom (MEMPHIS,
+MEM-4), SessionProtocolTask dans codebase, pont N3 runner.
+Architecture : opencode = UI thin → Gradle VibecodingTask = moteur.
+Mode batch (CI/CD) + mode interactif (daemon local).
+
+[cols="1,3,2", options="header"]
+|===
+| # | Description | Pts
+| SP-0 | Spécification : architecture thin-client, contrats, protocole | 1
+| SP-1 | SessionProtocolTask — pont contrat N0 ↔ VibecodingTask (encode SessionPrompt → VibecodingState, décode VibecodingState → SessionResponse) | 5
+| SP-2 | Mode daemon/serveur — processus Gradle long, socket ou fichier d'écoute, latence interactive < 2s | 5
+| SP-3 | Pont N3 runner-gradle — appelle SessionProtocolTask depuis runner, pipeline CI/CD unifié | 3
+| SP-4 | Tests intégration E2E — opencode → runner → codebase → session → réponse | 3
+| SP-5 | **ToolEventStream** — Événements structurés temps réel (thinking/tool_call/tool_result/progress/error) en JSON-lines sur stdout. Format normalisé, parseur côté opencode pour affichage comme tool calls natifs. | 5
+| SP-6 | **LiveContextInjector** — Injection contexte dans conversation active. MCP tool ou writer dans `/tmp/opencode-live.adoc` + watcher opencode. Permet à une tâche Gradle de pousser du contexte (résultat, diagnostic, artefact) dans la conversation courante avant sa fin. | 5
+|===
+
+*Total : ~27 pts.* Priorité P1.
+*Dépendances :* MEM-4 contracts (✅), EPIC V VibecodingTask (✅), EPIC W ToolRegistry (✅).
+
+=== Décision Architecturale — Modèle Léger pour opencode
+
+Avec l'architecture thin-client (SP), le rôle LLM d'opencode se réduit à :
+1. Interpréter l'intention utilisateur
+2. Bootstraper l'appel à la tâche Gradle (`./gradlew vibecode --intention="..."`)
+3. Attendre le stream SP-5 et formater le résultat
+
+Le raisonnement lourd (planification multi-step, tools, verify→adapt) est
+délégué à VibecodingTask qui peut utiliser un modèle premium cloud (deepseek-v4-pro,
+gemma4:31b, qwen3-coder:480b). opencode n'a besoin que d'un modèle **vraiment
+local** (inférence sur la machine, pas via le cloud Ollama) — un 3B paramètres
+maximum, type qwen3-coder:3b, phi-4-mini, ou deepseek-coder-v3-lite-instruct,
+tournant sur Ollama local (port 11434).
+
+Bénéfices :
+- **Zéro dépendance cloud** pour l'UI thin — le réseau peut couper, opencode répond
+- **Latence < 1s** — modèle 3B sur GPU local
+- **Coût zéro** — pas de tokens consommés pour le bootstrap
+- **Confidentialité** — l'intention utilisateur ne quitte pas la machine
+- Le modèle lourd (cloud) n'est sollicité que par la tâche Gradle, pas par opencode
+
+*Application :* Une fois SP-1→SP-6 terminés, l'agent `deep` d'opencode passera
+de `deepseek-v4-pro:cloud` à un modèle local 3B (ex: `qwen3-coder:3b` sur
+`localhost:11434`). La configuration actuelle reste inchangée jusqu'à la livraison
+de SP-6.
+
+=== SP-5 ToolEventStream — Détail
+
+Le streaming est intégré **dans le nœud koog `callLLMNode`** de VibecodingGraph
+(et non comme un wrapper externe). Le nœud émet des événements au fur et à mesure
+via le ToolEventStream, qui écrit sur stdout en JSON-lines.
+
+Mécanisme :
+
+1. `VibecodingGraph.callLLMNode()` construit le prompt → émet `thinking`
+2. Appelle `llmProvider.call(prompt)` via langchain4j → émet `llm_response` avec
+   la réponse textuelle brute, le modèle, les tokens, la durée
+3. Le LLM décide une action → émet `tool_call`
+4. `executeToolsNode()` exécute la tâche Gradle → émet `tool_result` avec stdout/stderr
+5. `verifyStepNode()` (X-2) vérifie le résultat → émet `progress` ou `result`
+
+Types d'événements :
+
+```
+{"type":"thinking","content":"Analyse de l'intention...","ts":"..."}
+{"type":"llm_prompt","content":"Tu es un architecte...","model":"deepseek-v4-pro:cloud","tokens":450,"ts":"..."}
+{"type":"llm_response","content":"Je vais générer un plan en 3 étapes...","model":"deepseek-v4-pro:cloud","prompt_tokens":450,"completion_tokens":120,"duration_ms":3240}
+{"type":"tool_call","name":"exec_gradle","args":{"task":"generatePlan"},"ts":"..."}
+{"type":"tool_result","name":"exec_gradle","output":"Plan généré: 2 EPICs","stdout":"BUILD SUCCESSFUL","duration_ms":3420}
+{"type":"progress","current":2,"total":5,"label":"Exécution du plan"}
+{"type":"result","status":"SUCCESS","summary":"3 fichiers modifiés"}
+```
+
+Le type `llm_response` capture la **réponse textuelle brute du LLM** (ce que le
+modèle a généré après le prompt), avec métriques (modèle, prompt_tokens,
+completion_tokens, duration_ms). Le type `llm_prompt` capture le prompt envoyé
+(optionnel, pour debug). L'émission se fait depuis le nœud koog, pas d'un wrapper
+externe — c'est langchain4j qui exécute l'appel et le nœud koog qui émet l'event.
+
+L'utilisateur voit en temps réel ce que l'LLM produit — raisonnement, plans,
+décisions — exactement comme opencode affiche la réponse de son propre LLM.
+Le `TokenTracker` déjà câblé dans `callLLMNode` (trackCompletion) est la source
+des métriques de tokens.
+
+Le parseur côté opencode (agent custom ou MCP) reçoit ces lignes et les affiche
+dans l'UI avec le même rendu que les tool calls opencode natifs.
+
+=== SP-6 LiveContextInjector — Détail
+
+Aujourd'hui, `/tmp/opencode-context.txt` est lu une fois au début de conversation.
+SP-6 ajoute un mécanisme de poussée :
+
+- **Option A — File watcher** : opencode surveille `/tmp/opencode-live.adoc` et
+  injecte son contenu dans le contexte au prochain tour LLM.
+- **Option B — MCP tool** : un outil MCP `injectContext(content, type)` permet
+  à n'importe quel agent d'injecter du contexte dans la conversation active.
+- **Option C — Agent opencode custom** : un agent `vibecode` wrappe l'appel Gradle
+  et pipe stdout dans le contexte avant de rendre la main au LLM.
+
+Format du contexte injecté :
+
+```adoc
+=== Résultat de la tâche Gradle (injecté par SP-6)
+<timestamp>
+Tâche : vibecode --intention="..."
+Statut : SUCCESS
+Fichiers modifiés : src/main/kotlin/foo.kt, src/test/kotlin/fooTest.kt
+Résumé : Refactoring terminé, 2 nouveaux tests PASS
+```
+
 == Prochain EPIC à démarrer
 
 Priorité après Code Review Globale Session 085 :

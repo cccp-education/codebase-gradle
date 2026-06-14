@@ -7,8 +7,10 @@
 
 - EPIC W TERMINÉ (7/7)
 - EPIC X 4/7 — X-0✅ X-1✅ X-2✅ X-3✅
-- EPIC Y 6/8 — Y-1✅ Y-2✅ Y-3✅ Y-4✅ Y-5✅ Y-6✅ Y-7✅
-- EPIC SP cadré (BACKLOG) — Protocole opencode↔Gradle, dépend de MEM-4 (workspace-bom N0)
+- EPIC Y 7/8 — Y-1✅ Y-2✅ Y-3✅ Y-4✅ Y-5✅ Y-6✅ Y-7✅ (Y-7 restant)
+- EPIC SP cadré (BACKLOG) — Protocole opencode↔Gradle, 7 sous-EPICs SP-0→SP-6, ~27 pts
+  - SP-5 ToolEventStream : events thinking/tool_call/tool_result en JSON-lines
+  - SP-6 LiveContextInjector : injection contexte dans conversation active
 - Full suite 330+/333 PASS
 - publishToMavenLocal OK
 
@@ -36,8 +38,10 @@
 
 | Session | EPIC | Livrable
 | 104 | X-4 + X-5 + X-6 | RollbackStrategy + intégration W + Cucumber → EPIC X TERMINÉ
-| 105 | Z-0 + Z-1 | Autofocus cadrage + ZoomLevel
-| 106 | Z-2 + Z-3 | ContextZoomer + ZoomPolicy
-| 107 | Z-4 + Z-5 + Z-6 | Intégration VibecodingGraph → EPIC Z TERMINÉ
-| 108 | 12 | Dilution Article de Blog (quick win)
-| 109+ | 5 | Pipeline fine-tuning experts CDA/FPA (lourd)
+| 105 | SP-1 | SessionProtocolTask — pont contrat N0 ↔ VibecodingTask
+| 106 | SP-5 | ToolEventStream — events JSON-lines temps réel
+| 107 | SP-6 | LiveContextInjector — injection contexte conversation active
+| 108 | Z-0 + Z-1 | Autofocus cadrage + ZoomLevel
+| 109 | Z-2 + Z-3 | ContextZoomer + ZoomPolicy
+| 110 | Z-4 + Z-5 + Z-6 | Intégration VibecodingGraph → EPIC Z TERMINÉ
+| 111 | 12 | Dilution Article de Blog (quick win)

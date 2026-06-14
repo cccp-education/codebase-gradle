@@ -4,10 +4,10 @@
 _Regles absolues_ : voir `AGENT.adoc`
 _Ontologie spatiale_ : voir `configuration/.agents/AGENT_GOVERNANCE.adoc`
 
-_Derniere mise a jour_ : 2026-06-14 (Session 103 — Brainstorming Protocole opencode↔Gradle, cadrage EPIC SP + MEM-4)
-_Session precedente_ : 102 — X-2 + X-3 TaskResultVerifier + boucle verify→adapt
-_Session en cours_ : 104 — X-4 + X-5 + X-6 RollbackStrategy + intégration W + Cucumber
-_Session suivante_ : 105 — Z-0 + Z-1 Autofocus cadrage + ZoomLevel
+_Derniere mise a jour_ : 2026-06-14 — EPIC SP enrichi : SP-5 ToolEventStream + SP-6 LiveContextInjector
+_Session precedente_ : 103 — Brainstorming Protocole opencode↔Gradle (SP-0→SP-4 cadrés)
+_Session en cours_ : 104 — SP-1 SessionProtocolTask (connexion contrat opencode-session ↔ VibecodingTask)
+_Session suivante_ : 105 — SP-2 Mode daemon/serveur ou X-4 RollbackStrategy
 _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/` (N=70, multiple de 10)
 
 '''
@@ -143,7 +143,7 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 | EPIC Y | *Agentic Literature Compiler* — Compiler littérature agentique → artefacts exécutables. | 🔄 EN COURS (Y-1 18/18 ✅, Y-2 20/20 ✅, Y-3 31/31 ✅, Y-4 27/27 ✅, Y-5 12/12 ✅, Y-6 12/12 ✅, session 096). 8 sous-EPICs, ~26 pts. | P1
 | EPIC-V-6-POOL | *Adaptation Ollama Cloud Pool* — Le pool 11437-11465 ne contient que gemma4:31b-cloud (pas de modèles premium qwen3.5/deepseek-v4/glm-5.1/minimax-m2.7/kimi-k2.6). Adaptation OllamaLlmProvider pour utiliser gemma4:31b-cloud. Script scan-ollama-cloud.sh. 4 sous-EPICs (V-6-POOL-0→V-6-POOL-3, ~5 pts). | 🔴 EN ATTENTE (cadré Session 077). | P0
 | EPIC Z | *Autofocus* — Accommodation contextuelle programmatique (zoom x1↔x1000). 11ème doc Jardin Secret. Package `autofocus/` dans `codebase/koog/`. 5ème verbe ZOOMER. | 🔲 BACKLOG (cadré Session 073). 7 sous-EPICs, ~23 pts. Voir `AUTOFOCUS_CAPABILITY.adoc`. | P1
-| EPIC SP | *Session Protocol* — Protocole opencode↔Gradle (thin client + moteur Gradle). Contrats N0 dans workspace-bom (MEMPHIS), SessionProtocolTask dans codebase, pont N3 runner. 5 sous-EPICs (SP-0→SP-4), ~15 pts. | 🔲 BACKLOG (cadré Session 103 brainstorming). Voir `BACKLOG.adoc` §EPIC SESSION-PROTOCOL. | P1
+| EPIC SP | *Session Protocol* — Protocole opencode↔Gradle (thin client + moteur Gradle). Contrats N0 dans workspace-bom (MEMPHIS), SessionProtocolTask dans codebase, pont N3 runner. 7 sous-EPICs (SP-0→SP-6), ~27 pts. **SP-5 ToolEventStream** : events thinking/tool_call en JSON-lines. **SP-6 LiveContextInjector** : injection contexte dans conversation active. | 🔄 EN COURS (SP-1 en session 104). Voir `BACKLOG.adoc` §EPIC SP. | P1
 |===
 
 '''
