@@ -44,9 +44,33 @@ class TaskSchemaScanner(private val project: Project) {
                     name = annotation.option,
                     description = annotation.description,
                     required = false,
-                    type = method.returnType.simpleName
+                    type = resolveType(method.genericReturnType)
                 )
             }
             .distinctBy { it.name }
+    }
+
+    private fun resolveType(genericType: java.lang.reflect.Type): String {
+        if (genericType is java.lang.reflect.ParameterizedType) {
+            val rawType = genericType.rawType
+            val rawName = (rawType as Class<*>).simpleName
+            if (rawName == "Property") {
+                val typeArgs = genericType.actualTypeArguments
+                if (typeArgs.isNotEmpty()) {
+                    val arg = typeArgs[0]
+                    return when (arg) {
+                        is Class<*> -> arg.simpleName
+                        is java.lang.reflect.ParameterizedType -> (arg.rawType as Class<*>).simpleName
+                        else -> "String"
+                    }
+                }
+                return "String"
+            }
+            return rawName
+        }
+        if (genericType is Class<*>) {
+            return genericType.simpleName
+        }
+        return "String"
     }
 }

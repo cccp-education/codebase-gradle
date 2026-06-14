@@ -35,40 +35,35 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 * [x] Fix VibecodingTaskTest audit JSONL assertion
 
 == EPIC V-8 — Resume Session + Dashboard CLI (Session 069)
-**Statut** : A FAIRE
+**Statut** : TERMINE (audité 2026-06-14 — 5/5 codés, backlog stale)
 **Priorite** : P0
 **Depends on** : EPIC-V-7 (session 068)
 
-* [ ] --resume <sessionId> on VibecodingTask (~60 lines)
-* [ ] Load state via SessionRepository.getSession()
-* [ ] Reconstruct VibecodingState from SessionRecord
-* [ ] Dashboard CLI: ./gradlew vibecodingDashboard (~30 lines)
-* [ ] Refactoring: consolidate LlmProviderResolver pool integration
+* [x] --resume <sessionId> on VibecodingTask (VibecodingTask.kt:78-79, @Option + flow complet lignes 126-167)
+* [x] Load state via SessionRepository.getSession() (SessionRepository.kt:37 interface + :180-197 impl R2DBC)
+* [x] Reconstruct VibecodingState from SessionRecord (VibecodingGraph.kt:237-251 companion resumeSession)
+* [x] Dashboard CLI: ./gradlew vibecodingDashboard (DashboardTask.kt 78 lignes + Dashboard.kt 95 lignes)
+* [x] Refactoring: consolidate LlmProviderResolver pool integration (LlmProviderResolver.kt:25-67 gemma4Pool lazy singleton)
 
 == EPIC V-6 — Cablage Ollama Cloud Docker + ConnectionFactory R2DBC (Session 065)
-**Statut** : A FAIRE
+**Statut** : EN COURS (6/10 — audité 2026-06-14)
 **Priorite** : P0
-**Depends on** : EPIC-V-5 (session 064)
-
-_Pourquoi_ : La machine est a 95% apres V-5 (LlmProvider, callLLM, persistState, TokenTracker).
-Reste a cabler le vrai tuyau Ollama cloud et la persistance R2DBC reelle
-pour passer de l'agent mock a l'agent autonome sur infrastructure reelle.
 
 === P0 — ConnectionFactory + Persistance R2DBC
 
-* [ ] Injecter `ConnectionFactory` (R2DBC) dans constructeur VibecodingGraph
-* [ ] Test integration avec vrai SessionRepository R2DBC via Testcontainers
-* [ ] `updateSession()` avec `TokenTracker.cost`/`estimatedCost` dans la boucle de persistance
-* [ ] Verifier createSession + updateSession end-to-end (Testcontainers)
+* [x] Injecter `ConnectionFactory` (R2DBC) dans constructeur VibecodingGraph (VibecodingGraph.kt:46 + lazy effectiveSessionRepository :53-55)
+* [x] Test integration avec vrai SessionRepository R2DBC via Testcontainers (VibecodingTaskTest.kt:197-260 E2E pgvector/pgvector:pg17)
+* [x] `updateSession()` avec `TokenTracker.cost`/`estimatedCost` dans la boucle de persistance (SessionRepository.kt:118-148 + VibecodingGraph.kt:378-392 persistStateNode)
+* [x] Verifier createSession + updateSession end-to-end (Testcontainers) (VibecodingTaskTest.kt:233-260)
 
 === P0 — OllamaLlmProvider cloud dockerise
 
-* [ ] Scanner ports 11434→11465 sur l'hote (`curl http://localhost:{port}/api/tags`)
-* [ ] `OllamaLlmProvider` via `OllamaChatModel.builder().baseUrl()`
-* [ ] Utiliser `gpt-oss:120b-cloud` comme modele principal (cloud gratuit/Pro)
-* [ ] OllamaPoolKeyAdapter : wrapper resilient quota/quota depasse + rotation instances
-* [ ] Pattern docker SSH key : article 0120 (dual-abonnement Ollama docker)
-* [ ] Test Cucumber : "LLM calls Ollama cloud and handles quota exceeded"
+* [ ] Scanner ports 11434→11465 sur l'hote (`curl http://localhost:{port}/api/tags`) — PARTIEL : OLLAMA_POOL_PORTS env var declaratif, pas de scan actif curl
+* [x] `OllamaLlmProvider` via `OllamaChatModel.builder().baseUrl()` (OllamaLlmProvider.kt:80-85)
+* [x] Utiliser `gpt-oss:120b-cloud` comme modele principal (LlmProviderResolver.kt:30 DEFAULT_MODEL)
+* [ ] OllamaPoolKeyAdapter : wrapper resilient quota/quota depasse + rotation instances — PENDING : pas de classe dediee, quota gere directement dans OllamaPool
+* [ ] Pattern docker SSH key : article 0120 (dual-abonnement Ollama docker) — PENDING : pas de code SSH, HTTP localhost direct
+* [ ] Test Cucumber : "LLM calls Ollama cloud and handles quota exceeded" — PARTIEL : EpicV6CucumberRunner existe mais scenarios = error recovery/retry, pas specifiquement Ollama cloud
 
 === P1 — Nettoyage technique
 
@@ -210,12 +205,12 @@ _US backlog_ : Migrer VibecodingTask + VibecodingGraph → planner-gradle (N2).
 Codebase conserve ToolRegistry + tools + KoogAugmentedContextGraph (N1).
 Retardée après consolidation EPIC V.
 
-=== EPIC-V-SESSION-REPO — Session 059 (en cours, 2026-05-27)
+=== EPIC-V-SESSION-REPO — Session 059 (TERMINE, audité 2026-06-14)
 
 3 connecteurs critiques pour boucle continue :
-* [ ] SessionRepository — persistance cross-session dans pgvector via R2DBC
-* [ ] TokenTracker — mesure réelle consommation tokens LLM
-* [ ] Dashboard — visibilité historique sessions + coût
+* [x] SessionRepository — persistance cross-session dans pgvector via R2DBC (SessionRepository.kt 295 lignes, interface + R2dbcSessionRepository)
+* [x] TokenTracker — mesure réelle consommation tokens LLM (TokenTracker.kt 64 lignes, trackPrompt/trackCompletion/estimatedCost)
+* [x] Dashboard — visibilité historique sessions + coût (Dashboard.kt 95 lignes + DashboardTask.kt 78 lignes + Cucumber EpicV8)
 
 === EPIC-V-FLYWAY — Migration Flyway (déclencheur futur)
 
@@ -234,7 +229,7 @@ _Contenu de V1_ : sessions, steps, indexes, colonne confidentiality_level
 
 == EPIC W — Auto-discovery Gradle Tasks → ToolRegistry + OpenAPI Spec
 
-**Statut** : EN COURS (2/7 sous-EPICs)
+**Statut** : EN COURS (4/7 sous-EPICs)
 **Priorite** : P1
 **Origine** : Code Review V16 (2026-05-27) — suggestion architecture cross-borough
 
@@ -262,8 +257,8 @@ LLM découvre et appelle n'importe quelle tâche Gradle sans code supplémentair
 
 * [x] W-0 : Analyse — Inventaire des schémas de tâches Gradle existants (VibecodingTask, GenerateSPGTask, etc.) et mapping avec le format ToolRegistry (session 098)
 * [x] W-1 : Implémenter `TaskSchemaScanner` — inspecte le task graph Gradle, extrait les métadonnées des tâches (inputs, options, description, groupe) (session 098)
-* [ ] W-2 : Générer un schema structuré (JSON/OpenAPI) depuis les plugin descriptors Gradle
-* [ ] W-3 : Auto-registrer les tâches découvertes dans ToolRegistry au démarrage de VibecodingGraph
+* [x] W-2 : Générer un schema structuré (JSON/OpenAPI) depuis les plugin descriptors Gradle (session 099)
+* [x] W-3 : Auto-registrer les tâches découvertes dans ToolRegistry au démarrage de VibecodingGraph (session 099)
 * [ ] W-4 : Exposer le catalogue au LLM via un tool `list_tasks` — l'agent peut requêter les tâches disponibles par groupe, description, mots-clés
 * [ ] W-5 : Mapping `--option` → arguments structurés — le ToolRegistry construit les arguments Gradle depuis la décision LLM
 * [ ] W-6 : Cache des schémas + invalidation à chaud quand un nouveau plugin est appliqué
@@ -638,40 +633,76 @@ Chaîne existante : anonymisation → chunking → embedding → pgvector
 
 === Sous-tâches
 
-==== OCR-0 : Contrats partagés dans codex-gradle (prérequis externe)
+==== OCR-0 : Contrats partagés dans codex-gradle (prérequis externe) — TERMINE (audité 2026-06-14)
 
-* [ ] Définir `OcrRequest` — input (bytes image/PDF + format + langue + prompt)
-* [ ] Définir `OcrResult` — output (texte structuré AsciiDoc + bounding boxes + confiance + métadonnées)
-* [ ] Définir `OcrConfig` — paramètres (provider, model, maxTokens, temperature)
-* [ ] Publier les contrats dans le package `codex.ocr` du codex-plugin
-* [ ] publishToMavenLocal pour consommation par codebase
+* [x] Définir `OcrRequest` — input (bytes image/PDF + format + langue + prompt) (codex/ocr/OcrRequest.kt 74 lignes)
+* [x] Définir `OcrResult` — output (texte structuré AsciiDoc + bounding boxes + confiance + métadonnées) (codex/ocr/OcrResult.kt 86 lignes)
+* [x] Définir `OcrConfig` — paramètres (provider, model, maxTokens, temperature) (codex/ocr/OcrConfig.kt 77 lignes)
+* [x] Publier les contrats dans le package `codex.ocr` du codex-plugin
+* [x] publishToMavenLocal pour consommation par codebase
 
-==== OCR-1 : GeminiKeyPool — rotation de clés API
+==== OCR-1 : GeminiKeyPool — rotation de clés API — EN COURS (4/6, audité 2026-06-14)
 
-* [ ] Pattern `GeminiKeyPool` réutilisant l'architecture `OllamaPool` (session 065)
-* [ ] Lecture `GEMINI_API_KEY_1..N` via variables d'environnement
-* [ ] RotationStrategy ROUND_ROBIN sur les clés
-* [ ] Quota detection : HTTP 429 → rotation automatique
-* [ ] 1 pool par compte Google (Ollama Pro = 1 compte Google = N clés)
-* [ ] Tests : 4+ clés en rotation, quota exceeded → fallback
+* [x] Pattern `GeminiKeyPool` réutilisant l'architecture `OllamaPool` (GeminiKeyPool.kt 82 lignes, ROUND_ROBIN + LEAST_USED)
+* [ ] Lecture `GEMINI_API_KEY_1..N` via variables d'environnement — PARTIEL : CodebaseOcrExtension a geminiApiKeys ListProperty, mais le mapping env var→LlmInstance n'est pas dans le pool
+* [x] RotationStrategy ROUND_ROBIN sur les clés (GeminiKeyPool.kt:19)
+* [ ] Quota detection : HTTP 429 → rotation automatique — PARTIEL : usageCounts map, pas de detection HTTP 429 reelle
+* [ ] 1 pool par compte Google (Ollama Pro = 1 compte Google = N clés) — PENDING
+* [x] Tests : 4+ clés en rotation, quota exceeded → fallback (GeminiKeyPoolTest.kt 162 lignes, 29 clés, 5 modèles)
 
-==== OCR-2 : GeminiVisionProvider — multimodal
+==== OCR-2 : GeminiVisionProvider — multimodal — EN COURS (4/5, audité 2026-06-14)
 
-* [ ] Étendre `GeminiLlmProvider` ou créer `GeminiVisionProvider` dédié
-* [ ] Support `UserMessage.from(ImageContent(bytes, mimeType), TextContent(prompt))`
-* [ ] Prompt engineering OCR : extraction texte + structuration AsciiDoc + détection langue
-* [ ] Fallback : si Gemini indisponible → Tesseract (OCR sans IA)
-* [ ] Tests : image synthétique avec texte connu → vérification output
+* [x] Créer `GeminiVisionProvider` dédié (GeminiVisionProvider.kt 95 lignes, implements VisionProvider)
+* [x] Support `UserMessage.from(ImageContent(bytes, mimeType), TextContent(prompt))` (GeminiVisionProvider.kt:40-43)
+* [x] Prompt engineering OCR : extraction texte + structuration AsciiDoc + détection langue (buildOcrPrompt() :76-94)
+* [ ] Fallback : si Gemini indisponible → Tesseract (OCR sans IA) — PENDING
+* [x] Tests : image synthétique avec texte connu → vérification output (FakeVisionProviderTest.kt 77 lignes, 5 tests)
 
-==== OCR-3 : OcrTask Gradle
+==== OCR-2b : OllamaOcrProvider — OCR cloud via Ollama (NOUVEAU — cadré session 099)
 
-* [ ] Tâche `ocrDocument` — `./gradlew ocrDocument -PinputFile=scan.pdf`
-* [ ] Configuration via `OcrExtension` (provider, model, clés, langue)
-* [ ] Support batch : `-PinputDir=scans/` → tous les fichiers du répertoire
-* [ ] Intégration avec `GeminiConfig` existant (envVar GEMINI_API_KEY, model gemini-1.5-flash)
-* [ ] Tests Cucumber : "je scanne une image → j'obtiens du texte structuré AsciiDoc"
+**Statut** : CADRÉ — Prêt à démarrer
+**Priorité** : P0
+**Origine** : Session 099 — recherche modèles OCR cloud sur Ollama
 
-==== OCR-3b : FakeVisionProvider + CI + Config YAML/CLI/gradle.properties
+_Pourquoi_ : `qwen3-vl:235b-cloud` est le seul modèle vision+OCR cloud sur Ollama.
+235B params, 32 langues, OCR robuste documents dégradés. `ollama pull` = manifest seul,
+zéro Go local, inférence cloud. Fallback cloud quand Gemini est down/saturé.
+
+_Chaîne de fallback_ :
+```
+Gemini (cloud, 1er choix) → qwen3-vl:235b-cloud (cloud Ollama, fallback)
+```
+
+_Architecture_ : `OllamaOcrProvider` implémente `VisionProvider`. Appel HTTP direct à Ollama
+`/api/chat` avec `images: [base64]` + prompt OCR. Cible `qwen3-vl:235b-cloud` (cloud-only).
+
+_Contrainte technique_ : `OllamaChatModel` (LangChain4j) est text-only. L'appel multimodal nécessite
+un client HTTP direct (OkHttp/ktor) ou la vérification que langchain4j-ollama >= 1.14.1
+supporte `UserMessage.from(ImageContent, TextContent)` sur `/api/chat`.
+
+=== Sous-tâches
+
+* [ ] OCR-2b.0 : Vérifier compatibilité langchain4j-ollama avec `/api/chat` multimodal (image base64)
+* [ ] OCR-2b.1 : `OllamaOcrProvider` — implémente `VisionProvider`, appelle Ollama `/api/chat` avec image base64 + prompt OCR structuré AsciiDoc. Cible `qwen3-vl:235b-cloud`
+* [ ] OCR-2b.2 : Prompt engineering qwen3-vl — OCR 32 langues, extraction texte + structuration AsciiDoc
+* [ ] OCR-2b.3 : Intégration dans `OcrTask` — provider selection: `gemini` (cloud 1er) → `qwen3-vl:235b-cloud` (cloud Ollama, fallback)
+* [ ] OCR-2b.4 : Tests — FakeOllamaOcrProvider + image synthétique → AsciiDoc structuré
+* [ ] OCR-2b.5 : Tests Cucumber — "je scanne une image avec Ollama cloud OCR → texte structuré AsciiDoc"
+
+=== Bénéfice
+
+Pipeline OCR double cloud : Gemini → qwen3-vl:235b-cloud. Zéro Go local, zéro GPU.
+Résilience : si Gemini down/quota dépassé, Ollama cloud prend le relais automatiquement.
+
+==== OCR-3 : OcrTask Gradle — EN COURS (4/5, audité 2026-06-14)
+
+* [x] Tâche `ocrDocument` — `./gradlew ocrDocument -PinputFile=scan.pdf` (OcrTask.kt 240 lignes, @DisableCachingByDefault)
+* [x] Configuration via `OcrExtension` (provider, model, clés, langue) (CodebaseOcrExtension.kt 86 lignes)
+* [ ] Support batch : `-PinputDir=scans/` → tous les fichiers du répertoire — PARTIEL : inputDir property existe mais executeOcr() ne gere que single-file
+* [x] Intégration avec `GeminiConfig` existant (OcrTask.kt:116-119 resolveGeminiConfig via llm-config.yml)
+* [x] Tests Cucumber : "je scanne une image → j'obtiens du texte structuré AsciiDoc" (OcrCucumberRunner.kt + OcrSteps.kt 120 lignes)
+
+==== OCR-3b : FakeVisionProvider + CI + Config YAML/CLI/gradle.properties — EN COURS (5/8, audité 2026-06-14)
 
 *Gaps identifiés session 086*
 - Pas de test réel Gemini (pas de `GEMINI_API_KEY`)
@@ -683,16 +714,16 @@ Chaîne existante : anonymisation → chunking → embedding → pgvector
 *Objectif* : Valider la plomberie OCR avec un `FakeVisionProvider` branché sur `GeminiKeyPool`
 (secrets de test, rotation, quota, fallback) — zéro appel réseau.
 
-* [ ] `FakeVisionProvider` — même signature que `GeminiVisionProvider`, retourne faux AsciiDoc structuré
-* [ ] Brancher `GeminiKeyPool` + secrets de test dans `FakeVisionProvider`
-* [ ] Tests : rotation pool, quota exceeded, fallback best-effort
-* [ ] Config YAML `llm-config.yml` testée pour la branche `gemini.ocr` (model, maxTokens, language)
-* [ ] CLI `-P` params : `./gradlew ocrDocument -PinputFile=x.png` via `ProjectBuilder`
-* [ ] DSL `gradle.properties` : `codebaseOcr { model, maxTokens, language }` testé en intégration
-* [ ] CI/CD : workflow `.github/workflows/ocr.yml` (compile + tests OCR uniquement, pas de vrai Gemini)
-* [ ] Tests Cucumber : "je scanne une image → j'obtiens du texte structuré AsciiDoc"
+* [x] `FakeVisionProvider` — même signature que `GeminiVisionProvider`, retourne faux AsciiDoc structuré (FakeVisionProvider.kt 62 lignes)
+* [ ] Brancher `GeminiKeyPool` + secrets de test dans `FakeVisionProvider` — PENDING : FakeVisionProvider standalone, pas de dependance pool
+* [x] Tests : rotation pool, quota exceeded, fallback best-effort (GeminiKeyPoolTest.kt 162 lignes + PoolSteps.kt Cucumber)
+* [x] Config YAML `llm-config.yml` testée pour la branche `gemini.ocr` (OcrTaskTest.kt:176-236)
+* [x] CLI `-P` params : `./gradlew ocrDocument -PinputFile=x.png` via `ProjectBuilder` (OcrTaskTest.kt:239-274)
+* [x] DSL `gradle.properties` : `codebaseOcr { model, maxTokens, language }` testé en intégration (CodebaseOcrExtensionTest.kt 126 lignes, 12 tests)
+* [ ] CI/CD : workflow `.github/workflows/ocr.yml` — PENDING : aucun fichier ocr.yml trouve
+* [x] Tests Cucumber : "je scanne une image → j'obtiens du texte structuré AsciiDoc" (OcrCucumberRunner.kt + OcrSteps.kt)
 
-==== OCR-4 : Intégration pipeline complet
+==== OCR-4 : Intégration pipeline complet — PENDING (0/5, audité 2026-06-14)
 
 * [ ] OcrResult → anonymisation automatique (EPIC 2, déjà existant)
 * [ ] OcrResult AsciiDoc → chunking sémantique (réutilisation codex chunkDocument)

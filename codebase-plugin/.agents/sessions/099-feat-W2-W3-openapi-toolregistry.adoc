@@ -1,0 +1,78 @@
+= Session 099 — W-2+W-3 OpenAPI Spec + Auto-register ToolRegistry
+:date: 2026-06-14
+:type: feat+tdd+audit
+:score: 10/10
+
+== Contexte
+
+EPIC W — Auto-discovery Gradle Tasks → ToolRegistry + OpenAPI Spec.
+W-0+W-1 terminés session 098 (TaskSchema + TaskSchemaScanner, 7/7 JUnit5 PASS).
+Mission : W-2 (génération OpenAPI) + W-3 (auto-register ToolRegistry).
+
+== Actions
+
+=== W-2 — OpenApiSpecGenerator
+
+- `OpenApiSpecGenerator.kt` (85 lignes) — génère spec OpenAPI 3.0.0 structuré
+- Chaque tâche Gradle → path `/tasks/{name}` avec POST, paramètres `@Option`
+- Mapping types Kotlin→OpenAPI (Boolean→boolean, Int→integer, Property<T>→type générique)
+- `generateJson()` pour sortie JSON pretty-print via kotlinx.serialization
+- 8 tests JUnit5 PASS (spec valide, paths, options, types, group/type, JSON, empty, responses)
+
+=== W-3 — TaskDiscoveryRegistrar
+
+- `TaskDiscoveryRegistrar.kt` (30 lignes) — auto-registre les tâches dans ToolRegistry
+- Préfixe `gradle_<taskName>`, résilient sur doublon
+- Cablé dans `VibecodingTask.executeVibecoding()` — exécuté à chaque démarrage
+- 7 tests JUnit5 PASS (registerAll, registeredCount, duplicate, prefix, descriptions, N0 tools preserved)
+
+=== Fix collatéral — TaskSchemaScanner.resolveType()
+
+- `method.returnType` → `method.genericReturnType` pour extraire le type générique réel
+- `Property<Boolean>` → `Boolean` (au lieu de `Property`)
+- `resolveType()` refactorée pour accepter `java.lang.reflect.Type` (ParameterizedType + Class)
+
+=== Audit BACKLOG fraîcheur
+
+- EPIC V-8 : 5/5 codés → marqué TERMINE (stale)
+- EPIC V-6 : 6/10 codés → marqué EN COURS (6/10)
+- EPIC V-SESSION-REPO : 3/3 codés → marqué TERMINE (stale)
+- OCR-0 : 5/5 codés dans codex → marqué TERMINE
+- OCR-1 : 4/6 codés → marqué EN COURS
+- OCR-2 : 4/5 codés → marqué EN COURS
+- OCR-3 : 4/5 codés → marqué EN COURS
+- OCR-3b : 5/8 codés → marqué EN COURS
+- OCR-4 : 0/5 → PENDING (inchangé)
+- EPIC 5/7/8/12 : 0 code → PENDING (inchangé)
+- 17 `[ ]` → `[x]`, total passe de ~70 à 53 unchecked
+
+=== Cadrage OCR-2b — OllamaOcrProvider cloud
+
+- Recherche modèles OCR cloud sur Ollama
+- `qwen3-vl:235b-cloud` retenu — 235B params, 32 langues, manifest-only (zéro Go local)
+- Pull testé sur port 11439 : `curl /api/pull` → success, modèle listé
+- Chaîne : Gemini (cloud 1er) → qwen3-vl:235b-cloud (cloud Ollama, fallback)
+- 6 sous-tâches cadrées dans BACKLOG (OCR-2b.0→OCR-2b.5)
+
+== Fichiers créés/modifiés
+
+- `OpenApiSpecGenerator.kt` — NOUVEAU (85 lignes)
+- `TaskDiscoveryRegistrar.kt` — NOUVEAU (30 lignes)
+- `OpenApiSpecGeneratorTest.kt` — NOUVEAU (8 tests)
+- `TaskDiscoveryRegistrarTest.kt` — NOUVEAU (7 tests)
+- `TaskSchemaScanner.kt` — MODIFIÉ (resolveType refactor)
+- `VibecodingTask.kt` — MODIFIÉ (auto-register wiring)
+- `BACKLOG.adoc` — MODIFIÉ (W-2/W-3 marqués, audit fraîcheur 8 EPICs, OCR-2b cadré)
+
+== Résultats
+
+- Compilation : BUILD SUCCESSFUL
+- Tests : 21/21 discovery PASS (7 W-1 + 8 W-2 + 7 W-3), 0 régression
+- Full test suite : 1852 tests, 7 failures pré-existants (KoogPlanningOrchestrator, OllamaLlmProvider, Migration, PgVectorConfig)
+- VibecodingTask/VibecodingGraph/ToolRegistry : 0 régression
+
+== Leçons
+
+- `method.returnType` donne le type effacé (`Property`), `method.genericReturnType` donne `Property<Boolean>`
+- Le backlog codebase avait 3 EPICs stale (V-8, V-SESSION-REPO, OCR-0) — code existant mais jamais marqué
+- `qwen3-vl:235b-cloud` est le seul modèle vision+OCR cloud sur Ollama — manifest-only, inférence distante

@@ -4,10 +4,10 @@
 _Regles absolues_ : voir `AGENT.adoc`
 _Ontologie spatiale_ : voir `configuration/.agents/AGENT_GOVERNANCE.adoc`
 
-_Derniere mise a jour_ : 2026-06-14 (Session 098 — W-0+W-1 TaskSchemaScanner)
-_Session precedente_ : 097 — Y-7 AgenticChunkEnforcement
-_Session en cours_ : 098 — W-0+W-1 TaskSchemaScanner (TERMINÉE)
-_Session suivante_ : 099 — W-2+W-3 OpenAPI Spec + Auto-register ToolRegistry
+_Derniere mise a jour_ : 2026-06-14 (Session 099 — W-2+W-3 OpenAPI Spec + Auto-register ToolRegistry)
+_Session precedente_ : 098 — W-0+W-1 TaskSchemaScanner
+_Session en cours_ : 099 — W-2+W-3 OpenAPI Spec + Auto-register ToolRegistry (TERMINÉE)
+_Session suivante_ : 100 — W-4+W-5+W-6 list_tasks + mapping args + cache → EPIC W TERMINÉ
 _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/` (N=70, multiple de 10)
 
 '''

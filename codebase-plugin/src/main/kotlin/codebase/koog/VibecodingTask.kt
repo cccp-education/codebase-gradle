@@ -1,5 +1,7 @@
 package codebase.koog
 
+import codebase.koog.discovery.TaskDiscoveryRegistrar
+import codebase.koog.discovery.TaskSchemaScanner
 import codebase.koog.llm.LlmProviderResolver
 import codebase.koog.session.SessionRepository
 import codebase.koog.tracking.TokenTracker
@@ -108,6 +110,11 @@ abstract class VibecodingTask : DefaultTask() {
         val auditFile = File(auditDir, "audit.jsonl")
 
         toolRegistry.clearAudit()
+
+        val scanner = TaskSchemaScanner(project)
+        val registrar = TaskDiscoveryRegistrar(scanner, toolRegistry)
+        registrar.registerAll()
+        log.info("Auto-registered {} gradle_* tools from task graph", registrar.registeredCount())
 
         val tokenTracker = TokenTracker()
         val modelName = model.getOrElse("")

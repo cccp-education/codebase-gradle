@@ -1,29 +1,32 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 099
-:session: 099
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 100
+:session: 100
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 098 — W-0+W-1 TaskSchemaScanner (7/7 JUnit5 PASS)
+:sessions_precedente: 099 — W-2+W-3 OpenAPI Spec + Auto-register ToolRegistry (21/21 PASS, audit BACKLOG)
 
 == Contexte Hérité
 
-- EPIC W-0 + W-1 TERMINÉS : TaskSchema (name, description, group, options, toToolInfo) + TaskSchemaScanner (walkHierarchy, @Option reflexion)
-- 3 fichiers créés : TaskSchema.kt, TaskSchemaScanner.kt, TaskSchemaScannerTest.kt
-- 7/7 tests JUnit5 PASS, 0 régression
-- BACKLOG.adoc à jour (EPIC W 2/7)
-- ToolRegistry existant (7 tools N0) + gradle_<taskName> mapping prêt
+- EPIC W 4/7 terminé : W-0 ✅, W-1 ✅, W-2 ✅, W-3 ✅
+- OpenApiSpecGenerator (85 lignes, 8 tests) + TaskDiscoveryRegistrar (30 lignes, 7 tests)
+- Auto-register câblé dans VibecodingTask.executeVibecoding()
+- BACKLOG audité : 17 `[ ]` → `[x]`, 53 unchecked restants
+- OCR-2b cadré : OllamaOcrProvider cloud (qwen3-vl:235b-cloud, pull testé port 11439)
+- ToolRegistry enrichi dynamiquement avec gradle_* tools
 
-== Mission Session 099 — EPIC W-2 + W-3
+== Mission Session 100 — EPIC W-4 + W-5 + W-6
 
-*W-2* : Générer un schema structuré JSON/OpenAPI depuis le TaskSchemaScanner.
-  Format OpenAPI `paths` → chaque tâche = un endpoint.
+*W-4* : Exposer le catalogue au LLM via un tool `list_tasks`.
+  L'agent peut requêter les tâches disponibles par groupe, description, mots-clés.
 
-*W-3* : Auto-registrer les tâches découvertes dans ToolRegistry
-  au démarrage de VibecodingGraph. `list_tasks` tool pour que le LLM
-  découvre le catalogue.
+*W-5* : Mapping `--option` → arguments structurés.
+  Le ToolRegistry construit les arguments Gradle depuis la décision LLM.
+
+*W-6* : Cache des schémas + invalidation à chaud quand un nouveau plugin est appliqué.
+
+→ EPIC W TERMINÉ (7/7).
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 099 | W-2 + W-3 | OpenAPI Spec + Auto-register ToolRegistry
 | 100 | W-4 + W-5 + W-6 | list_tasks tool + mapping args + cache → EPIC W TERMINÉ
 | 101 | X-0 + X-1 | Cadrage + VibecodingPlan structuré (dépend de W)
 | 102 | X-2 + X-3 | TaskResultVerifier + boucle verify→adapt
