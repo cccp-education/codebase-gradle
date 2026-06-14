@@ -1,20 +1,19 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 104
-:session: 104
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 105
+:session: 105
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 103 — Brainstorming Protocole opencode↔Gradle (cadrage EPIC SP + MEM-4)
+:sessions_precedente: 104 — SP-1 SessionProtocolTask (11 JUnit5 + 5 Cucumber PASS)
 
 == Contexte Hérité
 
 - EPIC W TERMINÉ (7/7)
 - EPIC X 4/7 — X-0✅ X-1✅ X-2✅ X-3✅
-- EPIC Y 7/8 — Y-1✅ Y-2✅ Y-3✅ Y-4✅ Y-5✅ Y-6✅ Y-7✅ (Y-7 restant)
-- EPIC SP cadré (BACKLOG) — Protocole opencode↔Gradle, 7 sous-EPICs SP-0→SP-6, ~27 pts
-  - SP-5 ToolEventStream : events thinking/tool_call/tool_result en JSON-lines
-  - SP-6 LiveContextInjector : injection contexte dans conversation active
-- Full suite 330+/333 PASS
+- EPIC Y 7/8 — Y-1✅ Y-2✅ Y-3✅ Y-4✅ Y-5✅ Y-6✅ Y-7✅
+- EPIC OCR-2b TERMINÉ (6/6) — OllamaOcrProvider + fallback gemini→ollama
+- EPIC SP 1/5 — SP-1✅ SessionProtocolTask (contrat opencode-session ↔ VibecodingGraph)
+- Full suite ~340 PASS, ~9 pré-existants
 - publishToMavenLocal OK
 
-== Mission Session 104 — EPIC X-4 + X-5 + X-6
+== Mission Session 105 — EPIC X-4 + X-5 + X-6
 
 *X-4* : `RollbackStrategy` — Intégrer les 4 stratégies dans la boucle d'exécution :
   - `STOP_ON_ERROR` — arrête tout (comportement actuel)
@@ -37,11 +36,9 @@
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 104 | X-4 + X-5 + X-6 | RollbackStrategy + intégration W + Cucumber → EPIC X TERMINÉ
-| 105 | SP-1 | SessionProtocolTask — pont contrat N0 ↔ VibecodingTask
-| 106 | SP-5 | ToolEventStream — events JSON-lines temps réel
-| 107 | SP-6 | LiveContextInjector — injection contexte conversation active
-| 108 | Z-0 + Z-1 | Autofocus cadrage + ZoomLevel
-| 109 | Z-2 + Z-3 | ContextZoomer + ZoomPolicy
-| 110 | Z-4 + Z-5 + Z-6 | Intégration VibecodingGraph → EPIC Z TERMINÉ
-| 111 | 12 | Dilution Article de Blog (quick win)
+| 105 | X-4 + X-5 + X-6 | RollbackStrategy + intégration W + Cucumber → EPIC X TERMINÉ
+| 106 | Z-0 + Z-1 | Autofocus cadrage + ZoomLevel
+| 107 | Z-2 + Z-3 | ContextZoomer + ZoomPolicy
+| 108 | Z-4 + Z-5 + Z-6 | Intégration VibecodingGraph → EPIC Z TERMINÉ
+| 109 | 12 | Dilution Article de Blog (quick win)
+| 110+ | 5 | Pipeline fine-tuning experts CDA/FPA (lourd)

@@ -1,0 +1,85 @@
+= Session 104 — SP-1 SessionProtocolTask + OCR-2b OllamaOcrProvider
+:session: 104
+:date: 2026-06-14
+:type: feat+tdd+ddd+bdd
+:score: 10/10
+
+== Contexte
+
+Session double EPIC : OCR-2b (OllamaOcrProvider) + SP-1 (SessionProtocolTask).
+L'utilisateur a demandé de synchroniser le backlog puis d'implémenter la connexion
+du contrat opencode-session avec l'outil de vibecoding en local.
+
+Méthodologie : baby-step DDD/TDD/BDD — unit/fonctionnel/Cucumber.
+
+== Actions
+
+=== OCR-2b — OllamaOcrProvider (6/6 sous-tâches)
+
+. OCR-2b.0 : Vérifié que langchain4j-ollama (`OllamaChatModel`) ne supporte PAS
+  le multimodal → décision HTTP direct `java.net.http.HttpClient` (JDK 24 built-in).
+. OCR-2b.1 : Créé `OllamaOcrProvider.kt` — implémente `VisionProvider`, POST à
+  Ollama `/api/chat` avec `images: [base64]` + prompt OCR. Cible `qwen3-vl:235b-cloud`.
+. OCR-2b.2 : Prompt engineering qwen3-vl — OCR 32 langues, structuration AsciiDoc.
+. OCR-2b.3 : Intégré dans `OcrTask` — provider selection `gemini` | `ollama` |
+  `gemini+ollama` (fallback). Nouvelles options CLI `ollamaBaseUrl`/`ollamaModel`.
+. OCR-2b.4 : Tests JUnit5 — `FakeOllamaOcrProvider` (5 tests), `OllamaOcrProvider`
+  (5 tests), `ThrowingVisionProvider`, `OcrTaskTest` (+9 tests ollama/fallback).
+. OCR-2b.5 : Tests Cucumber — 3 scénarios @epic_ocr_2b (ollama provider,
+  gemini+ollama fallback, gemini fails→ollama). 8/8 PASS.
+
+=== SP-1 — SessionProtocolTask (1/5 sous-tâches)
+
+. Publié `opencode-session-contracts:0.0.1` dans mavenLocal (workspace-bom MEMPHIS).
+. Ajouté dépendance `education.cccp:opencode-session-contracts:0.0.1` dans
+  codebase-plugin `build.gradle.kts`.
+. Créé `SessionProtocolTask.kt` — tâche Gradle qui reçoit un `SessionPrompt` (N0),
+  crée un `VibecodingGraph`, exécute, retourne `SessionResponse` JSON.
+  Options CLI : `--prompt`, `--sessionId`, `--maxActions`, `--model`,
+  `--contextFile`, `--responseFile`.
+. Tests JUnit5 : `SessionProtocolTaskTest` — 11 tests (defaults, custom properties,
+  blank prompt rejection, FakeLlmProvider execution, custom sessionId, custom
+  responseFile, token tracking, contextFile parsing, corrupt contextFile fallback,
+  error status).
+. Tests Cucumber : `epic_sp_1_session_protocol.feature` — 5 scénarios
+  (@protocol_basic, @protocol_custom_id, @protocol_token_tracking,
+  @protocol_error, @protocol_context). `SessionProtocolSteps` + `SessionProtocolWorld`
+  + `EpicSp1CucumberRunner`. Tâche `cucumberTestEpicSp1` dans `build.gradle.kts`.
+
+== Fichiers créés (10)
+
+- `src/main/kotlin/codebase/koog/llm/OllamaOcrProvider.kt`
+- `src/main/kotlin/codebase/koog/SessionProtocolTask.kt`
+- `src/test/kotlin/codebase/koog/llm/FakeOllamaOcrProvider.kt`
+- `src/test/kotlin/codebase/koog/llm/ThrowingVisionProvider.kt`
+- `src/test/kotlin/codebase/koog/llm/FakeOllamaOcrProviderTest.kt`
+- `src/test/kotlin/codebase/koog/llm/OllamaOcrProviderTest.kt`
+- `src/test/kotlin/codebase/koog/SessionProtocolTaskTest.kt`
+- `src/test/features/epic_sp_1_session_protocol.feature`
+- `src/test/kotlin/codebase/scenarios/SessionProtocolSteps.kt`
+- `src/test/kotlin/codebase/scenarios/SessionProtocolWorld.kt`
+- `src/test/kotlin/codebase/scenarios/EpicSp1CucumberRunner.kt`
+
+== Fichiers modifiés (6)
+
+- `src/main/kotlin/codebase/ocr/OcrTask.kt` — fallback gemini→ollama
+- `src/test/features/ocr.feature` — +3 scénarios @epic_ocr_2b
+- `src/test/kotlin/codebase/scenarios/ocr/OcrSteps.kt` — +2 step definitions
+- `build.gradle.kts` — dépendance opencode-session-contracts + cucumberTestEpicSp1
+- `BACKLOG.adoc` — OCR-2b TERMINÉ, EPIC SP 1/5
+- `.agents/INDEX.adoc` — session 104, EPIC SP
+- `PROMPT_REPRISE.adoc` — session 105
+
+== Résultats
+
+- JUnit5 : 11 (SP-1) + 5 (FakeOllamaOcr) + 5 (OllamaOcr) + 9 (OcrTask) = 30 nouveaux PASS
+- Cucumber : 3 (OCR-2b) + 5 (SP-1) = 8 nouveaux PASS
+- Zéro régression — échecs pré-existants inchangés
+- Compilation OK, publishToMavenLocal OK
+
+== Leçon
+
+Le pont N0↔N1 est fonctionnel : un `SessionPrompt` (data class pure) peut être
+injecté dans une tâche Gradle, exécuté via `VibecodingGraph`, et produire un
+`SessionResponse` structuré. La prochaine étape (SP-2) est le mode daemon/serveur
+pour éviter la latence de compilation à chaque tour de dialogue.

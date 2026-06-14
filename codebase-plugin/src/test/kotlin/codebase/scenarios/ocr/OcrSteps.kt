@@ -1,6 +1,9 @@
 package codebase.scenarios.ocr
 
 import codebase.CodebasePlugin
+import codebase.koog.llm.FakeOllamaOcrProvider
+import codebase.koog.llm.FakeVisionProvider
+import codebase.koog.llm.ThrowingVisionProvider
 import codebase.ocr.FakeOcrEngine
 import codebase.ocr.OcrTask
 import io.cucumber.java.After
@@ -87,6 +90,62 @@ class OcrSteps {
     fun taskShouldBeInGroup(taskName: String, group: String) {
         assertNotNull(foundTask, "Task '$taskName' should exist")
         assertEquals(group, foundGroup, "Task group mismatch")
+    }
+
+    @When("I OCR {string} with provider {string}")
+    fun ocrWithProvider(filename: String, provider: String) {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tmpDir!!)
+            .withName("ocr-provider")
+            .build()
+        project.pluginManager.apply(CodebasePlugin::class.java)
+
+        val inputFile = File(tmpDir, filename)
+        val task = project.tasks.getByName("ocrDocument") as OcrTask
+        task.ocrProvider.set(provider)
+        task.inputFile.set(project.layout.projectDirectory.file(filename))
+        task.ocrLanguage.set("fr")
+        task.outputFormat.set("asciidoc")
+
+        when (provider) {
+            "ollama" -> {
+                task.ollamaOcrProvider = FakeOllamaOcrProvider()
+            }
+            "gemini+ollama" -> {
+                task.geminiVisionProvider = FakeVisionProvider()
+                task.ollamaOcrProvider = FakeOllamaOcrProvider()
+            }
+        }
+
+        task.executeOcr()
+
+        val ext = ".adoc"
+        lastOutputPath = project.layout.buildDirectory.dir("ocr").get().asFile
+            .resolve("${inputFile.nameWithoutExtension}_ocr$ext")
+    }
+
+    @When("I OCR {string} with provider {string} and Gemini fails")
+    fun ocrWithProviderAndGeminiFails(filename: String, provider: String) {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tmpDir!!)
+            .withName("ocr-gemini-fail")
+            .build()
+        project.pluginManager.apply(CodebasePlugin::class.java)
+
+        val inputFile = File(tmpDir, filename)
+        val task = project.tasks.getByName("ocrDocument") as OcrTask
+        task.ocrProvider.set(provider)
+        task.inputFile.set(project.layout.projectDirectory.file(filename))
+        task.ocrLanguage.set("fr")
+        task.outputFormat.set("asciidoc")
+        task.geminiVisionProvider = ThrowingVisionProvider()
+        task.ollamaOcrProvider = FakeOllamaOcrProvider()
+
+        task.executeOcr()
+
+        val ext = ".adoc"
+        lastOutputPath = project.layout.buildDirectory.dir("ocr").get().asFile
+            .resolve("${inputFile.nameWithoutExtension}_ocr$ext")
     }
 
     @After

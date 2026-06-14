@@ -329,4 +329,107 @@ class OcrTaskTest {
         val outputFile = outputDir.resolve("doc_ocr.adoc")
         assertTrue(outputFile.exists())
     }
+
+    @Test
+    fun `executeOcr with ollama provider uses FakeOllamaOcrProvider`(@TempDir tempDir: Path) {
+        val inputFile = tempDir.resolve("scan.png").toFile()
+        inputFile.writeText("fake png bytes for ollama OCR")
+
+        val project = org.gradle.testfixtures.ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-ollama-ocr")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("ocr", OcrTask::class.java).get()
+        task.inputFile.set(project.layout.projectDirectory.file("scan.png"))
+        task.ocrProvider.set("ollama")
+        task.ollamaOcrProvider = codebase.koog.llm.FakeOllamaOcrProvider()
+
+        task.executeOcr()
+
+        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputFile = outputDir.resolve("scan_ocr.adoc")
+        assertTrue(outputFile.exists(), "Output file should be created: ${outputFile.absolutePath}")
+        val content = outputFile.readText()
+        assertTrue(content.contains("FakeOllamaOcrProvider"))
+        assertTrue(content.contains("qwen3-vl:235b-cloud"))
+    }
+
+    @Test
+    fun `executeOcr with gemini+ollama fallback uses Gemini first`(@TempDir tempDir: Path) {
+        val inputFile = tempDir.resolve("scan.png").toFile()
+        inputFile.writeText("fake png bytes for fallback OCR")
+
+        val project = org.gradle.testfixtures.ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-gemini-ollama-fallback")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("ocr", OcrTask::class.java).get()
+        task.inputFile.set(project.layout.projectDirectory.file("scan.png"))
+        task.ocrProvider.set("gemini+ollama")
+        task.geminiVisionProvider = codebase.koog.llm.FakeVisionProvider()
+        task.ollamaOcrProvider = codebase.koog.llm.FakeOllamaOcrProvider()
+
+        task.executeOcr()
+
+        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputFile = outputDir.resolve("scan_ocr.adoc")
+        assertTrue(outputFile.exists())
+        val content = outputFile.readText()
+        assertTrue(content.contains("FakeVisionProvider"), "Gemini should be used first in gemini+ollama mode")
+    }
+
+    @Test
+    fun `executeOcr with gemini+ollama falls back to ollama when gemini throws`(@TempDir tempDir: Path) {
+        val inputFile = tempDir.resolve("scan.png").toFile()
+        inputFile.writeText("fake png bytes for fallback OCR")
+
+        val project = org.gradle.testfixtures.ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-gemini-fails-ollama-fallback")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("ocr", OcrTask::class.java).get()
+        task.inputFile.set(project.layout.projectDirectory.file("scan.png"))
+        task.ocrProvider.set("gemini+ollama")
+        task.geminiVisionProvider = codebase.koog.llm.ThrowingVisionProvider()
+        task.ollamaOcrProvider = codebase.koog.llm.FakeOllamaOcrProvider()
+
+        task.executeOcr()
+
+        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputFile = outputDir.resolve("scan_ocr.adoc")
+        assertTrue(outputFile.exists())
+        val content = outputFile.readText()
+        assertTrue(content.contains("FakeOllamaOcrProvider"), "Should fallback to Ollama when Gemini fails")
+    }
+
+    @Test
+    fun `executeOcr with ollama provider and custom baseUrl model`(@TempDir tempDir: Path) {
+        val inputFile = tempDir.resolve("scan.png").toFile()
+        inputFile.writeText("fake png bytes for custom ollama")
+
+        val project = org.gradle.testfixtures.ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-ollama-custom")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("ocr", OcrTask::class.java).get()
+        task.inputFile.set(project.layout.projectDirectory.file("scan.png"))
+        task.ocrProvider.set("ollama")
+        task.ollamaBaseUrl.set("http://localhost:11437")
+        task.ollamaModel.set("qwen3-vl:235b-cloud")
+        task.ollamaOcrProvider = codebase.koog.llm.FakeOllamaOcrProvider()
+
+        task.executeOcr()
+
+        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputFile = outputDir.resolve("scan_ocr.adoc")
+        assertTrue(outputFile.exists())
+    }
 }

@@ -42,6 +42,8 @@ dependencies {
     implementation("education.cccp:vibecoding-contracts:0.0.1")
     // N0 llm-pool contracts — LlmInstancePool, LlmInstance, QuotaConfig, RotationStrategy (shared N1→N2)
     implementation("education.cccp:llm-pool-contracts:0.0.1")
+    // N0 opencode-session contracts — SessionPrompt, SessionResponse, AgentContext, SessionStatus, TokenUsage, ToolCallRecord
+    implementation("education.cccp:opencode-session-contracts:0.0.1")
     implementation(libs.bundles.arrow)
     implementation(libs.koog.agents) {
         // Exclusion nécessaire : koog 26.0.2-1 conflict with Kotlin embedded 13.0
@@ -499,6 +501,34 @@ val cucumberTestEpicX2 = tasks.register<Test>("cucumberTestEpicX2") {
     outputs.upToDateWhen { false }
 
     filter { includeTestsMatching("codebase.scenarios.EpicX2CucumberRunner") }
+}
+
+val cucumberTestEpicSp1 = tasks.register<Test>("cucumberTestEpicSp1") {
+    description = "Runs Cucumber BDD tests — EPIC SP-1 (SessionProtocol) only"
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = configurations.testRuntimeClasspath.get() +
+        sourceSets.test.get().output +
+        sourceSets.main.get().output +
+        files(tasks.jar.get().archiveFile)
+
+    dependsOn(tasks.classes)
+    useJUnitPlatform { excludeEngines("junit-jupiter") }
+    systemProperty("cucumber.junit-platform.naming-strategy", "long")
+    maxHeapSize = "1g"
+    maxParallelForks = 1
+    forkEvery = 1
+    jvmArgs("-XX:+UseSerialGC", "-XX:MaxMetaspaceSize=256m", "-XX:TieredStopAtLevel=1")
+    timeout.set(Duration.ofMinutes(15))
+
+    testLogging {
+        events("passed", "skipped", "failed")
+        showStandardStreams = true
+        exceptionFormat = FULL
+    }
+    outputs.upToDateWhen { false }
+
+    filter { includeTestsMatching("codebase.scenarios.EpicSp1CucumberRunner") }
 }
 
 tasks.withType<Test>().configureEach {

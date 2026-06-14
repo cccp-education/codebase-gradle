@@ -37,3 +37,24 @@ Feature: OCR — Extraction de texte assistée IA
     Given an OCR test file "fmt.txt" with text "Hello world."
     When I OCR "fmt.txt" in French with format "markdown"
     Then the OCR result for "fmt" ends with ".md"
+
+  @unit @epic_ocr_2b
+  Scenario: OCR with Ollama provider produces structured AsciiDoc
+    Given an OCR test file "ollama-scan.png" with text "fake png for ollama"
+    When I OCR "ollama-scan.png" with provider "ollama"
+    Then the OCR result for "ollama-scan" exists
+    And the OCR result for "ollama-scan" contains "FakeOllamaOcrProvider"
+
+  @unit @epic_ocr_2b
+  Scenario: OCR with gemini+ollama fallback uses Gemini first
+    Given an OCR test file "fallback-scan.png" with text "fake png for fallback"
+    When I OCR "fallback-scan.png" with provider "gemini+ollama"
+    Then the OCR result for "fallback-scan" exists
+    And the OCR result for "fallback-scan" contains "FakeVisionProvider"
+
+  @unit @epic_ocr_2b
+  Scenario: OCR with gemini+ollama falls back to Ollama when Gemini fails
+    Given an OCR test file "gemini-fail.png" with text "fake png for gemini failure"
+    When I OCR "gemini-fail.png" with provider "gemini+ollama" and Gemini fails
+    Then the OCR result for "gemini-fail" exists
+    And the OCR result for "gemini-fail" contains "FakeOllamaOcrProvider"

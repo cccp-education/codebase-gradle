@@ -658,9 +658,9 @@ Chaîne existante : anonymisation → chunking → embedding → pgvector
 * [ ] Fallback : si Gemini indisponible → Tesseract (OCR sans IA) — PENDING
 * [x] Tests : image synthétique avec texte connu → vérification output (FakeVisionProviderTest.kt 77 lignes, 5 tests)
 
-==== OCR-2b : OllamaOcrProvider — OCR cloud via Ollama (NOUVEAU — cadré session 099)
+==== OCR-2b : OllamaOcrProvider — OCR cloud via Ollama
 
-**Statut** : CADRÉ — Prêt à démarrer
+**Statut** : ✅ TERMINE (Session 103 — 6/6 sous-tâches)
 **Priorité** : P0
 **Origine** : Session 099 — recherche modèles OCR cloud sur Ollama
 
@@ -675,19 +675,16 @@ Gemini (cloud, 1er choix) → qwen3-vl:235b-cloud (cloud Ollama, fallback)
 
 _Architecture_ : `OllamaOcrProvider` implémente `VisionProvider`. Appel HTTP direct à Ollama
 `/api/chat` avec `images: [base64]` + prompt OCR. Cible `qwen3-vl:235b-cloud` (cloud-only).
-
-_Contrainte technique_ : `OllamaChatModel` (LangChain4j) est text-only. L'appel multimodal nécessite
-un client HTTP direct (OkHttp/ktor) ou la vérification que langchain4j-ollama >= 1.14.1
-supporte `UserMessage.from(ImageContent, TextContent)` sur `/api/chat`.
+Client HTTP : `java.net.http.HttpClient` (JDK 24 built-in) — langchain4j-ollama ne supporte pas le multimodal.
 
 === Sous-tâches
 
-* [ ] OCR-2b.0 : Vérifier compatibilité langchain4j-ollama avec `/api/chat` multimodal (image base64)
-* [ ] OCR-2b.1 : `OllamaOcrProvider` — implémente `VisionProvider`, appelle Ollama `/api/chat` avec image base64 + prompt OCR structuré AsciiDoc. Cible `qwen3-vl:235b-cloud`
-* [ ] OCR-2b.2 : Prompt engineering qwen3-vl — OCR 32 langues, extraction texte + structuration AsciiDoc
-* [ ] OCR-2b.3 : Intégration dans `OcrTask` — provider selection: `gemini` (cloud 1er) → `qwen3-vl:235b-cloud` (cloud Ollama, fallback)
-* [ ] OCR-2b.4 : Tests — FakeOllamaOcrProvider + image synthétique → AsciiDoc structuré
-* [ ] OCR-2b.5 : Tests Cucumber — "je scanne une image avec Ollama cloud OCR → texte structuré AsciiDoc"
+* [x] OCR-2b.0 : Vérifier compatibilité langchain4j-ollama avec `/api/chat` multimodal (image base64) → NON supporté, HTTP direct JDK 24
+* [x] OCR-2b.1 : `OllamaOcrProvider` — implémente `VisionProvider`, appelle Ollama `/api/chat` avec image base64 + prompt OCR structuré AsciiDoc. Cible `qwen3-vl:235b-cloud`
+* [x] OCR-2b.2 : Prompt engineering qwen3-vl — OCR 32 langues, extraction texte + structuration AsciiDoc
+* [x] OCR-2b.3 : Intégration dans `OcrTask` — provider selection: `gemini` | `ollama` | `gemini+ollama` (fallback). Nouvelles options CLI `ollamaBaseUrl`/`ollamaModel`
+* [x] OCR-2b.4 : Tests — FakeOllamaOcrProvider + OllamaOcrProvider + ThrowingVisionProvider + OcrTask integration (9 JUnit5 PASS)
+* [x] OCR-2b.5 : Tests Cucumber — 3 scénarios @epic_ocr_2b (ollama provider, gemini+ollama fallback, gemini fails→ollama) — 8/8 PASS
 
 === Bénéfice
 
@@ -806,7 +803,7 @@ cd foundry/public/codebase-gradle && ./gradlew publish closeAndRelease
 
 == EPIC SESSION-PROTOCOL — Protocole opencode↔Gradle : Thin Client + Moteur Gradle
 
-**Statut** : IDÉE — CADRÉ (Session 103 brainstorming)
+**Statut** : 🔄 EN COURS (1/5 — SP-1 ✅)
 **Priorité** : P1
 **Dépend de** : workspace-bom (MEMPHIS N0) pour les contrats, EPIC V (VibecodingTask moteur)
 

@@ -1,6 +1,7 @@
 package codebase.ocr
 
 import codebase.koog.llm.GeminiVisionProvider
+import codebase.koog.llm.OllamaOcrProvider
 import codebase.koog.llm.VisionProvider
 import codebase.rag.GeminiConfig
 import codebase.rag.LlmConfig
@@ -54,6 +55,9 @@ abstract class OcrTask : DefaultTask() {
     @get:Internal
     var geminiVisionProvider: VisionProvider? = null
 
+    @get:Internal
+    var ollamaOcrProvider: VisionProvider? = null
+
     /**
      * Fichier YAML de config LLM (pattern keyRef/envVar, jamais de clé en dur).
      * S'il existe (injecté par CodebasePlugin), les paramètres `geminiModel`,
@@ -65,8 +69,18 @@ abstract class OcrTask : DefaultTask() {
 
     @get:Input
     @get:Optional
-    @get:Option(option = "ocrProvider", description = "Fournisseur IA : gemini ou tesseract")
+    @get:Option(option = "ocrProvider", description = "Fournisseur IA : gemini, ollama, ou gemini+ollama (fallback)")
     abstract val ocrProvider: Property<String>
+
+    @get:Input
+    @get:Optional
+    @get:Option(option = "ollamaBaseUrl", description = "URL de base Ollama (défaut : http://localhost:11434)")
+    abstract val ollamaBaseUrl: Property<String>
+
+    @get:Input
+    @get:Optional
+    @get:Option(option = "ollamaModel", description = "Modèle Ollama vision (défaut : qwen3-vl:235b-cloud)")
+    abstract val ollamaModel: Property<String>
 
     @get:InputFile
     @get:Optional
@@ -100,10 +114,12 @@ abstract class OcrTask : DefaultTask() {
 
     init {
         group = "collect"
-        description = "OCR assisté IA — extrait le texte structuré d'un document scanné via Gemini Vision"
+        description = "OCR assisté IA — extrait le texte structuré d'un document scanné via Gemini Vision ou Ollama Vision"
         ocrProvider.convention("gemini")
         ocrLanguage.convention("fr")
         geminiModel.convention("gemini-2.5-flash")
+        ollamaBaseUrl.convention("http://localhost:11434")
+        ollamaModel.convention("qwen3-vl:235b-cloud")
         maxTokens.convention(8192)
         outputFormat.convention("asciidoc")
     }
@@ -139,6 +155,8 @@ abstract class OcrTask : DefaultTask() {
             ?: "gemini-2.5-flash"
         val tokens = maxTokens.orNull ?: 8192
         val format = outputFormat.orNull ?: "asciidoc"
+        val ollamaUrl = ollamaBaseUrl.orNull ?: "http://localhost:11434"
+        val ollamaVisionModel = ollamaModel.orNull ?: "qwen3-vl:235b-cloud"
 
         logger.lifecycle(
             "[OCR] Démarrage : fichier={}, langue={}, fournisseur={}, modèle={}, maxTokens={}",
@@ -149,7 +167,7 @@ abstract class OcrTask : DefaultTask() {
         val mimeType = detectMimeType(file.extension)
 
         val result = if (isImage) {
-            executeImageOcr(file, mimeType, lang, model, tokens)
+            executeImageOcr(file, mimeType, lang, model, tokens, provider, ollamaUrl, ollamaVisionModel)
         } else {
             executeTextOcr(file, lang, model, tokens)
         }
@@ -196,15 +214,44 @@ abstract class OcrTask : DefaultTask() {
         mimeType: String,
         language: String,
         model: String,
-        maxTokens: Int
+        maxTokens: Int,
+        provider: String,
+        ollamaUrl: String,
+        ollamaVisionModel: String
     ): String {
-        logger.lifecycle("[OCR] Mode image détecté : mimeType={}", mimeType)
+        logger.lifecycle("[OCR] Mode image détecté : mimeType={}, provider={}", mimeType, provider)
 
-        val provider = geminiVisionProvider ?: GeminiVisionProvider()
         val imageBytes = file.readBytes()
 
-        return runBlocking {
-            provider.processImage(imageBytes, mimeType, language, model, maxTokens)
+        return when (provider) {
+            "ollama" -> {
+                val ollamaProvider = ollamaOcrProvider
+                    ?: OllamaOcrProvider(baseUrl = ollamaUrl, model = ollamaVisionModel)
+                runBlocking {
+                    ollamaProvider.processImage(imageBytes, mimeType, language, ollamaVisionModel, maxTokens)
+                }
+            }
+            "gemini+ollama" -> {
+                val geminiProvider = geminiVisionProvider ?: GeminiVisionProvider()
+                try {
+                    runBlocking {
+                        geminiProvider.processImage(imageBytes, mimeType, language, model, maxTokens)
+                    }
+                } catch (e: Exception) {
+                    logger.warn("[OCR] Gemini failed: {} — fallback to Ollama", e.message)
+                    val ollamaProvider = ollamaOcrProvider
+                        ?: OllamaOcrProvider(baseUrl = ollamaUrl, model = ollamaVisionModel)
+                    runBlocking {
+                        ollamaProvider.processImage(imageBytes, mimeType, language, ollamaVisionModel, maxTokens)
+                    }
+                }
+            }
+            else -> {
+                val geminiProvider = geminiVisionProvider ?: GeminiVisionProvider()
+                runBlocking {
+                    geminiProvider.processImage(imageBytes, mimeType, language, model, maxTokens)
+                }
+            }
         }
     }
 
