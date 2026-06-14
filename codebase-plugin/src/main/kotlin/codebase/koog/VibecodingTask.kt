@@ -1,10 +1,14 @@
 package codebase.koog
 
+import codebase.koog.discovery.GradleTaskArgsMapper
+import codebase.koog.discovery.SchemaCache
 import codebase.koog.discovery.TaskDiscoveryRegistrar
+import codebase.koog.discovery.TaskListFormatter
 import codebase.koog.discovery.TaskSchemaScanner
 import codebase.koog.llm.LlmProviderResolver
 import codebase.koog.session.SessionRepository
 import codebase.koog.tracking.TokenTracker
+import contracts.vibecoding.registry.ToolInfo
 import contracts.vibecoding.registry.ToolRegistry
 import vibecoding.contracts.state.VibecodingState
 import io.r2dbc.spi.ConnectionFactory
@@ -115,6 +119,25 @@ abstract class VibecodingTask : DefaultTask() {
         val registrar = TaskDiscoveryRegistrar(scanner, toolRegistry)
         registrar.registerAll()
         log.info("Auto-registered {} gradle_* tools from task graph", registrar.registeredCount())
+
+        val cache = SchemaCache(project)
+
+        toolRegistry.register(ToolInfo("list_tasks",
+            "List available Gradle tasks with descriptions and options. Use 'group' arg to filter by task group, 'keyword' arg to search by name or description."))
+        toolRegistry.registerHandler("list_tasks") { _, arguments, _ ->
+            val group = arguments["group"].takeUnless { it.isNullOrBlank() }
+            val keyword = arguments["keyword"].takeUnless { it.isNullOrBlank() }
+            TaskListFormatter.format(cache.schemas(), group = group, keyword = keyword)
+        }
+
+        val schemas = cache.schemas()
+        val argsMapper = GradleTaskArgsMapper(schemas, root.absolutePath)
+        for (schema in schemas) {
+            toolRegistry.registerHandler("gradle_${schema.name}") { toolName, arguments, workspaceRoot ->
+                argsMapper.execute(toolName, arguments, workspaceRoot)
+            }
+        }
+        log.info("Wired {} gradle_* tasks with structured argument mapping", schemas.size)
 
         val tokenTracker = TokenTracker()
         val modelName = model.getOrElse("")

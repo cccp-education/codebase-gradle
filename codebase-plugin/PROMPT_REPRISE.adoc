@@ -1,35 +1,42 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 100
-:session: 100
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 103
+:session: 103
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 099 — W-2+W-3 OpenAPI Spec + Auto-register ToolRegistry (21/21 PASS, audit BACKLOG)
+:sessions_precedente: 102 — X-2+X-3 TaskResultVerifier + boucle verify→adapt (27 unit+Cucumber PASS)
 
 == Contexte Hérité
 
-- EPIC W 4/7 terminé : W-0 ✅, W-1 ✅, W-2 ✅, W-3 ✅
-- OpenApiSpecGenerator (85 lignes, 8 tests) + TaskDiscoveryRegistrar (30 lignes, 7 tests)
-- Auto-register câblé dans VibecodingTask.executeVibecoding()
-- BACKLOG audité : 17 `[ ]` → `[x]`, 53 unchecked restants
-- OCR-2b cadré : OllamaOcrProvider cloud (qwen3-vl:235b-cloud, pull testé port 11439)
-- ToolRegistry enrichi dynamiquement avec gradle_* tools
+- EPIC W TERMINÉ (7/7) — ToolRegistry enrichi list_tasks + exec_gradle args structurés
+- EPIC X 4/7 — X-0✅ X-1✅ X-2✅ X-3✅
+- X-0: 6 points insertion verify→adapt documentés dans VibecodingGraph.kt
+- X-1: VibecodingPlan.kt + RollbackStrategy (4 valeurs) — 14 unit + 8 Cucumber PASS
+- X-2: TaskResultVerifier.kt (52l, 4 verdicts SUCCESS/FAILED/BLOCKED/UNKNOWN) — 14 unit + 6 Cucumber PASS
+- X-3: StepVerifier.kt (98l) intégré dans VibecodingGraph.execute() — 7 unit PASS
+- Full suite 330+/333 PASS (3 pré-existants OllamaLlmProvider + Migration)
+- publishToMavenLocal OK
 
-== Mission Session 100 — EPIC W-4 + W-5 + W-6
+== Mission Session 103 — EPIC X-4 + X-5 + X-6
 
-*W-4* : Exposer le catalogue au LLM via un tool `list_tasks`.
-  L'agent peut requêter les tâches disponibles par groupe, description, mots-clés.
+*X-4* : `RollbackStrategy` — Intégrer les 4 stratégies dans la boucle d'exécution :
+  - `STOP_ON_ERROR` — arrête tout (comportement actuel)
+  - `REVERT_AND_CONTINUE` — git checkout des fichiers de l'étape, continue
+  - `MARK_SKIPPED` — marque l'étape comme contournée, continue
+  - `FALLBACK_HUMAN` — pause, demande input utilisateur
+  Tests : chaque stratégie vérifiée sur état erreur.
 
-*W-5* : Mapping `--option` → arguments structurés.
-  Le ToolRegistry construit les arguments Gradle depuis la décision LLM.
+*X-5* : Intégration EPIC W (TaskSchemaScanner) dans la boucle verify→adapt.
+  Le LLM utilise le catalogue `list_tasks` (W-4) pour construire son plan multi-step
+  avant d'exécuter. `ToolRegistry.listTasks()` intégré dans `buildReplanPrompt()`.
 
-*W-6* : Cache des schémas + invalidation à chaud quand un nouveau plugin est appliqué.
+*X-6* : Tests Cucumber — Scénario "agent planifie, échoue, adapte, réussit"
+  avec un projet test qui a un bug à la première compilation.
+  Le LLM doit lire l'erreur, corriger, recompiler.
+  Mock ToolRegistry + FakeLlmProvider pour isolation.
 
-→ EPIC W TERMINÉ (7/7).
+→ EPIC X TERMINÉ (7/7).
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 100 | W-4 + W-5 + W-6 | list_tasks tool + mapping args + cache → EPIC W TERMINÉ
-| 101 | X-0 + X-1 | Cadrage + VibecodingPlan structuré (dépend de W)
-| 102 | X-2 + X-3 | TaskResultVerifier + boucle verify→adapt
 | 103 | X-4 + X-5 + X-6 | RollbackStrategy + intégration W + Cucumber → EPIC X TERMINÉ
 | 104 | Z-0 + Z-1 | Autofocus cadrage + ZoomLevel
 | 105 | Z-2 + Z-3 | ContextZoomer + ZoomPolicy

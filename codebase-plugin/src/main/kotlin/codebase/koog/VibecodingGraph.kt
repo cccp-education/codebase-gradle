@@ -1,6 +1,11 @@
 package codebase.koog
 
 import codebase.koog.llm.LlmProvider
+import codebase.koog.planning.StepVerifier
+import codebase.koog.planning.TaskResult
+import codebase.koog.planning.TaskResultVerifier
+import codebase.koog.planning.TaskVerdict
+import codebase.koog.planning.VibecodingStep
 import codebase.koog.session.SessionRecord
 import codebase.koog.session.SessionRepository
 import codebase.koog.tracking.TokenTracker
@@ -37,6 +42,40 @@ import org.slf4j.LoggerFactory
  * Rétrocompatibilité : si llmProvider est null → pas de callLLM (mode déterministe comme avant V-4).
  * Si sessionRepository ET connectionFactory sont null → pas de persistance.
  * Si connectionFactory est fourni → création automatique d'un SessionRepository interne.
+ *
+ * === EPIC X Audit (Session 101 — X-0) : Points d'insertion verify→adapt ===
+ *
+ * Flux actuel (linéaire, une action à la fois) :
+ *   buildContext → [callLLM | executeTools] → persistState → checkProgress → (↺)
+ *
+ * Gaps identifiés pour le pattern multi-step verify→adapt :
+ *
+ * [INSERT-X1] VibecodingPlan structuré :
+ *   Remplacer `Plan` (Epic→UserStory→GradleTask plat) par `VibecodingPlan`
+ *   (steps ordonnés avec expectedOutput, maxRetries, verifyHook, dépendances).
+ *   Point d'insertion : buildContextNode() — le plan généré doit être un VibecodingPlan.
+ *   Impact : VibecodingState.plan passe de `Plan?` à `VibecodingPlan?`.
+ *
+ * [INSERT-X2] TaskResultVerifier :
+ *   Après executeToolsNode() (ligne ~166), insérer verifyStepNode() qui parse
+ *   la sortie stdout/stderr et détermine SUCCESS/FAILED/BLOCKED/UNKNOWN.
+ *   Actuellement : seule l'erreur (exception) est captée, pas le résultat sémantique.
+ *
+ * [INSERT-X3] Boucle verify→adapt :
+ *   Remplacer la V-6 feedback loop (error→replan→retry, lignes 174-207) par
+ *   une boucle structurée : executeStep → verifyResult → [nextStep | adapt | rollback].
+ *   Le LLM reçoit le résultat brut + les fichiers modifiés + le plan initial.
+ *
+ * [INSERT-X4] RollbackStrategy :
+ *   checkProgressNode() (ligne 451) — ajouter STOP_ON_ERROR / REVERT_AND_CONTINUE /
+ *   MARK_SKIPPED / FALLBACK_HUMAN. Actuellement : seule erreur fatale (finished=true).
+ *
+ * [INSERT-X5] Intégration W (TaskSchemaScanner) :
+ *   callLLMNode() (ligne 297) — le LLM utilise le catalogue list_tasks (W-4)
+ *   pour construire son plan multi-step avant d'exécuter.
+ *
+ * [INSERT-X6] Tests Cucumber :
+ *   Scénario "agent planifie, échoue, adapte, réussit" avec projet test buggé.
  */
 class VibecodingGraph(
     val augmentedGraph: KoogAugmentedContextGraph? = null,
@@ -44,7 +83,8 @@ class VibecodingGraph(
     val llmProvider: LlmProvider? = null,
     val sessionRepository: SessionRepository? = null,
     val connectionFactory: ConnectionFactory? = null,
-    val tokenTracker: TokenTracker = TokenTracker()
+    val tokenTracker: TokenTracker = TokenTracker(),
+    val stepVerifier: StepVerifier = StepVerifier(llmProvider, tokenTracker)
 ) {
 
     private val log = LoggerFactory.getLogger(VibecodingGraph::class.java)
@@ -170,38 +210,40 @@ class VibecodingGraph(
                     state.withError("ExecuteToolsFailed: ${e.message}")
                 }
 
-                // V-6 Feedback Loop : erreur récupérable → retry si maxRetries pas dépassé
+                // X-3 verify→adapt : StepVerifier parse le résultat et gère le verdict
+                if (state.error == null && state.lastToolResult.isNotBlank()) {
+                    state = verifyStepNode(state)
+                }
+
+                // V-6 Error Recovery : si StepVerifier a détecté FAILED/BLOCKED/UNKNOWN
+                // ou si executeTools a lancé une exception
                 if (state.error != null) {
                     if (state.retryCount < state.maxRetries) {
-                        log.info("[VibecodingGraph] V-6 retry ${state.retryCount}/${state.maxRetries}: replanning after error '{}'", state.error)
-                        // Appeler le LLM pour replanifier
+                        log.info("[VibecodingGraph] Retry ${state.retryCount}/${state.maxRetries} after: {}", state.error)
                         if (llmProvider != null) {
                             val replanPrompt = buildReplanPrompt(state)
                             tokenTracker.trackPrompt(replanPrompt)
                             try {
                                 val replanResponse = runBlocking { llmProvider.call(replanPrompt) }
                                 tokenTracker.trackCompletion(replanResponse)
-                                log.info("[VibecodingGraph] V-6 replan response: {} chars", replanResponse.length)
+                                log.info("[VibecodingGraph] Replan response: {} chars", replanResponse.length)
                                 state = state.clearError().incrementRetry().nextIteration().copy(
                                     lastToolResult = "Replan: $replanResponse"
                                 )
                             } catch (e: Exception) {
-                                log.warn("[VibecodingGraph] V-6 replan LLM call failed: {}", e.message)
+                                log.warn("[VibecodingGraph] Replan LLM call failed: {}", e.message)
                                 state = state.incrementRetry()
-                                // continue → next loop iteration will check retryCount again
                             }
                         } else {
-                            // Sans LLM : incrémente le retry et continue (mode résilient)
-                            log.info("[VibecodingGraph] V-6 no LLM available — retry ${state.retryCount}/${state.maxRetries}, continuing")
+                            log.info("[VibecodingGraph] No LLM — retry ${state.retryCount}/${state.maxRetries}, continuing")
                             state = state.clearError().incrementRetry().nextIteration()
                         }
-                        // Si toujours en erreur après replan → abandon
                         if (state.error != null && state.retryCount >= state.maxRetries) {
-                            log.warn("[VibecodingGraph] V-6 maxRetries (${state.maxRetries}) exhausted, giving up")
+                            log.warn("[VibecodingGraph] maxRetries (${state.maxRetries}) exhausted")
                             return state.withError("MaxRetriesExhausted: ${state.error}")
                         }
                     } else {
-                        log.warn("[VibecodingGraph] V-6 maxRetries (${state.maxRetries}) already exhausted, returning error")
+                        log.warn("[VibecodingGraph] maxRetries (${state.maxRetries}) exhausted, returning error")
                         return state.withError("MaxRetriesExhausted: ${state.error}")
                     }
                 }
@@ -460,6 +502,36 @@ class VibecodingGraph(
         if (noWorkRemaining && state.iteration > 0) return state.finish()
 
         return state
+    }
+
+    // ── X-3 verify→adapt helpers ──
+
+    /**
+     * Vérifie la sortie d'une tâche exécutée via StepVerifier.
+     * Extrait le step courant du plan et parse le résultat.
+     */
+    private fun verifyStepNode(state: VibecodingState): VibecodingState {
+        val step = extractCurrentStep(state) ?: return state
+        return stepVerifier.verifyAndAdapt(state, step)
+    }
+
+    /**
+     * Extrait le [VibecodingStep] correspondant à la tâche courante du plan.
+     * Retourne null si pas de plan ou toutes les tâches sont faites.
+     */
+    private fun extractCurrentStep(state: VibecodingState): VibecodingStep? {
+        val plan = state.plan ?: return null
+        val allTasks = plan.epics.flatMap { epic ->
+            epic.userStories.flatMap { story -> story.tasks }
+        }
+        val nextIndex = state.executedTasks.size
+        if (nextIndex >= allTasks.size || nextIndex < 0) return null
+        val task = allTasks[nextIndex]
+        return VibecodingStep(
+            description = task.description,
+            gradleTask = task.gradleTask,
+            expectedOutput = "BUILD SUCCESSFUL"
+        )
     }
 
     // ── Timeout helpers ──

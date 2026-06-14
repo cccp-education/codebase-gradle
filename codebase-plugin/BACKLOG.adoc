@@ -229,7 +229,7 @@ _Contenu de V1_ : sessions, steps, indexes, colonne confidentiality_level
 
 == EPIC W — Auto-discovery Gradle Tasks → ToolRegistry + OpenAPI Spec
 
-**Statut** : EN COURS (4/7 sous-EPICs)
+**Statut** : ✅ TERMINE (7/7 sous-EPICs, session 100)
 **Priorite** : P1
 **Origine** : Code Review V16 (2026-05-27) — suggestion architecture cross-borough
 
@@ -259,9 +259,9 @@ LLM découvre et appelle n'importe quelle tâche Gradle sans code supplémentair
 * [x] W-1 : Implémenter `TaskSchemaScanner` — inspecte le task graph Gradle, extrait les métadonnées des tâches (inputs, options, description, groupe) (session 098)
 * [x] W-2 : Générer un schema structuré (JSON/OpenAPI) depuis les plugin descriptors Gradle (session 099)
 * [x] W-3 : Auto-registrer les tâches découvertes dans ToolRegistry au démarrage de VibecodingGraph (session 099)
-* [ ] W-4 : Exposer le catalogue au LLM via un tool `list_tasks` — l'agent peut requêter les tâches disponibles par groupe, description, mots-clés
-* [ ] W-5 : Mapping `--option` → arguments structurés — le ToolRegistry construit les arguments Gradle depuis la décision LLM
-* [ ] W-6 : Cache des schémas + invalidation à chaud quand un nouveau plugin est appliqué
+* [x] W-4 : Exposer le catalogue au LLM via un tool `list_tasks` — l'agent peut requêter les tâches disponibles par groupe, description, mots-clés (session 100 — TaskListFormatter + handler + 7 Cucumber PASS)
+* [x] W-5 : Mapping `--option` → arguments structurés — le ToolRegistry construit les arguments Gradle depuis la décision LLM (session 100 — GradleTaskArgsMapper + 6 JUnit5 PASS)
+* [x] W-6 : Cache des schémas + invalidation à chaud quand un nouveau plugin est appliqué (session 100 — SchemaCache + 6 JUnit5 PASS)
 
 === Bénéfice attendu
 

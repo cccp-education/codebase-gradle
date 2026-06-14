@@ -165,6 +165,51 @@ class VibecodingTaskTest {
     }
 
     @Test
+    fun `list_tasks tool should be registered after executeVibecoding`() {
+        val project = ProjectBuilder.builder().build()
+        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
+            it.intention.set("list tasks test")
+            it.dryRun.set(true)
+            it.maxActions.set(1)
+        }.get()
+        task.executeVibecoding()
+
+        val result = task.toolRegistry.execute("list_tasks", emptyMap(), "/tmp", dryRun = false)
+        assertTrue(result.contains("gradle_vibecode"), "Should list vibecode task")
+        assertTrue(result.contains("generate"), "Should show group")
+    }
+
+    @Test
+    fun `list_tasks with group filter should return matching tasks`() {
+        val project = ProjectBuilder.builder().build()
+        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
+            it.intention.set("list tasks group filter")
+            it.dryRun.set(true)
+            it.maxActions.set(1)
+        }.get()
+        task.executeVibecoding()
+
+        val result = task.toolRegistry.execute("list_tasks",
+            mapOf("group" to "generate"), "/tmp", dryRun = false)
+        assertTrue(result.contains("gradle_vibecode"), "Should match generate group")
+        assertTrue(result.contains("generate"), "Should show group name")
+    }
+
+    @Test
+    fun `list_tasks dryRun should not execute`() {
+        val project = ProjectBuilder.builder().build()
+        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
+            it.intention.set("list tasks dryRun")
+            it.dryRun.set(true)
+            it.maxActions.set(1)
+        }.get()
+        task.executeVibecoding()
+
+        val result = task.toolRegistry.execute("list_tasks", emptyMap(), "/tmp", dryRun = true)
+        assertTrue(result.startsWith("DRY RUN:"), "Should return DRY RUN prefix: $result")
+    }
+
+    @Test
     fun `audit file should contain valid JSONL`(@TempDir tempDir: File) {
         val project = ProjectBuilder.builder()
             .withProjectDir(tempDir)

@@ -50,4 +50,28 @@ class ToolRegistryTest {
         assertEquals(tempDir.absolutePath, entry.workspaceRoot,
             "Audit entry should contain workspaceRoot")
     }
+
+    @Test
+    fun `registerHandler should execute custom tool logic`() {
+        registry.registerHandler("list_tasks") { _, _, _ ->
+            "task_a: build\n  group: build\n  options: []\n---\ntask_b: test\n  group: verification\n  options: [--tests]\n==="
+        }
+        val result = registry.execute("list_tasks", emptyMap<String, String>(), "/tmp")
+        assertTrue(result.contains("task_a: build"), "Should list task_a")
+        assertTrue(result.contains("task_b: test"), "Should list task_b")
+    }
+
+    @Test
+    fun `custom handler should take precedence over builtin if name matches`() {
+        registry.registerHandler("read_file") { _, _, _ -> "custom_read_handler_result" }
+        val result = registry.execute("read_file", mapOf("path" to "nonexistent.txt"), "/tmp")
+        assertEquals("custom_read_handler_result", result)
+    }
+
+    @Test
+    fun `handlerless custom tool should throw ToolkitIsMissingException`() {
+        assertThrows(Exception::class.java) {
+            registry.execute("unknown_tool", emptyMap<String, String>(), "/tmp")
+        }
+    }
 }

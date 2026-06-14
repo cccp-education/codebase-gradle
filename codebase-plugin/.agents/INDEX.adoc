@@ -4,10 +4,10 @@
 _Regles absolues_ : voir `AGENT.adoc`
 _Ontologie spatiale_ : voir `configuration/.agents/AGENT_GOVERNANCE.adoc`
 
-_Derniere mise a jour_ : 2026-06-14 (Session 099 — W-2+W-3 OpenAPI Spec + Auto-register ToolRegistry)
-_Session precedente_ : 098 — W-0+W-1 TaskSchemaScanner
-_Session en cours_ : 099 — W-2+W-3 OpenAPI Spec + Auto-register ToolRegistry (TERMINÉE)
-_Session suivante_ : 100 — W-4+W-5+W-6 list_tasks + mapping args + cache → EPIC W TERMINÉ
+_Derniere mise a jour_ : 2026-06-14 (Session 102 — X-2 + X-3 TaskResultVerifier + boucle verify→adapt, EPIC X 4/7)
+_Session precedente_ : 101 — X-0 + X-1 Cadrage + VibecodingPlan structuré
+_Session en cours_ : 103 — X-4 + X-5 + X-6 RollbackStrategy + intégration W + Cucumber
+_Session suivante_ : 104 — Z-0 + Z-1 Autofocus cadrage + ZoomLevel
 _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/` (N=70, multiple de 10)
 
 '''
@@ -38,6 +38,10 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 
 |===
 | # | Date | Type | Sujet | Score
+| 102 | 2026-06-14 | feat+tdd+ddd+bdd | X-2 + X-3 TaskResultVerifier + boucle verify→adapt. TaskResultVerifier.kt (52l, 4 verdicts), StepVerifier.kt (98l, retry/LLM replan). Intégration VibecodingGraph.execute() — verifyStepNode + V-6 fallback. 14 unit + 6 Cucumber X-2 + 7 unit X-3 = 27/27 PASS. Full suite 330+/333 PASS. EPIC X 4/7. publishToMavenLocal OK. | 10/10
+| 101 | 2026-06-14 | feat+tdd+ddd+bdd | X-0 + X-1 Cadrage + VibecodingPlan structuré. X-0: 6 points insertion verify→adapt documentés dans VibecodingGraph.kt. X-1: VibecodingPlan.kt (3 data classes, 14l), RollbackStrategy enum (4 valeurs). 14 JUnit5 + 8 Cucumber @epic_x_1 = 22/22 PASS. Full suite 330/333 PASS (3 pré-existants). publishToMavenLocal OK. | 10/10
+| 100 | 2026-06-14 | feat+tdd+ddd+bdd | W-4+W-5+W-6 list_tasks + mapping args + cache → EPIC W TERMINÉ. TaskListFormatter (36l, 9 tests), GradleTaskArgsMapper (27l, 6 tests), SchemaCache (22l, 6 tests). Cucumber @epic_w_4 7/7 PASS. Full suite 316/320 PASS (4 pré-existants). publishToMavenLocal OK. | 10/10
+| 099 | 2026-06-14 | feat+tdd+ddd+bdd | W-2+W-3 OpenAPI Spec + Auto-register ToolRegistry (21/21 PASS, audit BACKLOG) | 10/10
 | 096 | 2026-06-13 | feat+tdd+ddd+bdd | Y-6 AgenticExternalImporter — Import littérature agentique externe (Copilot, Cursor, Claude, Gemini). AgenticExternalImporter.kt (55l), normalizeContent() markdown→AsciiDoc. 7 JUnit5 + 5 Cucumber @epic_y_6 = 12/12 PASS. cucumberTestEpicY6 task. Total agentic 90 unit + 30 Cucumber = 120/120 PASS. | 10/10
 | 095 | 2026-06-13 | feat+tdd+ddd+bdd | Y-5 AgenticIngestor — Pipeline ingestion complet (chunk→ontologize→diff detection→store→compile). AgenticIngestor.kt, IngestionReport. 7 JUnit5 + 5 Cucumber = 12/12 PASS. cucumberTestEpicY5 task. Total agentic 83 unit + 25 Cucumber = 108/108 PASS. | 10/10
 | 088 | 2026-05-30 | feat+tests+infra | OCR-3b P1 Config YAML/CLI/DSL + P2 CI/CD — -PinputFile CLI mappe CodebasePlugin → OcrTask, llm-config.yml → GeminiConfig → OcrTask, chaîne priorite CLI>DSL>YAML>convention, YAML corrompu fallback, .github/workflows/ocr.yml (push/PR JDK 24 OCR), 22/22 tests PASS (16 existants + 6 nouveaux), zero regression, publishToMavenLocal OK | 10/10
@@ -134,8 +138,8 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 | EPIC-V-8 | *Dashboard CLI* — DashboardTask Gradle (vibecodingDashboard) + enregistrement CodebasePlugin. 3/3 JUnit5 + 2/2 Cucumber @epic_v_8 PASS. | ✅ TERMINE (Session 069) | P0
 | EPIC-V-6-FEEDBACK | *Feedback Loop error→replan→retry* — Boucle de retry autonome (maxRetries=3), buildReplanPrompt, checkProgress revisité. Dernier gap avant agent 100%. 4/4 JUnit5 + 3/3 Cucumber @epic_v_6 PASS. Machine vibecoding = 100%. | ✅ TERMINE (Session 074) | P0
 | EPIC G | Publication Maven Central + Gradle Portal — groupId education.cccp, namespace cccp-education. | ✅ TERMINE (session 091 — codebase-plugin:0.0.2 publié via nmcp, contrats N0 corrigés 0.0.1). | P0
-| EPIC W | *Auto-discovery Gradle Tasks* — ToolRegistry + OpenAPI Spec. | 🔄 EN COURS (W-0 ✅, W-1 ✅, session 098). 7 sous-EPICs, ~18 pts. | P1
-| EPIC X | *Décision Multi-Step verify→adapt* — Plan structuré, TaskResultVerifier, RollbackStrategy. | 🔲 BACKLOG (cadré V16). 7 sous-EPICs, ~20 pts. | P1
+| EPIC W | *Auto-discovery Gradle Tasks* — ToolRegistry + OpenAPI Spec. | ✅ TERMINE (7/7 — W-0→W-6, session 100). 21 unit + 7 Cucumber PASS. | P1
+| EPIC X | *Décision Multi-Step verify→adapt* — Plan structuré, TaskResultVerifier, RollbackStrategy. | 🔄 EN COURS (4/7 — X-0 ✅ X-1 ✅ X-2 ✅ X-3 ✅, sessions 100-102). 7 sous-EPICs, ~20 pts. | P1
 | EPIC Y | *Agentic Literature Compiler* — Compiler littérature agentique → artefacts exécutables. | 🔄 EN COURS (Y-1 18/18 ✅, Y-2 20/20 ✅, Y-3 31/31 ✅, Y-4 27/27 ✅, Y-5 12/12 ✅, Y-6 12/12 ✅, session 096). 8 sous-EPICs, ~26 pts. | P1
 | EPIC-V-6-POOL | *Adaptation Ollama Cloud Pool* — Le pool 11437-11465 ne contient que gemma4:31b-cloud (pas de modèles premium qwen3.5/deepseek-v4/glm-5.1/minimax-m2.7/kimi-k2.6). Adaptation OllamaLlmProvider pour utiliser gemma4:31b-cloud. Script scan-ollama-cloud.sh. 4 sous-EPICs (V-6-POOL-0→V-6-POOL-3, ~5 pts). | 🔴 EN ATTENTE (cadré Session 077). | P0
 | EPIC Z | *Autofocus* — Accommodation contextuelle programmatique (zoom x1↔x1000). 11ème doc Jardin Secret. Package `autofocus/` dans `codebase/koog/`. 5ème verbe ZOOMER. | 🔲 BACKLOG (cadré Session 073). 7 sous-EPICs, ~23 pts. Voir `AUTOFOCUS_CAPABILITY.adoc`. | P1
