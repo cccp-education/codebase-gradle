@@ -1,0 +1,47 @@
+= Session 103 — Brainstorming Protocole opencode↔Gradle
+:session: 103
+:date: 2026-06-14
+:type: brainstorming+cadrage
+:score: 10/10
+
+== Contexte
+
+Session de brainstorming sur l'architecture thin-client opencode↔Gradle.
+L'utilisateur a identifié un gap architectural : opencode est un agent complet
+(LLM + tools + UI) alors que la philosophie DOGFOOD FIRST exige que tout le
+métier soit dans des plugins Gradle.
+
+== Actions
+
+. Analyse du gap : opencode = UI + LLM + Tools + RAG (monolithique) vs
+  cible = opencode thin client UI + Gradle engine (VibecodingTask)
+. Identification des briques existantes : US-9.11/9.12 OpencodeInjector,
+  EPIC V VibecodingTask, EPIC W ToolRegistry, SessionRepository R2DBC
+. Identification des gaps : protocole de communication opencode↔Gradle,
+  mode daemon/serveur pour latence interactive, boucle session interactive
+. Décision : contrats N0 dans workspace-bom (MEMPHIS), moteur dans codebase (N1),
+  pont dans runner (N3)
+. Cadrage EPIC SESSION-PROTOCOL dans BACKLOG.adoc codebase (5 sous-tâches SP-0→SP-4)
+. Cadrage EPIC MEM-4 opencode-session-contracts dans BACKLOG.adoc workspace-bom
+  (7ème artefact N0, 5 US, ~8 pts, 6 classes/interfaces)
+. Mise à jour INDEX.adoc codebase (EPIC SP) + INDEX.adoc workspace-bom (MEM-4)
+
+== Fichiers modifiés
+
+- `codebase-plugin/BACKLOG.adoc` — EPIC SESSION-PROTOCOL ajouté
+- `codebase-plugin/.agents/INDEX.adoc` — EPIC SP dans roadmap
+- `workspace-bom/BACKLOG.adoc` — EPIC MEM-4 ajouté
+- `workspace-bom/.agents/INDEX.adoc` — MEM-4 dans roadmap
+
+== Résultat
+
+Architecture thin-client cadrée sur 2 boroughs. Contrats N0 (data classes)
+dans le Shared Kernel MEMPHIS, implémentation moteur dans codebase N1,
+pont dans runner N3. Prochaine étape : implémenter MEM-4 dans workspace-bom.
+
+== Leçon
+
+Le vibecoding en CI/CD est déjà purement programmatique (VibecodingTask batch).
+Le ralentissement local vient d'opencode dans la boucle interactive.
+Un seul moteur Gradle pour les deux modes (batch CI/CD + daemon local)
+résout l'asymétrie.

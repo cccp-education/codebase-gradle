@@ -801,3 +801,103 @@ cd foundry/public/codebase-gradle && ./gradlew publish closeAndRelease
 |---|---|
 | codebase-plugin | https://central.sonatype.com/artifact/education.cccp/codebase-plugin |
 | codebase-contracts | https://central.sonatype.com/artifact/education.cccp/codebase-contracts |
+
+'''
+
+== EPIC SESSION-PROTOCOL — Protocole opencode↔Gradle : Thin Client + Moteur Gradle
+
+**Statut** : IDÉE — CADRÉ (Session 103 brainstorming)
+**Priorité** : P1
+**Dépend de** : workspace-bom (MEMPHIS N0) pour les contrats, EPIC V (VibecodingTask moteur)
+
+_Pourquoi_ : Aujourd'hui, opencode est un agent complet (LLM + tools + UI terminal).
+La philosophie DOGFOOD FIRST dit : tout le métier doit être dans des plugins Gradle,
+pas dans un CLI externe. L'objectif est d'inverser le contrôle :
+
+```
+AVANT : opencode = UI + LLM + Tools + RAG (tout-en-un)
+APRÈS  : opencode = UI terminal uniquement (thin client)
+         └─ prompt → tâche Gradle → moteur codebase (LLM/RAG/tools) → réponse → affichage
+```
+
+=== Architecture cible
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ opencode (thin client)                                  │
+│ - Capture prompt utilisateur                            │
+│ - Affiche réponse                                       │
+│ - ZÉRO logique LLM, ZÉRO RAG, ZÉRO tools               │
+└───────────┬─────────────────────────────────────────────┘
+            │ SessionPrompt (contrat N0)
+            ▼
+┌─────────────────────────────────────────────────────────┐
+│ runner-gradle (N3) ou workspace-gradle (N4)             │
+│ - Pont thin-client ↔ Gradle engine                      │
+│ - Gère le cycle de vie de session                       │
+│ - Mode daemon/serveur pour latence interactive          │
+└───────────┬─────────────────────────────────────────────┘
+            │ VibecodingTask (contrat N0)
+            ▼
+┌─────────────────────────────────────────────────────────┐
+│ codebase-gradle (N1) — Moteur                           │
+│ - VibecodingTask : LLM + ToolRegistry + RAG             │
+│ - SessionRepository : persistance cross-session         │
+│ - CompositeContextBuilder : contexte augmenté           │
+│ - EPIC X : plan→execute→verify→adapt                    │
+└─────────────────────────────────────────────────────────┘
+```
+
+=== Contrats N0 nécessaires (workspace-bom, MEMPHIS)
+
+Un 7ème artefact `opencode-session-contracts` dans workspace-bom :
+
+[source,kotlin]
+----
+data class SessionPrompt(
+    val sessionId: UUID,
+    val prompt: String,
+    val context: AgentContext?,          // contexte injecté programmatiquement
+    val maxActions: Int = 10,
+    val model: String? = null,           // override modèle
+)
+
+data class SessionResponse(
+    val sessionId: UUID,
+    val output: String,                  // réponse formatée pour affichage
+    val toolCalls: List<ToolCallRecord>, // traces d'exécution
+    val tokenUsage: TokenUsage,
+    val status: SessionStatus,           // IN_PROGRESS | COMPLETED | ERROR
+)
+
+data class AgentContext(
+    val eagerRules: String,              // règles AGENT.adoc
+    val ragChunks: List<String>,         // résultats RAG pgvector
+    val graphRelations: String,          // relations Graphify
+    val backlogItems: List<String>,      // items BACKLOG pertinents
+)
+----
+
+=== Sous-tâches envisagées
+
+* [ ] SP-0 : Cadrage — Définir le contrat `opencode-session-contracts` dans workspace-bom (MEMPHIS N0). Types SessionPrompt/SessionResponse/AgentContext/SessionStatus. 7ème artefact N0.
+* [ ] SP-1 : Implémenter `SessionProtocolTask` dans codebase — tâche Gradle qui reçoit un SessionPrompt, exécute VibecodingTask, retourne SessionResponse. Point d'entrée unique pour le thin client.
+* [ ] SP-2 : Mode serveur/daemon — Tâche Gradle en écoute continue (stdin/socket) pour éviter la latence de compilation à chaque tour de dialogue. Réutilisation du Gradle daemon.
+* [ ] SP-3 : Pont N3 — runner-gradle (ou nouveau plugin) implémente le dispatch thin-client → SessionProtocolTask → réponse. Gère le cycle de vie de session (création, reprise, clôture).
+* [ ] SP-4 : Adaptation opencode — Mode "passthrough" où opencode ne fait que UI (capture prompt, affiche réponse) et délègue tout le reste à la tâche Gradle.
+* [ ] SP-5 : Tests — Session interactive simulée : 5 prompts → 5 réponses via SessionProtocolTask, vérification cohérence cross-tour (contexte conservé, session resume).
+
+=== Bénéfice attendu
+
+opencode passe de "agent monolithique externe" à "interface utilisateur terminal".
+Toute la logique métier (LLM, RAG, tools, planification, vérification) est dans
+des plugins Gradle versionnés, testés, publiables sur Maven Central.
+
+C'est la dernière brique pour le DOGFOOD FIRST complet :
+l'humain dialogue avec un terminal, le terminal dialogue avec Gradle,
+Gradle dialogue avec les LLMs. Zéro SaaS, zéro CLI externe propriétaire.
+
+=== Référence
+
+Brainstorming Session 103 (2026-06-14) — Discussion architecture thin-client opencode↔Gradle.
+Contrats N0 dans workspace-bom (MEMPHIS), moteur dans codebase (N1), pont dans runner (N3).

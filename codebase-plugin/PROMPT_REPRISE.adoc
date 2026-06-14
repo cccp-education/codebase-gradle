@@ -1,20 +1,18 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 103
-:session: 103
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 104
+:session: 104
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 102 — X-2+X-3 TaskResultVerifier + boucle verify→adapt (27 unit+Cucumber PASS)
+:sessions_precedente: 103 — Brainstorming Protocole opencode↔Gradle (cadrage EPIC SP + MEM-4)
 
 == Contexte Hérité
 
-- EPIC W TERMINÉ (7/7) — ToolRegistry enrichi list_tasks + exec_gradle args structurés
+- EPIC W TERMINÉ (7/7)
 - EPIC X 4/7 — X-0✅ X-1✅ X-2✅ X-3✅
-- X-0: 6 points insertion verify→adapt documentés dans VibecodingGraph.kt
-- X-1: VibecodingPlan.kt + RollbackStrategy (4 valeurs) — 14 unit + 8 Cucumber PASS
-- X-2: TaskResultVerifier.kt (52l, 4 verdicts SUCCESS/FAILED/BLOCKED/UNKNOWN) — 14 unit + 6 Cucumber PASS
-- X-3: StepVerifier.kt (98l) intégré dans VibecodingGraph.execute() — 7 unit PASS
-- Full suite 330+/333 PASS (3 pré-existants OllamaLlmProvider + Migration)
+- EPIC Y 6/8 — Y-1✅ Y-2✅ Y-3✅ Y-4✅ Y-5✅ Y-6✅ Y-7✅
+- EPIC SP cadré (BACKLOG) — Protocole opencode↔Gradle, dépend de MEM-4 (workspace-bom N0)
+- Full suite 330+/333 PASS
 - publishToMavenLocal OK
 
-== Mission Session 103 — EPIC X-4 + X-5 + X-6
+== Mission Session 104 — EPIC X-4 + X-5 + X-6
 
 *X-4* : `RollbackStrategy` — Intégrer les 4 stratégies dans la boucle d'exécution :
   - `STOP_ON_ERROR` — arrête tout (comportement actuel)
@@ -37,9 +35,9 @@
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 103 | X-4 + X-5 + X-6 | RollbackStrategy + intégration W + Cucumber → EPIC X TERMINÉ
-| 104 | Z-0 + Z-1 | Autofocus cadrage + ZoomLevel
-| 105 | Z-2 + Z-3 | ContextZoomer + ZoomPolicy
-| 106 | Z-4 + Z-5 + Z-6 | Intégration VibecodingGraph → EPIC Z TERMINÉ
-| 107 | 12 | Dilution Article de Blog (quick win)
-| 108+ | 5 | Pipeline fine-tuning experts CDA/FPA (lourd)
+| 104 | X-4 + X-5 + X-6 | RollbackStrategy + intégration W + Cucumber → EPIC X TERMINÉ
+| 105 | Z-0 + Z-1 | Autofocus cadrage + ZoomLevel
+| 106 | Z-2 + Z-3 | ContextZoomer + ZoomPolicy
+| 107 | Z-4 + Z-5 + Z-6 | Intégration VibecodingGraph → EPIC Z TERMINÉ
+| 108 | 12 | Dilution Article de Blog (quick win)
+| 109+ | 5 | Pipeline fine-tuning experts CDA/FPA (lourd)
