@@ -234,7 +234,7 @@ _Contenu de V1_ : sessions, steps, indexes, colonne confidentiality_level
 
 == EPIC W — Auto-discovery Gradle Tasks → ToolRegistry + OpenAPI Spec
 
-**Statut** : IDÉE — À CADRER
+**Statut** : EN COURS (2/7 sous-EPICs)
 **Priorite** : P1
 **Origine** : Code Review V16 (2026-05-27) — suggestion architecture cross-borough
 
@@ -260,8 +260,8 @@ LLM découvre et appelle n'importe quelle tâche Gradle sans code supplémentair
 
 === Sous-tâches envisagées
 
-* [ ] W-0 : Analyse — Inventaire des schémas de tâches Gradle existants (VibecodingTask, GenerateSPGTask, etc.) et mapping avec le format ToolRegistry
-* [ ] W-1 : Implémenter `TaskSchemaScanner` — inspecte le task graph Gradle, extrait les métadonnées des tâches (inputs, options, description, groupe)
+* [x] W-0 : Analyse — Inventaire des schémas de tâches Gradle existants (VibecodingTask, GenerateSPGTask, etc.) et mapping avec le format ToolRegistry (session 098)
+* [x] W-1 : Implémenter `TaskSchemaScanner` — inspecte le task graph Gradle, extrait les métadonnées des tâches (inputs, options, description, groupe) (session 098)
 * [ ] W-2 : Générer un schema structuré (JSON/OpenAPI) depuis les plugin descriptors Gradle
 * [ ] W-3 : Auto-registrer les tâches découvertes dans ToolRegistry au démarrage de VibecodingGraph
 * [ ] W-4 : Exposer le catalogue au LLM via un tool `list_tasks` — l'agent peut requêter les tâches disponibles par groupe, description, mots-clés

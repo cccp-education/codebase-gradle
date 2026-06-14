@@ -1,0 +1,39 @@
+= Rapport Session 098 — EPIC W-0 + W-1 : Auto-discovery TaskSchemaScanner
+:session: 098
+:date: 2026-06-14
+:borough: Queens — codebase-gradle (N1)
+
+== Contexte
+
+EPIC W démarre après EPIC Y terminé (session 097). Objectif : auto-découverte des tâches
+Gradle → ToolRegistry pour que le LLM vibecoding connaisse le catalogue des tâches disponibles.
+
+== Actions W-0 (Analyse)
+
+* Inventaire des 8 tâches enregistrées par CodebasePlugin :
+  collectFromCodebase, collectCompositeContext, ocrDocument (collect)
+  generatePlan, vibecode, generateCompositeContext (generate)
+  vibecodingDashboard (tracking)
+  qualityGate (validate)
+* Mapping ToolRegistry : `gradle_<taskName>` avec description + options
+
+== Actions W-1 (TaskSchemaScanner)
+
+* TaskSchema.kt : data class TaskSchema(name, description, group, type, options: List<TaskOption>)
+  + toToolInfo() → ToolInfo N0 ("gradle_" préfixe)
+* TaskSchemaScanner.kt : scanAll(), scanByGroup(), walkHierarchy reflexion @Option, distinctBy
+* TaskSchemaScannerTest.kt : 7 tests JUnit5 PASS
+  - scanAll discovers all 8 tasks
+  - scanAll captures task name and group
+  - vibecode task has options extracted (intention, dryRun, maxActions, model)
+  - qualityGate task has options extracted (output, domain, minAcceptableScore)
+  - scanByGroup filters by group correctly
+  - toToolInfo maps correct gradle_ prefix
+  - tasks without group are excluded
+
+== Résultat
+
+- 3 fichiers créés (TaskSchema.kt, TaskSchemaScanner.kt, TaskSchemaScannerTest.kt)
+- 7/7 tests JUnit5 PASS
+- Compilation OK, 0 régression
+- BACKLOG.adoc mis à jour (EPIC W 2/7)

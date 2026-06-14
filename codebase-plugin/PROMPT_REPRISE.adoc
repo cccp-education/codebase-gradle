@@ -1,29 +1,35 @@
-= PROMPT_REPRISE — Codebase — Session 098
-:session: 098
-:sessions_precedente: 097 — Y-7 AgenticChunkEnforcement (10 unit + 7 Cucumber = 17/17 PASS)
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 099
+:session: 099
+:borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
+:sessions_precedente: 098 — W-0+W-1 TaskSchemaScanner (7/7 JUnit5 PASS)
 
 == Contexte Hérité
 
-- EPIC Y-1 AgenticChunker : 18/18 PASS
-- EPIC Y-2 AgenticOntologizer : 20/20 PASS
-- EPIC Y-3 AgenticSchema : 20 JUnit5 + 11 Cucumber = 31/31 PASS
-- EPIC Y-4 AgenticCompiler : 18 JUnit5 + 9 Cucumber = 27/27 PASS
-- EPIC Y-5 AgenticIngestor : 7 JUnit5 + 5 Cucumber = 12/12 PASS
-- EPIC Y-6 AgenticExternalImporter : 7 JUnit5 + 5 Cucumber = 12/12 PASS
-- EPIC Y-7 AgenticChunkEnforcement : 10 JUnit5 + 7 Cucumber = 17/17 PASS
-  * EnforcementRule.kt (data class + EnforcementResult)
-  * AgenticChunkEnforcement.kt (133 lignes) — registerFromCompiled + check
-  * Pipeline complet : règle AGENT.adoc → chunk → ontologize → compile → enforce → ToolRegistry bloque/allow
-  * cucumberTestEpicY7 Gradle task
-- Total agentic : 100 unit + 37 Cucumber = 137/137 PASS
-- Package codebase.koog.agentic/ : 13 fichiers
+- EPIC W-0 + W-1 TERMINÉS : TaskSchema (name, description, group, options, toToolInfo) + TaskSchemaScanner (walkHierarchy, @Option reflexion)
+- 3 fichiers créés : TaskSchema.kt, TaskSchemaScanner.kt, TaskSchemaScannerTest.kt
+- 7/7 tests JUnit5 PASS, 0 régression
+- BACKLOG.adoc à jour (EPIC W 2/7)
+- ToolRegistry existant (7 tools N0) + gradle_<taskName> mapping prêt
 
-== Prochaine Session (098)
+== Mission Session 099 — EPIC W-2 + W-3
 
-- EPIC W (Auto-discovery Gradle Tasks → ToolRegistry + OpenAPI Spec)
-  OU
-- EPIC X (Décision Multi-Step verify→adapt)
-  OU
-- EPIC OCR suite (Gemini réel)
-  OU
-- EPIC V-8 (Resume Session + Dashboard CLI)
+*W-2* : Générer un schema structuré JSON/OpenAPI depuis le TaskSchemaScanner.
+  Format OpenAPI `paths` → chaque tâche = un endpoint.
+
+*W-3* : Auto-registrer les tâches découvertes dans ToolRegistry
+  au démarrage de VibecodingGraph. `list_tasks` tool pour que le LLM
+  découvre le catalogue.
+
+== Ordonnancement Sessions Suivantes
+
+| Session | EPIC | Livrable
+| 099 | W-2 + W-3 | OpenAPI Spec + Auto-register ToolRegistry
+| 100 | W-4 + W-5 + W-6 | list_tasks tool + mapping args + cache → EPIC W TERMINÉ
+| 101 | X-0 + X-1 | Cadrage + VibecodingPlan structuré (dépend de W)
+| 102 | X-2 + X-3 | TaskResultVerifier + boucle verify→adapt
+| 103 | X-4 + X-5 + X-6 | RollbackStrategy + intégration W + Cucumber → EPIC X TERMINÉ
+| 104 | Z-0 + Z-1 | Autofocus cadrage + ZoomLevel
+| 105 | Z-2 + Z-3 | ContextZoomer + ZoomPolicy
+| 106 | Z-4 + Z-5 + Z-6 | Intégration VibecodingGraph → EPIC Z TERMINÉ
+| 107 | 12 | Dilution Article de Blog (quick win)
+| 108+ | 5 | Pipeline fine-tuning experts CDA/FPA (lourd)
