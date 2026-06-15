@@ -1,0 +1,71 @@
+= Session 106 — EPIC Z-0→Z-4 Autofocus
+:date: 2026-06-15
+:type: feat+tdd+ddd
+:score: 10/10
+
+== Contexte
+
+Session 106 — Queens codebase-gradle N1. Reprise après EPIC X TERMINÉ (session 105).
+Mission : EPIC Z Autofocus — accommodation contextuelle programmatique.
+
+== Actions
+
+=== Z-0 — Cadrage Autofocus
+- Créé `.agents/CADRAGE_AUTOFOCUS.adoc` (7 ateliers agile, 23 pts EPIC Z)
+- Défini contrat d'interface : AutofocusLevel, AutofocusClassifier, ContextZoomer, AutofocusStack
+- BACKLOG.adoc : ajouté section EPIC Z
+- INDEX.adoc : corrigé statut EPIC X stale (EN COURS 4/7 → TERMINÉ 7/7), EPIC Z BACKLOG → EN COURS
+
+=== Z-1 — AutofocusLevel
+- `AutofocusLevel.kt` : enum 4 niveaux (BIG_PICTURE/ARCHITECTURE/MODULE/IMPLEMENTATION)
+- Token budgets : 8000 → 4000 → 2000 → 500
+- File patterns + LevelMetadata + companion fromName()/metadataByLevel()
+- `AutofocusLevelTest.kt` : 16/16 JUnit5 PASS
+
+=== Z-2 — AutofocusClassifier
+- `AutofocusClassifier.kt` : object avec 20 patterns regex (0 token LLM, ~80% cas)
+- Fallback LLM via LlmProvider (~5 tokens) pour les intentions non matchées
+- `classifySync()` retourne null si pas de match → `classify()` suspend avec fallback
+- `AutofocusClassifierTest.kt` : 32/32 JUnit5 PASS
+
+=== Z-3 — ContextZoomer
+- `ContextZoomer.kt` : filtrage CompositeContext par niveau
+- BIG_PICTURE = tout conservé, ARCHITECTURE/MODULE = sections tronquées, IMPLEMENTATION = ragSection seule
+- Truncation par estimation tokens (length/4)
+- `ContextZoomerTest.kt` : 14/14 JUnit5 PASS
+
+=== Z-4 — AutofocusStack
+- `AutofocusStack.kt` : pile LIFO (ArrayDeque) — push/pop/currentLevel/isEmpty/size/clear
+- Underflow detection : pop() sur pile vide → IllegalStateException
+- `AutofocusStackTest.kt` : 14/14 JUnit5 PASS
+
+=== Z-5 — Intégration VibecodingGraph
+- `VibecodingState.kt` : ajouté `focusLevel: String?`
+- `VibecodingGraph.kt` : ajouté imports autofocus + 3 params constructeur (classifier, zoomer, stack)
+- Inséré `classifyNode` + `zoomNode` avant `buildContextNode` dans `execute()`
+- Câblé `zoomInOnError` dans V-6 error recovery (zoom IMPLEMENTATION avant retry)
+- Ajouté `popFocusNode` pour remonter après succès
+- Compilation OK, VibecodingGraphTest + VibecodingTaskTest zéro régression
+
+== Résultats
+
+- 4 fichiers source créés : AutofocusLevel.kt, AutofocusClassifier.kt, ContextZoomer.kt, AutofocusStack.kt
+- 4 fichiers test créés : AutofocusLevelTest.kt, AutofocusClassifierTest.kt, ContextZoomerTest.kt, AutofocusStackTest.kt
+- 2 fichiers modifiés : VibecodingState.kt (+focusLevel), VibecodingGraph.kt (+autofocus integration)
+- 1 fichier cadrage créé : CADRAGE_AUTOFOCUS.adoc
+- 3 fichiers gouvernance modifiés : BACKLOG.adoc, INDEX.adoc, PROMPT_REPRISE.adoc
+- 76/76 JUnit5 autofocus PASS
+- VibecodingGraphTest + VibecodingTaskTest zéro régression
+- publishToMavenLocal OK
+
+== EPIC Z — Statut
+
+4/7 terminé (Z-0 ✅ Z-1 ✅ Z-2 ✅ Z-3 ✅ Z-4 ✅ Z-5 ✅)
+Restants : Z-6 (intégration V-6 Cucumber), Z-7 (validation cross-borough)
+
+== Leçons
+
+- AUTOFOCUS_CAPABILITY.adoc (document 11 Jardin Secret) = spécification de référence
+- PROMPT_REPRISE naming (WORKSPACE/BOROUGH/PROJECT/PACKAGE/FILE/FUNCTION) ≠ AUTOFOCUS_CAPABILITY naming (BIG_PICTURE/ARCHITECTURE/MODULE/IMPLEMENTATION) — suivi AUTOFOCUS_CAPABILITY
+- CompositeContext (contrat N0) = 4 sections string, pas de allFiles → ContextZoomer adapté
+- VibecodingGraph integration = additif (nodes insérés avant existants), zéro breaking change

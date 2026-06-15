@@ -1,0 +1,316 @@
+= Cadrage Agile — Autofocus (EPIC Z)
+:toc:
+:icons: font
+:sectnums:
+:jbake-status: EAGER
+:date: 2026-06-15
+:session: 106
+
+_Méthode : Mémo Cadrage (cf. blog/2022/0054_memo_cadrage_post.adoc)_
+_Projet : codebase-gradle/codebase-plugin — Plugin Gradle N1_
+_Source : AUTOFOCUS_CAPABILITY.adoc (document 11 du Jardin Secret)_
+
+'''
+
+== Atelier 1 : Vision
+
+=== QQOQCP
+
+[cols="2,5"]
+|===
+| Qui | L'agent vibecoding (VibecodingGraph koog) + le LLM qui exécute des tâches
+| Quoi | Une capacité programmatique de zoom contextuel : classifier le niveau requis, charger le contexte au bon niveau de granularité, transiter dynamiquement entre niveaux
+| Où | Dans `codebase/koog/autofocus/` — package dédié dans codebase-plugin N1
+| Quand | Avant chaque exécution de tâche dans VibecodingGraph. Node 0 (classify) + Node 1 (zoom) insérés avant buildContext
+| Comment | `AutofocusLevel` enum (4 niveaux) + `AutofocusClassifier` (heuristique regex + fallback LLM) + `ContextZoomer` (ranking graph.json) + `AutofocusStack` (LIFO push/pop)
+| Pourquoi | Le gap identifié session 073 : l'IA associe (RAG+Graphify) mais ne zoome pas. Sans autofocus, le LLM traite tout au même niveau → noyade dans le bruit → décisions stratégiquement aveugles
+|===
+
+=== Product Vision Board
+
+==== Target Group
+- VibecodingGraph (consommateur primaire) — insère Node 0 + Node 1 dans le graphe koog
+- VibecodingTask (consommateur secondaire) — bénéficie d'un contexte filtré par niveau
+- EPIC X (Plan Multi-Step) — chaque étape du plan peut avoir son propre niveau de zoom
+- EPIC Y (Agentic Literature Compiler) — ingestion au bon niveau de contexte
+
+==== Needs
+- Classifier automatiquement le niveau d'abstraction requis par une intention
+- Filtrer le contexte augmenté selon le niveau (x1=8000 tokens → x1000=500 tokens)
+- Naviguer entre niveaux pendant l'exécution (zoom-in → exécuter → pop → décider)
+- Revenir au niveau stratégique après chaque zoom-in
+
+==== Product
+- `AutofocusLevel` : 4 niveaux (BIG_PICTURE, ARCHITECTURE, MODULE, IMPLEMENTATION)
+- `AutofocusClassifier` : classification heuristique (regex, 0 token LLM) + fallback LLM (~5 tokens)
+- `ContextZoomer` : filtrage du contexte par niveau, ranking Aider-like sur graph.json
+- `AutofocusStack` : pile LIFO pour naviguer entre niveaux
+- `AutofocusNode` : nœud koog intégré dans VibecodingGraph
+
+==== Value
+- Le LLM ne se noie plus dans le contexte — il adapte sa focale
+- Les décisions stratégiques (x1) ne sont plus polluées par le bruit d'implémentation (x1000)
+- Le feedback loop V-6 zoome automatiquement sur la cause racine d'une erreur
+- 5ème verbe ZOOMER dans la taxonomie workspace
+
+==== Competitors
+- RAPTOR (Stanford, 2024) : arbre de résumés multi-niveaux — inspire AutofocusContextTree
+- Aider Repo Map : ranking sur graphe de dépendances — inspire ContextZoomer
+- LangChain Contextual Compression : filtrage post-recherche — inspire la passe IMPLEMENTATION
+- Aucun ne fait l'aller-retour dynamique en boucle agentique (zoom + pop + rezoom)
+
+=== Business Model Canvas (simplifié)
+
+- *Key Partners* : graphify-gradle (N0, fournit graph.json), MEMPHIS workspace-bom (contrats N0)
+- *Key Activities* : classification niveau → filtrage contexte → navigation LIFO → intégration koog
+- *Key Resources* : AUTOFOCUS_CAPABILITY.adoc (spécification), graph.json (1572 nœuds), pgvector (RAG)
+- *Value Proposition* : Le LLM passe de "je lis tout" à "je zoome sur ce qui compte"
+- *Customer Relationships* : API interne (VibecodingGraph), pas d'interface utilisateur direct
+- *Channels* : package `codebase.koog.autofocus`, intégré dans le graphe koog existant
+- *Customer Segments* : VibecodingGraph (N1), EPIC X (plan multi-step), EPIC Y (compiler agentique)
+- *Cost Structure* : ~20 pts de développement, 0 token LLM pour la classification heuristique
+- *Revenue Streams* : N/A (interne, Apache 2.0)
+
+'''
+
+== Atelier 2 : Périmètre
+
+=== In Scope
+
+- `AutofocusLevel` enum (4 niveaux : BIG_PICTURE, ARCHITECTURE, MODULE, IMPLEMENTATION)
+- `AutofocusClassifier` — classification heuristique (regex patterns) + fallback LLM
+- `ContextZoomer` — filtrage du contexte par niveau (ranking sur graph.json)
+- `AutofocusStack` — pile LIFO push/pop pour navigation entre niveaux
+- Intégration dans VibecodingGraph (Node 0 classify + Node 1 zoom)
+- Intégration avec V-6 Feedback Loop (zoom-in automatique sur erreur)
+- Tests unitaires JUnit5 + tests Cucumber BDD
+
+=== Out of Scope
+
+- `AutofocusContextTree` (arbre RAPTOR-inspired) — Z-7, post-EPIC Z
+- Interface utilisateur (pas de UI, capacité interne du graphe koog)
+- Modification des boroughs N2 (transparent pour les consommateurs)
+- Fine-tuning LLM pour la classification (l'heuristique regex suffit pour 80% des cas)
+
+=== Dépendances
+
+- graphify-gradle N0 (graph.json pour le ranking ContextZoomer)
+- VibecodingGraph existant (points d'insertion Node 0 + Node 1)
+- V-6 Feedback Loop (consommateur du zoom-in sur erreur)
+- AUTOFOCUS_CAPABILITY.adoc (spécification de référence)
+
+'''
+
+== Atelier 3 : Architecture
+
+=== Diagramme de contexte
+
+[plantuml]
+----
+@startuml
+skinparam backgroundColor transparent
+skinparam defaultFontSize 12
+
+rectangle "VibecodingGraph" as vg #LightGreen {
+    rectangle "Node 0: AUTOFOCUS.classify" as n0 #Pink
+    rectangle "Node 1: AUTOFOCUS.zoom" as n1 #Pink
+    rectangle "Node 2: buildContext" as n2
+    rectangle "Node 3: callLLM" as n3
+    rectangle "Node 4: executeTools" as n4
+    rectangle "Node 5: verifyResult (V-6)" as n5
+    rectangle "Node 6: persistState" as n6
+    rectangle "Node 7: checkProgress" as n7
+
+    n0 --> n1
+    n1 --> n2
+    n2 --> n3
+    n3 --> n4
+    n4 --> n5
+    n5 --> n6
+    n6 --> n7
+    n7 --> n0 : next task
+}
+
+rectangle "Autofocus Package" as af #LightYellow {
+    rectangle "AutofocusLevel\n(enum 4 niveaux)" as al
+    rectangle "AutofocusClassifier\n(regex + LLM fallback)" as ac
+    rectangle "ContextZoomer\n(ranking graph.json)" as cz
+    rectangle "AutofocusStack\n(LIFO push/pop)" as as
+}
+
+rectangle "graphify-gradle N0" as gf #LightGray {
+    rectangle "graph.json\n(1572 nœuds)" as gj
+}
+
+n0 --> ac : classify(intention)
+n1 --> cz : zoom(target, context)
+cz --> gj : ranking
+n5 --> ac : FAILED → zoom(IMPLEMENTATION)
+n7 --> as : pop()
+@enduml
+----
+
+=== Structure des packages
+
+[source]
+----
+codebase/koog/autofocus/
+├── AutofocusLevel.kt          // enum + LevelMetadata (Z-1 ✅)
+├── AutofocusClassifier.kt     // classify(intention, buildOutput) → AutofocusLevel (Z-2)
+├── ContextZoomer.kt           // zoom(target, context) → AugmentedContext filtré (Z-3)
+├── AutofocusStack.kt          // pile LIFO push/pop (Z-4)
+├── AutofocusNode.kt           // nœud koog pour VibecodingGraph (Z-5)
+└── AutofocusPopNode.kt        // nœud koog pour remonter après zoom-in (Z-5)
+----
+
+=== Contrat d'interface
+
+[source,kotlin]
+----
+interface AutofocusClassifier {
+    fun classifySync(intention: String, buildOutput: String? = null): AutofocusLevel?
+    suspend fun classify(intention: String, buildOutput: String?, llmProvider: LlmProvider): AutofocusLevel
+}
+
+interface ContextZoomer {
+    fun zoom(target: AutofocusLevel, context: AugmentedContext, intention: String): AugmentedContext
+}
+
+interface AutofocusStack {
+    fun push(level: AutofocusLevel)
+    fun pop(): AutofocusLevel
+    fun currentLevel(): AutofocusLevel?
+    fun isEmpty(): Boolean
+}
+----
+
+=== Niveaux de zoom
+
+[cols="2,2,3,5", options="header"]
+|===
+| Niveau | Token Budget | File Pattern | Description
+| BIG_PICTURE | 8000 | **/*.adoc | Vision globale : roadmap, EPICs, DAG, boroughs
+| ARCHITECTURE | 4000 | **/{build.gradle.kts,settings.gradle.kts,libs.versions.toml} | Structure inter-boroughs : dépendances, contrats, API
+| MODULE | 2000 | **/*.kt | Module/plugin : classes, interfaces, tests
+| IMPLEMENTATION | 500 | *.kt | Code précis : une classe, une fonction, une ligne
+|===
+
+'''
+
+== Atelier 4 : Backlog (EPIC Z)
+
+[cols="1,3,4,2", options="header"]
+|===
+| # | US | Description | Pts
+| Z-0 | Cadrage Autofocus | Ce document. Formalisation du gap, contrat d'interface, intégration roadmap. | 1 ✅
+| Z-1 | AutofocusLevel | Enum 4 niveaux + LevelMetadata + token budgets + file patterns. Tests unitaires JUnit5. | 3 ✅
+| Z-2 | AutofocusClassifier | Classifieur heuristique regex (0 token) + fallback LLM (~5 tokens). Tests unitaires + Cucumber. | 3
+| Z-3 | ContextZoomer | Filtrage contexte par niveau, ranking Aider-like sur graph.json. Tests unitaires. | 3
+| Z-4 | AutofocusStack | Pile LIFO push/pop/currentLevel/isEmpty. Tests unitaires. | 2
+| Z-5 | Intégration VibecodingGraph | Node 0 (classify) + Node 1 (zoom) dans le graphe koog. Tests E2E. | 5
+| Z-6 | Intégration V-6 Feedback Loop | verifyResult FAILED → zoom(IMPLEMENTATION) → retry. Tests Cucumber. | 3
+| Z-7 | Validation cross-borough | Scénario bout-en-bout : intention → autofocus → exécution → succès. | 3
+|===
+
+*Total : 23 pts.*
+*Dépendances : V-6 Feedback Loop (prérequis), graphify-gradle N0 (graph.json).*
+*Priorité : P1 — activé après la boucle autonome V-6.*
+
+'''
+
+== Atelier 5 : Risques
+
+[cols="2,2,3", options="header"]
+|===
+| Risque | Probabilité | Mitigation
+| Heuristique regex insuffisante (<80% précision) | 🟡 Medium | Fallback LLM ~5 tokens, coût négligeable
+| graph.json indisponible (graphify-gradle down) | 🟡 Medium | Fallback dégradé : filtrage par filePattern sans ranking
+| Conflit avec le graphe koog existant (Node 0/1 insertion) | 🟡 Medium | Nodes additifs, pas de modification des nodes existants
+| Rabbit hole — 3 semaines de R&D | 🟢 Low | EPIC Z = 23 pts, ~4 sessions. MVP minimal = Z-0→Z-4 (9 pts)
+|===
+
+'''
+
+== Atelier 6 : Tests
+
+=== Stratégie de test
+
+- *TDD unitaire* : chaque classe a son test JUnit5 dédié (AutofocusLevelTest ✅, AutofocusClassifierTest, ContextZoomerTest, AutofocusStackTest)
+- *BDD Cucumber* : scénarios bout-en-bout pour l'intégration VibecodingGraph (Z-5, Z-6, Z-7)
+- *Fake* : FakeGraphJson pour les tests ContextZoomer (sans dépendre de graphify-gradle réel)
+
+=== Scénarios Cucumber envisagés
+
+[source,gherkin]
+----
+Feature: Autofocus Classification
+  Scenario: Classify compilation error as IMPLEMENTATION
+    Given an intention "fix compilation error in VibecodingGraph.kt:42"
+    When AutofocusClassifier.classifySync is called
+    Then the level is IMPLEMENTATION
+
+  Scenario: Classify architecture question as ARCHITECTURE
+    Given an intention "refactorer les dépendances entre codebase et codex"
+    When AutofocusClassifier.classifySync is called
+    Then the level is ARCHITECTURE
+
+  Scenario: Classify roadmap question as BIG_PICTURE
+    Given an intention "quel est le statut de l'EPIC X ?"
+    When AutofocusClassifier.classifySync is called
+    Then the level is BIG_PICTURE
+
+Feature: Autofocus Zoom
+  Scenario: Zoom to IMPLEMENTATION filters to single file
+    Given an AugmentedContext with 50 files
+    When ContextZoomer.zoom(IMPLEMENTATION, context, "VibecodingGraph.kt")
+    Then the filtered context has at most 4 files
+
+  Scenario: Zoom to BIG_PICTURE keeps all context
+    Given an AugmentedContext with 50 files
+    When ContextZoomer.zoom(BIG_PICTURE, context, "any intention")
+    Then the filtered context has all 50 files
+
+Feature: Autofocus Stack
+  Scenario: Push and pop returns to previous level
+    Given an empty AutofocusStack
+    When I push BIG_PICTURE
+    And I push IMPLEMENTATION
+    And I pop
+    Then the current level is BIG_PICTURE
+
+  Scenario: Pop on empty stack throws exception
+    Given an empty AutofocusStack
+    When I pop
+    Then an IllegalStateException is thrown
+----
+
+'''
+
+== Atelier 7 : Planification
+
+=== Sessions
+
+[cols="1,2,3,2", options="header"]
+|===
+| Session | EPIC | Livrable | Pts
+| 106 | Z-0 + Z-1 | Cadrage + AutofocusLevel (16 tests PASS) | 4 ✅
+| 107 | Z-2 + Z-3 | AutofocusClassifier + ContextZoomer | 6
+| 108 | Z-4 + Z-5 | AutofocusStack + Intégration VibecodingGraph | 7
+| 109 | Z-6 + Z-7 | Intégration V-6 + Validation cross-borough | 6
+|===
+
+=== Vélocité
+
+- Sessions 106-109 : 4 sessions, 23 pts
+- Vélocité moyenne : ~6 pts/session
+- Livraison estimée : session 109 (fin juin 2026)
+
+'''
+
+== Document Metadata
+
+- *Version* : 1.0
+- *Date* : 2026-06-15
+- *Auteur* : cheroliv + opencode (deepseek-v4-pro)
+- *Statut* : Z-0 ✅, Z-1 ✅ — EN COURS
+- *Prochaine session* : 107 — Z-2 + Z-3

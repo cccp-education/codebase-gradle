@@ -10,26 +10,34 @@
 - EPIC Y 7/8 — Y-1✅ Y-2✅ Y-3✅ Y-4✅ Y-5✅ Y-6✅ Y-7✅
 - EPIC OCR-2b TERMINÉ (6/6) — OllamaOcrProvider + fallback gemini→ollama
 - EPIC SP 1/5 — SP-1✅ SessionProtocolTask (contrat opencode-session ↔ VibecodingGraph)
+- EPIC Z 4/7 — Z-0✅ Z-1✅ Z-2✅ Z-3✅ Z-4✅ (76/76 JUnit5 PASS)
 - Full suite ~350+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 106 — EPIC Z-0 + Z-1
+== Mission Session 106 — EPIC Z-0→Z-4 (FAIT) + Z-5 + Z-6
 
-*Z-0* : Cadrage Autofocus — Définir le concept de zoom contextuel :
-  - L'agent peut zoomer entre niveaux de contexte (workspace → borough → fichier → fonction)
-  - Inspiré de AUTOFOCUS_CAPABILITY.adoc (document 11 du Jardin Secret)
-  - Définir les niveaux de zoom et les transitions
+*Z-0 ✅* : Cadrage Autofocus — CADRAGE_AUTOFOCUS.adoc (7 ateliers agile, 23 pts EPIC Z)
+*Z-1 ✅* : `AutofocusLevel` — Enum 4 niveaux (BIG_PICTURE/ARCHITECTURE/MODULE/IMPLEMENTATION) + LevelMetadata + token budgets + file patterns. 16/16 JUnit5 PASS.
+*Z-2 ✅* : `AutofocusClassifier` — Classifieur heuristique regex (0 token LLM, ~80% cas) + fallback LLM (~5 tokens). 32/32 JUnit5 PASS.
+*Z-3 ✅* : `ContextZoomer` — Filtrage contexte par niveau, budget token par section. 14/14 JUnit5 PASS.
+*Z-4 ✅* : `AutofocusStack` — Pile LIFO push/pop/currentLevel/isEmpty/clear. 14/14 JUnit5 PASS.
 
-*Z-1* : `ZoomLevel` — Implémenter la structure de données :
-  - Enum/sealed class des niveaux : WORKSPACE, BOROUGH, PROJECT, PACKAGE, FILE, FUNCTION
-  - Mapping niveau → contexte (quels fichiers charger, quel token budget)
-  - Tests unitaires
+*Z-5* : Intégration VibecodingGraph — Node 0 (classify) + Node 1 (zoom) dans le graphe koog :
+  - Insérer `classifyNode` avant `buildContextNode` dans VibecodingGraph.execute()
+  - Insérer `zoomNode` après `classifyNode`, avant `buildContextNode`
+  - `classifyNode` utilise AutofocusClassifier.classifySync sur l'intention
+  - `zoomNode` utilise ContextZoomer.zoom() sur le contexte augmenté
+  - Tests E2E VibecodingTaskTest
+
+*Z-6* : Intégration V-6 Feedback Loop — verifyResult FAILED → zoom(IMPLEMENTATION) → retry :
+  - Après verifyStepNode FAILED → AutofocusStack.push(IMPLEMENTATION) → ContextZoomer.zoom(IMPLEMENTATION)
+  - Le retry se fait avec un contexte chirurgical (fichier unique + dépendances)
+  - Tests Cucumber @epic_z_6
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 106 | Z-0 + Z-1 | Autofocus cadrage + ZoomLevel
-| 107 | Z-2 + Z-3 | ContextZoomer + ZoomPolicy
-| 108 | Z-4 + Z-5 + Z-6 | Intégration VibecodingGraph → EPIC Z TERMINÉ
-| 109 | 12 | Dilution Article de Blog (quick win)
-| 110+ | 5 | Pipeline fine-tuning experts CDA/FPA (lourd)
+| 106 | Z-0→Z-4 + Z-5 + Z-6 | Autofocus complet (4 briques + intégration VibecodingGraph + V-6)
+| 107 | Z-7 | Validation cross-borough → EPIC Z TERMINÉ
+| 108 | 12 | Dilution Article de Blog (quick win)
+| 109+ | 5 | Pipeline fine-tuning experts CDA/FPA (lourd)

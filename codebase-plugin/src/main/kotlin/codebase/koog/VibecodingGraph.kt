@@ -1,5 +1,9 @@
 package codebase.koog
 
+import codebase.koog.autofocus.AutofocusClassifier
+import codebase.koog.autofocus.AutofocusLevel
+import codebase.koog.autofocus.AutofocusStack
+import codebase.koog.autofocus.ContextZoomer
 import codebase.koog.discovery.TaskListFormatter
 import codebase.koog.discovery.TaskSchema
 import codebase.koog.llm.LlmProvider
@@ -91,7 +95,10 @@ class VibecodingGraph(
     val tokenTracker: TokenTracker = TokenTracker(),
     val stepVerifier: StepVerifier = StepVerifier(llmProvider, tokenTracker),
     val rollbackExecutor: RollbackStrategyExecutor? = null,
-    val taskSchemas: List<TaskSchema> = emptyList()
+    val taskSchemas: List<TaskSchema> = emptyList(),
+    val autofocusClassifier: AutofocusClassifier = AutofocusClassifier,
+    val contextZoomer: ContextZoomer = ContextZoomer(),
+    val autofocusStack: AutofocusStack = AutofocusStack()
 ) {
 
     private val log = LoggerFactory.getLogger(VibecodingGraph::class.java)
@@ -172,6 +179,23 @@ class VibecodingGraph(
             null
         }
 
+        // Étape 0 : classify (Z-5 Autofocus) — détermine le niveau de zoom
+        state = try {
+            classifyNode(state)
+        } catch (e: Exception) {
+            log.warn("[VibecodingGraph] classify failed: {}", e.message)
+            state
+        }
+        if (state.error != null) return state
+
+        // Étape 0b : zoom (Z-5 Autofocus) — ajuste le focus stack
+        state = try {
+            zoomNode(state)
+        } catch (e: Exception) {
+            log.warn("[VibecodingGraph] zoom failed: {}", e.message)
+            state
+        }
+
         // Étape 1 : buildContext
         state = try {
             buildContextNode(state)
@@ -229,6 +253,8 @@ class VibecodingGraph(
                 // V-6 Error Recovery : si StepVerifier a détecté FAILED/BLOCKED/UNKNOWN
                 // ou si executeTools a lancé une exception
                 if (state.error != null) {
+                    // Z-5 Autofocus : zoom-in sur erreur pour contexte chirurgical
+                    state = zoomInOnError(state)
                     if (state.retryCount < state.maxRetries) {
                         log.info("[VibecodingGraph] Retry ${state.retryCount}/${state.maxRetries} after: {}", state.error)
                         if (llmProvider != null) {
@@ -540,6 +566,44 @@ class VibecodingGraph(
         if (noWorkRemaining && state.iteration > 0) return state.finish()
 
         return state
+    }
+
+    // ── Z-5 Autofocus helpers ──
+
+    private fun classifyNode(state: VibecodingState): VibecodingState {
+        val level = autofocusClassifier.classifySync(state.intention)
+        return if (level != null) {
+            log.info("[VibecodingGraph] Autofocus classified '{}' as {}", state.intention, level.name)
+            state.copy(focusLevel = level.name)
+        } else {
+            state.copy(focusLevel = AutofocusLevel.MODULE.name)
+        }
+    }
+
+    private fun zoomNode(state: VibecodingState): VibecodingState {
+        val levelName = state.focusLevel ?: return state
+        val level = AutofocusLevel.fromName(levelName) ?: return state
+        autofocusStack.push(level)
+        log.info("[VibecodingGraph] Autofocus zoomed to {} (stack size={})", level.name, autofocusStack.size())
+        return state
+    }
+
+    private fun zoomInOnError(state: VibecodingState): VibecodingState {
+        autofocusStack.push(AutofocusLevel.IMPLEMENTATION)
+        log.info("[VibecodingGraph] Autofocus zoom-in on error to IMPLEMENTATION (stack size={})", autofocusStack.size())
+        return state.copy(focusLevel = AutofocusLevel.IMPLEMENTATION.name)
+    }
+
+    private fun popFocusNode(state: VibecodingState): VibecodingState {
+        if (autofocusStack.isEmpty()) return state
+        return try {
+            val previous = autofocusStack.pop()
+            log.info("[VibecodingGraph] Autofocus popped to {} (stack size={})", previous.name, autofocusStack.size())
+            state.copy(focusLevel = previous.name)
+        } catch (e: IllegalStateException) {
+            log.warn("[VibecodingGraph] Autofocus pop underflow: {}", e.message)
+            state
+        }
     }
 
     // ── X-3 verify→adapt helpers ──

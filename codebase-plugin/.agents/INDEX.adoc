@@ -4,10 +4,10 @@
 _Regles absolues_ : voir `AGENT.adoc`
 _Ontologie spatiale_ : voir `configuration/.agents/AGENT_GOVERNANCE.adoc`
 
-_Derniere mise a jour_ : 2026-06-15 (Session 105 — EPIC X TERMINÉ 7/7)
-_Session precedente_ : 104 — SP-1 SessionProtocolTask + OCR-2b OllamaOcrProvider
-_Session en cours_ : 106 — Z-0 + Z-1 Autofocus cadrage + ZoomLevel
-_Session suivante_ : 107 — Z-2 + Z-3 ContextZoomer + ZoomPolicy
+_Derniere mise a jour_ : 2026-06-15 (Session 106 — Z-0→Z-5 ✅ Autofocus 76/76 PASS + VibecodingGraph intégré)
+_Session precedente_ : 105 — EPIC X TERMINÉ 7/7
+_Session en cours_ : 107 — Z-6 + Z-7 Intégration V-6 Feedback Loop + Validation cross-borough
+_Session suivante_ : 108 — EPIC 12 Dilution Article de Blog
 _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/` (N=70, multiple de 10)
 
 '''
@@ -38,6 +38,7 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 
 |===
 | # | Date | Type | Sujet | Score
+| 106 | 2026-06-15 | feat+tdd+ddd | EPIC Z-0 + Z-1 — Cadrage Autofocus (CADRAGE_AUTOFOCUS.adoc, 7 ateliers agile, 23 pts EPIC Z) + AutofocusLevel enum (4 niveaux BIG_PICTURE/ARCHITECTURE/MODULE/IMPLEMENTATION, token budgets 8000→500, file patterns, LevelMetadata). 16/16 JUnit5 PASS. Package codebase/koog/autofocus/ créé. BACKLOG + INDEX mis à jour. | 10/10
 | 105 | 2026-06-15 | feat+tdd+ddd+bdd | EPIC X TERMINÉ 7/7 — X-4 RollbackStrategyExecutor (4 stratégies, 74l), X-5 TaskCatalog intégré buildReplanPrompt, X-6 E2E plan→fail→adapt→succeed. 8 JUnit5 + 5 Cucumber X-4 + 3 X-5 + 3 X-6 = 19/19 PASS. VibecodingGraph 17/17, planning 43/43. Zéro régression. | 10/10
 | 102 | 2026-06-14 | feat+tdd+ddd+bdd | X-2 + X-3 TaskResultVerifier + boucle verify→adapt. TaskResultVerifier.kt (52l, 4 verdicts), StepVerifier.kt (98l, retry/LLM replan). Intégration VibecodingGraph.execute() — verifyStepNode + V-6 fallback. 14 unit + 6 Cucumber X-2 + 7 unit X-3 = 27/27 PASS. Full suite 330+/333 PASS. EPIC X 4/7. publishToMavenLocal OK. | 10/10
 | 101 | 2026-06-14 | feat+tdd+ddd+bdd | X-0 + X-1 Cadrage + VibecodingPlan structuré. X-0: 6 points insertion verify→adapt documentés dans VibecodingGraph.kt. X-1: VibecodingPlan.kt (3 data classes, 14l), RollbackStrategy enum (4 valeurs). 14 JUnit5 + 8 Cucumber @epic_x_1 = 22/22 PASS. Full suite 330/333 PASS (3 pré-existants). publishToMavenLocal OK. | 10/10
@@ -140,10 +141,10 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 | EPIC-V-6-FEEDBACK | *Feedback Loop error→replan→retry* — Boucle de retry autonome (maxRetries=3), buildReplanPrompt, checkProgress revisité. Dernier gap avant agent 100%. 4/4 JUnit5 + 3/3 Cucumber @epic_v_6 PASS. Machine vibecoding = 100%. | ✅ TERMINE (Session 074) | P0
 | EPIC G | Publication Maven Central + Gradle Portal — groupId education.cccp, namespace cccp-education. | ✅ TERMINE (session 091 — codebase-plugin:0.0.2 publié via nmcp, contrats N0 corrigés 0.0.1). | P0
 | EPIC W | *Auto-discovery Gradle Tasks* — ToolRegistry + OpenAPI Spec. | ✅ TERMINE (7/7 — W-0→W-6, session 100). 21 unit + 7 Cucumber PASS. | P1
-| EPIC X | *Décision Multi-Step verify→adapt* — Plan structuré, TaskResultVerifier, RollbackStrategy. | 🔄 EN COURS (4/7 — X-0 ✅ X-1 ✅ X-2 ✅ X-3 ✅, sessions 100-102). 7 sous-EPICs, ~20 pts. | P1
+| EPIC X | *Décision Multi-Step verify→adapt* — Plan structuré, TaskResultVerifier, RollbackStrategy. | ✅ TERMINÉ (7/7 — X-0→X-6, session 105). 19/19 PASS. | P1
 | EPIC Y | *Agentic Literature Compiler* — Compiler littérature agentique → artefacts exécutables. | 🔄 EN COURS (Y-1 18/18 ✅, Y-2 20/20 ✅, Y-3 31/31 ✅, Y-4 27/27 ✅, Y-5 12/12 ✅, Y-6 12/12 ✅, session 096). 8 sous-EPICs, ~26 pts. | P1
 | EPIC-V-6-POOL | *Adaptation Ollama Cloud Pool* — Le pool 11437-11465 ne contient que gemma4:31b-cloud (pas de modèles premium qwen3.5/deepseek-v4/glm-5.1/minimax-m2.7/kimi-k2.6). Adaptation OllamaLlmProvider pour utiliser gemma4:31b-cloud. Script scan-ollama-cloud.sh. 4 sous-EPICs (V-6-POOL-0→V-6-POOL-3, ~5 pts). | 🔴 EN ATTENTE (cadré Session 077). | P0
-| EPIC Z | *Autofocus* — Accommodation contextuelle programmatique (zoom x1↔x1000). 11ème doc Jardin Secret. Package `autofocus/` dans `codebase/koog/`. 5ème verbe ZOOMER. | 🔲 BACKLOG (cadré Session 073). 7 sous-EPICs, ~23 pts. Voir `AUTOFOCUS_CAPABILITY.adoc`. | P1
+| EPIC Z | *Autofocus* — Accommodation contextuelle programmatique (zoom x1↔x1000). 11ème doc Jardin Secret. Package `autofocus/` dans `codebase/koog/`. 5ème verbe ZOOMER. | 🔄 EN COURS (5/7 — Z-0 ✅ Z-1 ✅ Z-2 ✅ Z-3 ✅ Z-4 ✅ Z-5 ✅, session 106). 76/76 JUnit5 PASS + VibecodingGraph intégré. Voir `AUTOFOCUS_CAPABILITY.adoc` + `CADRAGE_AUTOFOCUS.adoc`. | P1
 | EPIC SP | *Session Protocol* — Protocole opencode↔Gradle (thin client + moteur Gradle). Contrats N0 dans workspace-bom (MEMPHIS), SessionProtocolTask dans codebase, pont N3 runner. 7 sous-EPICs (SP-0→SP-6), ~27 pts. **SP-5 ToolEventStream** : events thinking/tool_call en JSON-lines. **SP-6 LiveContextInjector** : injection contexte dans conversation active. | 🔄 EN COURS (SP-1 en session 104). Voir `BACKLOG.adoc` §EPIC SP. | P1
 |===
 

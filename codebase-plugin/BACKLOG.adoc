@@ -866,3 +866,56 @@ Gradle dialogue avec les LLMs. Zéro SaaS, zéro CLI externe propriétaire.
 
 Brainstorming Session 103 (2026-06-14) — Discussion architecture thin-client opencode↔Gradle.
 Contrats N0 dans workspace-bom (MEMPHIS), moteur dans codebase (N1), pont dans runner (N3).
+
+== EPIC Z — Autofocus : Accommodation Contextuelle Programmatique
+
+**Statut** : 🔄 EN COURS (4/7 — Z-0 ✅ Z-1 ✅ Z-2 ✅ Z-3 ✅ Z-4 ✅, session 106)
+**Priorité** : P1
+**Dépend de** : V-6 Feedback Loop (prérequis), graphify-gradle N0 (graph.json)
+**Source** : AUTOFOCUS_CAPABILITY.adoc (document 11 du Jardin Secret, session 073)
+
+_Pourquoi_ : Le gap identifié session 073 — l'IA associe (RAG+Graphify) mais ne zoome pas.
+Sans autofocus, le LLM traite tout au même niveau → noyade dans le bruit → décisions
+stratégiquement aveugles. L'autofocus est le second pilier de la cognition (accommodation),
+après l'association (déjà couverte par le vecteur composite BOOM_BAP).
+
+=== Pipeline
+
+```
+Intention utilisateur
+    ↓
+AutofocusClassifier.classify(intention, buildOutput) → AutofocusLevel
+    ↓
+ContextZoomer.zoom(target, augmentedContext) → contexte filtré
+    ↓
+VibecodingGraph exécute avec contexte ciblé
+    ↓
+verifyResult FAILED → AutofocusClassifier.classify(error) → zoom(IMPLEMENTATION) → retry
+    ↓
+checkProgress → AutofocusStack.pop() → remonter niveau
+```
+
+=== Sous-tâches
+
+* [x] Z-0 : Cadrage — Document CADRAGE_AUTOFOCUS.adoc (7 ateliers agile). Contrat d'interface, intégration roadmap, 23 pts EPIC Z. (session 106)
+* [x] Z-1 : `AutofocusLevel` — Enum 4 niveaux (BIG_PICTURE/ARCHITECTURE/MODULE/IMPLEMENTATION) + LevelMetadata + token budgets + file patterns. 16/16 JUnit5 PASS. (session 106)
+* [x] Z-2 : `AutofocusClassifier` — Classifieur heuristique regex (0 token LLM, ~80% cas) + fallback LLM (~5 tokens). 32/32 JUnit5 PASS. (session 106)
+* [x] Z-3 : `ContextZoomer` — Filtrage contexte par niveau, budget token par section. 14/14 JUnit5 PASS. (session 106)
+* [x] Z-4 : `AutofocusStack` — Pile LIFO push/pop/currentLevel/isEmpty/clear. 14/14 JUnit5 PASS. (session 106)
+* [ ] Z-5 : Intégration VibecodingGraph — Node 0 (classify) + Node 1 (zoom) dans le graphe koog. Tests E2E.
+* [ ] Z-6 : Intégration V-6 Feedback Loop — verifyResult FAILED → zoom(IMPLEMENTATION) → retry. Tests Cucumber.
+* [ ] Z-7 : Validation cross-borough — Scénario bout-en-bout : intention → autofocus → exécution → succès.
+
+=== Bénéfice attendu
+
+Le LLM passe de "je lis tout le contexte et j'espère ne pas me noyer"
+à "je zoome sur ce qui compte, j'exécute, je dézoome pour décider, je rezoome".
+
+C'est la différence entre un script qui associe et un ingénieur qui comprend.
+5ème verbe ZOOMER dans la taxonomie workspace.
+
+=== Référence
+
+- AUTOFOCUS_CAPABILITY.adoc (racine workspace) — spécification complète
+- CADRAGE_AUTOFOCUS.adoc (.agents/) — cadrage agile 7 ateliers
+- Session 073 (2026-05-27) — découverte du gap autofocus

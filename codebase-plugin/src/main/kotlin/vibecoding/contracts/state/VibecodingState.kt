@@ -27,7 +27,9 @@ data class VibecodingState(
     /** V-6 Feedback Loop: nombre maximum de retry avant abandon */
     val maxRetries: Int = 3,
     /** X-4 RollbackStrategy: STOP_ON_ERROR | REVERT_AND_CONTINUE | MARK_SKIPPED | FALLBACK_HUMAN */
-    val rollbackStrategy: String = "STOP_ON_ERROR"
+    val rollbackStrategy: String = "STOP_ON_ERROR",
+    /** Z-5 Autofocus: niveau de zoom courant (BIG_PICTURE | ARCHITECTURE | MODULE | IMPLEMENTATION) */
+    val focusLevel: String? = null
 ) {
     val isFinal: Boolean get() = finished || iteration >= maxActions
 
