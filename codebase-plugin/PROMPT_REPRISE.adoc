@@ -1,42 +1,33 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 105
-:session: 105
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 106
+:session: 106
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 104 — SP-1 SessionProtocolTask (11 JUnit5 + 5 Cucumber PASS)
+:sessions_precedente: 105 — EPIC X TERMINÉ (X-4 RollbackStrategyExecutor + X-5 TaskCatalog + X-6 E2E Cucumber)
 
 == Contexte Hérité
 
 - EPIC W TERMINÉ (7/7)
-- EPIC X 4/7 — X-0✅ X-1✅ X-2✅ X-3✅
+- EPIC X TERMINÉ (7/7) — X-0✅ X-1✅ X-2✅ X-3✅ X-4✅ X-5✅ X-6✅
 - EPIC Y 7/8 — Y-1✅ Y-2✅ Y-3✅ Y-4✅ Y-5✅ Y-6✅ Y-7✅
 - EPIC OCR-2b TERMINÉ (6/6) — OllamaOcrProvider + fallback gemini→ollama
 - EPIC SP 1/5 — SP-1✅ SessionProtocolTask (contrat opencode-session ↔ VibecodingGraph)
-- Full suite ~340 PASS, ~9 pré-existants
+- Full suite ~350+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 105 — EPIC X-4 + X-5 + X-6
+== Mission Session 106 — EPIC Z-0 + Z-1
 
-*X-4* : `RollbackStrategy` — Intégrer les 4 stratégies dans la boucle d'exécution :
-  - `STOP_ON_ERROR` — arrête tout (comportement actuel)
-  - `REVERT_AND_CONTINUE` — git checkout des fichiers de l'étape, continue
-  - `MARK_SKIPPED` — marque l'étape comme contournée, continue
-  - `FALLBACK_HUMAN` — pause, demande input utilisateur
-  Tests : chaque stratégie vérifiée sur état erreur.
+*Z-0* : Cadrage Autofocus — Définir le concept de zoom contextuel :
+  - L'agent peut zoomer entre niveaux de contexte (workspace → borough → fichier → fonction)
+  - Inspiré de AUTOFOCUS_CAPABILITY.adoc (document 11 du Jardin Secret)
+  - Définir les niveaux de zoom et les transitions
 
-*X-5* : Intégration EPIC W (TaskSchemaScanner) dans la boucle verify→adapt.
-  Le LLM utilise le catalogue `list_tasks` (W-4) pour construire son plan multi-step
-  avant d'exécuter. `ToolRegistry.listTasks()` intégré dans `buildReplanPrompt()`.
-
-*X-6* : Tests Cucumber — Scénario "agent planifie, échoue, adapte, réussit"
-  avec un projet test qui a un bug à la première compilation.
-  Le LLM doit lire l'erreur, corriger, recompiler.
-  Mock ToolRegistry + FakeLlmProvider pour isolation.
-
-→ EPIC X TERMINÉ (7/7).
+*Z-1* : `ZoomLevel` — Implémenter la structure de données :
+  - Enum/sealed class des niveaux : WORKSPACE, BOROUGH, PROJECT, PACKAGE, FILE, FUNCTION
+  - Mapping niveau → contexte (quels fichiers charger, quel token budget)
+  - Tests unitaires
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 105 | X-4 + X-5 + X-6 | RollbackStrategy + intégration W + Cucumber → EPIC X TERMINÉ
 | 106 | Z-0 + Z-1 | Autofocus cadrage + ZoomLevel
 | 107 | Z-2 + Z-3 | ContextZoomer + ZoomPolicy
 | 108 | Z-4 + Z-5 + Z-6 | Intégration VibecodingGraph → EPIC Z TERMINÉ

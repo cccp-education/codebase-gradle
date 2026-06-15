@@ -281,9 +281,8 @@ Discussion originale dans Code Review V16 (configuration/GLOBAL_CODE_REVIEW.adoc
 
 == EPIC X — Décision Multi-Step : Plan → Execute → Verify → Adapt
 
-**Statut** : IDÉE — À CADRER
+**Statut** : ✅ TERMINÉ (7/7 — sessions 101-105)
 **Priorite** : P1
-**Dépend de** : Boucle autonome V-6 (feedback loop error→replan→retry)
 
 _Pourquoi_ : La boucle actuelle (VibecodingGraph) est linéaire : buildContext → callLLM → executeTools → persistState → checkProgress. Le LLM décide *une action à la fois*. Pas de plan multi-step avec vérification intermédiaire et adaptation.
 
@@ -301,57 +300,26 @@ et un `while` (adaptatif, auto-correctif, avec plan de secours).
 
 === Sous-tâches envisagées
 
-* [ ] X-0 : Analyse — Audit de la boucle actuelle `VibecodingGraph.execute()` : où insérer le pattern verify→adapt ?
+* [x] X-0 : Analyse — Audit de la boucle actuelle `VibecodingGraph.execute()` : où insérer le pattern verify→adapt ? (session 101)
 
-* [ ] X-1 : `VibecodingPlan` — Promouvoir le plan d'un `List<String>` vers une structure multi-step
-      avec dépendances explicites entre les étapes :
-      ```kotlin
-      class VibecodingPlan(
-          val steps: List<VibecodingStep>,
-          val rollbackStrategy: RollbackStrategy = RollbackStrategy.STOP_ON_ERROR
-      )
-      class VibecodingStep(
-          val description: String,
-          val gradleTask: String,
-          val expectedOutput: String,    // "BUILD SUCCESSFUL", "All tests passed", etc.
-          val maxRetries: Int = 3,
-          val verifyHook: String? = null // "grep 'FAILED' build/reports/test-results.txt"
-      )
-      ```
+* [x] X-1 : `VibecodingPlan` — Promouvoir le plan d'un `List<String>` vers une structure multi-step
+      avec dépendances explicites entre les étapes (session 101 — 14 JUnit5 + 8 Cucumber PASS)
 
-* [ ] X-2 : `TaskResultVerifier` — Parse la sortie d'une tâche Gradle et détermine le verdict :
-      - `SUCCESS` → passer à l'étape suivante
-      - `FAILED` → réessayer (avec ou sans modification)
-      - `BLOCKED` → passer au rollback (dépendance non satisfaite)
-      - `UNKNOWN` → demander au LLM d'interpréter
+* [x] X-2 : `TaskResultVerifier` — Parse la sortie d'une tâche Gradle et détermine le verdict :
+      SUCCESS / FAILED / BLOCKED / UNKNOWN (session 102 — 14 JUnit5 + 6 Cucumber PASS)
 
-* [ ] X-3 : Boucle `verify → adapt` — Si une étape échoue, le LLM reçoit :
-      1. Le résultat brut de la tâche (stdout + stderr)
-      2. Les fichiers modifiés depuis le dernier step
-      3. Son plan initial
-      4. Consigne : "Corrige l'erreur et relance, ou change de stratégie"
-      → Intègre un `maxRetries` avec backoff exponentiel (1, 3, 9 tentatives max)
+* [x] X-3 : Boucle `verify → adapt` — StepVerifier intégré dans VibecodingGraph (session 102 — 7 JUnit5 PASS)
 
-* [ ] X-4 : `RollbackStrategy` — Sur échec définitif :
-      - `STOP_ON_ERROR` — arrête tout (comportement actuel)
-      - `REVERT_AND_CONTINUE` — `git checkout` des fichiers de l'étape, continue
-      - `MARK_SKIPPED` — marque l'étape comme contournée, continue
-      - `FALLBACK_HUMAN` — pause, demande input utilisateur
+* [x] X-4 : `RollbackStrategy` — Sur échec définitif :
+      STOP_ON_ERROR / REVERT_AND_CONTINUE / MARK_SKIPPED / FALLBACK_HUMAN
+      (session 105 — RollbackStrategyExecutor 8 JUnit5 + 5 Cucumber PASS)
 
-* [ ] X-5 : Intégration avec le TaskSchemaScanner (EPIC W) — Le LLM utilise le catalogue
-      des tâches pour *construire son plan* avant d'exécuter :
-      ```
-      Contexte : "Je dois générer un SPG à partir du corpus AFNOR"
-      Plan généré :
-        1. collectFromCorpus (collecter les données)
-        2. generateSPG (générer le scénario)
-        3. verifyOutput (vérifier que le SPG est valide — tâche dédiée)
-        4. generateSPD (si SPG valide, générer les 36 SPDs)
-      ```
+* [x] X-5 : Intégration avec le TaskSchemaScanner (EPIC W) — Le LLM utilise le catalogue
+      des tâches pour construire son plan avant d'exécuter (session 105 — 3 Cucumber PASS)
 
-* [ ] X-6 : Tests — Scénario Cucumber "agent planifie, échoue, adapte, réussit"
+* [x] X-6 : Tests — Scénario Cucumber "agent planifie, échoue, adapte, réussit"
       avec un projet test qui a volontairement un bug à la première compilation
-      (le LLM doit lire l'erreur, corriger la typo, recompiler).
+      (session 105 — 3 Cucumber PASS)
 
 === Bénéfice attendu
 

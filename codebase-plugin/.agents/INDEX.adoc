@@ -4,10 +4,10 @@
 _Regles absolues_ : voir `AGENT.adoc`
 _Ontologie spatiale_ : voir `configuration/.agents/AGENT_GOVERNANCE.adoc`
 
-_Derniere mise a jour_ : 2026-06-14 (Session 104 — SP-1 SessionProtocolTask + OCR-2b OllamaOcrProvider terminés)
-_Session precedente_ : 103 — Brainstorming Protocole opencode↔Gradle (SP-0→SP-4 cadrés)
-_Session en cours_ : 105 — X-4 + X-5 + X-6 RollbackStrategy + intégration W + Cucumber
-_Session suivante_ : 106 — Z-0 + Z-1 Autofocus cadrage + ZoomLevel
+_Derniere mise a jour_ : 2026-06-15 (Session 105 — EPIC X TERMINÉ 7/7)
+_Session precedente_ : 104 — SP-1 SessionProtocolTask + OCR-2b OllamaOcrProvider
+_Session en cours_ : 106 — Z-0 + Z-1 Autofocus cadrage + ZoomLevel
+_Session suivante_ : 107 — Z-2 + Z-3 ContextZoomer + ZoomPolicy
 _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/` (N=70, multiple de 10)
 
 '''
@@ -38,6 +38,7 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 
 |===
 | # | Date | Type | Sujet | Score
+| 105 | 2026-06-15 | feat+tdd+ddd+bdd | EPIC X TERMINÉ 7/7 — X-4 RollbackStrategyExecutor (4 stratégies, 74l), X-5 TaskCatalog intégré buildReplanPrompt, X-6 E2E plan→fail→adapt→succeed. 8 JUnit5 + 5 Cucumber X-4 + 3 X-5 + 3 X-6 = 19/19 PASS. VibecodingGraph 17/17, planning 43/43. Zéro régression. | 10/10
 | 102 | 2026-06-14 | feat+tdd+ddd+bdd | X-2 + X-3 TaskResultVerifier + boucle verify→adapt. TaskResultVerifier.kt (52l, 4 verdicts), StepVerifier.kt (98l, retry/LLM replan). Intégration VibecodingGraph.execute() — verifyStepNode + V-6 fallback. 14 unit + 6 Cucumber X-2 + 7 unit X-3 = 27/27 PASS. Full suite 330+/333 PASS. EPIC X 4/7. publishToMavenLocal OK. | 10/10
 | 101 | 2026-06-14 | feat+tdd+ddd+bdd | X-0 + X-1 Cadrage + VibecodingPlan structuré. X-0: 6 points insertion verify→adapt documentés dans VibecodingGraph.kt. X-1: VibecodingPlan.kt (3 data classes, 14l), RollbackStrategy enum (4 valeurs). 14 JUnit5 + 8 Cucumber @epic_x_1 = 22/22 PASS. Full suite 330/333 PASS (3 pré-existants). publishToMavenLocal OK. | 10/10
 | 100 | 2026-06-14 | feat+tdd+ddd+bdd | W-4+W-5+W-6 list_tasks + mapping args + cache → EPIC W TERMINÉ. TaskListFormatter (36l, 9 tests), GradleTaskArgsMapper (27l, 6 tests), SchemaCache (22l, 6 tests). Cucumber @epic_w_4 7/7 PASS. Full suite 316/320 PASS (4 pré-existants). publishToMavenLocal OK. | 10/10

@@ -25,7 +25,9 @@ data class VibecodingState(
     /** V-6 Feedback Loop: compteur de retry pour erreurs récupérables */
     val retryCount: Int = 0,
     /** V-6 Feedback Loop: nombre maximum de retry avant abandon */
-    val maxRetries: Int = 3
+    val maxRetries: Int = 3,
+    /** X-4 RollbackStrategy: STOP_ON_ERROR | REVERT_AND_CONTINUE | MARK_SKIPPED | FALLBACK_HUMAN */
+    val rollbackStrategy: String = "STOP_ON_ERROR"
 ) {
     val isFinal: Boolean get() = finished || iteration >= maxActions
 

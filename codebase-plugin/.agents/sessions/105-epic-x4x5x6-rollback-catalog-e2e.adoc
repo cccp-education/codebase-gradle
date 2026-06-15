@@ -1,0 +1,85 @@
+= Session 105 — EPIC X-4 + X-5 + X-6 RollbackStrategy + Intégration W + Cucumber E2E
+:date: 2026-06-15
+:type: feat+tdd+ddd+bdd
+:score: 10/10
+
+== Contexte
+
+EPIC X 4/7 — X-0✅ X-1✅ X-2✅ X-3✅ — manquait RollbackStrategyExecutor, intégration W (TaskSchemaScanner), Cucumber E2E.
+
+== Actions
+
+=== X-4 — RollbackStrategyExecutor
+
+- RollbackStrategyExecutor.kt (74 lignes) — 4 stratégies: STOP_ON_ERROR, REVERT_AND_CONTINUE, MARK_SKIPPED, FALLBACK_HUMAN
+- RollbackStrategyExecutorTest.kt (8 tests) — chaque stratégie vérifiée, REVERT_AND_CONTINUE avec git checkout, MARK_SKIPPED ajoute à executedTasks
+- Intégration dans VibecodingGraph — paramètre rollbackExecutor, executeRollbackStrategy() appelée quand maxRetries épuisé
+- VibecodingState.rollbackStrategy: String ajouté
+- epic_x_4_rollback_strategy.feature (5 scénarios Cucumber @epic_x_4)
+- RollbackStrategySteps.kt + RollbackStrategyWorld.kt + EpicX4CucumberRunner.kt
+- Gradle task cucumberTestEpicX4
+
+=== X-5 — Intégration TaskSchemaScanner dans buildReplanPrompt
+
+- VibecodingGraph.buildReplanPrompt() passe de private à internal
+- Ajout catalogue tasks si taskSchemas non vide
+- epic_x_5_replan_catalog.feature (3 scénarios Cucumber @epic_x_5)
+- ReplanCatalogSteps.kt + ReplanCatalogWorld.kt + EpicX5CucumberRunner.kt
+- Gradle task cucumberTestEpicX5
+
+=== X-6 — Cucumber E2E Plan→Fail→Adapt→Succeed
+
+- epic_x_6_e2e_plan_fail_adapt.feature (3 scénarios @epic_x_6)
+- E2EPlanFailAdaptSteps.kt + E2EPlanFailAdaptWorld.kt + EpicX6CucumberRunner.kt
+- Gradle task cucumberTestEpicX6
+- FakeLlmProvider enrichi: responseQueue + enqueueResponse()
+
+=== Fixes infra
+
+- VibecodingGraph.executePlanTasks() détecte BUILD FAILED dans le résultat (pas seulement les exceptions)
+- checkProgressNode vérifie allTasks.size vs executedTasks.size (pas juste epics.isEmpty)
+- verifyStepNode skip sur All plan tasks executed / SKIPPED / REVERT_AND_CONTINUE
+- RollbackStrategyExecutor fix: finished=false pour REVERT_AND_CONTINUE et MARK_SKIPPED
+
+== Résultats
+
+- 8 JUnit5 RollbackStrategyExecutor + 5 Cucumber X-4 = 13/13 PASS
+- 3 Cucumber X-5 PASS
+- 3 Cucumber X-6 PASS
+- VibecodingGraphTest 17/17 PASS
+- Planning tests 43/43 PASS
+- Zéro régression
+
+== Fichiers
+
+Créés (11):
+- src/main/kotlin/.../planning/RollbackStrategyExecutor.kt
+- src/test/features/epic_x_4_rollback_strategy.feature
+- src/test/features/epic_x_5_replan_catalog.feature
+- src/test/features/epic_x_6_e2e_plan_fail_adapt.feature
+- src/test/.../planning/RollbackStrategyExecutorTest.kt
+- src/test/.../scenarios/RollbackStrategySteps.kt
+- src/test/.../scenarios/RollbackStrategyWorld.kt
+- src/test/.../scenarios/EpicX4CucumberRunner.kt
+- src/test/.../scenarios/ReplanCatalogSteps.kt
+- src/test/.../scenarios/ReplanCatalogWorld.kt
+- src/test/.../scenarios/EpicX5CucumberRunner.kt
+- src/test/.../scenarios/E2EPlanFailAdaptSteps.kt
+- src/test/.../scenarios/E2EPlanFailAdaptWorld.kt
+- src/test/.../scenarios/EpicX6CucumberRunner.kt
+
+Modifiés (6):
+- VibecodingGraph.kt (rollbackExecutor, taskSchemas, buildReplanPrompt, executePlanTasks, checkProgressNode, verifyStepNode guard, executeRollbackStrategy)
+- VibecodingState.kt (rollbackStrategy: String)
+- FakeLlmProvider.kt (responseQueue)
+- build.gradle.kts (cucumberTestEpicX4/X5/X6)
+- BACKLOG.adoc (EPIC X TERMINÉ 7/7)
+- PROMPT_REPRISE.adoc (session 106 Z-0+Z-1)
+
+== Leçons
+
+- executePlanTasks doit détecter BUILD FAILED dans le stdout (pas seulement les exceptions)
+- checkProgressNode doit comparer executedTasks vs allTasks pour une fin propre
+- verifyStepNode doit skipper les résultats non-standards (All plan tasks executed, SKIPPED, REVERT_AND_CONTINUE, Replan)
+- Les stratégies MARK_SKIPPED / REVERT_AND_CONTINUE doivent resetter finished=false
+- FakeLlmProvider enrichi d'une responseQueue pour des scénarios multi-étapes

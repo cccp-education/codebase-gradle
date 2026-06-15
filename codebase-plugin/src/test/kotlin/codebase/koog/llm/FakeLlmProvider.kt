@@ -10,8 +10,18 @@ class FakeLlmProvider : LlmProvider {
 
     var nextResponse: String = "I'll execute: add_dark_mode_toggle"
 
+    private val responseQueue: MutableList<String> = mutableListOf()
+
+    fun enqueueResponse(response: String) {
+        responseQueue.add(response)
+    }
+
     override suspend fun call(prompt: String): String {
         promptsReceived.add(prompt)
-        return nextResponse
+        return if (responseQueue.isNotEmpty()) {
+            responseQueue.removeAt(0)
+        } else {
+            nextResponse
+        }
     }
 }

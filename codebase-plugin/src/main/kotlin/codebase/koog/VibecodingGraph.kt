@@ -1,10 +1,15 @@
 package codebase.koog
 
+import codebase.koog.discovery.TaskListFormatter
+import codebase.koog.discovery.TaskSchema
 import codebase.koog.llm.LlmProvider
+import codebase.koog.planning.RollbackStrategy
+import codebase.koog.planning.RollbackStrategyExecutor
 import codebase.koog.planning.StepVerifier
 import codebase.koog.planning.TaskResult
 import codebase.koog.planning.TaskResultVerifier
 import codebase.koog.planning.TaskVerdict
+import codebase.koog.planning.VibecodingPlan
 import codebase.koog.planning.VibecodingStep
 import codebase.koog.session.SessionRecord
 import codebase.koog.session.SessionRepository
@@ -84,7 +89,9 @@ class VibecodingGraph(
     val sessionRepository: SessionRepository? = null,
     val connectionFactory: ConnectionFactory? = null,
     val tokenTracker: TokenTracker = TokenTracker(),
-    val stepVerifier: StepVerifier = StepVerifier(llmProvider, tokenTracker)
+    val stepVerifier: StepVerifier = StepVerifier(llmProvider, tokenTracker),
+    val rollbackExecutor: RollbackStrategyExecutor? = null,
+    val taskSchemas: List<TaskSchema> = emptyList()
 ) {
 
     private val log = LoggerFactory.getLogger(VibecodingGraph::class.java)
@@ -211,7 +218,11 @@ class VibecodingGraph(
                 }
 
                 // X-3 verify→adapt : StepVerifier parse le résultat et gère le verdict
-                if (state.error == null && state.lastToolResult.isNotBlank()) {
+                if (state.error == null && state.lastToolResult.isNotBlank()
+                    && !state.lastToolResult.startsWith("Replan:")
+                    && !state.lastToolResult.startsWith("All plan tasks executed")
+                    && !state.lastToolResult.startsWith("SKIPPED:")
+                    && !state.lastToolResult.startsWith("REVERT_AND_CONTINUE:")) {
                     state = verifyStepNode(state)
                 }
 
@@ -240,11 +251,13 @@ class VibecodingGraph(
                         }
                         if (state.error != null && state.retryCount >= state.maxRetries) {
                             log.warn("[VibecodingGraph] maxRetries (${state.maxRetries}) exhausted")
-                            return state.withError("MaxRetriesExhausted: ${state.error}")
+                            state = executeRollbackStrategy(state)
+                            if (state.finished || state.error != null) return state
                         }
                     } else {
-                        log.warn("[VibecodingGraph] maxRetries (${state.maxRetries}) exhausted, returning error")
-                        return state.withError("MaxRetriesExhausted: ${state.error}")
+                        log.warn("[VibecodingGraph] maxRetries (${state.maxRetries}) exhausted, delegating to rollback strategy")
+                        state = executeRollbackStrategy(state)
+                        if (state.finished || state.error != null) return state
                     }
                 }
             }
@@ -381,7 +394,7 @@ class VibecodingGraph(
      * V-6 Feedback Loop : prompt de replanification après erreur.
      * Le LLM reçoit le contexte de l'erreur et doit proposer une approche alternative.
      */
-    private fun buildReplanPrompt(state: VibecodingState): String {
+    internal fun buildReplanPrompt(state: VibecodingState): String {
         return buildString {
             appendLine("Vibecoding error recovery — retry ${state.retryCount}/${state.maxRetries}")
             appendLine("Intention: ${state.intention}")
@@ -390,6 +403,11 @@ class VibecodingGraph(
             appendLine("Error: ${state.error}")
             if (state.executedTasks.isNotEmpty()) {
                 appendLine("Already executed: ${state.executedTasks.joinToString(", ")}")
+            }
+            if (taskSchemas.isNotEmpty()) {
+                appendLine()
+                appendLine("Available Gradle tasks (use exec_gradle with task name):")
+                appendLine(TaskListFormatter.format(taskSchemas))
             }
             appendLine()
             appendLine("The previous action failed. Propose an alternative approach to recover.")
@@ -467,11 +485,23 @@ class VibecodingGraph(
                 workspaceRoot = state.workspaceRoot,
                 dryRun = state.dryRun
             )
-            state.nextIteration().copy(
-                executedTasks = state.executedTasks + task.description,
-                lastToolResult = result,
-                currentTaskDescription = task.description
-            )
+            val isFailure = result.contains("BUILD FAILED") || result.contains("FAILED")
+            if (isFailure) {
+                log.warn("[VibecodingGraph] Task '{}' returned failure: {}", task.description, result.take(200))
+                state.nextIteration().copy(
+                    lastToolResult = result,
+                    currentTaskDescription = task.description,
+                    error = "TaskFailed: ${result.take(200)}",
+                    retryCount = state.retryCount + 1,
+                    finished = false
+                )
+            } else {
+                state.nextIteration().copy(
+                    executedTasks = state.executedTasks + task.description,
+                    lastToolResult = result,
+                    currentTaskDescription = task.description
+                )
+            }
         } catch (e: Exception) {
             log.warn("[VibecodingGraph] Task execution failed: {}", e.message)
             state.nextIteration().copy(
@@ -496,6 +526,14 @@ class VibecodingGraph(
         if (state.error != null && state.retryCount < state.maxRetries) return state
         if (state.iteration >= state.maxActions) return state.finish()
         if (state.finished) return state
+
+        // Vérifie si toutes les tâches du plan sont exécutées
+        val allTasks = state.plan?.epics?.flatMap { epic ->
+            epic.userStories.flatMap { story -> story.tasks }
+        } ?: emptyList()
+        if (allTasks.isNotEmpty() && state.executedTasks.size >= allTasks.size && state.iteration > 0) {
+            return state.finish()
+        }
 
         // Vérifie si le plan est vide (rien à faire)
         val noWorkRemaining = state.plan?.epics?.isEmpty() ?: true
@@ -532,6 +570,38 @@ class VibecodingGraph(
             gradleTask = task.gradleTask,
             expectedOutput = "BUILD SUCCESSFUL"
         )
+    }
+
+    // ── X-4 Rollback Strategy ──
+
+    private fun executeRollbackStrategy(state: VibecodingState): VibecodingState {
+        val executor = rollbackExecutor ?: run {
+            log.warn("[VibecodingGraph] No rollback executor — defaulting to STOP_ON_ERROR")
+            return state.copy(
+                finished = true,
+                error = "MaxRetriesExhausted: ${state.error}"
+            )
+        }
+
+        val step = extractCurrentStep(state) ?: VibecodingStep(
+            description = state.currentTaskDescription.ifBlank { "unknown" },
+            gradleTask = "unknown",
+            expectedOutput = "BUILD SUCCESSFUL"
+        )
+
+        val strategy = try {
+            RollbackStrategy.valueOf(state.rollbackStrategy)
+        } catch (e: IllegalArgumentException) {
+            RollbackStrategy.STOP_ON_ERROR
+        }
+
+        val plan = VibecodingPlan(
+            steps = listOf(step),
+            rollbackStrategy = strategy
+        )
+
+        log.info("[VibecodingGraph] Executing rollback strategy: {} for step '{}'", strategy, step.description)
+        return executor.execute(state, plan, step)
     }
 
     // ── Timeout helpers ──
