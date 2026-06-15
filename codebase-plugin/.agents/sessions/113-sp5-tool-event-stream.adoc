@@ -1,0 +1,82 @@
+= Session 113 — SP-5 ToolEventStream — Événements Structurés Temps Réel
+:session: 113
+:date: 2026-06-15
+:borough: Queens — codebase-gradle (N1)
+:epic: SP-5 (EPIC SESSION-PROTOCOL, 5/7)
+:score: 10/10
+
+== Contexte
+
+Session 112 avait terminé SP-4 (Tests E2E opencode→runner→codebase→session, 9/9 PASS).
+Mission SP-5 : ToolEventStream — événements structurés temps réel (thinking/tool_call/tool_result/progress/error)
+en JSON-lines sur stdout.
+
+== Actions
+
+=== SP-5.0 — Modèle de données
+- `ToolEventType` enum : THINKING, TOOL_CALL, TOOL_RESULT, PROGRESS, ERROR
+- `ToolEvent` data class : type, timestamp, sessionId, iteration, data (Map<String,String>)
+- `ToolEventStream` : émetteur JSON-lines sur OutputStream, helpers thinking/toolCall/toolResult/progress/error
+- Fichier : `src/main/kotlin/codebase/koog/ToolEventStream.kt` (90 lignes)
+
+=== SP-5.1 — Câblage VibecodingGraph
+- Paramètre `eventStream: ToolEventStream? = null` ajouté au constructeur
+- Émissions aux points clés :
+  - classifyNode : thinking + progress
+  - buildContextNode : thinking
+  - callLLMNode : thinking + toolCall(call_llm) + toolResult
+  - executeToolsNode : toolCall(exec_gradle) + toolResult
+  - Error recovery : error + thinking(replan)
+  - Timeout : error
+- Helper `extractCurrentTaskDescription()` ajouté
+
+=== SP-5.2 — Câblage SessionProtocolTask + SessionProtocolServer
+- `SessionProtocolTask.eventStream` injectable
+- `SessionProtocolServer` reçoit eventStream, met à jour `currentSessionId` par prompt
+- `ToolEventStream.currentSessionId` rendu mutable pour le mode serveur multi-session
+
+=== SP-5.3 — Tests JUnit5
+- `ToolEventStreamTest.kt` : 10 tests (emit, thinking, toolCall, toolResult, progress, error, multi-events, sessionId change, timestamp, truncation)
+- Tests existants SessionProtocolTaskTest/SessionProtocolServerTest/SessionProtocolE2ETest/SessionProtocolLifecycleTest/VibecodingGraphTest/VibecodingTaskTest : zéro régression
+
+=== SP-5.4 — Tests Cucumber @epic_sp_5
+- Feature : `epic_sp_5_event_stream.feature` (3 scénarios)
+- World : `SessionProtocolSp5World.kt`
+- Steps : `SessionProtocolSp5Steps.kt`
+- Runner : `EpicSp5CucumberRunner.kt`
+- Tâche Gradle : `cucumberTestEpicSp5`
+- 3/3 PASS :
+  - Create session produces event stream with all event types
+  - Error during execution produces ERROR events in stream
+  - Server mode produces event stream for multiple prompts
+
+== Fichiers Modifiés/Créés
+
+[cols="2,3,2"]
+|===
+| Fichier | Action | Lignes
+| `src/main/kotlin/codebase/koog/ToolEventStream.kt` | CRÉÉ | 90
+| `src/main/kotlin/codebase/koog/VibecodingGraph.kt` | MODIFIÉ | +30
+| `src/main/kotlin/codebase/koog/SessionProtocolTask.kt` | MODIFIÉ | +4
+| `src/main/kotlin/codebase/koog/SessionProtocolServer.kt` | MODIFIÉ | +4
+| `src/test/kotlin/codebase/koog/ToolEventStreamTest.kt` | CRÉÉ | 140
+| `src/test/features/epic_sp_5_event_stream.feature` | CRÉÉ | 22
+| `src/test/kotlin/codebase/scenarios/SessionProtocolSp5World.kt` | CRÉÉ | 100
+| `src/test/kotlin/codebase/scenarios/SessionProtocolSp5Steps.kt` | CRÉÉ | 98
+| `src/test/kotlin/codebase/scenarios/EpicSp5CucumberRunner.kt` | CRÉÉ | 22
+| `build.gradle.kts` | MODIFIÉ | +28 (cucumberTestEpicSp5)
+|===
+
+== Résultats
+
+- Compile : BUILD SUCCESSFUL
+- JUnit5 : 10 nouveaux + zéro régression existants
+- Cucumber SP-5 : 3/3 PASS
+- publishToMavenLocal : OK
+- EPIC SP : 5/7 (SP-0 ✅ SP-1 ✅ SP-2 ✅ SP-3 ✅ SP-4 ✅ SP-5 ✅)
+
+== Leçons
+
+- Le `callLLMNode` catch interne empêchait l'event error d'être émis → corrigé en émettant avant le return
+- Le mode LLM (sans plan) n'avait pas de toolCall → ajouté `call_llm` comme tool name
+- `currentSessionId` mutable nécessaire pour le mode serveur multi-prompt

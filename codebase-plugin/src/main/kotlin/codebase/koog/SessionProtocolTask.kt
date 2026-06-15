@@ -40,6 +40,9 @@ abstract class SessionProtocolTask : DefaultTask() {
     @get:Internal
     var lifecycleManager: SessionProtocolLifecycleManager? = null
 
+    @get:Internal
+    var eventStream: ToolEventStream? = null
+
     @get:Input
     @get:Optional
     @get:Option(option = "prompt", description = "Prompt utilisateur à exécuter")
@@ -181,7 +184,8 @@ abstract class SessionProtocolTask : DefaultTask() {
             augmentedGraph = KoogAugmentedContextGraph(),
             toolRegistry = toolRegistry,
             llmProvider = llmProvider,
-            tokenTracker = tokenTracker
+            tokenTracker = tokenTracker,
+            eventStream = eventStream
         )
 
         val state = VibecodingState(

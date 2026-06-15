@@ -21,7 +21,8 @@ import java.util.UUID
 class SessionProtocolServer(
     private val workspaceRoot: String,
     private val toolRegistry: ToolRegistry = ToolRegistry(),
-    private val llmProvider: LlmProvider? = null
+    private val llmProvider: LlmProvider? = null,
+    private val eventStream: ToolEventStream? = null
 ) {
     private val log = LoggerFactory.getLogger(SessionProtocolServer::class.java)
     private val mapper = jacksonObjectMapper()
@@ -53,6 +54,7 @@ class SessionProtocolServer(
             }
 
             try {
+                eventStream?.currentSessionId = sessionPrompt.sessionId.toString()
                 val response = executePrompt(sessionPrompt)
                 writer.println(mapper.writeValueAsString(response))
             } catch (e: Exception) {
@@ -77,7 +79,8 @@ class SessionProtocolServer(
             augmentedGraph = KoogAugmentedContextGraph(),
             toolRegistry = toolRegistry,
             llmProvider = llmProvider,
-            tokenTracker = tokenTracker
+            tokenTracker = tokenTracker,
+            eventStream = eventStream
         )
 
         val state = VibecodingState(

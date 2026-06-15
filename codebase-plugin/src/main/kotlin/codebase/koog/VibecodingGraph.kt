@@ -98,7 +98,8 @@ class VibecodingGraph(
     val taskSchemas: List<TaskSchema> = emptyList(),
     val autofocusClassifier: AutofocusClassifier = AutofocusClassifier,
     val contextZoomer: ContextZoomer = ContextZoomer(),
-    val autofocusStack: AutofocusStack = AutofocusStack()
+    val autofocusStack: AutofocusStack = AutofocusStack(),
+    val eventStream: ToolEventStream? = null
 ) {
 
     private val log = LoggerFactory.getLogger(VibecodingGraph::class.java)
@@ -181,26 +182,32 @@ class VibecodingGraph(
 
         // Étape 0 : classify (Z-5 Autofocus) — détermine le niveau de zoom
         state = try {
+            eventStream?.thinking(0, "Classifying intention: ${state.intention}")
             classifyNode(state)
         } catch (e: Exception) {
             log.warn("[VibecodingGraph] classify failed: {}", e.message)
+            eventStream?.error(0, "Classify failed: ${e.message}")
             state
         }
         if (state.error != null) return state
 
         // Étape 0b : zoom (Z-5 Autofocus) — ajuste le focus stack
         state = try {
+            eventStream?.progress(0, state.maxActions, "Zooming to ${state.focusLevel}")
             zoomNode(state)
         } catch (e: Exception) {
             log.warn("[VibecodingGraph] zoom failed: {}", e.message)
+            eventStream?.error(0, "Zoom failed: ${e.message}")
             state
         }
 
         // Étape 1 : buildContext
         state = try {
+            eventStream?.thinking(0, "Building augmented context")
             buildContextNode(state)
         } catch (e: Exception) {
             log.warn("[VibecodingGraph] buildContext failed: {}", e.message)
+            eventStream?.error(0, "BuildContext failed: ${e.message}")
             state.withError("BuildContextFailed: ${e.message}")
         }
         if (state.error != null) return state
@@ -220,25 +227,41 @@ class VibecodingGraph(
             if (plan == null || plan.epics.isEmpty()) {
                 // Mode LLM : décision autonome
                 if (llmProvider != null) {
+                    eventStream?.thinking(state.iteration, "LLM deciding next action")
+                    eventStream?.toolCall(state.iteration, "call_llm", mapOf("intention" to state.intention))
                     state = try {
                         callLLMNode(state)
                     } catch (e: Exception) {
                         log.warn("[VibecodingGraph] callLLM failed: {}", e.message)
+                        eventStream?.error(state.iteration, "LLM call failed: ${e.message}")
                         state.withError("CallLLMFailed: ${e.message}")
                     }
-                    if (state.error != null) return state
+                    if (state.error != null) {
+                        eventStream?.toolResult(state.iteration, "call_llm", state.error, success = false)
+                        eventStream?.error(state.iteration, state.error)
+                        return state
+                    }
+                    eventStream?.toolResult(state.iteration, "call_llm", state.lastToolResult, success = true)
                 } else {
                     // Mode déterministe : pas de plan = itère
                     log.info("[VibecodingGraph] No plan, no LLM — iteration ${state.iteration + 1}/${state.maxActions}")
+                    eventStream?.progress(state.iteration, state.maxActions, "No plan, iterating")
                     state = state.nextIteration()
                 }
             } else {
                 // Mode plan déterministe : executeTools sur les tâches du plan
+                val nextTask = extractCurrentTaskDescription(state)
+                eventStream?.toolCall(state.iteration, "exec_gradle", mapOf("task" to (nextTask ?: "unknown")))
                 state = try {
                     executeToolsNode(state)
                 } catch (e: Exception) {
                     log.warn("[VibecodingGraph] executeTools failed: {}", e.message)
+                    eventStream?.error(state.iteration, "Execute tools failed: ${e.message}")
                     state.withError("ExecuteToolsFailed: ${e.message}")
+                }
+
+                if (state.error == null) {
+                    eventStream?.toolResult(state.iteration, "exec_gradle", state.lastToolResult, success = true)
                 }
 
                 // X-3 verify→adapt : StepVerifier parse le résultat et gère le verdict
@@ -253,10 +276,12 @@ class VibecodingGraph(
                 // V-6 Error Recovery : si StepVerifier a détecté FAILED/BLOCKED/UNKNOWN
                 // ou si executeTools a lancé une exception
                 if (state.error != null) {
+                    eventStream?.error(state.iteration, state.error)
                     // Z-5 Autofocus : zoom-in sur erreur pour contexte chirurgical
                     state = zoomInOnError(state)
                     if (state.retryCount < state.maxRetries) {
                         log.info("[VibecodingGraph] Retry ${state.retryCount}/${state.maxRetries} after: {}", state.error)
+                        eventStream?.thinking(state.iteration, "Replanning after error (retry ${state.retryCount}/${state.maxRetries})")
                         if (llmProvider != null) {
                             val replanPrompt = buildReplanPrompt(state)
                             tokenTracker.trackPrompt(replanPrompt)
@@ -270,6 +295,7 @@ class VibecodingGraph(
                                 state = popFocusNode(state)
                             } catch (e: Exception) {
                                 log.warn("[VibecodingGraph] Replan LLM call failed: {}", e.message)
+                                eventStream?.error(state.iteration, "Replan failed: ${e.message}")
                                 state = state.incrementRetry()
                             }
                         } else {
@@ -674,6 +700,16 @@ class VibecodingGraph(
             gradleTask = task.gradleTask,
             expectedOutput = "BUILD SUCCESSFUL"
         )
+    }
+
+    private fun extractCurrentTaskDescription(state: VibecodingState): String? {
+        val plan = state.plan ?: return null
+        val allTasks = plan.epics.flatMap { epic ->
+            epic.userStories.flatMap { story -> story.tasks }
+        }
+        val nextIndex = state.executedTasks.size
+        if (nextIndex >= allTasks.size || nextIndex < 0) return null
+        return allTasks[nextIndex].gradleTask
     }
 
     // ── X-4 Rollback Strategy ──
