@@ -1,6 +1,7 @@
 package codebase
 
 import codebase.blog.EndSessionBlogTask
+import codebase.koog.SessionProtocolDaemonTask
 import codebase.koog.VibecodingTask
 import codebase.koog.tracking.DashboardTask
 import codebase.ocr.CodebaseOcrExtension
@@ -68,6 +69,14 @@ class CodebasePlugin : Plugin<Project> {
             it.intention.set(project.providers.gradleProperty("intention").orElse(""))
             it.dryRun.set(project.providers.gradleProperty("dryRun").map { it.toBoolean() }.orElse(false))
             it.maxActions.set(project.providers.gradleProperty("maxActions").map { it.toInt() }.orElse(10))
+        }
+
+        project.tasks.register(
+            "sessionProtocolDaemon",
+            SessionProtocolDaemonTask::class.java
+        ) {
+            it.group = "generate"
+            it.description = "Session protocol daemon — stdin JSON-lines SessionPrompt, stdout SessionResponse, reuses Gradle daemon"
         }
 
         project.tasks.register(

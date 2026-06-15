@@ -1,0 +1,50 @@
+= Session 110 — Migration EPIC 5 + SP-2 SessionProtocolServer Daemon
+:date: 2026-06-15
+:borough: Queens — codebase-gradle (N1) + Newark — training-gradle (N2)
+:score: 10/10
+
+== Contexte
+
+Session multiservice : migration doc EPIC 5 codebase→training + sanitization EPIC Y + livraison SP-2 daemon.
+
+== Actions
+
+=== Migration EPIC 5 (codebase → training TRN-8)
+- training-gradle BACKLOG.adoc : +TRN-8 (~21 pts, 6 sous-tâches fine-tuning CDA/FPA)
+- training-gradle INDEX.adoc : +TRN-8 roadmap
+- training-gradle PROMPT_REPRISE.adoc : Session 020
+- codebase BACKLOG.adoc : EPIC 5 → MIGRÉ (session 110 → training TRN-8)
+- codebase INDEX.adoc : EPIC 5 → MIGRÉ
+- codebase PROMPT_REPRISE.adoc : EPIC 5 retiré, priorités réelles (SP-2, OCR-3, V-6-POOL)
+- 6 fichiers modifiés (3 training + 3 codebase)
+
+=== Sanitization EPIC Y + SP
+- BACKLOG EPIC Y : Y-0 ✅ Y-4 ✅ Y-5 ✅ Y-6 ✅, statut TERMINE 8/8
+- BACKLOG EPIC SP : SP-0 ✅ SP-1 ✅, statut 2/7
+- INDEX EPIC SP : 2/7
+
+=== SP-2 SessionProtocolServer Daemon
+- SessionProtocolServer.kt (119l) : stdin JSON-lines SessionPrompt → VibecodingGraph → stdout SessionResponse
+- SessionProtocolDaemonTask.kt (37l) : Tâche Gradle wrapper, stdin→stdout, reuse daemon
+- CodebasePlugin.kt : +sessionProtocolDaemon registration
+- SessionProtocolServerTest.kt : 5 JUnit5 (single prompt, multiple prompts, auto-ID, error resilience, empty stdin)
+- SessionProtocolServerWorld.kt + SessionProtocolServerSteps.kt : Cucumber BDD @epic_sp_2
+- epic_sp_2_session_server.feature : 4 scénarios (single, multiple, auto-ID, error resilience)
+- EpicSp2CucumberRunner.kt : JUnit Platform Suite runner
+- build.gradle.kts : +cucumberTestEpicSp2 task
+
+== Résultats
+
+- 5 JUnit5 + 4 Cucumber = 9/9 PASS
+- Compilation OK, zéro régression
+- 12 fichiers modifiés/créés codebase (5 modifiés + 7 créés)
+- 3 fichiers modifiés training
+
+== Commandes
+
+[source,shell]
+----
+cd codebase-plugin && ./gradlew compileKotlin compileTestKotlin  # OK
+./gradlew test --tests "codebase.koog.SessionProtocolServerTest" # 5/5 PASS
+./gradlew cucumberTestEpicSp2                                    # 4/4 PASS
+----

@@ -1,33 +1,35 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 110
-:session: 110
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 111
+:session: 111
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 109 — EPIC 12 TERMINÉ (19/19 PASS, 16 JUnit5 + 3 Cucumber)
+:sessions_precedente: 110 — EPIC 5 Migration + SP-2 ✅ (9/9 PASS, 5 JUnit5 + 4 Cucumber)
 
 == Contexte Hérité
 
 - EPIC W TERMINÉ (7/7)
 - EPIC X TERMINÉ (7/7)
-- EPIC Y 7/8 — Y-1✅ Y-2✅ Y-3✅ Y-4✅ Y-5✅ Y-6✅ Y-7✅ (Y-3 AgenticSchema pgvector EN COURS)
-- EPIC OCR 12/26 — OCR-0✅ OCR-1 4/6, OCR-2 4/5, OCR-2b✅, OCR-3 4/5, OCR-3b 5/8
-- EPIC SP 1/7 — SP-1✅
+- EPIC Y TERMINÉ (8/8 ✅)
 - EPIC Z TERMINÉ (7/7)
-- EPIC 12 TERMINÉ — 16 JUnit5 + 3 Cucumber = 19/19 PASS
-- Full suite ~370+ PASS
+- EPIC 12 TERMINÉ — 19/19 PASS
+- EPIC 5 MIGRÉ → training-gradle TRN-8
+- SP-2 ✅ SessionProtocolServer daemon (stdin/stdout JSON-lines, Cucumber @epic_sp_2 4/4)
+- EPIC SP 3/7 — SP-0 ✅ SP-1 ✅ SP-2 ✅
+- EPIC OCR 12/26
+- Full suite ~380+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 110 — EPIC 5 Pipeline fine-tuning experts CDA/FPA
+== Mission Session 111 — Suite Protocole OpenCode↔Gradle
 
-*EPIC 5* : Pipeline de fine-tuning pour deux experts métier :
-  - Inventaire du matériel existant (office/books-collection/, office/data-engineering/)
-  - Préparation dataset CDA : Kotlin + Gradle + JHipster + langage
-  - Préparation dataset FPA : pédagogie + Qualiopi + AFNOR + taxonomies Bloom/Harrow/Krathwohl
-  - Sélection du modèle 70B
-  - Script de fine-tuning (via LangChain4j ou ONNX Runtime)
-  - Validation des experts (test de cohérence sur 100 prompts par domaine)
+*SP-3* : Pont N3 runner-gradle — Dispatch thin-client → SessionProtocolTask → réponse.
+Cycle de vie de session (création, reprise, clôture).
+
+*Priorités restantes* :
+  - SP-3 : Pont N3 runner-gradle
+  - OCR-3 : Support batch inputDir + OCR-4 intégration pipeline complet
+  - EPIC V-6-POOL : Adaptation Ollama Cloud Pool gemma4:31b-cloud
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 110 | 5 | Pipeline fine-tuning CDA/FPA (début)
-| 111+ | 5 | Suite fine-tuning + validation experts
-| 115+ | 7 | Wiring LangChain4j + pgvector experts
+| 111 | SP-3 | Pont N3 runner-gradle dispatch
+| 112+ | SP-4/SP-5 | Adaptation opencode passthrough + tests interactifs
+| 115+ | OCR | Pipeline OCR batch + intégration complète

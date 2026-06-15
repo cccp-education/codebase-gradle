@@ -108,16 +108,10 @@ Le `CompositeContextBuilder` (déjà fait via EPIC 9) agrège ces canaux.
 * [x] Comparaison AsciiDoc, gate <5%
 * [x] 175 classifications 0% erreur 128K
 
-== EPIC 5 : Pipeline fine-tuning experts CDA/FPA
-**Statut** : A FAIRE
-**Priorite** : P0
-
-* [ ] Inventaire du materiel existant (office/books-collection/, office/data-engineering/)
-* [ ] Preparation dataset CDA : Kotlin + Gradle + JHipster + langage
-* [ ] Preparation dataset FPA : pedagogie + Qualiopi + AFNOR + taxonomies Bloom/Harrow/Krathwohl
-* [ ] Selection du modele 70B
-* [ ] Script de fine-tuning (via LangChain4j ou ONNX Runtime)
-* [ ] Validation des experts (test de coherence sur 100 prompts par domaine)
+== EPIC 5 : Pipeline fine-tuning experts CDA/FPA — MIGRÉ vers training-gradle
+**Statut** : MIGRÉ (Session 110 → training TRN-8, ~21 pts)
+**Priorite** : N/A — codebase fournit le socle technique (ONNX, RAG pgvector, qualité EPIC 6)
+**Cible** : training-gradle (Newark N2) — BACKLOG.adoc §EPIC TRN-8
 
 == EPIC 6 : Integration ONNX — boucle qualite
 **Statut** : TERMINE (session 056, 2026-05-23)
@@ -348,7 +342,7 @@ Discussion originale dans Code Review V16 (configuration/GLOBAL_CODE_REVIEW.adoc
 
 == EPIC Y — Agentic Literature Compiler : Texte Agentique → Chunks → Ontologie → SQL → Gradle Tasks
 
-**Statut** : IDÉE — À CADRER
+**Statut** : ✅ TERMINE (8/8 — Y-0→Y-7, session 097). 120+ PASS.
 **Priorite** : P1
 **Dépend de** : EPIC K (Taxonomie Workspace), EPIC W (TaskSchemaScanner)
 
@@ -439,11 +433,7 @@ Source : Littérature textuelle agentique
 
 === Sous-tâches envisagées
 
-* [ ] Y-0 : Analyse — Inventaire des sources textuelles agentiques du workspace :
-      AGENT.adoc × 11 boroughs, INDEX.adoc × 11, SESSIONS_HISTORY × 11,
-      10 documents Jardin Secret, PROMPT_REPRISE, CADRAGE_METHODE × 8 (waiter),
-      GLOBAL_CODE_REVIEW v1→v16, TAXONOMIE_WORKSPACE.adoc.
-      Objectif : typologie des chunks (règle, concept, procédure, metadata, contrainte).
+* [x] Y-0 : Analyse — Inventaire des sources textuelles agentiques du workspace (cadré — pipeline documenté ci-dessus)
 
 * [x] Y-1 : `AgenticChunker` — Analyse un fichier .adoc et le segmente en chunks
       avec signature sémantique :
@@ -469,7 +459,7 @@ Source : Littérature textuelle agentique
       - Calcule le poids (mots-clés : "CRITIQUE", "BLOQUANT", "ABSOLUE" → 1.0)
       - Résultat : chunk ontologisé, prêt à stocker
 
-* [ ] Y-3 : `AgenticSchema` — Modèle relationnel pgvector pour stocker les chunks :
+* [x] Y-3 : `AgenticSchema` — Modèle relationnel pgvector pour stocker les chunks (AgenticChunkRepository.kt 353 lignes + V3__agentic_chunks.sql). 31/31 PASS. (sessions 088-096)
       ```sql
       CREATE TABLE agentic_chunks (
           id VARCHAR(64) PRIMARY KEY,           -- SHA-256
@@ -496,29 +486,11 @@ Source : Littérature textuelle agentique
       );
       ```
 
-* [ ] Y-4 : `AgenticCompiler` — Transforme un chunk ontologisé en artefact exécutable :
-      - Chunk type=RULE, verb=INTERDIRE, domain=git → ToolRegistry pre-hook `checkGitPermission`
-      - Chunk type=PROCEDURE, verb=GENERER, domain=training → Plan multi-step (EPIC X)
-      - Chunk type=CONSTRAINT, verb=VALIDER, dag=N2 → `@DisableCachingByDefault` + validation
-      - Chunk type=CONCEPT → Metadata.kt (format pivot, taxonomie)
-      - Output : code Gradle généré (ou registre de configuration)
+* [x] Y-4 : `AgenticCompiler` — Transforme un chunk ontologisé en artefact exécutable (AgenticCompiler.kt 73 lignes, 4 types de compilation RULE/PROCEDURE/CONSTRAINT/CONCEPT). 27/27 PASS. (session 094)
 
-* [ ] Y-5 : `AgenticIngestor` — Pipeline complet d'ingestion :
-      1. Scanner les fichiers .adoc connus (AGENT.adoc, INDEX.adoc, etc.)
-      2. Détecter les changements via checksum
-      3. Chunker les nouveaux contenus
-      4. Ontologiser chaque chunk
-      5. Persister en base
-      6. Compiler → mettre à jour les hooks ToolRegistry
-      7. Reporter les évolutions (N chunks ajoutés, M modifiés, K supprimés)
+* [x] Y-5 : `AgenticIngestor` — Pipeline complet d'ingestion (chunk→ontologize→diff detection→store→compile). AgenticIngestor.kt + IngestionReport. 12/12 PASS. (session 095)
 
-* [ ] Y-6 : Migration de la littérature agentique externe — Pipeline d'import
-      pour les systèmes textuels non-workspace :
-      - Prompts systèmes Copilot/Cursor → chunks → ontologie → Gradle tasks
-      - Règles d'agents Claude/Gemini → idem
-      - Documentation de frameworks agentiques → idem
-      - Objectif : *tout* texte agentique peut être compilé en tâches Gradle
-        sur le système de contexte augmenté
+* [x] Y-6 : `AgenticExternalImporter` — Import littérature agentique externe (Copilot, Cursor, Claude, Gemini). NormalizeContent() markdown→AsciiDoc. 12/12 PASS. (session 096)
 
 * [x] Y-7 : AgenticChunkEnforcement — 10 unit + 7 Cucumber = 17/17 PASS
       (session 097). Pipeline complet : règle AGENT.adoc → chunk → ontologize →
@@ -774,7 +746,7 @@ cd foundry/public/codebase-gradle && ./gradlew publish closeAndRelease
 
 == EPIC SESSION-PROTOCOL — Protocole opencode↔Gradle : Thin Client + Moteur Gradle
 
-**Statut** : 🔄 EN COURS (1/5 — SP-1 ✅)
+**Statut** : 🔄 EN COURS (2/7 — SP-0 ✅, SP-1 ✅)
 **Priorité** : P1
 **Dépend de** : workspace-bom (MEMPHIS N0) pour les contrats, EPIC V (VibecodingTask moteur)
 
@@ -848,8 +820,8 @@ data class AgentContext(
 
 === Sous-tâches envisagées
 
-* [ ] SP-0 : Cadrage — Définir le contrat `opencode-session-contracts` dans workspace-bom (MEMPHIS N0). Types SessionPrompt/SessionResponse/AgentContext/SessionStatus. 7ème artefact N0.
-* [ ] SP-1 : Implémenter `SessionProtocolTask` dans codebase — tâche Gradle qui reçoit un SessionPrompt, exécute VibecodingTask, retourne SessionResponse. Point d'entrée unique pour le thin client.
+* [x] SP-0 : Cadrage — Définir le contrat `opencode-session-contracts` dans workspace-bom (MEMPHIS N0). Types SessionPrompt/SessionResponse/AgentContext/SessionStatus. 7ème artefact N0. (contrats existent dans workspace-bom/opencode-session-contracts/)
+* [x] SP-1 : Implémenter `SessionProtocolTask` dans codebase — tâche Gradle qui reçoit un SessionPrompt, exécute VibecodingTask, retourne SessionResponse. Point d'entrée unique pour le thin client. (SessionProtocolTask.kt + tests + Cucumber existants)
 * [ ] SP-2 : Mode serveur/daemon — Tâche Gradle en écoute continue (stdin/socket) pour éviter la latence de compilation à chaque tour de dialogue. Réutilisation du Gradle daemon.
 * [ ] SP-3 : Pont N3 — runner-gradle (ou nouveau plugin) implémente le dispatch thin-client → SessionProtocolTask → réponse. Gère le cycle de vie de session (création, reprise, clôture).
 * [ ] SP-4 : Adaptation opencode — Mode "passthrough" où opencode ne fait que UI (capture prompt, affiche réponse) et délègue tout le reste à la tâche Gradle.

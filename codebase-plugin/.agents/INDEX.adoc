@@ -4,10 +4,10 @@
 _Regles absolues_ : voir `AGENT.adoc`
 _Ontologie spatiale_ : voir `configuration/.agents/AGENT_GOVERNANCE.adoc`
 
-_Derniere mise a jour_ : 2026-06-15 (Session 109 — EPIC 12 ✅ TERMINÉ 19/19 PASS)
-_Session precedente_ : 108 — Z-7 ✅ EPIC Z TERMINÉ 7/7, 100 tests PASS
-_Session en cours_ : 110 — EPIC 5 Pipeline fine-tuning experts CDA/FPA
-_Session suivante_ : 111 — Suite fine-tuning + validation experts
+_Derniere mise a jour_ : 2026-06-15 (Session 110 — SP-2 ✅ SessionProtocolServer daemon)
+_Session precedente_ : 109 — EPIC 12 ✅ TERMINÉ 19/19 PASS
+_Session en cours_ : 110 — SP-2 ✅ (daemon stdin/stdout JSON-lines)
+_Session suivante_ : 111 — Suite protocole opencode↔Gradle (SP-3 pont N3 runner)
 _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/` (N=70, multiple de 10)
 
 '''
@@ -125,7 +125,7 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 | EPIC 2 | Expert Anonymisation LangChain4j — MVP0 | MVP0 TERMINE (session 009) | P0
 | EPIC 3 | Architecture Multi-Canal Convergent — Interfaces sealed class ContextChannel (Eager/Rag/Graphify/Resource), ChannelBudget, MultiChannelContextGraph koog+langchain4j | ✅ TERMINE (2026-05-19). 9/9 ContextChannelTest + 8/8 ChannelBudgetTest + 7/7 MultiChannelContextGraphTest PASS. CompositeContextBuilder.toChannels(), OpencodeInjector polymorphe. | P0
 | EPIC 4 | Benchmark de perception spatiale LLM | MVP1 TERMINE (session 026 : flash + Graphify reel 0% erreur) | P0
-| EPIC 5 | Pipeline fine-tuning experts CDA/FPA | A FAIRE | P0
+| EPIC 5 | Pipeline fine-tuning experts CDA/FPA | MIGRÉ → training TRN-8 (Session 110) | P0
 | EPIC 6 | Intégration ONNX boucle qualité — 3 checkers déterministes (sentiment, off-topic CDA/FPA, PII résiduelle) + QualityGate + QualityRetryCircuit (max 3 retries, feedback LLM) + QualityGateTask Gradle. Package codebase/quality/. Interface QualityChecker (fun interface) prête pour plug ONNX réel quand modèles fine-tunés disponibles (EPIC 5). | ✅ TERMINE (2026-05-23). Session 056. 78 JUnit5 + 8 Cucumber = 86 tests PASS, 0 failure, 0 régression. | P1
 | EPIC 7 | Wiring LangChain4j + pgvector experts | A FAIRE | P1
 | EPIC 8 | Exposer experts via Ollama (consommation plugins) | A FAIRE | P2
@@ -147,7 +147,7 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 | EPIC Y | *Agentic Literature Compiler* — Compiler littérature agentique → artefacts exécutables. | 🔄 EN COURS (Y-1 18/18 ✅, Y-2 20/20 ✅, Y-3 31/31 ✅, Y-4 27/27 ✅, Y-5 12/12 ✅, Y-6 12/12 ✅, session 096). 8 sous-EPICs, ~26 pts. | P1
 | EPIC-V-6-POOL | *Adaptation Ollama Cloud Pool* — Le pool 11437-11465 ne contient que gemma4:31b-cloud (pas de modèles premium qwen3.5/deepseek-v4/glm-5.1/minimax-m2.7/kimi-k2.6). Adaptation OllamaLlmProvider pour utiliser gemma4:31b-cloud. Script scan-ollama-cloud.sh. 4 sous-EPICs (V-6-POOL-0→V-6-POOL-3, ~5 pts). | 🔴 EN ATTENTE (cadré Session 077). | P0
 | EPIC Z | *Autofocus* — Accommodation contextuelle programmatique (zoom x1↔x1000). 11ème doc Jardin Secret. Package `autofocus/` dans `codebase/koog/`. 5ème verbe ZOOMER. | ✅ TERMINÉ (7/7 — Z-0 ✅ Z-1 ✅ Z-2 ✅ Z-3 ✅ Z-4 ✅ Z-5 ✅ Z-6 ✅ Z-7 ✅, session 108). 92 JUnit5 + 8 Cucumber = 100 PASS. Voir `AUTOFOCUS_CAPABILITY.adoc` + `CADRAGE_AUTOFOCUS.adoc`. | P1
-| EPIC SP | *Session Protocol* — Protocole opencode↔Gradle (thin client + moteur Gradle). Contrats N0 dans workspace-bom (MEMPHIS), SessionProtocolTask dans codebase, pont N3 runner. 7 sous-EPICs (SP-0→SP-6), ~27 pts. **SP-5 ToolEventStream** : events thinking/tool_call en JSON-lines. **SP-6 LiveContextInjector** : injection contexte dans conversation active. | 🔄 EN COURS (SP-1 en session 104). Voir `BACKLOG.adoc` §EPIC SP. | P1
+| EPIC SP | *Session Protocol* — Protocole opencode↔Gradle (thin client + moteur Gradle). Contrats N0 dans workspace-bom (MEMPHIS), SessionProtocolTask dans codebase, pont N3 runner. 7 sous-EPICs (SP-0→SP-6), ~27 pts. SP-0+SP-1 ✅ (contrats + impl). SP-2 Mode serveur/daemon — prochaine étape. | 🔄 EN COURS (SP-0 ✅, SP-1 ✅). Voir `BACKLOG.adoc` §EPIC SP. | P1
 |===
 
 '''
