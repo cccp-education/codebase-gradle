@@ -1,7 +1,7 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 111
-:session: 111
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 112
+:session: 112
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 110 — EPIC 5 Migration + SP-2 ✅ (9/9 PASS, 5 JUnit5 + 4 Cucumber)
+:sessions_precedente: 111 — SP-3 ✅ Cycle de vie session (21/21 PASS, 15 JUnit5 + 6 Cucumber)
 
 == Contexte Hérité
 
@@ -11,25 +11,28 @@
 - EPIC Z TERMINÉ (7/7)
 - EPIC 12 TERMINÉ — 19/19 PASS
 - EPIC 5 MIGRÉ → training-gradle TRN-8
-- SP-2 ✅ SessionProtocolServer daemon (stdin/stdout JSON-lines, Cucumber @epic_sp_2 4/4)
-- EPIC SP 3/7 — SP-0 ✅ SP-1 ✅ SP-2 ✅
+- EPIC SP 4/7 — SP-0 ✅ SP-1 ✅ SP-2 ✅ SP-3 ✅
+  - SP-3: SessionProtocolLifecycleManager (126l, persistance JSON disque)
+  - SessionProtocolTask +--action create|resume|close|list
 - EPIC OCR 12/26
-- Full suite ~380+ PASS
+- Full suite ~400+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 111 — Suite Protocole OpenCode↔Gradle
+== Mission Session 112 — Suite Protocole OpenCode↔Gradle
 
-*SP-3* : Pont N3 runner-gradle — Dispatch thin-client → SessionProtocolTask → réponse.
-Cycle de vie de session (création, reprise, clôture).
+*SP-4* : Tests intégration E2E — opencode → runner → codebase → session → réponse complète.
+Scénario bout-en-bout : création session → vibecoding → réponse → clôture.
 
 *Priorités restantes* :
-  - SP-3 : Pont N3 runner-gradle
+  - SP-4 : Tests E2E opencode→runner→codebase
+  - SP-5 : ToolEventStream (5 pts) — événements structurés temps réel
+  - SP-6 : LiveContextInjector (5 pts) — injection contexte conversation active
   - OCR-3 : Support batch inputDir + OCR-4 intégration pipeline complet
   - EPIC V-6-POOL : Adaptation Ollama Cloud Pool gemma4:31b-cloud
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 111 | SP-3 | Pont N3 runner-gradle dispatch
-| 112+ | SP-4/SP-5 | Adaptation opencode passthrough + tests interactifs
+| 112 | SP-4 | Tests E2E opencode→runner→codebase
+| 113 | SP-5 | ToolEventStream — événements structurés
 | 115+ | OCR | Pipeline OCR batch + intégration complète

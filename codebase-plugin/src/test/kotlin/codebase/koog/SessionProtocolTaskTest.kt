@@ -281,4 +281,162 @@ class SessionProtocolTaskTest {
         val content = responseFile.readText()
         assertTrue(content.contains("ERROR"))
     }
+
+    @Test
+    fun `lifecycle create with action=create persists session`(@TempDir tempDir: Path) {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-lifecycle-create")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val lifecycleDir = tempDir.resolve("lifecycle-data").toFile()
+        val task = project.tasks.register("sessionProtocol", SessionProtocolTask::class.java) {
+            it.prompt.set("Create lifecycle test")
+            it.action.set("create")
+            it.maxActions.set(2)
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+
+        task.llmProvider = FakeLlmProvider()
+        task.toolRegistry = ToolRegistry()
+        task.lifecycleManager = SessionProtocolLifecycleManager(lifecycleDir)
+
+        task.executeProtocol()
+
+        val sessions = task.lifecycleManager!!.list()
+        assertEquals(1, sessions.size)
+        assertEquals("Create lifecycle test", sessions[0].prompt)
+        assertEquals(LifecycleStatus.RUNNING, sessions[0].status)
+        assertNotNull(sessions[0].lastResponseJson)
+    }
+
+    @Test
+    fun `lifecycle resume creates child session with parent reference`(@TempDir tempDir: Path) {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-lifecycle-resume")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val lifecycleDir = tempDir.resolve("lifecycle-data").toFile()
+        val lifecycleMgr = SessionProtocolLifecycleManager(lifecycleDir)
+        val parent = lifecycleMgr.create("Parent prompt", "gemini")
+
+        val task = project.tasks.register("sessionProtocol", SessionProtocolTask::class.java) {
+            it.prompt.set("Resumed prompt")
+            it.sessionId.set(parent.sessionId)
+            it.action.set("resume")
+            it.maxActions.set(2)
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+
+        task.llmProvider = FakeLlmProvider()
+        task.toolRegistry = ToolRegistry()
+        task.lifecycleManager = lifecycleMgr
+
+        task.executeProtocol()
+
+        val sessions = lifecycleMgr.list()
+        assertTrue(sessions.size >= 2)
+        val child = sessions.find { it.parentSessionId == parent.sessionId }
+        assertNotNull(child)
+        assertEquals("Parent prompt", child?.prompt)
+        assertEquals(LifecycleStatus.RUNNING, child?.status)
+    }
+
+    @Test
+    fun `lifecycle close marks session as CLOSED`(@TempDir tempDir: Path) {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-lifecycle-close")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val lifecycleDir = tempDir.resolve("lifecycle-data").toFile()
+        val lifecycleMgr = SessionProtocolLifecycleManager(lifecycleDir)
+        val created = lifecycleMgr.create("Close me", "model-x")
+
+        val task = project.tasks.register("sessionProtocol", SessionProtocolTask::class.java) {
+            it.sessionId.set(created.sessionId)
+            it.action.set("close")
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+        task.lifecycleManager = lifecycleMgr
+
+        task.executeProtocol()
+
+        val closed = lifecycleMgr.get(created.sessionId)
+        assertNotNull(closed)
+        assertEquals(LifecycleStatus.CLOSED, closed?.status)
+    }
+
+    @Test
+    fun `lifecycle list outputs all sessions`(@TempDir tempDir: Path) {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-lifecycle-list")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val lifecycleDir = tempDir.resolve("lifecycle-data").toFile()
+        val lifecycleMgr = SessionProtocolLifecycleManager(lifecycleDir)
+        lifecycleMgr.create("Session A", "model-a")
+        lifecycleMgr.create("Session B", "model-b")
+
+        val customOutput = tempDir.resolve("list-output.json").toFile()
+        val task = project.tasks.register("sessionProtocol", SessionProtocolTask::class.java) {
+            it.action.set("list")
+            it.responseFile.set(customOutput)
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+        task.lifecycleManager = lifecycleMgr
+
+        task.executeProtocol()
+
+        assertTrue(customOutput.exists())
+        val content = customOutput.readText()
+        assertTrue(content.contains("Session A"))
+        assertTrue(content.contains("Session B"))
+        assertTrue(content.contains("COMPLETED"))
+    }
+
+    @Test
+    fun `lifecycle invalid action throws`(@TempDir tempDir: Path) {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-lifecycle-invalid")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("sessionProtocol", SessionProtocolTask::class.java) {
+            it.action.set("invalid")
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            task.executeProtocol()
+        }
+        assertTrue(exception.message!!.contains("Unknown action"))
+    }
+
+    @Test
+    fun `lifecycle resume with missing sessionId throws`(@TempDir tempDir: Path) {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-lifecycle-missing-session")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("sessionProtocol", SessionProtocolTask::class.java) {
+            it.prompt.set("No session ID")
+            it.action.set("resume")
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            task.executeProtocol()
+        }
+        assertTrue(exception.message!!.contains("sessionId"))
+    }
 }

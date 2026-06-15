@@ -1,8 +1,9 @@
 = Test Coverage Analysis — Codebase Gradle
 
-_Statut session 110_ : EPIC 5 Migration codebase→training + EPIC Y Sanitization + SP-2 SessionProtocolServer Daemon. 5 JUnit5 + 4 Cucumber @epic_sp_2 = 9/9 PASS. Zéro régression.
+_Statut session 111_ : SP-3 Cycle de Vie Session. 15 JUnit5 + 6 Cucumber @epic_sp_3 = 21/21 PASS. Zéro régression SP-1/SP-2.
 
 | Session | Fichiers testés | Couverture | Notes
+| 111 | `SessionProtocolLifecycleTest.kt` — 15 tests (create, resume RUNNING, close, get null, list desc, listByStatus, updateResponse, parentSessionId, resume throws, close throws, delete, delete false, persistence, timestamps, model). `epic_sp_3_lifecycle.feature` — 6 scénarios Cucumber @epic_sp_3 (create, custom ID, resume child, close, list, persistence). `SessionProtocolTaskTest.kt` — +6 tests (lifecycle create, resume, close, list, invalid action, missing sessionId). `SessionProtocolServerTest.kt` — zéro régression. | 21 JUnit5 + 6 Cucumber = 27/27 PASS SP-3. Zéro régression SP-1 (5 Cucumber) + SP-2 (4 Cucumber). | SessionProtocolLifecycleManager.kt (126l, persistance JSON disque). SessionLifecycleState.kt (data class + LifecycleStatus). SessionProtocolTask.kt (+--action create\|resume\|close\|list, lifecycleManager). cucumberTestEpicSp3 Gradle task. publishToMavenLocal OK.
 | 110 | `SessionProtocolServerTest.kt` — 5 tests (single prompt, multiple prompts, auto-ID, error resilience, empty stdin). `epic_sp_2_session_server.feature` — 4 scénarios Cucumber @epic_sp_2 (single prompt daemon, multiple prompts, auto-generated sessionId, error resilience). | 5 JUnit5 + 4 Cucumber = 9/9 PASS. Zéro régression. | Package codebase.koog.SessionProtocolServer.kt (119l). SessionProtocolDaemonTask.kt (37l). CodebasePlugin.kt (+sessionProtocolDaemon). cucumberTestEpicSp2 Gradle task. compileKotlin OK. |
 
 | Session | Fichiers testés | Couverture | Notes

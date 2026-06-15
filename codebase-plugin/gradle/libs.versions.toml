@@ -23,6 +23,7 @@ koog = "0.8.0"
 [libraries]
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 langchain4j = { module = "dev.langchain4j:langchain4j", version.ref = "langchain4j" }
 langchain4j-pgvector = { module = "dev.langchain4j:langchain4j-pgvector", version.ref = "langchain4j-beta" }
 langchain4j-minilm = { module = "dev.langchain4j:langchain4j-embeddings-all-minilm-l6-v2", version.ref = "langchain4j-beta" }

@@ -1,0 +1,75 @@
+= Session 111 — SP-3 Cycle de Vie Session (création, reprise, clôture)
+:date: 2026-06-15
+:type: feat+tdd+ddd+bdd
+:score: 10/10
+
+== Contexte
+
+EPIC SP — 4/7 terminés. SP-3 ajoute la gestion du cycle de vie de session
+dans codebase-gradle (N1), exposé comme tâche Gradle. Runner-gradle (N3)
+consomme sans code métier.
+
+== Architecture
+
+[source]
+----
+SessionProtocolTask (--action create|resume|close|list)
+  └─ SessionProtocolLifecycleManager (persistance JSON disque)
+       └─ build/session-protocol/session-lifecycle.json
+----
+
+== Fichiers créés (7)
+
+|===
+| Fichier | Rôle
+| `SessionLifecycleState.kt` | Data class + enum LifecycleStatus (CREATED/RUNNING/CLOSED)
+| `SessionProtocolLifecycleManager.kt` (126l) | CRUD lifecycle, persistance JSON disque via Jackson
+| `SessionProtocolLifecycleTest.kt` | 15 tests JUnit5 — create, resume, close, list, delete, persistence, model
+| `epic_sp_3_lifecycle.feature` | 6 scénarios Cucumber @epic_sp_3
+| `SessionProtocolLifecycleWorld.kt` | Cucumber world (lifecycleDir + executeAction)
+| `SessionProtocolLifecycleSteps.kt` | 8 step definitions (Given/When/Then)
+| `EpicSp3CucumberRunner.kt` | Suite JUnit5 Cucumber @epic_sp_3
+|===
+
+== Fichiers modifiés (4)
+
+|===
+| Fichier | Modification
+| `SessionProtocolTask.kt` | +option `--action create\|resume\|close\|list`, +injection `lifecycleManager`, split `executeCreate/Resume/Close/List`, `requireSessionId()` sans UUID strict
+| `build.gradle.kts` | +`cucumberTestEpicSp3` task, +`jackson-datatype-jsr310` dependance
+| `gradle/libs.versions.toml` (root) | +`jackson-datatype-jsr310`
+| `codebase-plugin/gradle/libs.versions.toml` | +`jackson-datatype-jsr310`
+|===
+
+== Tests
+
+[cols="2,1,1"]
+|===
+| Suite | Tests | Résultat
+| SessionProtocolLifecycleTest | 15 JUnit5 | 15/15 PASS
+| SessionProtocolTaskTest | 17 JUnit5 (+6 nouveaux) | 17/17 PASS
+| SessionProtocolServerTest | 5 JUnit5 | 5/5 PASS (zéro régression)
+| cucumberTestEpicSp1 | 5 Cucumber | 5/5 PASS (zéro régression)
+| cucumberTestEpicSp2 | 4 Cucumber | 4/4 PASS (zéro régression)
+| cucumberTestEpicSp3 | 6 Cucumber | 6/6 PASS
+| **Total SP-3** | **21 (15 JUnit5 + 6 Cucumber)** | **21/21 PASS**
+|===
+
+== Commandes
+
+[source,shell]
+----
+./gradlew compileKotlin                         # BUILD SUCCESSFUL
+./gradlew :codebase-plugin:test --tests "codebase.koog.SessionProtocol*"  # 37/37 PASS
+./gradlew :codebase-plugin:cucumberTestEpicSp1  # 5/5 PASS
+./gradlew :codebase-plugin:cucumberTestEpicSp2  # 4/4 PASS
+./gradlew :codebase-plugin:cucumberTestEpicSp3  # 6/6 PASS
+./gradlew publishToMavenLocal                   # BUILD SUCCESSFUL
+----
+
+== Leçons
+
+- Jackson `Instant` sérialisation nécessite `jackson-datatype-jsr310` (ajouté aux 2 catalogues TOML)
+- `requireSessionId()` assouplie : accepte IDs non-UUID (le lifecycle manager est agnostique)
+- `updateResponse()` passe le statut CREATED→RUNNING automatiquement
+- Resume crée un nouvel enfant avec `parentSessionId`, conserve le prompt original

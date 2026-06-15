@@ -37,6 +37,9 @@ abstract class SessionProtocolTask : DefaultTask() {
     @get:Internal
     var toolRegistry: ToolRegistry = ToolRegistry()
 
+    @get:Internal
+    var lifecycleManager: SessionProtocolLifecycleManager? = null
+
     @get:Input
     @get:Optional
     @get:Option(option = "prompt", description = "Prompt utilisateur à exécuter")
@@ -56,6 +59,11 @@ abstract class SessionProtocolTask : DefaultTask() {
     @get:Optional
     @get:Option(option = "model", description = "Modèle LLM à utiliser")
     abstract val model: Property<String>
+
+    @get:Input
+    @get:Optional
+    @get:Option(option = "action", description = "Action lifecycle: create, resume, close, list")
+    abstract val action: Property<String>
 
     @get:InputFile
     @get:Optional
@@ -77,40 +85,102 @@ abstract class SessionProtocolTask : DefaultTask() {
         sessionId.convention("")
         maxActions.convention(10)
         model.convention("")
+        action.convention("create")
+    }
+
+    private fun resolveLifecycleManager(): SessionProtocolLifecycleManager {
+        return lifecycleManager ?: SessionProtocolLifecycleManager(
+            project.layout.buildDirectory.dir("session-protocol").get().asFile
+        )
     }
 
     @TaskAction
     fun executeProtocol() {
-        val promptText = prompt.getOrElse("")
-        if (promptText.isBlank()) {
-            throw IllegalArgumentException("prompt cannot be blank — use -Pprompt=\"...\" or configure sessionProtocol { prompt = \"...\" }")
+        val actionValue = action.getOrElse("create")
+        when (actionValue) {
+            "create" -> executeCreate()
+            "resume" -> executeResume()
+            "close" -> executeClose()
+            "list" -> executeList()
+            else -> throw IllegalArgumentException("Unknown action: $actionValue. Valid: create, resume, close, list")
         }
+    }
 
-        val sid = sessionId.getOrElse("").let {
-            if (it.isNotBlank()) UUID.fromString(it) else UUID.randomUUID()
+    private fun executeCreate() {
+        val promptText = requirePrompt()
+        val explicitSessionId = sessionId.getOrElse("").takeUnless { it.isBlank() }
+
+        val lifecycleMgr = resolveLifecycleManager()
+        val lifecycleState = lifecycleMgr.create(
+            prompt = promptText,
+            model = model.getOrElse("").takeUnless { it.isNotBlank() },
+            sessionId = explicitSessionId
+        )
+
+        val response = executeVibecoding(promptText, UUID.fromString(lifecycleState.sessionId))
+
+        val json = buildResponseJson(response)
+        lifecycleMgr.updateResponse(lifecycleState.sessionId, json)
+
+        val outputFile = resolveOutputFile()
+        outputFile.writeText(json, Charsets.UTF_8)
+        log.info("[SessionProtocol] Created session {} — response -> {}", lifecycleState.sessionId, outputFile.absolutePath)
+
+        if (response.status == SessionStatus.ERROR) {
+            throw RuntimeException("Session protocol failed: ${response.output}")
         }
+    }
 
+    private fun executeResume() {
+        val promptText = requirePrompt()
+        val parentId = requireSessionId()
+
+        val lifecycleMgr = resolveLifecycleManager()
+        val childState = lifecycleMgr.resume(parentId)
+
+        val response = executeVibecoding(promptText, UUID.fromString(childState.sessionId))
+
+        val json = buildResponseJson(response)
+        lifecycleMgr.updateResponse(childState.sessionId, json)
+
+        val outputFile = resolveOutputFile()
+        outputFile.writeText(json, Charsets.UTF_8)
+        log.info("[SessionProtocol] Resumed session {} -> child {} -> response -> {}", parentId, childState.sessionId, outputFile.absolutePath)
+
+        if (response.status == SessionStatus.ERROR) {
+            throw RuntimeException("Session protocol failed: ${response.output}")
+        }
+    }
+
+    private fun executeClose() {
+        val sid = requireSessionId()
+        val lifecycleMgr = resolveLifecycleManager()
+        lifecycleMgr.close(sid)
+        log.info("[SessionProtocol] Closed session {}", sid)
+    }
+
+    private fun executeList() {
+        val lifecycleMgr = resolveLifecycleManager()
+        val sessions = lifecycleMgr.list()
+        val outputFile = resolveOutputFile()
+        val json = buildResponseJson(buildListResponse(sessions))
+        outputFile.writeText(json, Charsets.UTF_8)
+        log.info("[SessionProtocol] Listed {} sessions -> {}", sessions.size, outputFile.absolutePath)
+    }
+
+    private fun executeVibecoding(promptText: String, sid: UUID): SessionResponse {
         val agentContext = if (contextFile.isPresent) {
             parseContextFile(contextFile.get().asFile)
         } else null
 
-        val sessionPrompt = SessionPrompt(
-            sessionId = sid,
-            prompt = promptText,
-            context = agentContext,
-            maxActions = maxActions.get(),
-            model = model.getOrElse("").takeUnless { it.isBlank() }
-        )
-
-        log.info("[SessionProtocol] Starting session {} — prompt={}", sid, promptText)
+        log.info("[SessionProtocol] Executing session {} — prompt={}", sid, promptText)
 
         val tokenTracker = TokenTracker()
-        val effectiveLlmProvider = llmProvider
 
         val graph = VibecodingGraph(
             augmentedGraph = KoogAugmentedContextGraph(),
             toolRegistry = toolRegistry,
-            llmProvider = effectiveLlmProvider,
+            llmProvider = llmProvider,
             tokenTracker = tokenTracker
         )
 
@@ -118,7 +188,7 @@ abstract class SessionProtocolTask : DefaultTask() {
             intention = promptText,
             workspaceRoot = workspaceRoot.asFile.get().absolutePath,
             dryRun = false,
-            maxActions = sessionPrompt.maxActions
+            maxActions = maxActions.get()
         )
 
         val result = graph.execute(state)
@@ -137,7 +207,7 @@ abstract class SessionProtocolTask : DefaultTask() {
             else -> SessionStatus.IN_PROGRESS
         }
 
-        val response = SessionResponse(
+        return SessionResponse(
             sessionId = sid,
             output = buildOutput(result),
             toolCalls = toolCalls,
@@ -149,22 +219,43 @@ abstract class SessionProtocolTask : DefaultTask() {
             ),
             status = status
         )
+    }
 
-        val outputFile = if (responseFile.isPresent) {
+    private fun requirePrompt(): String {
+        val text = prompt.getOrElse("")
+        if (text.isBlank()) {
+            throw IllegalArgumentException("prompt cannot be blank — use -Pprompt=\"...\" or --prompt=\"...\"")
+        }
+        return text
+    }
+
+    private fun requireSessionId(): String {
+        val sid = sessionId.getOrElse("")
+        if (sid.isBlank()) {
+            throw IllegalArgumentException("sessionId is required for this action — use -PsessionId=\"...\" or --sessionId=\"...\"")
+        }
+        return sid
+    }
+
+    private fun resolveOutputFile(): File {
+        return if (responseFile.isPresent) {
             responseFile.get().asFile
         } else {
             val dir = project.layout.buildDirectory.dir("session-protocol").get().asFile
             dir.mkdirs()
             File(dir, "session-response.json")
         }
+    }
 
-        val json = buildResponseJson(response)
-        outputFile.writeText(json, Charsets.UTF_8)
-        log.info("[SessionProtocol] Response written to {}", outputFile.absolutePath)
-
-        if (result.error != null) {
-            throw RuntimeException("Session protocol failed: ${result.error}")
+    private fun buildListResponse(sessions: List<SessionLifecycleState>): SessionResponse {
+        val lines = sessions.map { s ->
+            "[${s.status.name}] ${s.sessionId.take(8)}... | ${s.prompt.take(60)} | model=${s.model ?: "default"} | created=${s.createdAt}"
         }
+        return SessionResponse(
+            sessionId = UUID.randomUUID(),
+            output = if (lines.isEmpty()) "No sessions found." else lines.joinToString("\n"),
+            status = SessionStatus.COMPLETED
+        )
     }
 
     private fun buildOutput(state: VibecodingState): String = buildString {

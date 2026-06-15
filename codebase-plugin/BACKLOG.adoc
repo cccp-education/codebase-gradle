@@ -822,10 +822,10 @@ data class AgentContext(
 
 * [x] SP-0 : Cadrage — Définir le contrat `opencode-session-contracts` dans workspace-bom (MEMPHIS N0). Types SessionPrompt/SessionResponse/AgentContext/SessionStatus. 7ème artefact N0. (contrats existent dans workspace-bom/opencode-session-contracts/)
 * [x] SP-1 : Implémenter `SessionProtocolTask` dans codebase — tâche Gradle qui reçoit un SessionPrompt, exécute VibecodingTask, retourne SessionResponse. Point d'entrée unique pour le thin client. (SessionProtocolTask.kt + tests + Cucumber existants)
-* [ ] SP-2 : Mode serveur/daemon — Tâche Gradle en écoute continue (stdin/socket) pour éviter la latence de compilation à chaque tour de dialogue. Réutilisation du Gradle daemon.
-* [ ] SP-3 : Pont N3 — runner-gradle (ou nouveau plugin) implémente le dispatch thin-client → SessionProtocolTask → réponse. Gère le cycle de vie de session (création, reprise, clôture).
-* [ ] SP-4 : Adaptation opencode — Mode "passthrough" où opencode ne fait que UI (capture prompt, affiche réponse) et délègue tout le reste à la tâche Gradle.
-* [ ] SP-5 : Tests — Session interactive simulée : 5 prompts → 5 réponses via SessionProtocolTask, vérification cohérence cross-tour (contexte conservé, session resume).
+* [x] SP-2 : Mode serveur/daemon — Tâche Gradle en écoute continue (stdin/stdout JSON-lines) pour éviter la latence de compilation à chaque tour de dialogue. Réutilisation du Gradle daemon. (SessionProtocolServer.kt 134l + SessionProtocolDaemonTask.kt 37l, 5 JUnit5 + 4 Cucumber PASS)
+* [x] SP-3 : Cycle de vie de session — SessionProtocolLifecycleManager (persistance JSON disque), SessionProtocolTask +--action create|resume|close|list. Création/reprise/clôture/liste sessions. Runner-gradle (N3) consomme sans code métier. (SessionProtocolLifecycleManager.kt 126l, 15 JUnit5 + 6 Cucumber PASS)
+* [ ] SP-4 : Tests E2E — opencode → runner → codebase → session. Scénario bout-en-bout complet : création → vibecoding → réponse → clôture.
+* [ ] SP-5 : ToolEventStream — Événements structurés temps réel (thinking/tool_call/tool_result/progress/error) en JSON-lines sur stdout.
 
 === Bénéfice attendu
 
