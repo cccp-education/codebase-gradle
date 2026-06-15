@@ -178,15 +178,18 @@ Le `CompositeContextBuilder` (déjà fait via EPIC 9) agrège ces canaux.
 * [x] 8/8 JUnit5 PASS
 
 == EPIC 12 : Dilution Article de Blog — Narration Publique Automatique
-**Statut** : A FAIRE
+**Statut** : ✅ TERMINÉ (Session 109 — 19/19 PASS)
 **Priorite** : P1
 
-* [ ] Formaliser le template d'article de blog (structure AsciiDoc JBake)
-* [ ] Implementer `BlogArticleExtractor` — extraction exclusive depuis Cercle 4 (`foundry/`)
-* [ ] Implementer `BlogArticleRenderer` — sortie `.adoc` dans `office/sites/cheroliv/`
-* [ ] Wiring avec EPIC 10 : `diluteStimuli` ajoute une cible blog
-* [ ] Tache Gradle `endSessionBlog`
-* [ ] Tests : 3 sessions synthetiques → 3 articles generes
+* [x] Formaliser le template d'article de blog (structure AsciiDoc JBake)
+* [x] Implementer `BlogArticleExtractor` — extraction exclusive depuis Cercle 4 (`foundry/`)
+* [x] Implementer `BlogArticleRenderer` — sortie `.adoc` dans `office/sites/cheroliv/`
+* [x] Wiring avec EPIC 10 : `diluteStimuli` ajoute une cible blog
+* [x] Tache Gradle `endSessionBlog`
+* [x] Tests : 3 sessions synthetiques → 3 articles generes
+
+16 JUnit5 + 3 Cucumber = 19/19 PASS.
+Package `codebase.blog/` : 3 fichiers src (BlogArticleExtractor, BlogArticleRenderer, EndSessionBlogTask).
 
 == EPIC K : Ontologie Workspace — Taxonomie unifiée
 **Statut** : ✅ TERMINE (2026-05-19, K-0→K-5 toutes les 6 phases)

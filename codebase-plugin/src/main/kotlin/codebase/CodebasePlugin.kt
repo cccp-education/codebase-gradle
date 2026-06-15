@@ -1,5 +1,6 @@
 package codebase
 
+import codebase.blog.EndSessionBlogTask
 import codebase.koog.VibecodingTask
 import codebase.koog.tracking.DashboardTask
 import codebase.ocr.CodebaseOcrExtension
@@ -89,6 +90,21 @@ class CodebasePlugin : Plugin<Project> {
             it.enableSentimentCheck.set(project.providers.gradleProperty("enableSentiment").map { it.toBoolean() }.orElse(true))
             it.enableOffTopicCheck.set(project.providers.gradleProperty("enableOffTopic").map { it.toBoolean() }.orElse(true))
             it.enablePiiCheck.set(project.providers.gradleProperty("enablePii").map { it.toBoolean() }.orElse(true))
+        }
+
+        project.tasks.register(
+            "endSessionBlog",
+            EndSessionBlogTask::class.java
+        ) { task ->
+            task.group = "generate"
+            task.description = "Blog narration publique — extrait sessions foundry/ et génère articles AsciiDoc JBake dans blog/"
+            task.foundryDir.set(project.rootDir.parentFile.parentFile.resolve("foundry"))
+            task.blogDir.set(project.rootDir.parentFile.parentFile.resolve(
+                "office/sites/cheroliv/jbake/content/blog/2026"
+            ))
+            task.nextArticleNumber.set(
+                project.providers.gradleProperty("nextArticleNumber").map { it.toInt() }.orElse(127)
+            )
         }
 
         val trainingPluginDir = project.rootDir.parentFile.parentFile

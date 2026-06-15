@@ -1,31 +1,33 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 109
-:session: 109
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 110
+:session: 110
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 108 — EPIC Z-7 TERMINÉ (4 Cucumber PASS, popFocusNode wiré)
+:sessions_precedente: 109 — EPIC 12 TERMINÉ (19/19 PASS, 16 JUnit5 + 3 Cucumber)
 
 == Contexte Hérité
 
 - EPIC W TERMINÉ (7/7)
 - EPIC X TERMINÉ (7/7)
-- EPIC Y 7/8 — Y-1✅ Y-2✅ Y-3✅ Y-4✅ Y-5✅ Y-6✅ Y-7✅
-- EPIC OCR-2b TERMINÉ (6/6)
+- EPIC Y 7/8 — Y-1✅ Y-2✅ Y-3✅ Y-4✅ Y-5✅ Y-6✅ Y-7✅ (Y-3 AgenticSchema pgvector EN COURS)
+- EPIC OCR 12/26 — OCR-0✅ OCR-1 4/6, OCR-2 4/5, OCR-2b✅, OCR-3 4/5, OCR-3b 5/8
 - EPIC SP 1/7 — SP-1✅
-- EPIC Z TERMINÉ (7/7) — Z-0✅ Z-1✅ Z-2✅ Z-3✅ Z-4✅ Z-5✅ Z-6✅ Z-7✅ (92 JUnit5 + 8 Cucumber PASS)
-- Full suite ~350+ PASS
+- EPIC Z TERMINÉ (7/7)
+- EPIC 12 TERMINÉ — 16 JUnit5 + 3 Cucumber = 19/19 PASS
+- Full suite ~370+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 109 — EPIC 12 Dilution Article de Blog (quick win)
+== Mission Session 110 — EPIC 5 Pipeline fine-tuning experts CDA/FPA
 
-*EPIC 12* : Narration Publique Automatique :
-  - Formaliser le template d'article de blog (structure AsciiDoc JBake)
-  - Implémenter `BlogArticleExtractor` — extraction exclusive depuis Cercle 4 (`foundry/`)
-  - Implémenter `BlogArticleRenderer` — sortie `.adoc` dans `office/sites/cheroliv/`
-  - Wiring avec EPIC 10 : `diluteStimuli` ajoute une cible blog
-  - Tâche Gradle `endSessionBlog`
-  - Tests : 3 sessions synthétiques → 3 articles générés
+*EPIC 5* : Pipeline de fine-tuning pour deux experts métier :
+  - Inventaire du matériel existant (office/books-collection/, office/data-engineering/)
+  - Préparation dataset CDA : Kotlin + Gradle + JHipster + langage
+  - Préparation dataset FPA : pédagogie + Qualiopi + AFNOR + taxonomies Bloom/Harrow/Krathwohl
+  - Sélection du modèle 70B
+  - Script de fine-tuning (via LangChain4j ou ONNX Runtime)
+  - Validation des experts (test de cohérence sur 100 prompts par domaine)
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 109 | 12 | Dilution Article de Blog (quick win)
-| 110+ | 5 | Pipeline fine-tuning experts CDA/FPA (lourd)
+| 110 | 5 | Pipeline fine-tuning CDA/FPA (début)
+| 111+ | 5 | Suite fine-tuning + validation experts
+| 115+ | 7 | Wiring LangChain4j + pgvector experts

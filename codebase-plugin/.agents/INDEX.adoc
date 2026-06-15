@@ -4,10 +4,10 @@
 _Regles absolues_ : voir `AGENT.adoc`
 _Ontologie spatiale_ : voir `configuration/.agents/AGENT_GOVERNANCE.adoc`
 
-_Derniere mise a jour_ : 2026-06-15 (Session 108 — Z-7 ✅ EPIC Z TERMINÉ 7/7, 100 tests PASS)
-_Session precedente_ : 107 — Z-5 + Z-6 Autofocus intégré 92 JUnit5 + 4 Cucumber PASS
-_Session en cours_ : 109 — EPIC 12 Dilution Article de Blog
-_Session suivante_ : 110 — EPIC 5 Pipeline fine-tuning experts CDA/FPA
+_Derniere mise a jour_ : 2026-06-15 (Session 109 — EPIC 12 ✅ TERMINÉ 19/19 PASS)
+_Session precedente_ : 108 — Z-7 ✅ EPIC Z TERMINÉ 7/7, 100 tests PASS
+_Session en cours_ : 110 — EPIC 5 Pipeline fine-tuning experts CDA/FPA
+_Session suivante_ : 111 — Suite fine-tuning + validation experts
 _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/` (N=70, multiple de 10)
 
 '''
@@ -38,6 +38,7 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 
 |===
 | # | Date | Type | Sujet | Score
+| 109 | 2026-06-15 | feat+tdd+ddd+bdd | EPIC 12 Blog Dilution — BlogArticleExtractor (6 tests) + BlogArticleRenderer (7 tests) + EndSessionBlogTask (3 tests) + Wiring diluteStimuli --blog + Cucumber (3 scénarios). 19/19 PASS (16 JUnit5 + 3 Cucumber). 16 fichiers créés/modifiés. BACKLOG EPIC 12 ✅ TERMINÉ. | 10/10
 | 107 | 2026-06-15 | feat+tdd+ddd+bdd | EPIC Z-5 + Z-6 — Câblage ContextZoomer.zoom() dans zoomNode + zoomInOnError + buildPromptForIteration + buildReplanPrompt. VibecodingState +compositeContext +zoomedContext. 16 JUnit5 + 4 Cucumber @epic_z_6 PASS. Zéro régression. | 10/10
 | 106 | 2026-06-15 | feat+tdd+ddd | EPIC Z-0 + Z-1 — Cadrage Autofocus (CADRAGE_AUTOFOCUS.adoc, 7 ateliers agile, 23 pts EPIC Z) + AutofocusLevel enum (4 niveaux BIG_PICTURE/ARCHITECTURE/MODULE/IMPLEMENTATION, token budgets 8000→500, file patterns, LevelMetadata). 16/16 JUnit5 PASS. Package codebase/koog/autofocus/ créé. BACKLOG + INDEX mis à jour. | 10/10
 | 105 | 2026-06-15 | feat+tdd+ddd+bdd | EPIC X TERMINÉ 7/7 — X-4 RollbackStrategyExecutor (4 stratégies, 74l), X-5 TaskCatalog intégré buildReplanPrompt, X-6 E2E plan→fail→adapt→succeed. 8 JUnit5 + 5 Cucumber X-4 + 3 X-5 + 3 X-6 = 19/19 PASS. VibecodingGraph 17/17, planning 43/43. Zéro régression. | 10/10

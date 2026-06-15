@@ -1,0 +1,89 @@
+= Session 109 — EPIC 12 Dilution Article de Blog (Narration Publique Automatique)
+:docdate: 2026-06-15
+:score: 10/10
+
+== Contexte
+
+Session de reprise codebase-gradle (Queens N1). EPIC Z terminé session 108 (7/7, 92 JUnit5 + 8 Cucumber = 100 PASS).
+EPIC 12 était identifié comme un quick win : formaliser un pipeline d'extraction des sessions foundry/ et de génération
+d'articles de blog AsciiDoc JBake dans `office/sites/cheroliv/`.
+
+== Réalisé
+
+=== BlogArticleExtractor (TDD)
+
+- Package `codebase.blog/` créé
+- `BlogArticleExtractor.kt` — extraction itérative des sessions `.adoc` depuis `foundry/{public,private}/*/.agents/sessions/`
+- Parse le contenu AsciiDoc : `= Session NNN — titre`, `:docdate:`, sections `== Contexte`, `== Realise`, `== Tests`, `== Prochaine Session`
+- `BlogArticleData` — data class (sessionNumber, sessionTitle, sessionDate, boroughName, context, achievements, testResults, nextSession)
+- 6/6 JUnit5 PASS
+
+=== BlogArticleRenderer (TDD)
+
+- `BlogArticleRenderer.kt` — gabarit AsciiDoc JBake complet (headers `:jbake-title:`, `:jbake-date:`, `:jbake-type:`, `:jbake-status:`, `:jbake-tags:`, `:jbake-author:`, `:jbake-description:`, `:jbake-summary:`, `:jbake-slug:`, `:jbake-reading-time:`, TOC, admonitions)
+- Numérotation automatique format `NNNN_`
+- Sections : Contexte, Réalisations, Résultats des Tests, Prochaine Session
+- Gestion sections vides gracieuse (commentaire `// sections absentes`)
+- 7/7 JUnit5 PASS
+
+=== EndSessionBlogTask (Gradle)
+
+- `EndSessionBlogTask.kt` — tâche Gradle `endSessionBlog` (groupe `generate`)
+- Propriétés : `foundryDir` (InputDirectory), `blogDir` (OutputDirectory), `nextArticleNumber` (Internal)
+- Chaîne : BlogArticleExtractor → articles → BlogArticleRenderer (auto-incrément numéro)
+- Enregistré dans `CodebasePlugin.kt`
+- 3/3 JUnit5 PASS
+
+=== Wiring EPIC 12 + EPIC 10
+
+- `StimulusCascadeMain.kt` — flag `--blog` déclenche la génération d'articles après la dilution STIMULUS
+- `findNextArticleNumber()` — scanne le dossier blog existant pour déterminer le prochain numéro
+- Chaîne complète : brain dump → classification VISION/OPINION → dilution documents racine → extraction sessions → articles JBake
+
+=== Cucumber BDD (EPIC 12)
+
+- `epic_12_blog_narration.feature` — 3 scénarios @epic12 @blog
+- BLG-1 : Extraire 1 session et générer 1 article JBake
+- BLG-2 : Vérifier les en-têtes JBake obligatoires (title, date, type, status, author, sections)
+- BLG-3 : 3 sessions dans 3 boroughs → 3 articles avec numéros uniques
+- `BlogSteps.kt` (201 lignes) + `BlogWorld.kt` + `Epic12CucumberRunner.kt`
+- Tâche Gradle `cucumberTestEpic12`
+- 3/3 Cucumber PASS
+
+== Tests
+
+- 16 JUnit5 PASS (BlogArticleExtractorTest 6, BlogArticleRendererTest 7, EndSessionBlogTaskTest 3)
+- 3 Cucumber PASS (BLG-1, BLG-2, BLG-3)
+- **Total : 19/19 PASS**
+- Compilation OK, zéro régression
+
+== Fichiers
+
+| Fichier | Action |
+| `src/main/kotlin/codebase/blog/BlogArticleExtractor.kt` | Nouveau |
+| `src/main/kotlin/codebase/blog/BlogArticleRenderer.kt` | Nouveau |
+| `src/main/kotlin/codebase/blog/EndSessionBlogTask.kt` | Nouveau |
+| `src/main/kotlin/codebase/CodebasePlugin.kt` | Modifié (+endSessionBlog) |
+| `src/main/kotlin/codebase/rag/StimulusCascadeMain.kt` | Modifié (+flag --blog) |
+| `src/test/kotlin/codebase/blog/BlogArticleExtractorTest.kt` | Nouveau |
+| `src/test/kotlin/codebase/blog/BlogArticleRendererTest.kt` | Nouveau |
+| `src/test/kotlin/codebase/blog/EndSessionBlogTaskTest.kt` | Nouveau |
+| `src/test/features/epic_12_blog_narration.feature` | Nouveau |
+| `src/test/kotlin/codebase/scenarios/BlogSteps.kt` | Nouveau |
+| `src/test/kotlin/codebase/scenarios/BlogWorld.kt` | Nouveau |
+| `src/test/kotlin/codebase/scenarios/Epic12CucumberRunner.kt` | Nouveau |
+| `build.gradle.kts` | Modifié (+cucumberTestEpic12) |
+| `.agents/INDEX.adoc` | MàJ session |
+| `BACKLOG.adoc` | MàJ EPIC 12 → TERMINÉ |
+| `SESSIONS_HISTORY.adoc` | +109 |
+| `TEST_COVERAGE_ANALYSIS.adoc` | +EPIC 12 |
+
+== Méthode
+
+TDD/BDD/DDD baby steps : tests unitaires → Cucumber → implémentation.
+Séquentiel pur, 1 fichier à la fois, validation compilation après chaque modif.
+
+== Prochaine Session
+
+Session 110 — EPIC 5 Pipeline fine-tuning experts CDA/FPA (lourd).
+Mission : inventaire du matériel existant, préparation datasets CDA + FPA, sélection modèle 70B.
