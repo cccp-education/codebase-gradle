@@ -363,7 +363,7 @@ class VibecodingGraph(
                     planJson = result.planJson,
                     plan = result.plan,
                     classification = result.classification
-                )
+                ).copy(compositeContext = result.compositeContext)
             }
         } catch (e: Exception) {
             log.warn("[VibecodingGraph] buildContext exception: {}", e.message)
@@ -399,17 +399,36 @@ class VibecodingGraph(
 
     private fun buildPromptForIteration(state: VibecodingState): String {
         val statusLine = state.error?.let { "ERROR: $it" } ?: "OK"
+        val focusInfo = state.focusLevel?.let { "Focus level: $it" } ?: "Focus level: MODULE (default)"
         return buildString {
             appendLine("Vibecoding session — iteration ${state.iteration + 1}/${state.maxActions}")
             appendLine("Intention: ${state.intention}")
             appendLine("Workspace: ${state.workspaceRoot}")
             appendLine("Dry run: ${state.dryRun}")
             appendLine("Status: $statusLine")
+            appendLine(focusInfo)
             if (state.executedTasks.isNotEmpty()) {
                 appendLine("Tasks done: ${state.executedTasks.joinToString(", ")}")
             }
             state.plan?.let { plan ->
                 appendLine("Plan remaining tasks: ${plan.epics.sumOf { it.userStories.sumOf { s -> s.tasks.size } } - state.executedTasks.size}")
+            }
+            state.zoomedContext?.let { zc ->
+                appendLine()
+                appendLine("=== ZOOMED CONTEXT (${state.focusLevel ?: "MODULE"}) ===")
+                if (zc.eagerSection.isNotBlank()) {
+                    appendLine("--- EAGER ---")
+                    appendLine(zc.eagerSection)
+                }
+                if (zc.ragSection.isNotBlank()) {
+                    appendLine("--- RAG ---")
+                    appendLine(zc.ragSection)
+                }
+                if (zc.graphifySection.isNotBlank()) {
+                    appendLine("--- GRAPHIFY ---")
+                    appendLine(zc.graphifySection)
+                }
+                appendLine("=== END ZOOMED CONTEXT ===")
             }
             appendLine()
             appendLine("What should be the next action? Respond with a single tool name and parameters, or 'DONE' if finished.")
@@ -421,14 +440,25 @@ class VibecodingGraph(
      * Le LLM reçoit le contexte de l'erreur et doit proposer une approche alternative.
      */
     internal fun buildReplanPrompt(state: VibecodingState): String {
+        val focusInfo = state.focusLevel?.let { "Focus level: $it" } ?: "Focus level: IMPLEMENTATION (error zoom)"
         return buildString {
             appendLine("Vibecoding error recovery — retry ${state.retryCount}/${state.maxRetries}")
             appendLine("Intention: ${state.intention}")
             appendLine("Current task: ${state.currentTaskDescription}")
             appendLine("Last tool result: ${state.lastToolResult}")
             appendLine("Error: ${state.error}")
+            appendLine(focusInfo)
             if (state.executedTasks.isNotEmpty()) {
                 appendLine("Already executed: ${state.executedTasks.joinToString(", ")}")
+            }
+            state.zoomedContext?.let { zc ->
+                appendLine()
+                appendLine("=== ZOOMED CONTEXT (IMPLEMENTATION) ===")
+                if (zc.ragSection.isNotBlank()) {
+                    appendLine("--- RAG ---")
+                    appendLine(zc.ragSection)
+                }
+                appendLine("=== END ZOOMED CONTEXT ===")
             }
             if (taskSchemas.isNotEmpty()) {
                 appendLine()
@@ -584,14 +614,22 @@ class VibecodingGraph(
         val levelName = state.focusLevel ?: return state
         val level = AutofocusLevel.fromName(levelName) ?: return state
         autofocusStack.push(level)
-        log.info("[VibecodingGraph] Autofocus zoomed to {} (stack size={})", level.name, autofocusStack.size())
-        return state
+        val rawContext = state.compositeContext
+        val zoomed = if (rawContext != null) {
+            contextZoomer.zoom(level, rawContext)
+        } else null
+        log.info("[VibecodingGraph] Autofocus zoomed to {} (stack size={}, zoomed={})", level.name, autofocusStack.size(), zoomed != null)
+        return state.copy(zoomedContext = zoomed)
     }
 
     private fun zoomInOnError(state: VibecodingState): VibecodingState {
         autofocusStack.push(AutofocusLevel.IMPLEMENTATION)
-        log.info("[VibecodingGraph] Autofocus zoom-in on error to IMPLEMENTATION (stack size={})", autofocusStack.size())
-        return state.copy(focusLevel = AutofocusLevel.IMPLEMENTATION.name)
+        val rawContext = state.compositeContext
+        val zoomed = if (rawContext != null) {
+            contextZoomer.zoom(AutofocusLevel.IMPLEMENTATION, rawContext)
+        } else null
+        log.info("[VibecodingGraph] Autofocus zoom-in on error to IMPLEMENTATION (stack size={}, zoomed={})", autofocusStack.size(), zoomed != null)
+        return state.copy(focusLevel = AutofocusLevel.IMPLEMENTATION.name, zoomedContext = zoomed)
     }
 
     private fun popFocusNode(state: VibecodingState): VibecodingState {

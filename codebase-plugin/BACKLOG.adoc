@@ -869,7 +869,7 @@ Contrats N0 dans workspace-bom (MEMPHIS), moteur dans codebase (N1), pont dans r
 
 == EPIC Z — Autofocus : Accommodation Contextuelle Programmatique
 
-**Statut** : 🔄 EN COURS (4/7 — Z-0 ✅ Z-1 ✅ Z-2 ✅ Z-3 ✅ Z-4 ✅, session 106)
+**Statut** : 🔄 EN COURS (6/7 — Z-0 ✅ Z-1 ✅ Z-2 ✅ Z-3 ✅ Z-4 ✅ Z-5 ✅ Z-6 ✅, session 107)
 **Priorité** : P1
 **Dépend de** : V-6 Feedback Loop (prérequis), graphify-gradle N0 (graph.json)
 **Source** : AUTOFOCUS_CAPABILITY.adoc (document 11 du Jardin Secret, session 073)
@@ -902,8 +902,8 @@ checkProgress → AutofocusStack.pop() → remonter niveau
 * [x] Z-2 : `AutofocusClassifier` — Classifieur heuristique regex (0 token LLM, ~80% cas) + fallback LLM (~5 tokens). 32/32 JUnit5 PASS. (session 106)
 * [x] Z-3 : `ContextZoomer` — Filtrage contexte par niveau, budget token par section. 14/14 JUnit5 PASS. (session 106)
 * [x] Z-4 : `AutofocusStack` — Pile LIFO push/pop/currentLevel/isEmpty/clear. 14/14 JUnit5 PASS. (session 106)
-* [ ] Z-5 : Intégration VibecodingGraph — Node 0 (classify) + Node 1 (zoom) dans le graphe koog. Tests E2E.
-* [ ] Z-6 : Intégration V-6 Feedback Loop — verifyResult FAILED → zoom(IMPLEMENTATION) → retry. Tests Cucumber.
+* [x] Z-5 : Intégration VibecodingGraph — Node 0 (classify) + Node 1 (zoom) dans le graphe koog. Tests E2E. (session 107 — 16 JUnit5 PASS)
+* [x] Z-6 : Intégration V-6 Feedback Loop — verifyResult FAILED → zoom(IMPLEMENTATION) → retry. Tests Cucumber. (session 107 — 4 Cucumber PASS)
 * [ ] Z-7 : Validation cross-borough — Scénario bout-en-bout : intention → autofocus → exécution → succès.
 
 === Bénéfice attendu

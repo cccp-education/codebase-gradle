@@ -1,43 +1,30 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 106
-:session: 106
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 108
+:session: 108
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 105 — EPIC X TERMINÉ (X-4 RollbackStrategyExecutor + X-5 TaskCatalog + X-6 E2E Cucumber)
+:sessions_precedente: 107 — EPIC Z-5 + Z-6 TERMINÉS (16 JUnit5 + 4 Cucumber PASS)
 
 == Contexte Hérité
 
 - EPIC W TERMINÉ (7/7)
-- EPIC X TERMINÉ (7/7) — X-0✅ X-1✅ X-2✅ X-3✅ X-4✅ X-5✅ X-6✅
+- EPIC X TERMINÉ (7/7)
 - EPIC Y 7/8 — Y-1✅ Y-2✅ Y-3✅ Y-4✅ Y-5✅ Y-6✅ Y-7✅
-- EPIC OCR-2b TERMINÉ (6/6) — OllamaOcrProvider + fallback gemini→ollama
-- EPIC SP 1/5 — SP-1✅ SessionProtocolTask (contrat opencode-session ↔ VibecodingGraph)
-- EPIC Z 4/7 — Z-0✅ Z-1✅ Z-2✅ Z-3✅ Z-4✅ (76/76 JUnit5 PASS)
+- EPIC OCR-2b TERMINÉ (6/6)
+- EPIC SP 1/7 — SP-1✅
+- EPIC Z 6/7 — Z-0✅ Z-1✅ Z-2✅ Z-3✅ Z-4✅ Z-5✅ Z-6✅ (92 JUnit5 + 4 Cucumber PASS)
 - Full suite ~350+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 106 — EPIC Z-0→Z-4 (FAIT) + Z-5 + Z-6
+== Mission Session 108 — EPIC Z-7 Validation Cross-Borough
 
-*Z-0 ✅* : Cadrage Autofocus — CADRAGE_AUTOFOCUS.adoc (7 ateliers agile, 23 pts EPIC Z)
-*Z-1 ✅* : `AutofocusLevel` — Enum 4 niveaux (BIG_PICTURE/ARCHITECTURE/MODULE/IMPLEMENTATION) + LevelMetadata + token budgets + file patterns. 16/16 JUnit5 PASS.
-*Z-2 ✅* : `AutofocusClassifier` — Classifieur heuristique regex (0 token LLM, ~80% cas) + fallback LLM (~5 tokens). 32/32 JUnit5 PASS.
-*Z-3 ✅* : `ContextZoomer` — Filtrage contexte par niveau, budget token par section. 14/14 JUnit5 PASS.
-*Z-4 ✅* : `AutofocusStack` — Pile LIFO push/pop/currentLevel/isEmpty/clear. 14/14 JUnit5 PASS.
-
-*Z-5* : Intégration VibecodingGraph — Node 0 (classify) + Node 1 (zoom) dans le graphe koog :
-  - Insérer `classifyNode` avant `buildContextNode` dans VibecodingGraph.execute()
-  - Insérer `zoomNode` après `classifyNode`, avant `buildContextNode`
-  - `classifyNode` utilise AutofocusClassifier.classifySync sur l'intention
-  - `zoomNode` utilise ContextZoomer.zoom() sur le contexte augmenté
-  - Tests E2E VibecodingTaskTest
-
-*Z-6* : Intégration V-6 Feedback Loop — verifyResult FAILED → zoom(IMPLEMENTATION) → retry :
-  - Après verifyStepNode FAILED → AutofocusStack.push(IMPLEMENTATION) → ContextZoomer.zoom(IMPLEMENTATION)
-  - Le retry se fait avec un contexte chirurgical (fichier unique + dépendances)
-  - Tests Cucumber @epic_z_6
+*Z-7* : Scénario bout-en-bout intention → autofocus → exécution → succès :
+  - Test E2E complet : intention "fix compilation error" → classify IMPLEMENTATION → zoom → buildContext → execute → verify → succès
+  - Validation cross-borough : codebase (N1) + codex (N2) + planner (N2) + runner (N3)
+  - Vérifier que le zoomedContext est correctement transmis dans toute la chaîne
+  - Tests Cucumber @epic_z_7
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 106 | Z-0→Z-4 + Z-5 + Z-6 | Autofocus complet (4 briques + intégration VibecodingGraph + V-6)
-| 107 | Z-7 | Validation cross-borough → EPIC Z TERMINÉ
-| 108 | 12 | Dilution Article de Blog (quick win)
-| 109+ | 5 | Pipeline fine-tuning experts CDA/FPA (lourd)
+| 108 | Z-7 | Validation cross-borough → EPIC Z TERMINÉ
+| 109 | 12 | Dilution Article de Blog (quick win)
+| 110+ | 5 | Pipeline fine-tuning experts CDA/FPA (lourd)

@@ -1,0 +1,54 @@
+= Session 107 — EPIC Z-5 + Z-6 Autofocus Intégration VibecodingGraph + Feedback Loop
+:session: 107
+:date: 2026-06-15
+:type: feat+tdd+ddd+bdd
+:score: 10/10
+
+== Contexte
+
+Session 106 avait posé les 4 briques autofocus (Z-0→Z-4) + classifyNode/zoomNode stubs dans VibecodingGraph.
+Mais `zoomNode` ne faisait que push le niveau dans le stack — jamais `ContextZoomer.zoom()`.
+`zoomInOnError` pushait `IMPLEMENTATION` sans zoomer le contexte.
+Les prompts `buildPromptForIteration`/`buildReplanPrompt` n'injectaient pas le contexte zoomé.
+
+== Mission
+
+Z-5 : Câbler `ContextZoomer.zoom()` dans `zoomNode` + `buildPromptForIteration` + `buildReplanPrompt`.
+Z-6 : Câbler `ContextZoomer.zoom(IMPLEMENTATION)` dans `zoomInOnError` + tests Cucumber.
+
+== Modifications
+
+[cols="2,3,5"]
+|===
+| Fichier | Type | Changement
+| `VibecodingState.kt` | modifié | +`compositeContext: CompositeContext?`, +`zoomedContext: CompositeContext?` (transient, non persisté)
+| `VibecodingGraph.kt` | modifié | `buildContextNode` extrait `compositeContext` de `AugmentedState` ; `zoomNode` appelle `contextZoomer.zoom()` ; `zoomInOnError` zoome à `IMPLEMENTATION` ; `buildPromptForIteration` injecte `ZOOMED CONTEXT` ; `buildReplanPrompt` injecte `ZOOMED CONTEXT (IMPLEMENTATION)`
+| `VibecodingGraphAutofocusTest.kt` | créé | 16 tests JUnit5 — classify 4 niveaux, zoom 4 niveaux, prompt zoomé, replan zoomé, stack, no-crash null context
+| `epic_z_6_autofocus_feedback.feature` | créé | 4 scénarios Cucumber @epic_z_6 — zoom-in error, replan prompt, stack, no-crash sans contexte
+| `EpicZ6AutofocusSteps.kt` | créé | Steps Cucumber Z-6 (Given composite context, When failing plan, Then focus/zoom/stack/replan)
+| `EpicZ6CucumberRunner.kt` | créé | Runner Cucumber Z-6
+|===
+
+== Résultats
+
+- 16/16 JUnit5 Z-5 PASS (VibecodingGraphAutofocusTest)
+- 4/4 Cucumber Z-6 PASS (EpicZ6CucumberRunner)
+- Tests existants VibecodingGraph + autofocus PASS (zéro régression)
+- Compilation OK
+
+== Pipeline Z-5/Z-6 câblé
+
+```
+intention → classifyNode (AutofocusClassifier.classifySync) → focusLevel
+         → buildContextNode (KoogAugmentedContextGraph) → compositeContext
+         → zoomNode (ContextZoomer.zoom) → zoomedContext
+         → buildPromptForIteration (ZOOMED CONTEXT injecté)
+         → [executeTools → verifyStepNode]
+         → FAILED → zoomInOnError (IMPLEMENTATION + ContextZoomer.zoom)
+         → buildReplanPrompt (ZOOMED CONTEXT chirurgical)
+         → retry
+```
+
+== Prochaine session
+
+Session 108 — Z-7 Validation cross-borough (scénario bout-en-bout intention → autofocus → exécution → succès).

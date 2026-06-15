@@ -1,5 +1,6 @@
 package vibecoding.contracts.state
 
+import contracts.context.CompositeContext
 import vibecoding.contracts.plan.Plan
 
 /**
@@ -29,7 +30,11 @@ data class VibecodingState(
     /** X-4 RollbackStrategy: STOP_ON_ERROR | REVERT_AND_CONTINUE | MARK_SKIPPED | FALLBACK_HUMAN */
     val rollbackStrategy: String = "STOP_ON_ERROR",
     /** Z-5 Autofocus: niveau de zoom courant (BIG_PICTURE | ARCHITECTURE | MODULE | IMPLEMENTATION) */
-    val focusLevel: String? = null
+    val focusLevel: String? = null,
+    /** Z-5 Autofocus: contexte composite brut (RAG/EAGER/Graphify/Docs) — transient, non persisté */
+    val compositeContext: CompositeContext? = null,
+    /** Z-5 Autofocus: contexte zoomé filtré par niveau — transient, non persisté */
+    val zoomedContext: CompositeContext? = null
 ) {
     val isFinal: Boolean get() = finished || iteration >= maxActions
 
