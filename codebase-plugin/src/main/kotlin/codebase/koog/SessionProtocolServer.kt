@@ -22,7 +22,8 @@ class SessionProtocolServer(
     private val workspaceRoot: String,
     private val toolRegistry: ToolRegistry = ToolRegistry(),
     private val llmProvider: LlmProvider? = null,
-    private val eventStream: ToolEventStream? = null
+    private val eventStream: ToolEventStream? = null,
+    private val liveContextInjector: LiveContextInjector? = null
 ) {
     private val log = LoggerFactory.getLogger(SessionProtocolServer::class.java)
     private val mapper = jacksonObjectMapper()
@@ -80,8 +81,10 @@ class SessionProtocolServer(
             toolRegistry = toolRegistry,
             llmProvider = llmProvider,
             tokenTracker = tokenTracker,
-            eventStream = eventStream
+            eventStream = eventStream,
+            liveContextInjector = liveContextInjector
         )
+        graph.staticContext = sessionPrompt.context
 
         val state = VibecodingState(
             intention = sessionPrompt.prompt,

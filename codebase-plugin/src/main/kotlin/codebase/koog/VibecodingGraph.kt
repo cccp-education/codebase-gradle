@@ -99,8 +99,11 @@ class VibecodingGraph(
     val autofocusClassifier: AutofocusClassifier = AutofocusClassifier,
     val contextZoomer: ContextZoomer = ContextZoomer(),
     val autofocusStack: AutofocusStack = AutofocusStack(),
-    val eventStream: ToolEventStream? = null
+    val eventStream: ToolEventStream? = null,
+    val liveContextInjector: LiveContextInjector? = null
 ) {
+
+    var staticContext: contracts.session.AgentContext? = null
 
     private val log = LoggerFactory.getLogger(VibecodingGraph::class.java)
 
@@ -427,7 +430,12 @@ class VibecodingGraph(
     private fun buildPromptForIteration(state: VibecodingState): String {
         val statusLine = state.error?.let { "ERROR: $it" } ?: "OK"
         val focusInfo = state.focusLevel?.let { "Focus level: $it" } ?: "Focus level: MODULE (default)"
+        val liveContext = liveContextInjector?.injectLiveContext(state, toolRegistry.auditEntries(), staticContext) ?: ""
         return buildString {
+            if (liveContext.isNotBlank()) {
+                appendLine(liveContext)
+                appendLine()
+            }
             appendLine("Vibecoding session — iteration ${state.iteration + 1}/${state.maxActions}")
             appendLine("Intention: ${state.intention}")
             appendLine("Workspace: ${state.workspaceRoot}")
@@ -468,7 +476,12 @@ class VibecodingGraph(
      */
     internal fun buildReplanPrompt(state: VibecodingState): String {
         val focusInfo = state.focusLevel?.let { "Focus level: $it" } ?: "Focus level: IMPLEMENTATION (error zoom)"
+        val liveContext = liveContextInjector?.injectLiveContext(state, toolRegistry.auditEntries(), staticContext) ?: ""
         return buildString {
+            if (liveContext.isNotBlank()) {
+                appendLine(liveContext)
+                appendLine()
+            }
             appendLine("Vibecoding error recovery — retry ${state.retryCount}/${state.maxRetries}")
             appendLine("Intention: ${state.intention}")
             appendLine("Current task: ${state.currentTaskDescription}")

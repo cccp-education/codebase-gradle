@@ -746,7 +746,7 @@ cd foundry/public/codebase-gradle && ./gradlew publish closeAndRelease
 
 == EPIC SESSION-PROTOCOL — Protocole opencode↔Gradle : Thin Client + Moteur Gradle
 
-**Statut** : 🔄 EN COURS (2/7 — SP-0 ✅, SP-1 ✅)
+**Statut** : ✅ TERMINÉ (7/7 — SP-0→SP-6, session 114). 14 JUnit5 + 3 Cucumber @epic_sp_6 = 17/17 PASS.
 **Priorité** : P1
 **Dépend de** : workspace-bom (MEMPHIS N0) pour les contrats, EPIC V (VibecodingTask moteur)
 
@@ -825,7 +825,8 @@ data class AgentContext(
 * [x] SP-2 : Mode serveur/daemon — Tâche Gradle en écoute continue (stdin/stdout JSON-lines) pour éviter la latence de compilation à chaque tour de dialogue. Réutilisation du Gradle daemon. (SessionProtocolServer.kt 134l + SessionProtocolDaemonTask.kt 37l, 5 JUnit5 + 4 Cucumber PASS)
 * [x] SP-3 : Cycle de vie de session — SessionProtocolLifecycleManager (persistance JSON disque), SessionProtocolTask +--action create|resume|close|list. Création/reprise/clôture/liste sessions. Runner-gradle (N3) consomme sans code métier. (SessionProtocolLifecycleManager.kt 126l, 15 JUnit5 + 6 Cucumber PASS)
 * [x] SP-4 : Tests E2E — opencode → runner → codebase → session. Scénario bout-en-bout complet : création → vibecoding → réponse → clôture. (Session 112 — 5 JUnit5 + 4 Cucumber @epic_sp_4 = 9/9 PASS. Bugfix takeUnless→takeIf dans SessionProtocolTask.kt:116.)
-* [ ] SP-5 : ToolEventStream — Événements structurés temps réel (thinking/tool_call/tool_result/progress/error) en JSON-lines sur stdout.
+* [x] SP-5 : ToolEventStream — Événements structurés temps réel (thinking/tool_call/tool_result/progress/error) en JSON-lines sur stdout.
+* [x] SP-6 : LiveContextInjector — Injection contexte conversation active dans le prompt LLM. 5 pts. Dernière brique EPIC SP.
 
 === Bénéfice attendu
 

@@ -43,6 +43,9 @@ abstract class SessionProtocolTask : DefaultTask() {
     @get:Internal
     var eventStream: ToolEventStream? = null
 
+    @get:Internal
+    var liveContextInjector: LiveContextInjector? = null
+
     @get:Input
     @get:Optional
     @get:Option(option = "prompt", description = "Prompt utilisateur à exécuter")
@@ -185,8 +188,10 @@ abstract class SessionProtocolTask : DefaultTask() {
             toolRegistry = toolRegistry,
             llmProvider = llmProvider,
             tokenTracker = tokenTracker,
-            eventStream = eventStream
+            eventStream = eventStream,
+            liveContextInjector = liveContextInjector
         )
+        graph.staticContext = agentContext
 
         val state = VibecodingState(
             intention = promptText,

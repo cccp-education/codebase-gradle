@@ -1,0 +1,51 @@
+= Session 114 — SP-6 LiveContextInjector (EPIC SP TERMINÉ)
+:date: 2026-06-16
+:type: feat+tdd+ddd+bdd
+:score: 10/10
+
+== Contexte
+
+- Session 113 : SP-5 ToolEventStream ✅
+- Mission : SP-6 LiveContextInjector — injection contexte conversation active dans le prompt LLM. 5 pts. Dernière brique EPIC SP.
+
+== Actions
+
+1. Hook d'ouverture : git status clean, compile OK, publishToMavenLocal
+2. Exploration architecture SP (code review existant SP-0→SP-5)
+3. TDD : LiveContextInjectorTest.kt — 14 tests JUnit5 (session metadata, error, tool audit, static context, focus levels, edge cases)
+4. DDD : LiveContextInjector.kt (80l) — injectLiveContext() avec [LIVE_CONTEXT] + [STATIC_CONTEXT] sections
+5. Intégration VibecodingGraph : ajout `liveContextInjector` param, appel dans buildPromptForIteration() + buildReplanPrompt()
+6. Fix dead code : agentContext parsé mais jamais utilisé dans SessionProtocolTask.executeVibecoding() — maintenant passé à VibecodingGraph.staticContext
+7. Intégration SessionProtocolServer : sessionPrompt.context maintenant passé à VibecodingGraph
+8. BDD : epic_sp_6_live_context.feature — 3 scénarios Cucumber @epic_sp_6
+9. Gradle task cucumberTestEpicSp6 créée
+
+== Fichiers créés
+
+- `codebase-plugin/src/main/kotlin/codebase/koog/LiveContextInjector.kt` (80l)
+- `codebase-plugin/src/test/kotlin/codebase/koog/LiveContextInjectorTest.kt` (190l)
+- `codebase-plugin/src/test/features/epic_sp_6_live_context.feature`
+- `codebase-plugin/src/test/kotlin/codebase/scenarios/SessionProtocolSp6Steps.kt`
+- `codebase-plugin/src/test/kotlin/codebase/scenarios/SessionProtocolSp6World.kt`
+- `codebase-plugin/src/test/kotlin/codebase/scenarios/EpicSp6CucumberRunner.kt`
+
+== Fichiers modifiés
+
+- `codebase-plugin/src/main/kotlin/codebase/koog/VibecodingGraph.kt` (liveContextInjector param + staticContext field + appel dans buildPromptForIteration/buildReplanPrompt)
+- `codebase-plugin/src/main/kotlin/codebase/koog/SessionProtocolTask.kt` (liveContextInjector field + agentContext passé à VibecodingGraph)
+- `codebase-plugin/src/main/kotlin/codebase/koog/SessionProtocolServer.kt` (liveContextInjector param + sessionPrompt.context passé à VibecodingGraph)
+- `codebase-plugin/build.gradle.kts` (cucumberTestEpicSp6 task)
+- `codebase-plugin/BACKLOG.adoc` (SP-5✅, SP-6✅, EPIC SP TERMINÉ)
+
+== Résultats des tests
+
+- 14/14 JUnit5 LiveContextInjectorTest PASS
+- 3/3 Cucumber @epic_sp_6 PASS
+- 83/83 JUnit5 SP-related tests PASS (zéro régression)
+- publishToMavenLocal OK
+
+== Points d'attention
+
+- SessionProtocolServer n'avait pas de liveContextInjector — ajouté en paramètre optionnel
+- SessionProtocolDaemonTask n'a toujours pas d'eventStream ni liveContextInjector (gap existant)
+- Les contrats SessionPrompt.context (AgentContext) étaient parsés dans SessionProtocolServer mais jamais utilisés — maintenant passés à VibecodingGraph.staticContext

@@ -1,0 +1,22 @@
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 115
+:session: 115
+:borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
+:sessions_precedente: 114 — SP-6 ✅ LiveContextInjector (14 JUnit5 + 3 Cucumber @epic_sp_6 = 17/17 PASS)
+
+== Contexte Hérité
+
+- EPIC SP TERMINÉ 7/7 — SP-6 LiveContextInjector (80l) + câblage VibecodingGraph + SessionProtocolTask/Server + fix dead code agentContext
+- 14 JUnit5 LiveContextInjectorTest + 3 Cucumber @epic_sp_6 = 17/17 PASS
+- Full suite ~400+ PASS
+- publishToMavenLocal OK
+
+== Mission Session 115 — OCR Pipeline
+
+- OCR-3 : Support batch inputDir — tous les fichiers d'un répertoire
+- OCR-4 : Intégration pipeline complet OCR → anonymisation → chunking → pgvector
+
+== Ordonnancement Sessions Suivantes
+
+| Session | EPIC | Livrable
+| 115 | OCR-3 + OCR-4 | Pipeline OCR batch complet
+| 116 | OCR | Finalisation, tests E2E
