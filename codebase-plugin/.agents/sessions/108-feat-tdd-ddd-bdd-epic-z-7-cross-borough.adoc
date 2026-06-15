@@ -1,0 +1,60 @@
+= Session 108 — EPIC Z-7 Validation Cross-Borough Autofocus
+:session: 108
+:date: 2026-06-15
+:type: feat+tdd+ddd+bdd
+:borough: Queens — codebase-gradle (N1)
+:score: 10/10
+
+== Contexte
+
+- EPIC Z 6/7 avant session — Z-0→Z-6 ✅ (92 JUnit5 + 4 Cucumber PASS)
+- popFocusNode défini dans VibecodingGraph.kt mais jamais appelé
+- Z-7 = validation cross-borough bout-en-bout + wiring popFocusNode
+
+== Actions
+
+=== Fix popFocusNode (VibecodingGraph.kt:635-645)
+
+- Corrigé : utilise `autofocusStack.currentLevel()` (nouveau top) au lieu du nom de l'élément poppé
+- Avant : `state.copy(focusLevel = previous.name)` → après pop, `previous` n'est plus dans le stack
+- Après : `state.copy(focusLevel = newTop?.name)` → reflète le vrai état du stack
+
+=== Wiring popFocusNode — 2 chemins
+
+. Après retry réussi (VibecodingGraph.kt:267-269) : `state = popFocusNode(state)` après `clearError().incrementRetry().nextIteration()`
+. Dans checkProgressNode (success path) : `popFocusNode(state).finish()` quand toutes les tâches sont faites ou plan vide
+
+=== Tests Cucumber @epic_z_7 — 4 scénarios
+
+. `epic_z_7_cross_borough.feature` — 4 scénarios :
+  - Full pipeline : intention→classify→zoom→execute→success→popFocus
+  - Cross-borough context preserved : graphify contient codebase/codex/planner/runner
+  - Error recovery : zoom-in IMPLEMENTATION→retry→success→popFocus→MODULE
+  - Multi-level zoom cycle : BIG_PICTURE→error→IMPLEMENTATION→success→pop→BIG_PICTURE
+
+. `EpicZ7CrossBoroughSteps.kt` — 174 lignes, 8 step definitions
+. `EpicZ7CucumberRunner.kt` — JUnit Platform Suite runner
+. `cucumberTestEpicZ7` Gradle task dans build.gradle.kts
+
+=== Mise à jour BACKLOG + PROMPT_REPRISE
+
+- BACKLOG.adoc : EPIC Z statut EN COURS→✅ TERMINÉ, Z-7 [ ]→[x]
+- PROMPT_REPRISE.adoc : session 108→109, mission EPIC 12 Dilution Article de Blog
+
+== Résultats
+
+- 4/4 Cucumber @epic_z_7 PASS
+- EPIC Z TERMINÉ 7/7 (92 JUnit5 + 8 Cucumber = 100 tests PASS)
+- Zéro régression
+- compileKotlin OK
+
+== Fichiers
+
+- Créés : epic_z_7_cross_borough.feature, EpicZ7CrossBoroughSteps.kt, EpicZ7CucumberRunner.kt
+- Modifiés : VibecodingGraph.kt (popFocusNode fix + wiring ×2), build.gradle.kts (+cucumberTestEpicZ7), BACKLOG.adoc, PROMPT_REPRISE.adoc
+
+== Leçons
+
+- popFocusNode était défini mais jamais appelé — le "dézoomer pour décider" manquait
+- Le wiring dans checkProgressNode (success path) ferme la boucle autofocus complète
+- Les scénarios cross-borough valident que le graphify context contient bien les 4 boroughs N1→N3

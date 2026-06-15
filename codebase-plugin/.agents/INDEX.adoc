@@ -4,10 +4,10 @@
 _Regles absolues_ : voir `AGENT.adoc`
 _Ontologie spatiale_ : voir `configuration/.agents/AGENT_GOVERNANCE.adoc`
 
-_Derniere mise a jour_ : 2026-06-15 (Session 107 — Z-5 + Z-6 ✅ Autofocus intégré 92 JUnit5 + 4 Cucumber PASS)
-_Session precedente_ : 106 — Z-0→Z-4 Autofocus 76/76 PASS
-_Session en cours_ : 108 — Z-7 Validation cross-borough → EPIC Z TERMINÉ
-_Session suivante_ : 109 — EPIC 12 Dilution Article de Blog
+_Derniere mise a jour_ : 2026-06-15 (Session 108 — Z-7 ✅ EPIC Z TERMINÉ 7/7, 100 tests PASS)
+_Session precedente_ : 107 — Z-5 + Z-6 Autofocus intégré 92 JUnit5 + 4 Cucumber PASS
+_Session en cours_ : 109 — EPIC 12 Dilution Article de Blog
+_Session suivante_ : 110 — EPIC 5 Pipeline fine-tuning experts CDA/FPA
 _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/` (N=70, multiple de 10)
 
 '''
@@ -145,7 +145,7 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 | EPIC X | *Décision Multi-Step verify→adapt* — Plan structuré, TaskResultVerifier, RollbackStrategy. | ✅ TERMINÉ (7/7 — X-0→X-6, session 105). 19/19 PASS. | P1
 | EPIC Y | *Agentic Literature Compiler* — Compiler littérature agentique → artefacts exécutables. | 🔄 EN COURS (Y-1 18/18 ✅, Y-2 20/20 ✅, Y-3 31/31 ✅, Y-4 27/27 ✅, Y-5 12/12 ✅, Y-6 12/12 ✅, session 096). 8 sous-EPICs, ~26 pts. | P1
 | EPIC-V-6-POOL | *Adaptation Ollama Cloud Pool* — Le pool 11437-11465 ne contient que gemma4:31b-cloud (pas de modèles premium qwen3.5/deepseek-v4/glm-5.1/minimax-m2.7/kimi-k2.6). Adaptation OllamaLlmProvider pour utiliser gemma4:31b-cloud. Script scan-ollama-cloud.sh. 4 sous-EPICs (V-6-POOL-0→V-6-POOL-3, ~5 pts). | 🔴 EN ATTENTE (cadré Session 077). | P0
-| EPIC Z | *Autofocus* — Accommodation contextuelle programmatique (zoom x1↔x1000). 11ème doc Jardin Secret. Package `autofocus/` dans `codebase/koog/`. 5ème verbe ZOOMER. | 🔄 EN COURS (6/7 — Z-0 ✅ Z-1 ✅ Z-2 ✅ Z-3 ✅ Z-4 ✅ Z-5 ✅ Z-6 ✅, session 107). 92 JUnit5 + 4 Cucumber PASS. Voir `AUTOFOCUS_CAPABILITY.adoc` + `CADRAGE_AUTOFOCUS.adoc`. | P1
+| EPIC Z | *Autofocus* — Accommodation contextuelle programmatique (zoom x1↔x1000). 11ème doc Jardin Secret. Package `autofocus/` dans `codebase/koog/`. 5ème verbe ZOOMER. | ✅ TERMINÉ (7/7 — Z-0 ✅ Z-1 ✅ Z-2 ✅ Z-3 ✅ Z-4 ✅ Z-5 ✅ Z-6 ✅ Z-7 ✅, session 108). 92 JUnit5 + 8 Cucumber = 100 PASS. Voir `AUTOFOCUS_CAPABILITY.adoc` + `CADRAGE_AUTOFOCUS.adoc`. | P1
 | EPIC SP | *Session Protocol* — Protocole opencode↔Gradle (thin client + moteur Gradle). Contrats N0 dans workspace-bom (MEMPHIS), SessionProtocolTask dans codebase, pont N3 runner. 7 sous-EPICs (SP-0→SP-6), ~27 pts. **SP-5 ToolEventStream** : events thinking/tool_call en JSON-lines. **SP-6 LiveContextInjector** : injection contexte dans conversation active. | 🔄 EN COURS (SP-1 en session 104). Voir `BACKLOG.adoc` §EPIC SP. | P1
 |===
 

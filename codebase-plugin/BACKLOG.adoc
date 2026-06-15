@@ -869,7 +869,7 @@ Contrats N0 dans workspace-bom (MEMPHIS), moteur dans codebase (N1), pont dans r
 
 == EPIC Z — Autofocus : Accommodation Contextuelle Programmatique
 
-**Statut** : 🔄 EN COURS (6/7 — Z-0 ✅ Z-1 ✅ Z-2 ✅ Z-3 ✅ Z-4 ✅ Z-5 ✅ Z-6 ✅, session 107)
+**Statut** : ✅ TERMINÉ (7/7 — Z-0 ✅ Z-1 ✅ Z-2 ✅ Z-3 ✅ Z-4 ✅ Z-5 ✅ Z-6 ✅ Z-7 ✅, session 108)
 **Priorité** : P1
 **Dépend de** : V-6 Feedback Loop (prérequis), graphify-gradle N0 (graph.json)
 **Source** : AUTOFOCUS_CAPABILITY.adoc (document 11 du Jardin Secret, session 073)
@@ -904,7 +904,7 @@ checkProgress → AutofocusStack.pop() → remonter niveau
 * [x] Z-4 : `AutofocusStack` — Pile LIFO push/pop/currentLevel/isEmpty/clear. 14/14 JUnit5 PASS. (session 106)
 * [x] Z-5 : Intégration VibecodingGraph — Node 0 (classify) + Node 1 (zoom) dans le graphe koog. Tests E2E. (session 107 — 16 JUnit5 PASS)
 * [x] Z-6 : Intégration V-6 Feedback Loop — verifyResult FAILED → zoom(IMPLEMENTATION) → retry. Tests Cucumber. (session 107 — 4 Cucumber PASS)
-* [ ] Z-7 : Validation cross-borough — Scénario bout-en-bout : intention → autofocus → exécution → succès.
+* [x] Z-7 : Validation cross-borough — Scénario bout-en-bout : intention → autofocus → exécution → succès. 4 Cucumber @epic_z_7 PASS. popFocusNode wiré dans checkProgressNode (success path) + retry success path. (session 108)
 
 === Bénéfice attendu
 

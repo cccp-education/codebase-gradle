@@ -267,6 +267,7 @@ class VibecodingGraph(
                                 state = state.clearError().incrementRetry().nextIteration().copy(
                                     lastToolResult = "Replan: $replanResponse"
                                 )
+                                state = popFocusNode(state)
                             } catch (e: Exception) {
                                 log.warn("[VibecodingGraph] Replan LLM call failed: {}", e.message)
                                 state = state.incrementRetry()
@@ -588,12 +589,12 @@ class VibecodingGraph(
             epic.userStories.flatMap { story -> story.tasks }
         } ?: emptyList()
         if (allTasks.isNotEmpty() && state.executedTasks.size >= allTasks.size && state.iteration > 0) {
-            return state.finish()
+            return popFocusNode(state).finish()
         }
 
         // Vérifie si le plan est vide (rien à faire)
         val noWorkRemaining = state.plan?.epics?.isEmpty() ?: true
-        if (noWorkRemaining && state.iteration > 0) return state.finish()
+        if (noWorkRemaining && state.iteration > 0) return popFocusNode(state).finish()
 
         return state
     }
@@ -635,9 +636,10 @@ class VibecodingGraph(
     private fun popFocusNode(state: VibecodingState): VibecodingState {
         if (autofocusStack.isEmpty()) return state
         return try {
-            val previous = autofocusStack.pop()
-            log.info("[VibecodingGraph] Autofocus popped to {} (stack size={})", previous.name, autofocusStack.size())
-            state.copy(focusLevel = previous.name)
+            autofocusStack.pop()
+            val newTop = autofocusStack.currentLevel()
+            log.info("[VibecodingGraph] Autofocus popped, new top={} (stack size={})", newTop?.name ?: "null", autofocusStack.size())
+            state.copy(focusLevel = newTop?.name)
         } catch (e: IllegalStateException) {
             log.warn("[VibecodingGraph] Autofocus pop underflow: {}", e.message)
             state

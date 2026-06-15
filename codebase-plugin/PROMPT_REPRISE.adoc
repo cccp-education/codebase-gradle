@@ -1,7 +1,7 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 108
-:session: 108
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 109
+:session: 109
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 107 — EPIC Z-5 + Z-6 TERMINÉS (16 JUnit5 + 4 Cucumber PASS)
+:sessions_precedente: 108 — EPIC Z-7 TERMINÉ (4 Cucumber PASS, popFocusNode wiré)
 
 == Contexte Hérité
 
@@ -10,21 +10,22 @@
 - EPIC Y 7/8 — Y-1✅ Y-2✅ Y-3✅ Y-4✅ Y-5✅ Y-6✅ Y-7✅
 - EPIC OCR-2b TERMINÉ (6/6)
 - EPIC SP 1/7 — SP-1✅
-- EPIC Z 6/7 — Z-0✅ Z-1✅ Z-2✅ Z-3✅ Z-4✅ Z-5✅ Z-6✅ (92 JUnit5 + 4 Cucumber PASS)
+- EPIC Z TERMINÉ (7/7) — Z-0✅ Z-1✅ Z-2✅ Z-3✅ Z-4✅ Z-5✅ Z-6✅ Z-7✅ (92 JUnit5 + 8 Cucumber PASS)
 - Full suite ~350+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 108 — EPIC Z-7 Validation Cross-Borough
+== Mission Session 109 — EPIC 12 Dilution Article de Blog (quick win)
 
-*Z-7* : Scénario bout-en-bout intention → autofocus → exécution → succès :
-  - Test E2E complet : intention "fix compilation error" → classify IMPLEMENTATION → zoom → buildContext → execute → verify → succès
-  - Validation cross-borough : codebase (N1) + codex (N2) + planner (N2) + runner (N3)
-  - Vérifier que le zoomedContext est correctement transmis dans toute la chaîne
-  - Tests Cucumber @epic_z_7
+*EPIC 12* : Narration Publique Automatique :
+  - Formaliser le template d'article de blog (structure AsciiDoc JBake)
+  - Implémenter `BlogArticleExtractor` — extraction exclusive depuis Cercle 4 (`foundry/`)
+  - Implémenter `BlogArticleRenderer` — sortie `.adoc` dans `office/sites/cheroliv/`
+  - Wiring avec EPIC 10 : `diluteStimuli` ajoute une cible blog
+  - Tâche Gradle `endSessionBlog`
+  - Tests : 3 sessions synthétiques → 3 articles générés
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 108 | Z-7 | Validation cross-borough → EPIC Z TERMINÉ
 | 109 | 12 | Dilution Article de Blog (quick win)
 | 110+ | 5 | Pipeline fine-tuning experts CDA/FPA (lourd)
