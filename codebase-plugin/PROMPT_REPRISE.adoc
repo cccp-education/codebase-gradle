@@ -1,7 +1,7 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 112
-:session: 112
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 113
+:session: 113
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 111 — SP-3 ✅ Cycle de vie session (21/21 PASS, 15 JUnit5 + 6 Cucumber)
+:sessions_precedente: 112 — SP-4 ✅ Tests E2E (9/9 PASS, 5 JUnit5 + 4 Cucumber @epic_sp_4)
 
 == Contexte Hérité
 
@@ -11,20 +11,19 @@
 - EPIC Z TERMINÉ (7/7)
 - EPIC 12 TERMINÉ — 19/19 PASS
 - EPIC 5 MIGRÉ → training-gradle TRN-8
-- EPIC SP 4/7 — SP-0 ✅ SP-1 ✅ SP-2 ✅ SP-3 ✅
-  - SP-3: SessionProtocolLifecycleManager (126l, persistance JSON disque)
-  - SessionProtocolTask +--action create|resume|close|list
+- EPIC SP 5/7 — SP-0 ✅ SP-1 ✅ SP-2 ✅ SP-3 ✅ SP-4 ✅
+  - SP-4: SessionProtocolE2ETest.kt (5 JUnit5) + epic_sp_4_e2e.feature (4 Cucumber)
+  - Bugfix: takeUnless→takeIf dans SessionProtocolTask.kt:116 (model non transmis)
 - EPIC OCR 12/26
 - Full suite ~400+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 112 — Suite Protocole OpenCode↔Gradle
+== Mission Session 113 — Suite Protocole OpenCode↔Gradle
 
-*SP-4* : Tests intégration E2E — opencode → runner → codebase → session → réponse complète.
-Scénario bout-en-bout : création session → vibecoding → réponse → clôture.
+*SP-5* : ToolEventStream — Événements structurés temps réel (thinking/tool_call/tool_result/progress/error)
+en JSON-lines sur stdout. 5 pts.
 
 *Priorités restantes* :
-  - SP-4 : Tests E2E opencode→runner→codebase
   - SP-5 : ToolEventStream (5 pts) — événements structurés temps réel
   - SP-6 : LiveContextInjector (5 pts) — injection contexte conversation active
   - OCR-3 : Support batch inputDir + OCR-4 intégration pipeline complet
@@ -33,6 +32,6 @@ Scénario bout-en-bout : création session → vibecoding → réponse → clôt
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 112 | SP-4 | Tests E2E opencode→runner→codebase
 | 113 | SP-5 | ToolEventStream — événements structurés
+| 114 | SP-6 | LiveContextInjector — injection contexte actif
 | 115+ | OCR | Pipeline OCR batch + intégration complète

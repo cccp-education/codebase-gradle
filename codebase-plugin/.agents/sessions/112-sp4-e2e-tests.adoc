@@ -1,0 +1,61 @@
+= Session 112 — SP-4 Tests E2E opencode→runner→codebase→session
+:session: 112
+:date: 2026-06-15
+:type: feat+tdd+ddd+bdd
+:score: 10/10
+
+== Contexte
+
+EPIC SP 4/7 → 5/7. SP-0→SP-3 déjà terminés. SP-4 = tests intégration E2E bout-en-bout.
+
+== Actions
+
+=== JUnit5 — SessionProtocolE2ETest.kt (5 tests)
+
+. E2E create session vibecode get response close session
+. E2E create with custom sessionId vibecode close
+. E2E create resume child close parent
+. E2E create with contextFile vibecode close
+. E2E create list close verify list reflects closure
+
+=== Bugfix — SessionProtocolTask.kt:116
+
+`takeUnless { it.isNotBlank() }` → `takeIf { it.isNotBlank() }`
+Le modèle n'était pas transmis au lifecycleManager (takeUnless retourne null quand la condition est vraie).
+
+=== Cucumber BDD — epic_sp_4_e2e.feature (4 scénarios @epic_sp_4)
+
+. Full lifecycle — create session, vibecode, get response, close session
+. Full lifecycle — create, resume child, close parent
+. Full lifecycle — create, list, close, verify list reflects closure
+. Full lifecycle — create with AgentContext, vibecode, close
+
+=== Fichiers créés
+
+- `SessionProtocolE2ETest.kt` (288 lignes, 5 tests JUnit5)
+- `epic_sp_4_e2e.feature` (55 lignes, 4 scénarios Cucumber)
+- `SessionProtocolE2ESteps.kt` (154 lignes, 16 step definitions)
+- `SessionProtocolE2EWorld.kt` (65 lignes, world Cucumber)
+- `EpicSp4CucumberRunner.kt` (22 lignes, JUnit Platform Suite runner)
+
+=== Fichiers modifiés
+
+- `SessionProtocolTask.kt` (bugfix ligne 116: takeUnless→takeIf)
+- `build.gradle.kts` (+cucumberTestEpicSp4 task)
+- `BACKLOG.adoc` (SP-4 marqué [x])
+- `INDEX.adoc` (session 112 ajoutée, EPIC SP 5/7)
+- `PROMPT_REPRISE.adoc` (session 113 SP-5 ToolEventStream)
+
+== Résultats
+
+- 5/5 JUnit5 PASS
+- 4/4 Cucumber @epic_sp_4 PASS
+- SP-1 5/5 Cucumber PASS (zéro régression)
+- SP-2 4/4 Cucumber PASS (zéro régression)
+- SP-3 6/6 Cucumber PASS (zéro régression)
+- Total SP: 5 JUnit5 + 19 Cucumber = 24/24 PASS
+
+== Leçons
+
+- `takeUnless` vs `takeIf` : piège classique. `takeUnless { pred }` retourne null quand pred est vrai.
+- DuplicateStepDefinitionException : les runners Cucumber chargent toutes les step definitions du package glue. Préfixer les patterns avec "E2E" pour éviter les collisions.

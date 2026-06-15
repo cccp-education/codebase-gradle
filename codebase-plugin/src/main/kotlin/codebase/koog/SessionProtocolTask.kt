@@ -113,7 +113,7 @@ abstract class SessionProtocolTask : DefaultTask() {
         val lifecycleMgr = resolveLifecycleManager()
         val lifecycleState = lifecycleMgr.create(
             prompt = promptText,
-            model = model.getOrElse("").takeUnless { it.isNotBlank() },
+            model = model.getOrElse("").takeIf { it.isNotBlank() },
             sessionId = explicitSessionId
         )
 

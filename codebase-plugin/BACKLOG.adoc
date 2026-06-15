@@ -824,7 +824,7 @@ data class AgentContext(
 * [x] SP-1 : Implémenter `SessionProtocolTask` dans codebase — tâche Gradle qui reçoit un SessionPrompt, exécute VibecodingTask, retourne SessionResponse. Point d'entrée unique pour le thin client. (SessionProtocolTask.kt + tests + Cucumber existants)
 * [x] SP-2 : Mode serveur/daemon — Tâche Gradle en écoute continue (stdin/stdout JSON-lines) pour éviter la latence de compilation à chaque tour de dialogue. Réutilisation du Gradle daemon. (SessionProtocolServer.kt 134l + SessionProtocolDaemonTask.kt 37l, 5 JUnit5 + 4 Cucumber PASS)
 * [x] SP-3 : Cycle de vie de session — SessionProtocolLifecycleManager (persistance JSON disque), SessionProtocolTask +--action create|resume|close|list. Création/reprise/clôture/liste sessions. Runner-gradle (N3) consomme sans code métier. (SessionProtocolLifecycleManager.kt 126l, 15 JUnit5 + 6 Cucumber PASS)
-* [ ] SP-4 : Tests E2E — opencode → runner → codebase → session. Scénario bout-en-bout complet : création → vibecoding → réponse → clôture.
+* [x] SP-4 : Tests E2E — opencode → runner → codebase → session. Scénario bout-en-bout complet : création → vibecoding → réponse → clôture. (Session 112 — 5 JUnit5 + 4 Cucumber @epic_sp_4 = 9/9 PASS. Bugfix takeUnless→takeIf dans SessionProtocolTask.kt:116.)
 * [ ] SP-5 : ToolEventStream — Événements structurés temps réel (thinking/tool_call/tool_result/progress/error) en JSON-lines sur stdout.
 
 === Bénéfice attendu
