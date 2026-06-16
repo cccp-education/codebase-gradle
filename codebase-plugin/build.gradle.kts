@@ -1,6 +1,8 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
 import java.time.Duration
 
+fun isCI() = System.getenv("CI") == "true"
+
 plugins {
     signing
     `java-library`
@@ -14,15 +16,7 @@ plugins {
     id("com.gradle.plugin-publish") version "2.1.0"
 }
 
-group = "education.cccp"
-version = "0.0.2"
 kotlin.jvmToolchain(24)
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-    gradlePluginPortal()
-}
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -91,10 +85,9 @@ data class CucumberTaskSpec(
 )
 
 fun registerCucumberTask(spec: CucumberTaskSpec): TaskProvider<Test> {
-    val isCI = System.getenv("CI") == "true"
     val maxMemoryMB = Runtime.getRuntime().maxMemory() / (1024 * 1024)
     val adaptiveHeap = when {
-        isCI -> "2g"
+        isCI() -> "2g"
         maxMemoryMB < 8192 -> "512m"
         else -> "1g"
     }
@@ -114,7 +107,6 @@ fun registerCucumberTask(spec: CucumberTaskSpec): TaskProvider<Test> {
         maxHeapSize = adaptiveHeap
         maxParallelForks = 1
         forkEvery = 100
-        jvmArgs("-XX:+UseSerialGC", "-XX:MaxMetaspaceSize=256m", "-XX:TieredStopAtLevel=1")
         timeout.set(Duration.ofMinutes(spec.timeoutMinutes))
 
         testLogging {
@@ -162,14 +154,20 @@ val cucumberTaskSpecs = listOf(
 val cucumberTasks = cucumberTaskSpecs.map { registerCucumberTask(it) }
 
 tasks.withType<Test>().configureEach {
-    ignoreFailures = true
+    ignoreFailures = !isCI()
     useJUnitPlatform()
     jvmArgs("-XX:+EnableDynamicAgentLoading")
+    if (isCI()) {
+        jvmArgs("-XX:+UseG1GC", "-XX:MaxGCPauseMillis=200", "-XX:+ParallelRefProcEnabled")
+    } else {
+        jvmArgs("-XX:+UseSerialGC", "-XX:TieredStopAtLevel=4")
+    }
+    jvmArgs("-XX:MaxMetaspaceSize=512m")
 }
 
 gradlePlugin {
-    website.set("https://github.com/cheroliv/codebase-gradle/")
-    vcsUrl.set("https://github.com/cheroliv/codebase-gradle.git")
+    website.set("https://github.com/cccp-education/codebase-gradle/")
+    vcsUrl.set("https://github.com/cccp-education/codebase-gradle.git")
 
     plugins {
         create("codebase") {

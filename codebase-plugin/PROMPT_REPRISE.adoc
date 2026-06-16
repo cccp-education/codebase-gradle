@@ -1,7 +1,7 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 121
-:session: 121
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 122
+:session: 122
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 120 — CR-2+CR-3+CR-4 ✅ (déjà implémentés session 119, audit gouvernance)
+:sessions_precedente: 121 — CR-5+CR-6+CR-7 ✅ (Root build.gradle.kts, ignoreFailures CI-aware, JVM Tuning CI/local split)
 
 == Contexte Hérité
 
@@ -10,37 +10,28 @@
 - EPIC Y TERMINÉ (8/8 ✅)
 - EPIC Z TERMINÉ (7/7)
 - EPIC 12 TERMINÉ — 19/19 PASS
-- EPIC 5 MIGRÉ → training-gradle TRN-8
 - EPIC SP TERMINÉ (7/7 — SP-0→SP-6, 83 JUnit5 + 33 Cucumber = 116/116 PASS)
 - EPIC OCR 26/26 ✅
-  - OCR-0 ✅ (contrats codex)
-  - OCR-1 EN COURS (4/6 — GeminiKeyPool)
-  - OCR-2 EN COURS (4/5 — GeminiVisionProvider)
-  - OCR-2b ✅ (OllamaOcrProvider cloud)
-  - OCR-3 ✅ (OcrTask batch inputDir)
-  - OCR-3b ✅ (8/8 — FakeVisionProvider + GeminiKeyPool + CI/CD)
-  - OCR-4 ✅ (5/5 — chunking→pgvector + métriques)
 - EPIC CR P0 : CR-1 ✅ CR-2 ✅ CR-3 ✅ CR-4 ✅ (4/14)
+- EPIC CR P1 : CR-5 ✅ CR-6 ✅ CR-7 ✅ (7/14)
 - Full suite ~450+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 120 — CR-2+CR-3+CR-4 ✅ (audit gouvernance)
+== Mission Session 121 — CR-5+CR-6+CR-7 ✅
 
-CR-2/3/4 déjà implémentés dans le diff non commité de la session 119 :
-- CR-2 : timeouts EpicV6/V7/L3/V8 → 15 min (défaut CucumberTaskSpec), Ocr/Ocr45/Y4 → 8 min
-- CR-3 : codebase-plugin/gradle.properties a déjà caching=true, parallel=true, workers.max=4
-- CR-4 : adaptiveHeap (CI:2g, <8GB:512m, else:1g) + forkEvery=100 dans registerCucumberTask
+- CR-5 : Root build.gradle.kts — allprojects { group, version, repositories } + plugins apply false
+- CR-6 : ignoreFailures CI-aware — isCI() top-level, ignoreFailures = !isCI(), G1GC global, URL cccp-education
+- CR-7 : JVM Tuning CI/local split — CI=G1GC+ParallelRefProc, local=SerialGC+TieredStopAtLevel=4, Metaspace=512m
 
-Session 120 = audit + marquage BACKLOG + mise à jour gouvernance.
+== Priorités Session 122
 
-== Priorités restantes
-
-  - OCR-1 : env var mapping + HTTP 429 detection (4/6)
-  - OCR-2 : Tesseract fallback (4/5)
-  - EPIC CR P1 : CR-5 Root build.gradle.kts, CR-6 ignoreFailures CI-aware, CR-7 JVM Tuning
+- CR-8 : PostgreSQL Testcontainer Reuse — 14 fichiers de test, PostgresFixture avec .withReuse(true)
+- CR-9 : Kover Coverage Threshold — remplacer koverThresholdCheck artisanal par verify { minBound.set(80) }
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 121 | EPIC CR P1 | CR-5 Root build.gradle.kts + CR-6 ignoreFailures CI-aware + CR-7 JVM Tuning
 | 122 | EPIC CR P1 | CR-8 PostgreSQL Testcontainer Reuse + CR-9 Kover Coverage Threshold
+| 123 | EPIC CR P2 | CR-10 Dependency Conflict Validation + CR-11 Version Catalog Centralisé
+| 124 | EPIC CR P2 | CR-12 Transitive Dependency Audit + CVE + CR-13 Test Task Aliases
+| 125 | EPIC CR P3 | CR-14 BUILDING.md

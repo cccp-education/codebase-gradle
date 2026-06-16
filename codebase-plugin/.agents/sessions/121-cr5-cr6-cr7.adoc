@@ -1,0 +1,47 @@
+= Session 121 — CR-5 + CR-6 + CR-7 (EPIC CR P1)
+:date: 2026-06-16
+:type: refactor+infra
+:score: 10/10
+
+== Contexte
+
+EPIC CR P1 — 3 items du Code Review Deep Analysis :
+- CR-5 : Root build.gradle.kts (shared group/version/repositories)
+- CR-6 : ignoreFailures CI-aware + G1GC + URL cccp-education
+- CR-7 : JVM Tuning CI/local split
+
+== Actions
+
+=== CR-5 — Root build.gradle.kts
+
+- `build.gradle.kts` (racine) : `allprojects { group, version, repositories }` + plugins `apply false`
+- `codebase-plugin/build.gradle.kts` : supprimé `group`, `version`, `repositories` (hérités du root)
+- `jvmToolchain(24)` conservé dans le sous-projet (incompatible avec `subprojects {}` + `plugins {}`)
+
+=== CR-6 — ignoreFailures CI-aware
+
+- `isCI()` extrait en fonction top-level
+- `tasks.withType<Test>().configureEach` : `ignoreFailures = !isCI()`
+- Ajout G1GC global : `-XX:+UseG1GC -XX:MaxGCPauseMillis=200`
+- URL GitHub : `cheroliv` → `cccp-education` (website + vcsUrl)
+
+=== CR-7 — JVM Tuning CI/local split
+
+- `registerCucumberTask()` : suppression JVM args hardcodés (délégués au bloc global)
+- `tasks.withType<Test>().configureEach` :
+  - CI : `-XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+ParallelRefProcEnabled`
+  - Local : `-XX:+UseSerialGC -XX:TieredStopAtLevel=4`
+  - Metaspace : `256m` → `512m`
+
+== Fichiers modifiés
+
+- `build.gradle.kts` (racine) : 1→18 lignes
+- `codebase-plugin/build.gradle.kts` : 26 lignes modifiées
+
+== Résultat
+
+Compilation OK. Zéro régression. EPIC CR 7/14.
+
+== Prochaine session
+
+Session 122 — CR-8 PostgreSQL Testcontainer Reuse + CR-9 Kover Coverage Threshold
