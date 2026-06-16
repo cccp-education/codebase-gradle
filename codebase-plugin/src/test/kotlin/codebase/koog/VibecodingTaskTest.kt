@@ -1,5 +1,6 @@
 package codebase.koog
 
+import codebase.infrastructure.PostgresFixture
 import codebase.koog.session.SessionRepository
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration
 import io.r2dbc.postgresql.PostgresqlConnectionFactory
@@ -8,7 +9,6 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import org.testcontainers.containers.PostgreSQLContainer
 import java.io.File
 import java.nio.file.Files
 
@@ -243,32 +243,17 @@ class VibecodingTaskTest {
         @org.junit.jupiter.api.BeforeAll
         @JvmStatic
         fun startContainer() {
-            container.start()
             val config = PostgresqlConnectionConfiguration.builder()
-                .host(container.host)
-                .port(container.getMappedPort(5432))
-                .database(container.databaseName)
-                .username(container.username)
-                .password(container.password)
+                .host(PostgresFixture.host)
+                .port(PostgresFixture.port)
+                .database(PostgresFixture.databaseName)
+                .username(PostgresFixture.username)
+                .password(PostgresFixture.password)
                 .build()
             connectionFactory = PostgresqlConnectionFactory(config)
             runBlocking { sessionRepo = SessionRepository(connectionFactory!!) }
             runBlocking { sessionRepo?.initSchema() }
         }
-
-        @org.junit.jupiter.api.AfterAll
-        @JvmStatic
-        fun stopContainer() {
-            container.stop()
-        }
-
-        private val container: PostgreSQLContainer<Nothing> =
-            PostgreSQLContainer<Nothing>("pgvector/pgvector:pg17").apply {
-                withDatabaseName("codebase_vibecoding_e2e")
-                withUsername("codebase")
-                withPassword("codebase")
-                withReuse(false)
-            }
 
         private var connectionFactory: PostgresqlConnectionFactory? = null
         private var sessionRepo: SessionRepository? = null

@@ -1,11 +1,9 @@
 package codebase.rag
 
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
+import codebase.infrastructure.PostgresFixture
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.testcontainers.containers.PostgreSQLContainer
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -14,32 +12,11 @@ import kotlin.test.assertTrue
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class VectorStoreTest {
 
-    private val container = PostgreSQLContainer<Nothing>("pgvector/pgvector:pg17").apply {
-        withDatabaseName("codebase_rag_vector_store_test")
-        withUsername("codebase")
-        withPassword("codebase")
-        withStartupTimeout(java.time.Duration.ofMinutes(2))
-        withReuse(false)
-    }
-
-    private lateinit var store: VectorStore
-
-    @BeforeAll
-    fun setUp() {
-        container.start()
-        store = VectorStore(container.jdbcUrl, container.username, container.password)
-        store.initSchema()
-    }
+    private val store = VectorStore(PostgresFixture.jdbcUrl, PostgresFixture.username, PostgresFixture.password)
 
     @BeforeEach
     fun cleanDatabase() {
-        // Re-init schema between tests for isolation
         store.initSchema()
-    }
-
-    @AfterAll
-    fun tearDown() {
-        container.stop()
     }
 
     // ── countDocuments / countChunks ──────────────────────────────────────────

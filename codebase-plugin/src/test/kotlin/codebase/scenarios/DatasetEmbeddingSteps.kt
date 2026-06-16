@@ -15,9 +15,7 @@ class DatasetEmbeddingSteps {
 
     @Given("a pgvector container is running")
     fun `a pgvector container is running`() {
-        log.info("Starting pgvector container...")
-        ctx.startContainer()
-        log.info("pgvector container started")
+        log.info("pgvector container ready (PostgresFixture)")
     }
 
     @When("I tokenize each dataset file into sentence-level chunks of approximately 512 tokens")

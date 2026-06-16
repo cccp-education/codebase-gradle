@@ -1,5 +1,6 @@
 package codebase.scenarios
 
+import codebase.infrastructure.PostgresFixture
 import codebase.koog.agentic.AgenticChunkEnforcement
 import codebase.koog.agentic.AgenticChunkRepository
 import codebase.koog.agentic.AgenticIngestor
@@ -9,28 +10,18 @@ import codebase.koog.agentic.IngestionReport
 class AgenticChunkEnforcementWorld {
 
     companion object {
-        private var sharedContainer: org.testcontainers.containers.PostgreSQLContainer<Nothing>? = null
         private var sharedConnectionFactory: io.r2dbc.spi.ConnectionFactory? = null
         private var sharedRepository: AgenticChunkRepository? = null
 
         @Synchronized
         fun ensureStarted() {
-            if (sharedContainer == null || !sharedContainer!!.isRunning) {
-                val container = org.testcontainers.containers.PostgreSQLContainer<Nothing>("pgvector/pgvector:pg17").apply {
-                    withDatabaseName("codebase_enforcement_cucumber")
-                    withUsername("codebase")
-                    withPassword("codebase")
-                    withReuse(false)
-                }
-                container.start()
-                sharedContainer = container
-
+            if (sharedConnectionFactory == null) {
                 val config = io.r2dbc.postgresql.PostgresqlConnectionConfiguration.builder()
-                    .host(container.host)
-                    .port(container.getMappedPort(5432))
-                    .database(container.databaseName)
-                    .username(container.username)
-                    .password(container.password)
+                    .host(PostgresFixture.host)
+                    .port(PostgresFixture.port)
+                    .database(PostgresFixture.databaseName)
+                    .username(PostgresFixture.username)
+                    .password(PostgresFixture.password)
                     .build()
                 sharedConnectionFactory = io.r2dbc.postgresql.PostgresqlConnectionFactory(config)
                 sharedRepository = AgenticChunkRepository(sharedConnectionFactory!!)

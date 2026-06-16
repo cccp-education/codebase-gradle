@@ -1,0 +1,45 @@
+= Session 122 — CR-8 PostgreSQL Testcontainer Reuse + CR-9 Kover Coverage Threshold
+:date: 2026-06-16
+:type: refactor+infra
+:score: 10/10
+
+== Contexte
+
+EPIC CR P1 — 2 items restants après CR-5/CR-6/CR-7 (Session 121).
+
+== Actions
+
+=== CR-8 : PostgreSQL Testcontainer Reuse
+
+. Créé `~/.testcontainers.properties` avec `testcontainers.reuse.enable=true`
+. Créé `src/test/kotlin/codebase/infrastructure/PostgresFixture.kt` — singleton object avec `PostgreSQLContainer("pgvector/pgvector:pg17").withReuse(true)`
+. Migré 14 fichiers de test :
+  - VectorStoreTest.kt — container local → PostgresFixture.jdbcUrl
+  - SessionRepositoryTest.kt — companion container → PostgresFixture.host/port/databaseName
+  - AgenticChunkRepositoryTest.kt — companion container → PostgresFixture
+  - MigrationTest.kt — companion container → PostgresFixture
+  - OcrIngestTaskTest.kt — container local → PostgresFixture.jdbcUrl
+  - PrepareContextUnitTest.kt — container local → PostgresFixture.jdbcUrl
+  - PgVectorTestContext.kt — sharedContainer → PostgresFixture direct
+  - DatasetEmbeddingSteps.kt — ctx.startContainer() → no-op
+  - PgVectorContainerSteps.kt — container local → PostgresFixture.container
+  - AgenticSchemaWorld.kt — sharedContainer → PostgresFixture
+  - AgenticChunkEnforcementWorld.kt — sharedContainer → PostgresFixture
+  - AgenticIngestorWorld.kt — sharedContainer → PostgresFixture
+  - SessionRepositoryWorld.kt — sharedContainer → PostgresFixture
+  - OcrIngestSteps.kt — lazy container → PostgresFixture
+  - VibecodingTaskTest.kt — companion container → PostgresFixture
+
+=== CR-9 : Kover Coverage Threshold
+
+. Supprimé `koverThresholdCheck` artisanal (170 lignes XML parsing + 60 patterns exclusion)
+. Remplacé par `kover { reports { verify { rule { minBound(80) } } } }`
+. `tasks.check { dependsOn("koverVerify") }` remplace `dependsOn("koverThresholdCheck")`
+
+== Résultats
+
+- Compilation OK (compileKotlin + compileTestKotlin)
+- 15 fichiers modifiés/créés
+- BACKLOG CR-8 ✅ CR-9 ✅
+- INDEX.adoc Session 122 ajoutée, EPIC CR 9/14
+- PROMPT_REPRISE.adoc → Session 123 (CR-10 + CR-11)

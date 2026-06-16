@@ -2,6 +2,7 @@
 
 |===
 | # | Date | Type | Sujet | Score
+| 122 | 2026-06-16 | refactor+infra | CR-8+CR-9 — CR-8: PostgresFixture singleton avec .withReuse(true), 14 fichiers de test migrés, ~/.testcontainers.properties reuse enabled. CR-9: koverThresholdCheck artisanal (170 lignes XML parsing) remplacé par kover { reports { verify { rule { minBound(80) } } } } + check.dependsOn(koverVerify). Compilation OK. EPIC CR 9/14. | 10/10
 | 121 | 2026-06-16 | refactor+infra | CR-5+CR-6+CR-7 — CR-5: Root build.gradle.kts (allprojects group/version/repositories). CR-6: ignoreFailures CI-aware (isCI() top-level, G1GC global, URL cccp-education). CR-7: JVM Tuning CI/local split (CI=G1GC+ParallelRefProc, local=SerialGC+TieredStopAtLevel=4, Metaspace=512m). Compilation OK. EPIC CR 7/14. | 10/10
 | 120 | 2026-06-16 | refactor+infra | CR-2/CR-3/CR-4 Build Performance — CR-2: 3 specs timeout 5→8 min. CR-3: gradle.properties +caching +parallel +workers.max=4. CR-4: registerCucumberTask() heap adaptatif (CI=2g, <8GB=512m, else=1g) + forkEvery=100. Compilation OK, 28/28 tâches. EPIC CR P0 4/4 TERMINÉ. | 10/10
 | 120 | 2026-06-16 | audit+governance | CR-2+CR-3+CR-4 ✅ — Déjà implémentés dans le diff session 119 (adaptiveHeap CI:2g/<8GB:512m/else:1g, forkEvery=100, timeouts 5→8/15 min, gradle.properties caching/parallel/workers). Audit + marquage BACKLOG + mise à jour gouvernance (PROMPT_REPRISE→121, INDEX, SESSIONS_HISTORY, COMPLETED_TASKS_ARCHIVE). EPIC CR 4/14. | 10/10

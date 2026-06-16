@@ -907,8 +907,8 @@ C'est la différence entre un script qui associe et un ingénieur qui comprend.
 * [ ] CR-5 : Root build.gradle.kts — Implémenter root avec shared group/version/repositories/toolchain. Débloque multi-module scaling. (§2.1)
 * [ ] CR-6 : ignoreFailures CI-aware — `ignoreFailures = true` masque les échecs CI. Rendre CI-aware: `ignoreFailures = !isCI()`. Ajouter G1GC + documenter EnableDynamicAgentLoading. (§2.3)
 * [ ] CR-7 : JVM Tuning — UseSerialGC obsolète, MaxMetaspaceSize=256m trop petit pour Kotlin, TieredStopAtLevel=1 désactive JIT. Split CI/local: CI=G1GC+ParallelRefProc, local=SerialGC+TieredStopAtLevel=4, Metaspace=512m. (§3.4)
-* [ ] CR-8 : PostgreSQL Testcontainer Reuse — Chaque test démarre un container frais (2-3 min). Créer PostgresFixture avec `.withReuse(true)`. Économise 5+ min par suite. (§4.2)
-* [ ] CR-9 : Kover Coverage Threshold — Pas de `minBound` vérification. Ajouter `verify { rule { minBound.set(80) } }` et `check.dependsOn(koverVerify)`. (§6.1)
+* [x] CR-8 : PostgreSQL Testcontainer Reuse — Chaque test démarre un container frais (2-3 min). Créer PostgresFixture avec `.withReuse(true)`. Économise 5+ min par suite. (§4.2) — Session 122
+* [x] CR-9 : Kover Coverage Threshold — Pas de `minBound` vérification. Ajouter `verify { rule { minBound(80) } }` et `check.dependsOn(koverVerify)`. (§6.1) — Session 122
 
 === P2 — DETTE TECHNIQUE
 

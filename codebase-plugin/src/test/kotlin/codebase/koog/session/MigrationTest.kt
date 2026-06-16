@@ -1,52 +1,36 @@
 package codebase.koog.session
 
+import codebase.infrastructure.PostgresFixture
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration
 import io.r2dbc.postgresql.PostgresqlConnectionFactory
 import io.r2dbc.spi.ConnectionFactory
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.testcontainers.containers.PostgreSQLContainer
 import reactor.core.publisher.Mono
 
 class MigrationTest {
 
     companion object {
-        private val container: PostgreSQLContainer<Nothing> = PostgreSQLContainer<Nothing>("pgvector/pgvector:pg17")
-            .apply {
-                withDatabaseName("codebase_migration_test")
-                withUsername("codebase")
-                withPassword("codebase")
-                withReuse(false)
-            }
-
         lateinit var connectionFactory: ConnectionFactory
         lateinit var migrationRunner: MigrationRunner
 
         @BeforeAll
         @JvmStatic
         fun setup() {
-            container.start()
             val config = PostgresqlConnectionConfiguration.builder()
-                .host(container.host)
-                .port(container.getMappedPort(5432))
-                .database(container.databaseName)
-                .username(container.username)
-                .password(container.password)
+                .host(PostgresFixture.host)
+                .port(PostgresFixture.port)
+                .database(PostgresFixture.databaseName)
+                .username(PostgresFixture.username)
+                .password(PostgresFixture.password)
                 .build()
             connectionFactory = PostgresqlConnectionFactory(config)
             migrationRunner = MigrationRunner(connectionFactory)
-        }
-
-        @AfterAll
-        @JvmStatic
-        fun teardown() {
-            container.stop()
         }
     }
 

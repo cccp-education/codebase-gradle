@@ -1,7 +1,7 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 122
-:session: 122
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 123
+:session: 123
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 121 — CR-5+CR-6+CR-7 ✅ (Root build.gradle.kts, ignoreFailures CI-aware, JVM Tuning CI/local split)
+:sessions_precedente: 122 — CR-8+CR-9 ✅ (PostgreSQL Testcontainer Reuse + Kover Coverage Threshold)
 
 == Contexte Hérité
 
@@ -13,25 +13,23 @@
 - EPIC SP TERMINÉ (7/7 — SP-0→SP-6, 83 JUnit5 + 33 Cucumber = 116/116 PASS)
 - EPIC OCR 26/26 ✅
 - EPIC CR P0 : CR-1 ✅ CR-2 ✅ CR-3 ✅ CR-4 ✅ (4/14)
-- EPIC CR P1 : CR-5 ✅ CR-6 ✅ CR-7 ✅ (7/14)
+- EPIC CR P1 : CR-5 ✅ CR-6 ✅ CR-7 ✅ CR-8 ✅ CR-9 ✅ (9/14)
 - Full suite ~450+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 121 — CR-5+CR-6+CR-7 ✅
+== Mission Session 122 — CR-8+CR-9 ✅
 
-- CR-5 : Root build.gradle.kts — allprojects { group, version, repositories } + plugins apply false
-- CR-6 : ignoreFailures CI-aware — isCI() top-level, ignoreFailures = !isCI(), G1GC global, URL cccp-education
-- CR-7 : JVM Tuning CI/local split — CI=G1GC+ParallelRefProc, local=SerialGC+TieredStopAtLevel=4, Metaspace=512m
+- CR-8 : PostgresFixture singleton avec .withReuse(true), 14 fichiers de test migrés, ~/.testcontainers.properties reuse enabled
+- CR-9 : koverThresholdCheck artisanal (170 lignes XML parsing) remplacé par kover { reports { verify { rule { minBound(80) } } } } + check.dependsOn(koverVerify)
 
-== Priorités Session 122
+== Priorités Session 123
 
-- CR-8 : PostgreSQL Testcontainer Reuse — 14 fichiers de test, PostgresFixture avec .withReuse(true)
-- CR-9 : Kover Coverage Threshold — remplacer koverThresholdCheck artisanal par verify { minBound.set(80) }
+- CR-10 : Dependency Conflict Validation — Ajouter `validateDependencies` task pour vérifier les contraintes annotations:13.0
+- CR-11 : Version Catalog Centralisé — Migrer les versions éparpillées dans build.gradle.kts vers gradle/libs.versions.toml
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 122 | EPIC CR P1 | CR-8 PostgreSQL Testcontainer Reuse + CR-9 Kover Coverage Threshold
 | 123 | EPIC CR P2 | CR-10 Dependency Conflict Validation + CR-11 Version Catalog Centralisé
 | 124 | EPIC CR P2 | CR-12 Transitive Dependency Audit + CVE + CR-13 Test Task Aliases
 | 125 | EPIC CR P3 | CR-14 BUILDING.md

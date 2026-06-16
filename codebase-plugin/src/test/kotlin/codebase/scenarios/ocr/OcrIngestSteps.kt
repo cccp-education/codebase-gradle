@@ -1,5 +1,6 @@
 package codebase.scenarios.ocr
 
+import codebase.infrastructure.PostgresFixture
 import codebase.ocr.OcrIngestTask
 import codebase.rag.EmbeddingPipeline
 import codebase.rag.VectorStore
@@ -10,7 +11,6 @@ import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.gradle.testfixtures.ProjectBuilder
 import org.slf4j.LoggerFactory
-import org.testcontainers.containers.PostgreSQLContainer
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.assertEquals
@@ -25,22 +25,9 @@ class OcrIngestSteps {
     private var pipeline: EmbeddingPipeline? = null
     private var lastQueryResults: List<codebase.rag.QueryResult>? = null
 
-    private val container: PostgreSQLContainer<Nothing> by lazy {
-        PostgreSQLContainer<Nothing>("pgvector/pgvector:pg17").apply {
-            withDatabaseName("codebase_rag_ocr_cucumber")
-            withUsername("codebase")
-            withPassword("codebase")
-            withStartupTimeout(java.time.Duration.ofMinutes(2))
-            withReuse(false)
-        }
-    }
-
     @Before("@epic_ocr_4_ingest")
     fun startPgvector() {
-        if (!container.isRunning) {
-            container.start()
-        }
-        store = VectorStore(container.jdbcUrl, container.username, container.password)
+        store = VectorStore(PostgresFixture.jdbcUrl, PostgresFixture.username, PostgresFixture.password)
         store!!.initSchema()
         pipeline = EmbeddingPipeline(store!!)
     }

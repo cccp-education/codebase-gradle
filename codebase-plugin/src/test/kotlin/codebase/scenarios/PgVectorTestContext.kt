@@ -1,32 +1,18 @@
 package codebase.scenarios
 
+import codebase.infrastructure.PostgresFixture
 import codebase.rag.ChunkTokenizer
 import dev.langchain4j.model.embedding.onnx.allminilml6v2.AllMiniLmL6V2EmbeddingModel
-import org.testcontainers.containers.PostgreSQLContainer
 
 object PgVectorTestContext {
 
     const val DATASETS_DIR = "src/test/resources/datasets"
 
-    private var sharedContainer: PostgreSQLContainer<Nothing>? = null
+    fun jdbcUrl() = PostgresFixture.jdbcUrl
 
-    fun jdbcUrl() = sharedContainer?.jdbcUrl
-        ?: throw IllegalStateException("Container not started")
+    fun jdbcUser() = PostgresFixture.username
 
-    fun jdbcUser() = sharedContainer?.username ?: "codebase"
-
-    fun jdbcPassword() = sharedContainer?.password ?: "codebase"
-
-    fun startContainer() {
-        if (sharedContainer != null && sharedContainer!!.isRunning) return
-        sharedContainer = PostgreSQLContainer<Nothing>("pgvector/pgvector:pg17").apply {
-            withDatabaseName("codebase_rag")
-            withUsername("codebase")
-            withPassword("codebase")
-            withStartupTimeout(java.time.Duration.ofMinutes(2))
-            withReuse(false)
-        }.also { it.start() }
-    }
+    fun jdbcPassword() = PostgresFixture.password
 
     val model: AllMiniLmL6V2EmbeddingModel by lazy { AllMiniLmL6V2EmbeddingModel() }
 

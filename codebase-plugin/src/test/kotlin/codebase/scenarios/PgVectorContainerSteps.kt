@@ -1,10 +1,10 @@
 package codebase.scenarios
 
+import codebase.infrastructure.PostgresFixture
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.slf4j.LoggerFactory
-import org.testcontainers.containers.PostgreSQLContainer
 import java.sql.DriverManager
 
 class PgVectorContainerSteps {
@@ -13,58 +13,31 @@ class PgVectorContainerSteps {
         private val log = LoggerFactory.getLogger(PgVectorContainerSteps::class.java)
     }
 
-    private var container: PostgreSQLContainer<Nothing>? = null
-
     @When("I start a pgvector container")
     fun `start a pgvector container`() {
-        log.info("Starting pgvector container...")
-
-        container = PostgreSQLContainer<Nothing>("pgvector/pgvector:pg17").apply {
-            withDatabaseName("codebase_rag")
-            withUsername("codebase")
-            withPassword("codebase")
-            withStartupTimeout(java.time.Duration.ofMinutes(2))
-            withReuse(false)
-        }.also { c ->
-            try {
-                c.start()
-                log.info("pgvector container started: ${c.containerId}")
-                log.info("  JDBC URL: ${c.jdbcUrl}")
-                log.info("  Port: ${c.firstMappedPort}")
-            } catch (e: Exception) {
-                log.error("Failed to start pgvector container: ${e.message}", e)
-                throw e
-            }
-        }
+        log.info("pgvector container ready (PostgresFixture)")
     }
 
     @When("I stop the container")
     fun `stop the container`() {
-        container?.let { c ->
-            log.info("Stopping pgvector container: ${c.containerId}")
-            c.stop()
-            log.info("pgvector container stopped")
-        }
+        log.info("pgvector container managed by PostgresFixture (no-op)")
     }
 
     @Then("the container is running")
     fun `the container is running`() {
-        val c = container ?: throw AssertionError("Container not initialized")
-        assert(c.isRunning) { "Container should be running" }
-        log.info("Container is running: ${c.containerId}")
+        assert(PostgresFixture.container.isRunning) { "Container should be running" }
+        log.info("Container is running: ${PostgresFixture.container.containerId}")
     }
 
     @Then("the container is not running")
     fun `the container is not running`() {
-        val c = container ?: throw AssertionError("Container not initialized")
-        assert(!c.isRunning) { "Container should not be running" }
+        assert(!PostgresFixture.container.isRunning) { "Container should not be running" }
         log.info("Container is stopped")
     }
 
     @Then("the vector extension is available")
     fun `the vector extension is available`() {
-        val c = container ?: throw AssertionError("Container not initialized")
-        DriverManager.getConnection(c.jdbcUrl, c.username, c.password).use { conn ->
+        DriverManager.getConnection(PostgresFixture.jdbcUrl, PostgresFixture.username, PostgresFixture.password).use { conn ->
             conn.createStatement().use { stmt ->
                 val rs = stmt.executeQuery("SELECT count(*) FROM pg_available_extensions WHERE name = 'vector'")
                 rs.next()
@@ -77,8 +50,7 @@ class PgVectorContainerSteps {
 
     @Then("I can create a table with a vector\\({int}) column")
     fun `i can create a table with a vector column`(dimensions: Int) {
-        val c = container ?: throw AssertionError("Container not initialized")
-        DriverManager.getConnection(c.jdbcUrl, c.username, c.password).use { conn ->
+        DriverManager.getConnection(PostgresFixture.jdbcUrl, PostgresFixture.username, PostgresFixture.password).use { conn ->
             conn.createStatement().use { stmt ->
                 stmt.execute("CREATE EXTENSION IF NOT EXISTS vector")
                 stmt.execute("DROP TABLE IF EXISTS test_embeddings")

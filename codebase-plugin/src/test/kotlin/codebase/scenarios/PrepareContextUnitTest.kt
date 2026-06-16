@@ -1,19 +1,17 @@
 package codebase.scenarios
 
+import codebase.infrastructure.PostgresFixture
 import contracts.context.CompositeContextConfig
 import codebase.rag.ChunkTokenizer
 import codebase.rag.CompositeContextBuilder
 import codebase.rag.EmbeddingPipeline
 import codebase.rag.OpencodeInjector
 import codebase.rag.VectorStore
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
 import org.slf4j.LoggerFactory
-import org.testcontainers.containers.PostgreSQLContainer
 import java.io.File
 import kotlin.test.assertTrue
 
@@ -21,38 +19,17 @@ import kotlin.test.assertTrue
 class PrepareContextUnitTest {
 
     private val log = LoggerFactory.getLogger(PrepareContextUnitTest::class.java)
-    private val container = PostgreSQLContainer<Nothing>("pgvector/pgvector:pg17").apply {
-        withDatabaseName("codebase_rag")
-        withUsername("codebase")
-        withPassword("codebase")
-        withStartupTimeout(java.time.Duration.ofMinutes(2))
-        withReuse(false)
-    }
-
-    private lateinit var store: VectorStore
-    private lateinit var pipeline: EmbeddingPipeline
+    private val store = VectorStore(PostgresFixture.jdbcUrl, PostgresFixture.username, PostgresFixture.password)
+    private val pipeline = EmbeddingPipeline(store)
     private var datasetIndexed = false
-
-    @BeforeAll
-    fun setUp() {
-        container.start()
-        store = VectorStore(container.jdbcUrl, container.username, container.password)
-        store.initSchema()
-        pipeline = EmbeddingPipeline(store)
-        log.info("Testcontainers pgvector started")
-    }
 
     @BeforeEach
     fun ensureDatasetIndexed() {
         if (!datasetIndexed) {
+            store.initSchema()
             indexDatasetFiles()
             datasetIndexed = true
         }
-    }
-
-    @AfterAll
-    fun tearDown() {
-        container.stop()
     }
 
     fun setupBoroughDir(dir: File, boroughName: String) {

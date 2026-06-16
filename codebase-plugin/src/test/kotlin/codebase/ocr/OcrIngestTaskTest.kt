@@ -1,15 +1,13 @@
 package codebase.ocr
 
+import codebase.infrastructure.PostgresFixture
 import codebase.rag.EmbeddingPipeline
 import codebase.rag.VectorStore
 import org.gradle.testfixtures.ProjectBuilder
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
-import org.testcontainers.containers.PostgreSQLContainer
 import java.io.File
 import java.nio.file.Path
 import kotlin.test.assertEquals
@@ -20,32 +18,12 @@ import kotlin.test.assertTrue
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OcrIngestTaskTest {
 
-    private val container = PostgreSQLContainer<Nothing>("pgvector/pgvector:pg17").apply {
-        withDatabaseName("codebase_rag_ocr_ingest_test")
-        withUsername("codebase")
-        withPassword("codebase")
-        withStartupTimeout(java.time.Duration.ofMinutes(2))
-        withReuse(false)
-    }
-
-    private lateinit var store: VectorStore
-    private lateinit var pipeline: EmbeddingPipeline
-
-    @BeforeAll
-    fun setUp() {
-        container.start()
-        store = VectorStore(container.jdbcUrl, container.username, container.password)
-        pipeline = EmbeddingPipeline(store)
-    }
+    private val store = VectorStore(PostgresFixture.jdbcUrl, PostgresFixture.username, PostgresFixture.password)
+    private val pipeline = EmbeddingPipeline(store)
 
     @BeforeEach
     fun cleanDatabase() {
         store.initSchema()
-    }
-
-    @AfterAll
-    fun tearDown() {
-        container.stop()
     }
 
     @Test
@@ -344,9 +322,9 @@ class OcrIngestTaskTest {
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
         task.ocrOutputDir.set(project.layout.projectDirectory.dir("ocr"))
-        task.jdbcUrl.set(container.jdbcUrl)
-        task.jdbcUser.set(container.username)
-        task.jdbcPassword.set(container.password)
+        task.jdbcUrl.set(PostgresFixture.jdbcUrl)
+        task.jdbcUser.set(PostgresFixture.username)
+        task.jdbcPassword.set(PostgresFixture.password)
 
         task.executeIngest()
 
