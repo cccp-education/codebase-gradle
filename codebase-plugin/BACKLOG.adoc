@@ -898,9 +898,9 @@ C'est la différence entre un script qui associe et un ingénieur qui comprend.
 === P0 — CRITIQUE
 
 * [x] CR-1 : Cucumber Task Factory — Extraire CucumberTaskSpec + registerCucumberTask pour éliminer 728 lignes de duplication (28 tâches × ~26 lignes, 95% identiques). Réduit à ~80 lignes. (§2.2) — Session 119
-* [ ] CR-2 : Test Timeouts — Augmenter timeouts epic tests 5→8 min (EpicV6/V7/L3/V8 ont 4-6 min workloads PostgreSQL + LLM). (§4.1)
-* [ ] CR-3 : Build Cache — Ajouter `org.gradle.caching=true`, `org.gradle.parallel=true`, `org.gradle.workers.max=4` dans gradle.properties. (§3.3)
-* [ ] CR-4 : Adaptive Heap — 1GB heap par Cucumber task × 24 = 24GB impossible. Implémenter heap adaptatif (CI: 2g, <8GB: 512m, else: 1g). forkEvery=1 → forkEvery=100. (§3.2)
+* [x] CR-2 : Test Timeouts — Augmenter timeouts epic tests 5→8 min (EpicV6/V7/L3/V8 ont 4-6 min workloads PostgreSQL + LLM). (§4.1) — Session 120
+* [x] CR-3 : Build Cache — Ajouter `org.gradle.caching=true`, `org.gradle.parallel=true`, `org.gradle.workers.max=4` dans gradle.properties. (§3.3) — Session 120
+* [x] CR-4 : Adaptive Heap — 1GB heap par Cucumber task × 24 = 24GB impossible. Implémenter heap adaptatif (CI: 2g, <8GB: 512m, else: 1g). forkEvery=1 → forkEvery=100. (§3.2) — Session 120
 
 === P1 — IMPORTANT
 

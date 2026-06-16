@@ -91,6 +91,14 @@ data class CucumberTaskSpec(
 )
 
 fun registerCucumberTask(spec: CucumberTaskSpec): TaskProvider<Test> {
+    val isCI = System.getenv("CI") == "true"
+    val maxMemoryMB = Runtime.getRuntime().maxMemory() / (1024 * 1024)
+    val adaptiveHeap = when {
+        isCI -> "2g"
+        maxMemoryMB < 8192 -> "512m"
+        else -> "1g"
+    }
+
     return tasks.register<Test>(spec.taskName) {
         description = spec.description
         group = "verification"
@@ -103,9 +111,9 @@ fun registerCucumberTask(spec: CucumberTaskSpec): TaskProvider<Test> {
         dependsOn(tasks.classes)
         useJUnitPlatform { excludeEngines("junit-jupiter") }
         systemProperty("cucumber.junit-platform.naming-strategy", "long")
-        maxHeapSize = "1g"
+        maxHeapSize = adaptiveHeap
         maxParallelForks = 1
-        forkEvery = 1
+        forkEvery = 100
         jvmArgs("-XX:+UseSerialGC", "-XX:MaxMetaspaceSize=256m", "-XX:TieredStopAtLevel=1")
         timeout.set(Duration.ofMinutes(spec.timeoutMinutes))
 
@@ -127,11 +135,11 @@ val cucumberTaskSpecs = listOf(
     CucumberTaskSpec("cucumberTestEpicL3", "Runs Cucumber BDD tests — EPIC L-3 (KoogAugmentedContextGraph) only", "codebase.scenarios.EpicL3CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicV8", "Runs Cucumber BDD tests — EPIC V-8 (DashboardTask) only", "codebase.scenarios.EpicV8CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicVPool", "Runs Cucumber BDD tests — EPIC V-Pool (Ollama Pool GPT-OSS-120B rotation/quota/failover)", "codebase.scenarios.EpicVPoolCucumberRunner"),
-    CucumberTaskSpec("cucumberTestEpicOcr", "Runs Cucumber BDD tests — EPIC OCR (Gemini Vision) only", "codebase.scenarios.OcrCucumberRunner", 5),
+    CucumberTaskSpec("cucumberTestEpicOcr", "Runs Cucumber BDD tests — EPIC OCR (Gemini Vision) only", "codebase.scenarios.OcrCucumberRunner", 8),
     CucumberTaskSpec("cucumberTestEpicOcrIngest", "Runs Cucumber BDD tests — EPIC OCR-4 Ingest (chunk→embed→pgvector) only", "codebase.scenarios.OcrIngestCucumberRunner"),
-    CucumberTaskSpec("cucumberTestEpicOcr45", "Runs Cucumber BDD tests — EPIC OCR-4.5 (Métriques OCR) only", "codebase.scenarios.OcrMetricsCucumberRunner", 5),
+    CucumberTaskSpec("cucumberTestEpicOcr45", "Runs Cucumber BDD tests — EPIC OCR-4.5 (Métriques OCR) only", "codebase.scenarios.OcrMetricsCucumberRunner", 8),
     CucumberTaskSpec("cucumberTestEpicY3", "Runs Cucumber BDD tests — EPIC Y-3 (AgenticSchema pgvector) only", "codebase.scenarios.EpicY3CucumberRunner"),
-    CucumberTaskSpec("cucumberTestEpicY4", "Runs Cucumber BDD tests — EPIC Y-4 (AgenticCompiler) only", "codebase.scenarios.EpicY4CucumberRunner", 5),
+    CucumberTaskSpec("cucumberTestEpicY4", "Runs Cucumber BDD tests — EPIC Y-4 (AgenticCompiler) only", "codebase.scenarios.EpicY4CucumberRunner", 8),
     CucumberTaskSpec("cucumberTestEpicY5", "Runs Cucumber BDD tests — EPIC Y-5 (AgenticIngestor) only", "codebase.scenarios.EpicY5CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicY6", "Runs Cucumber BDD tests — EPIC Y-6 (AgenticExternalImporter) only", "codebase.scenarios.EpicY6CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicY7", "Runs Cucumber BDD tests — EPIC Y-7 (AgenticChunkEnforcement) only", "codebase.scenarios.EpicY7CucumberRunner"),

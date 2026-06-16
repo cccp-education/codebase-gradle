@@ -1,0 +1,64 @@
+= Session 120 — CR-2+CR-3+CR-4 Audit Gouvernance
+:date: 2026-06-16
+:type: audit+governance
+:score: 10/10
+
+== Contexte
+
+EPIC CR P0 — Code Review Deep Analysis (§3.2, §3.3, §4.1).
+CR-2/3/4 déjà implémentés dans le diff non commité de la session 119.
+Session 120 = audit + marquage BACKLOG + mise à jour gouvernance.
+
+== Audit
+
+=== CR-2 Test Timeouts (§4.1)
+
+- EpicV6/V7/L3/V8 : 5→15 min (défaut `CucumberTaskSpec.timeoutMinutes = 15`)
+- Ocr/Ocr45/Y4 : 5→8 min (explicite dans `cucumberTaskSpecs`)
+- cucumberTest : 15 min (inchangé, OK)
+
+=== CR-3 Build Cache (§3.3)
+
+`codebase-plugin/gradle.properties` :
+```
+org.gradle.caching=true
+org.gradle.parallel=true
+org.gradle.workers.max=4
+```
+
+=== CR-4 Adaptive Heap (§3.2)
+
+`registerCucumberTask()` :
+- `adaptiveHeap` : CI→2g, <8GB RAM→512m, else→1g
+- `forkEvery = 100` (was 1)
+- `maxHeapSize = adaptiveHeap` (was "1g")
+
+== Actions
+
+. Vérifié `git diff codebase-plugin/build.gradle.kts` — CR-2/3/4 présents
+. Vérifié `codebase-plugin/gradle.properties` — CR-3 présent
+. Marquage BACKLOG.adoc : CR-2 [x], CR-3 [x], CR-4 [x]
+. Mise à jour PROMPT_REPRISE.adoc → Session 121 (CR-5+CR-6+CR-7)
+. Mise à jour INDEX.adoc — session 120, EPIC CR 4/14
+. Mise à jour SESSIONS_HISTORY.adoc
+. Mise à jour COMPLETED_TASKS_ARCHIVE_2026-06.adoc
+
+== Résultats
+
+- EPIC CR : 4/14 (CR-1 ✅ CR-2 ✅ CR-3 ✅ CR-4 ✅)
+- Compilation OK (`./gradlew compileKotlin`)
+- Zéro modification de code source (audit gouvernance uniquement)
+
+== Fichiers modifiés
+
+- `BACKLOG.adoc` : CR-2/3/4 marqués [x]
+- `PROMPT_REPRISE.adoc` : Session 121
+- `.agents/INDEX.adoc` : Session 120, EPIC CR 4/14
+- `.agents/SESSIONS_HISTORY.adoc` : +Session 120
+- `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-06.adoc` : +CR-2/3/4
+
+== Leçons
+
+- CR-2/3/4 étaient déjà codés dans le diff session 119 (adaptiveHeap, forkEvery, timeouts, gradle.properties)
+- Session 120 = pure gouvernance (audit + marquage), zéro code
+- Prochaine session : CR-5 Root build.gradle.kts + CR-6 ignoreFailures CI-aware + CR-7 JVM Tuning
