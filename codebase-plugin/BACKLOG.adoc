@@ -914,8 +914,8 @@ C'est la différence entre un script qui associe et un ingénieur qui comprend.
 
 * [ ] CR-10 : Dependency Conflict Validation — annotations:13.0 pinée via constraint mais pas de test validation. Ajouter `validateDependencies` task. (§2.4)
 * [ ] CR-11 : Version Catalog Centralisé — Versions éparpillées dans build.gradle.kts au lieu de `gradle/libs.versions.toml`. Migrer. (§5.1)
-* [ ] CR-12 : Transitive Dependency Audit + CVE — Pas d'exclusions pour dépendances transitives inutilisées. commons-collections CVE-2015-6420 potentiellement dans classpath. `./gradlew dependencies --configuration=runtimeClasspath`. (§5.2)
-* [ ] CR-13 : Test Task Aliases — 24 tâches test sans alias de regroupement. Ajouter `testAll`, `testEpics`, `testFast`, `testHelp`. (§6.2)
+* [x] CR-12 : Transitive Dependency Audit + CVE — Audit runtimeClasspath : zéro CVE (commons-collections4:4.4 safe, pas commons-collections:3.x). validateDependencies enrichi avec audit CVE + rapport groupes transitifs lourds. Zéro exclusion nécessaire (toutes transitives utilisées via codex/planner). (§5.2) — Session 124
+* [x] CR-13 : Test Task Aliases — 4 alias ajoutés : testAll (JUnit5+Cucumber), testEpics (tous Cucumber), testFast (timeout <=8 min), testHelp (liste toutes les tâches). Compilation OK. (§6.2) — Session 124
 
 === P3 — NICE-TO-HAVE
 

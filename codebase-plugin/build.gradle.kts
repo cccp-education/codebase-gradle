@@ -153,6 +153,46 @@ val cucumberTaskSpecs = listOf(
 
 val cucumberTasks = cucumberTaskSpecs.map { registerCucumberTask(it) }
 
+tasks.register("testAll") {
+    description = "Runs all tests (JUnit5 + Cucumber BDD)"
+    group = "verification"
+    dependsOn(tasks.test, cucumberTasks)
+}
+
+tasks.register("testEpics") {
+    description = "Runs all EPIC Cucumber BDD tests"
+    group = "verification"
+    dependsOn(cucumberTasks)
+}
+
+tasks.register("testFast") {
+    description = "Runs fast Cucumber BDD tests (timeout <= 8 min)"
+    group = "verification"
+    val fastSpecs = cucumberTaskSpecs.filter { it.timeoutMinutes <= 8 }
+    val fastTasks = fastSpecs.map { spec ->
+        cucumberTasks.find { it.name == spec.taskName } ?: registerCucumberTask(spec)
+    }
+    dependsOn(fastTasks)
+}
+
+tasks.register("testHelp") {
+    description = "Lists all available test tasks with descriptions"
+    group = "help"
+    doLast {
+        logger.lifecycle("=== Test Tasks ===")
+        logger.lifecycle("")
+        logger.lifecycle("testAll   — Runs all tests (JUnit5 + Cucumber BDD)")
+        logger.lifecycle("testEpics — Runs all EPIC Cucumber BDD tests")
+        logger.lifecycle("testFast  — Runs fast Cucumber BDD tests (timeout <= 8 min)")
+        logger.lifecycle("test      — Runs JUnit5 unit tests only")
+        logger.lifecycle("")
+        logger.lifecycle("=== Cucumber EPIC Tasks ===")
+        cucumberTaskSpecs.forEach { spec ->
+            logger.lifecycle("${spec.taskName.padEnd(30)} — ${spec.description} (${spec.timeoutMinutes} min)")
+        }
+    }
+}
+
 tasks.withType<Test>().configureEach {
     ignoreFailures = !isCI()
     useJUnitPlatform()
@@ -260,12 +300,13 @@ kover {
 }
 
 tasks.register("validateDependencies") {
-    description = "Validates dependency conflict resolution (annotations:13.0 constraint)"
+    description = "Validates dependency conflict resolution + CVE audit + heavy transitive report"
     group = "verification"
     doLast {
         val resolved = configurations.runtimeClasspath.get()
             .resolvedConfiguration
             .resolvedArtifacts
+
         val annotationsVersion = resolved
             .find { it.moduleVersion.id.name == "annotations" }
             ?.moduleVersion
@@ -274,6 +315,29 @@ tasks.register("validateDependencies") {
         require(annotationsVersion == "13.0") {
             "Annotations version mismatch: expected 13.0, got $annotationsVersion. " +
             "Check for koog-agents upgrade conflicts."
+        }
+
+        val cveVulnerable = resolved.filter {
+            it.moduleVersion.id.group == "commons-collections" &&
+            it.moduleVersion.id.name == "commons-collections" &&
+            it.moduleVersion.id.version.startsWith("3.")
+        }
+        require(cveVulnerable.isEmpty()) {
+            "CVE-2015-6420: commons-collections 3.x detected in classpath: " +
+            cveVulnerable.joinToString { "${it.moduleVersion.id}" } +
+            ". Replace with commons-collections4:4.4."
+        }
+
+        val heavyTransitives = resolved
+            .filter { it.moduleVersion.id.group != "education.cccp" }
+            .groupBy { it.moduleVersion.id.group }
+            .mapValues { (_, artifacts) -> artifacts.distinctBy { it.moduleVersion.id.name }.size }
+            .filter { it.value >= 5 }
+        if (heavyTransitives.isNotEmpty()) {
+            logger.lifecycle("Heavy transitive groups (>=5 modules):")
+            heavyTransitives.forEach { (group, count) ->
+                logger.lifecycle("  $group: $count modules")
+            }
         }
     }
 }

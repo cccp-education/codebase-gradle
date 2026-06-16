@@ -2,6 +2,7 @@
 
 |===
 | # | Date | Type | Sujet | Score
+| 124 | 2026-06-16 | refactor+infra | CR-12+CR-13 — CR-12: validateDependencies enrichi (audit CVE commons-collections + rapport groupes transitifs lourds). Zéro CVE (commons-collections4:4.4 safe). Zéro exclusion nécessaire. CR-13: 4 alias testAll/testEpics/testFast/testHelp. Compilation OK. EPIC CR 13/14. | 10/10
 | 123 | 2026-06-16 | refactor+infra | CR-10+CR-11 — CR-10: validateDependencies task (vérifie annotations:13.0 résolu, wiré dans check). CR-11: 5 versions + 8 libraries ajoutées dans libs.versions.toml, 5 N0 contracts + assertj + coroutines-test + junit-platform-launcher migrés vers catalog. Compilation OK. EPIC CR 11/14. | 10/10
 | 122 | 2026-06-16 | refactor+infra | CR-8+CR-9 — CR-8: PostgresFixture singleton avec .withReuse(true), 14 fichiers de test migrés, ~/.testcontainers.properties reuse enabled. CR-9: koverThresholdCheck artisanal (170 lignes XML parsing) remplacé par kover { reports { verify { rule { minBound(80) } } } } + check.dependsOn(koverVerify). Compilation OK. EPIC CR 9/14. | 10/10
 | 121 | 2026-06-16 | refactor+infra | CR-5+CR-6+CR-7 — CR-5: Root build.gradle.kts (allprojects group/version/repositories). CR-6: ignoreFailures CI-aware (isCI() top-level, G1GC global, URL cccp-education). CR-7: JVM Tuning CI/local split (CI=G1GC+ParallelRefProc, local=SerialGC+TieredStopAtLevel=4, Metaspace=512m). Compilation OK. EPIC CR 7/14. | 10/10

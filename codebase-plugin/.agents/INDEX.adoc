@@ -4,10 +4,10 @@
 _Regles absolues_ : voir `AGENT.adoc`
 _Ontologie spatiale_ : voir `configuration/.agents/AGENT_GOVERNANCE.adoc`
 
-_Derniere mise a jour_ : 2026-06-16 (Session 123 — CR-10+CR-11 ✅ EPIC CR P2)
-_Session precedente_ : 122 — CR-8+CR-9 ✅ (PostgreSQL Testcontainer Reuse + Kover Coverage Threshold)
-_Session en cours_ : 123 — CR-10+CR-11 ✅ (Dependency Conflict Validation + Version Catalog Centralisé)
-_Session suivante_ : 124 — EPIC CR P2 (CR-12 Transitive Dependency Audit + CVE + CR-13 Test Task Aliases)
+_Derniere mise a jour_ : 2026-06-16 (Session 124 — CR-12+CR-13 ✅ EPIC CR P2)
+_Session precedente_ : 123 — CR-10+CR-11 ✅ (Dependency Conflict Validation + Version Catalog Centralisé)
+_Session en cours_ : 124 — CR-12+CR-13 ✅ (Transitive Dependency Audit + CVE + Test Task Aliases)
+_Session suivante_ : 125 — EPIC CR P3 (CR-14 BUILDING.md)
 _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/` (N=70, multiple de 10)
 
 '''
@@ -38,6 +38,7 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 
 |===
 | # | Date | Type | Sujet | Score
+| 124 | 2026-06-16 | refactor+infra | CR-12+CR-13 — CR-12: validateDependencies enrichi (audit CVE commons-collections + rapport groupes transitifs lourds). Zéro CVE (commons-collections4:4.4 safe). Zéro exclusion nécessaire. CR-13: 4 alias testAll/testEpics/testFast/testHelp. Compilation OK. EPIC CR 13/14. | 10/10
 | 123 | 2026-06-16 | refactor+infra | CR-10+CR-11 — CR-10: validateDependencies task (vérifie annotations:13.0 résolu, wiré dans check). CR-11: 5 versions + 8 libraries ajoutées dans libs.versions.toml, 5 N0 contracts + assertj + coroutines-test + junit-platform-launcher migrés vers catalog. Compilation OK. EPIC CR 11/14. | 10/10
 | 122 | 2026-06-16 | refactor+infra | CR-8+CR-9 — CR-8: PostgresFixture singleton avec .withReuse(true), 14 fichiers de test migrés (VectorStoreTest, SessionRepositoryTest, AgenticChunkRepositoryTest, MigrationTest, OcrIngestTaskTest, PrepareContextUnitTest, PgVectorTestContext, DatasetEmbeddingSteps, PgVectorContainerSteps, AgenticSchemaWorld, AgenticChunkEnforcementWorld, AgenticIngestorWorld, SessionRepositoryWorld, OcrIngestSteps, VibecodingTaskTest). ~/.testcontainers.properties reuse enabled. CR-9: koverThresholdCheck artisanal (170 lignes XML parsing) remplacé par kover { reports { verify { rule { minBound(80) } } } } + check.dependsOn(koverVerify). Compilation OK. EPIC CR P1 9/14. | 10/10
 | 121 | 2026-06-16 | refactor+infra | CR-5+CR-6+CR-7 — CR-5: Root build.gradle.kts allprojects { group, version, repositories } + plugins apply false. CR-6: ignoreFailures CI-aware isCI() top-level, ignoreFailures = !isCI(), G1GC global, URL cccp-education. CR-7: JVM Tuning CI/local split CI=G1GC+ParallelRefProc, local=SerialGC+TieredStopAtLevel=4, Metaspace=512m. Compilation OK. | 10/10
@@ -159,7 +160,7 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 | EPIC-V-6-POOL | *Adaptation Ollama Cloud Pool* — Le pool 11437-11465 ne contient que gemma4:31b-cloud (pas de modèles premium qwen3.5/deepseek-v4/glm-5.1/minimax-m2.7/kimi-k2.6). Adaptation OllamaLlmProvider pour utiliser gemma4:31b-cloud. Script scan-ollama-cloud.sh. 4 sous-EPICs (V-6-POOL-0→V-6-POOL-3, ~5 pts). | 🔴 EN ATTENTE (cadré Session 077). | P0
 | EPIC Z | *Autofocus* — Accommodation contextuelle programmatique (zoom x1↔x1000). 11ème doc Jardin Secret. Package `autofocus/` dans `codebase/koog/`. 5ème verbe ZOOMER. | ✅ TERMINÉ (7/7 — Z-0 ✅ Z-1 ✅ Z-2 ✅ Z-3 ✅ Z-4 ✅ Z-5 ✅ Z-6 ✅ Z-7 ✅, session 108). 92 JUnit5 + 8 Cucumber = 100 PASS. Voir `AUTOFOCUS_CAPABILITY.adoc` + `CADRAGE_AUTOFOCUS.adoc`. | P1
 | EPIC SP | *Session Protocol* — Protocole opencode↔Gradle (thin client + moteur Gradle). Contrats N0 dans workspace-bom (MEMPHIS), SessionProtocolTask dans codebase, pont N3 runner. 7 sous-EPICs (SP-0→SP-6), ~27 pts. LiveContextInjector — injection contexte conversation dans le prompt LLM, fix dead code agentContext. | ✅ TERMINÉ (7/7 — SP-0→SP-6, session 114). 83 JUnit5 + 33 Cucumber = 116/116 PASS. Voir `BACKLOG.adoc` §EPIC SP. | P1
-| EPIC CR | *Code Review Deep Analysis* — 14 items (P0→P3). CR-1 ✅ Cucumber Task Factory (Session 119, 784→80 lignes), CR-2 ✅ Test Timeouts (Session 120), CR-3 ✅ Build Cache (Session 120), CR-4 ✅ Adaptive Heap (Session 120), CR-5 ✅ Root build.gradle.kts (Session 121), CR-6 ✅ ignoreFailures CI-aware (Session 121), CR-7 ✅ JVM Tuning (Session 121), CR-8 ✅ PostgreSQL Testcontainer Reuse (Session 122), CR-9 ✅ Kover Coverage Threshold (Session 122), CR-10 ✅ Dependency Conflict Validation (Session 123), CR-11 ✅ Version Catalog Centralisé (Session 123), CR-12 Transitive Dependency Audit + CVE, CR-13 Test Task Aliases. | 🔄 EN COURS (11/14) | P0→P3
+| EPIC CR | *Code Review Deep Analysis* — 14 items (P0→P3). CR-1 ✅ Cucumber Task Factory (Session 119, 784→80 lignes), CR-2 ✅ Test Timeouts (Session 120), CR-3 ✅ Build Cache (Session 120), CR-4 ✅ Adaptive Heap (Session 120), CR-5 ✅ Root build.gradle.kts (Session 121), CR-6 ✅ ignoreFailures CI-aware (Session 121), CR-7 ✅ JVM Tuning (Session 121), CR-8 ✅ PostgreSQL Testcontainer Reuse (Session 122), CR-9 ✅ Kover Coverage Threshold (Session 122), CR-10 ✅ Dependency Conflict Validation (Session 123), CR-11 ✅ Version Catalog Centralisé (Session 123), CR-12 ✅ Transitive Dependency Audit + CVE (Session 124), CR-13 ✅ Test Task Aliases (Session 124), CR-14 BUILDING.md. | 🔄 EN COURS (13/14) | P0→P3
 |===
 
 '''

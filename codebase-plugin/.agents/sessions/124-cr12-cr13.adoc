@@ -1,0 +1,42 @@
+= Session 124 — CR-12+CR-13 (EPIC CR P2)
+:date: 2026-06-16
+:type: refactor+infra
+:score: 10/10
+
+== Contexte
+
+Session 124, EPIC CR P2. 2 items restants du P2 : CR-12 (Transitive Dependency Audit + CVE) et CR-13 (Test Task Aliases).
+
+== Actions
+
+=== CR-12 — Transitive Dependency Audit + CVE
+
+- Audit `./gradlew dependencies --configuration=runtimeClasspath`
+- Résultat : zéro CVE. `commons-collections4:4.4` (safe), pas `commons-collections:3.x` (vulnérable)
+- Zéro exclusion nécessaire : toutes les transitives sont utilisées (codex-plugin via CodexVectorStore, planner-plugin via PlannerIntegration)
+- `validateDependencies` enrichi avec :
+  - Audit CVE commons-collections (détecte 3.x)
+  - Rapport groupes transitifs lourds (>=5 modules)
+- Fichier modifié : `build.gradle.kts` (validateDependencies task)
+
+=== CR-13 — Test Task Aliases
+
+- 4 alias ajoutés dans `build.gradle.kts` :
+  - `testAll` — JUnit5 + tous les Cucumber
+  - `testEpics` — tous les Cucumber EPIC
+  - `testFast` — Cucumber timeout <= 8 min
+  - `testHelp` — liste toutes les tâches test avec descriptions
+- Compilation OK, 4 tâches visibles dans `./gradlew tasks`
+
+== Résultats
+
+- Compilation OK
+- `./gradlew testHelp` affiche 28 tâches Cucumber + 4 alias
+- EPIC CR 13/14 (reste CR-14 BUILDING.md)
+
+== Fichiers modifiés
+
+- `build.gradle.kts` — validateDependencies enrichi + 4 alias test
+- `BACKLOG.adoc` — CR-12+CR-13 marqués [x]
+- `.agents/INDEX.adoc` — session 124, EPIC CR 13/14
+- `PROMPT_REPRISE.adoc` — session 125 (CR-14 BUILDING.md)
