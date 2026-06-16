@@ -118,10 +118,7 @@ dash --> bakery
 
 ==== 2.1 The Empty Root build.gradle.kts Problem
 
-**Current State (lines 1):**
-```kotlin
-// Temporairement vide pour permettre le publishToMavenLocal du sous-projet
-```
+
 
 **Analysis:**
 

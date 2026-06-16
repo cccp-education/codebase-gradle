@@ -634,11 +634,11 @@ Client HTTP : `java.net.http.HttpClient` (JDK 24 built-in) — langchain4j-ollam
 Pipeline OCR double cloud : Gemini → qwen3-vl:235b-cloud. Zéro Go local, zéro GPU.
 Résilience : si Gemini down/quota dépassé, Ollama cloud prend le relais automatiquement.
 
-==== OCR-3 : OcrTask Gradle — EN COURS (4/5, audité 2026-06-14)
+==== OCR-3 : OcrTask Gradle — TERMINE (5/5, session 115)
 
-* [x] Tâche `ocrDocument` — `./gradlew ocrDocument -PinputFile=scan.pdf` (OcrTask.kt 240 lignes, @DisableCachingByDefault)
+* [x] Tâche `ocrDocument` — `./gradlew ocrDocument -PinputFile=scan.pdf` (OcrTask.kt 341 lignes, @DisableCachingByDefault)
 * [x] Configuration via `OcrExtension` (provider, model, clés, langue) (CodebaseOcrExtension.kt 86 lignes)
-* [ ] Support batch : `-PinputDir=scans/` → tous les fichiers du répertoire — PARTIEL : inputDir property existe mais executeOcr() ne gere que single-file
+* [x] Support batch : `-PinputDir=scans/` → tous les fichiers du répertoire (inputDir DirectoryProperty + resolveInputFiles + processSingleFile loop)
 * [x] Intégration avec `GeminiConfig` existant (OcrTask.kt:116-119 resolveGeminiConfig via llm-config.yml)
 * [x] Tests Cucumber : "je scanne une image → j'obtiens du texte structuré AsciiDoc" (OcrCucumberRunner.kt + OcrSteps.kt 120 lignes)
 
@@ -663,12 +663,12 @@ Résilience : si Gemini down/quota dépassé, Ollama cloud prend le relais autom
 * [ ] CI/CD : workflow `.github/workflows/ocr.yml` — PENDING : aucun fichier ocr.yml trouve
 * [x] Tests Cucumber : "je scanne une image → j'obtiens du texte structuré AsciiDoc" (OcrCucumberRunner.kt + OcrSteps.kt)
 
-==== OCR-4 : Intégration pipeline complet — PENDING (0/5, audité 2026-06-14)
+==== OCR-4 : Intégration pipeline complet — EN COURS (4/5, session 116)
 
-* [ ] OcrResult → anonymisation automatique (EPIC 2, déjà existant)
-* [ ] OcrResult AsciiDoc → chunking sémantique (réutilisation codex chunkDocument)
-* [ ] Chunks → embedding ONNX → pgvector (réutilisation codex codexIngest)
-* [ ] Test end-to-end : image scannée → pgvector → requêtable via RAG
+* [x] OcrResult → anonymisation automatique — TextAnonymizer.kt (emails, téléphones, clés API, IBAN, SSN) + anonymizeOutput option dans OcrTask (18 JUnit5 + 3 Cucumber @epic_ocr_4 PASS)
+* [x] OcrResult AsciiDoc → chunking sémantique — OcrIngestTask (chunk→embed→pgvector). VectorStore.ensureSchema() non-destructif. 14 JUnit5 + 5 Cucumber @epic_ocr_4_ingest PASS.
+* [x] Chunks → embedding ONNX → pgvector — EmbeddingPipeline AllMiniLmL6V2 réutilisé. Pipeline complet OCR→chunk→embed→pgvector.
+* [x] Test end-to-end : image scannée → pgvector → requêtable via RAG — E2E test dans OcrIngestTaskTest (FakeVisionProvider→OCR→anonymize→ingest→query). 1/1 PASS.
 * [ ] Métriques : temps OCR, qualité extraction, coût tokens Gemini
 
 === Bénéfice attendu
@@ -895,3 +895,39 @@ C'est la différence entre un script qui associe et un ingénieur qui comprend.
 - AUTOFOCUS_CAPABILITY.adoc (racine workspace) — spécification complète
 - CADRAGE_AUTOFOCUS.adoc (.agents/) — cadrage agile 7 ateliers
 - Session 073 (2026-05-27) — découverte du gap autofocus
+
+== EPIC CR — Code Review Deep Analysis (CODE_REVIEW_DEEP_ANALYSIS.adoc, 1535 lignes)
+
+**Statut** : CADRÉ — 14 items identifiés
+**Priorité** : P0→P3
+**Source** : CODE_REVIEW_DEEP_ANALYSIS.adoc (score 4.0/5.0)
+
+=== P0 — CRITIQUE
+
+* [ ] CR-1 : Cucumber Task Factory — Extraire CucumberTaskSpec + registerCucumberTask pour éliminer 728 lignes de duplication (24 tâches × ~30 lignes, 95% identiques). Réduit à ~80 lignes. (§2.2)
+* [ ] CR-2 : Test Timeouts — Augmenter timeouts epic tests 5→8 min (EpicV6/V7/L3/V8 ont 4-6 min workloads PostgreSQL + LLM). (§4.1)
+* [ ] CR-3 : Build Cache — Ajouter `org.gradle.caching=true`, `org.gradle.parallel=true`, `org.gradle.workers.max=4` dans gradle.properties. (§3.3)
+* [ ] CR-4 : Adaptive Heap — 1GB heap par Cucumber task × 24 = 24GB impossible. Implémenter heap adaptatif (CI: 2g, <8GB: 512m, else: 1g). forkEvery=1 → forkEvery=100. (§3.2)
+
+=== P1 — IMPORTANT
+
+* [ ] CR-5 : Root build.gradle.kts — Implémenter root avec shared group/version/repositories/toolchain. Débloque multi-module scaling. (§2.1)
+* [ ] CR-6 : ignoreFailures CI-aware — `ignoreFailures = true` masque les échecs CI. Rendre CI-aware: `ignoreFailures = !isCI()`. Ajouter G1GC + documenter EnableDynamicAgentLoading. (§2.3)
+* [ ] CR-7 : JVM Tuning — UseSerialGC obsolète, MaxMetaspaceSize=256m trop petit pour Kotlin, TieredStopAtLevel=1 désactive JIT. Split CI/local: CI=G1GC+ParallelRefProc, local=SerialGC+TieredStopAtLevel=4, Metaspace=512m. (§3.4)
+* [ ] CR-8 : PostgreSQL Testcontainer Reuse — Chaque test démarre un container frais (2-3 min). Créer PostgresFixture avec `.withReuse(true)`. Économise 5+ min par suite. (§4.2)
+* [ ] CR-9 : Kover Coverage Threshold — Pas de `minBound` vérification. Ajouter `verify { rule { minBound.set(80) } }` et `check.dependsOn(koverVerify)`. (§6.1)
+
+=== P2 — DETTE TECHNIQUE
+
+* [ ] CR-10 : Dependency Conflict Validation — annotations:13.0 pinée via constraint mais pas de test validation. Ajouter `validateDependencies` task. (§2.4)
+* [ ] CR-11 : Version Catalog Centralisé — Versions éparpillées dans build.gradle.kts au lieu de `gradle/libs.versions.toml`. Migrer. (§5.1)
+* [ ] CR-12 : Transitive Dependency Audit + CVE — Pas d'exclusions pour dépendances transitives inutilisées. commons-collections CVE-2015-6420 potentiellement dans classpath. `./gradlew dependencies --configuration=runtimeClasspath`. (§5.2)
+* [ ] CR-13 : Test Task Aliases — 24 tâches test sans alias de regroupement. Ajouter `testAll`, `testEpics`, `testFast`, `testHelp`. (§6.2)
+
+=== P3 — NICE-TO-HAVE
+
+* [ ] CR-14 : BUILDING.md — Pas de documentation build centralisée. Créer BUILDING.md avec prérequis, quick start, troubleshooting, architecture. (§7.1)
+
+=== Référence
+
+- `CODE_REVIEW_DEEP_ANALYSIS.adoc` — analyse complète 1535 lignes, score 4.0/5.0

@@ -1,7 +1,7 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 114
-:session: 114
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 116
+:session: 116
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 113 — SP-5 ✅ ToolEventStream (10 JUnit5 + 3 Cucumber @epic_sp_5 = 13/13 PASS)
+:sessions_precedente: 115 — OCR-3 ✅ batch inputDir + OCR-4 ✅ anonymisation pipeline (47 JUnit5 + 14 Cucumber PASS)
 
 == Contexte Hérité
 
@@ -11,25 +11,43 @@
 - EPIC Z TERMINÉ (7/7)
 - EPIC 12 TERMINÉ — 19/19 PASS
 - EPIC 5 MIGRÉ → training-gradle TRN-8
-- EPIC SP 6/7 — SP-0 ✅ SP-1 ✅ SP-2 ✅ SP-3 ✅ SP-4 ✅ SP-5 ✅
-  - SP-5: ToolEventStream.kt (90l) + VibecodingGraph câblage + SessionProtocolTask/Server
-  - 10 JUnit5 ToolEventStreamTest + 3 Cucumber @epic_sp_5 = 13/13 PASS
-- EPIC OCR 12/26
-- Full suite ~400+ PASS
+- EPIC SP TERMINÉ (7/7 — SP-0→SP-6, 83 JUnit5 + 33 Cucumber = 116/116 PASS)
+- EPIC OCR 16/26
+  - OCR-0 ✅ (contrats codex)
+  - OCR-1 EN COURS (4/6 — GeminiKeyPool)
+  - OCR-2 EN COURS (4/5 — GeminiVisionProvider)
+  - OCR-2b ✅ (OllamaOcrProvider cloud)
+  - OCR-3 ✅ (OcrTask batch inputDir)
+  - OCR-3b EN COURS (5/8 — FakeVisionProvider + CI + Config)
+  - OCR-4 EN COURS (4/5 — chunking→pgvector ✅, métriques restantes)
+- Full suite ~420+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 114 — Suite Protocole OpenCode↔Gradle
+== Mission Session 116 — OCR-4.2+4.3 Chunking→pgvector + E2E
 
-*SP-6* : LiveContextInjector — Injection contexte conversation active dans le prompt LLM.
-5 pts. Dernière brique EPIC SP.
+*OCR-4.2+4.3* : OcrIngestTask — chunk→embed→pgvector. Pipeline complet OCR→RAG.
+14 JUnit5 OcrIngestTaskTest + 5 Cucumber @epic_ocr_4_ingest + 1 E2E = 20/20 PASS.
 
-*Priorités restantes* :
-  - SP-6 : LiveContextInjector (5 pts) — injection contexte conversation active
-  - OCR-3 : Support batch inputDir + OCR-4 intégration pipeline complet
-  - EPIC V-6-POOL : Adaptation Ollama Cloud Pool gemma4:31b-cloud
+*Fichiers créés/modifiés* :
+- VectorStore.kt : +ensureSchema() non-destructif
+- OcrIngestTask.kt : nouvelle tâche Gradle (chunk→embed→pgvector)
+- CodebasePlugin.kt : +ocrIngest registration
+- OcrIngestTaskTest.kt : 14 JUnit5 (Testcontainers pgvector)
+- OcrIngestSteps.kt : 5 scénarios Cucumber
+- OcrIngestCucumberRunner.kt : runner dédié
+- ocr.feature : +5 scénarios @epic_ocr_4_ingest
+- build.gradle.kts : +cucumberTestEpicOcrIngest task
+- BACKLOG.adoc : OCR-4 4/5
+
+== Priorités restantes
+
+  - OCR-4.5 : Métriques temps OCR, qualité extraction, coût tokens Gemini
+  - OCR-3b : Brancher GeminiKeyPool + secrets de test dans FakeVisionProvider
+  - OCR-3b : CI/CD workflow .github/workflows/ocr.yml
+  - EPIC CR P0 : CR-1 Cucumber Task Factory, CR-2 Test Timeouts, CR-3 Build Cache, CR-4 Adaptive Heap
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 114 | SP-6 | LiveContextInjector — injection contexte actif
-| 115+ | OCR | Pipeline OCR batch + intégration complète
+| 117 | OCR-4.5 | Métriques OCR (temps, qualité, coût tokens)
+| 118+ | EPIC CR P0 | Build cache, timeouts, heap, Cucumber Task Factory

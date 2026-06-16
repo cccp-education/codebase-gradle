@@ -5,6 +5,7 @@ import codebase.koog.SessionProtocolDaemonTask
 import codebase.koog.VibecodingTask
 import codebase.koog.tracking.DashboardTask
 import codebase.ocr.CodebaseOcrExtension
+import codebase.ocr.OcrIngestTask
 import codebase.ocr.OcrTask
 import codebase.quality.QualityGateTask
 import codebase.rag.AssembleWorkspaceContextTask
@@ -156,11 +157,27 @@ class CodebasePlugin : Plugin<Project> {
             if (inputFileProp.isPresent) {
                 task.inputFile.set(project.layout.projectDirectory.file(inputFileProp.get()))
             }
+            // -PinputDir → CLI batch mode
+            val inputDirProp = project.providers.gradleProperty("inputDir")
+            if (inputDirProp.isPresent) {
+                task.inputDir.set(project.layout.projectDirectory.dir(inputDirProp.get()))
+            } else {
+                task.inputDir.convention(ocrExt.inputDir)
+            }
             // llm-config.yml → GeminiVisionProvider config
             val llmConfigFile = project.layout.projectDirectory.file("llm-config.yml").asFile
             if (llmConfigFile.exists()) {
                 task.llmConfigFile = llmConfigFile
             }
+        }
+
+        project.tasks.register(
+            "ocrIngest",
+            OcrIngestTask::class.java
+        ) { task ->
+            task.group = "collect"
+            task.description = "Ingère les fichiers OCR dans pgvector (chunk → embedding ONNX → RAG)"
+            task.ocrOutputDir.convention(project.layout.buildDirectory.dir("ocr"))
         }
     }
 }

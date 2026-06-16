@@ -7,9 +7,11 @@ import codebase.rag.GeminiConfig
 import codebase.rag.LlmConfig
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
@@ -87,6 +89,11 @@ abstract class OcrTask : DefaultTask() {
     @get:Option(option = "inputFile", description = "Fichier à OCR-iser (mode single-file)")
     abstract val inputFile: RegularFileProperty
 
+    @get:InputDirectory
+    @get:Optional
+    @get:Option(option = "inputDir", description = "Répertoire contenant les documents à OCR-iser (mode batch)")
+    abstract val inputDir: DirectoryProperty
+
     @get:Input
     @get:Optional
     @get:Option(option = "ocrLanguage", description = "Langue source : fr, en, auto")
@@ -112,6 +119,11 @@ abstract class OcrTask : DefaultTask() {
     @get:Option(option = "outputFormat", description = "Format de sortie : asciidoc, markdown, text")
     abstract val outputFormat: Property<String>
 
+    @get:Input
+    @get:Optional
+    @get:Option(option = "anonymize", description = "Anonymiser le texte extrait (emails, téléphones, clés API, IBAN, SSN)")
+    abstract val anonymizeOutput: Property<Boolean>
+
     init {
         group = "collect"
         description = "OCR assisté IA — extrait le texte structuré d'un document scanné via Gemini Vision ou Ollama Vision"
@@ -122,33 +134,18 @@ abstract class OcrTask : DefaultTask() {
         ollamaModel.convention("qwen3-vl:235b-cloud")
         maxTokens.convention(8192)
         outputFormat.convention("asciidoc")
+        anonymizeOutput.convention(false)
     }
 
     @TaskAction
     fun executeOcr() {
         val provider = ocrProvider.orNull ?: "gemini"
 
-        // Résoudre la config depuis llm-config.yml si fourni
         val geminiConfig = resolveGeminiConfig()
         if (geminiConfig != null) {
             logger.lifecycle("[OCR] llm-config.yml chargé : modèle={}", geminiConfig.resolveModel())
         }
 
-        val inputPath = if (inputFile.isPresent) {
-            inputFile.get().asFile.absolutePath
-        } else {
-            throw IllegalArgumentException(
-                "Aucun fichier d'entrée spécifié. Utilisez -PinputFile=/path/to/file " +
-                "ou configurez codebaseOcr { inputDir = file(\"...\") }"
-            )
-        }
-
-        val file = File(inputPath)
-        if (!file.exists()) {
-            throw IllegalArgumentException("Fichier d'entrée introuvable : $inputPath")
-        }
-
-        // Chaîne de priorité : CLI > DSL > YAML > convention
         val lang = ocrLanguage.orNull ?: "fr"
         val model = geminiModel.orNull
             ?: geminiConfig?.resolveModel()
@@ -158,18 +155,12 @@ abstract class OcrTask : DefaultTask() {
         val ollamaUrl = ollamaBaseUrl.orNull ?: "http://localhost:11434"
         val ollamaVisionModel = ollamaModel.orNull ?: "qwen3-vl:235b-cloud"
 
-        logger.lifecycle(
-            "[OCR] Démarrage : fichier={}, langue={}, fournisseur={}, modèle={}, maxTokens={}",
-            file.name, lang, provider, model, tokens
-        )
-
-        val isImage = isImageFile(file)
-        val mimeType = detectMimeType(file.extension)
-
-        val result = if (isImage) {
-            executeImageOcr(file, mimeType, lang, model, tokens, provider, ollamaUrl, ollamaVisionModel)
-        } else {
-            executeTextOcr(file, lang, model, tokens)
+        val files = resolveInputFiles()
+        if (files.isEmpty()) {
+            throw IllegalArgumentException(
+                "Aucun fichier d'entrée spécifié. Utilisez -PinputFile=/path/to/file " +
+                "ou -PinputDir=/path/to/dir pour le mode batch"
+            )
         }
 
         val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
@@ -180,14 +171,77 @@ abstract class OcrTask : DefaultTask() {
             "text" -> ".txt"
             else -> ".adoc"
         }
+
+        logger.lifecycle(
+            "[OCR] Démarrage batch : {} fichier(s), langue={}, fournisseur={}, modèle={}, maxTokens={}",
+            files.size, lang, provider, model, tokens
+        )
+
+        val totalFiles = files.size
+        for (file in files) {
+            processSingleFile(file, lang, model, tokens, provider, ollamaUrl, ollamaVisionModel, outputDir, ext, totalFiles)
+        }
+
+        logger.lifecycle("[OCR] Batch terminé : {} fichier(s) traités", files.size)
+    }
+
+    private fun resolveInputFiles(): List<File> {
+        if (inputFile.isPresent) {
+            val file = inputFile.get().asFile
+            if (!file.exists()) {
+                throw IllegalArgumentException("Fichier d'entrée introuvable : ${file.absolutePath}")
+            }
+            return listOf(file)
+        }
+        if (inputDir.isPresent) {
+            val dir = inputDir.get().asFile
+            if (!dir.exists() || !dir.isDirectory) {
+                throw IllegalArgumentException("Répertoire d'entrée introuvable : ${dir.absolutePath}")
+            }
+            return dir.listFiles()?.filter { it.isFile }?.sortedBy { it.name } ?: emptyList()
+        }
+        return emptyList()
+    }
+
+    private fun processSingleFile(
+        file: File,
+        lang: String,
+        model: String,
+        tokens: Int,
+        provider: String,
+        ollamaUrl: String,
+        ollamaVisionModel: String,
+        outputDir: File,
+        ext: String,
+        totalFiles: Int
+    ) {
+        logger.lifecycle("[OCR] Traitement : {}", file.name)
+
+        val isImage = isImageFile(file)
+        val mimeType = detectMimeType(file.extension)
+
+        val result = if (isImage) {
+            executeImageOcr(file, mimeType, lang, model, tokens, provider, ollamaUrl, ollamaVisionModel)
+        } else {
+            executeTextOcr(file, lang, model, tokens)
+        }
+
+        val finalResult = if (anonymizeOutput.orNull == true) {
+            val anonymized = TextAnonymizer.anonymize(result)
+            val replaced = TextAnonymizer.countReplacements(result, anonymized)
+            val categories = TextAnonymizer.detectedCategories(result)
+            logger.lifecycle("[OCR] Anonymisation : {} remplacement(s), catégories={}", replaced, categories)
+            anonymized
+        } else result
+
         val baseName = file.nameWithoutExtension
-        val outputPath = if (outputFile.isPresent) {
+        val outputPath = if (outputFile.isPresent && totalFiles == 1) {
             outputFile.get().asFile
         } else {
             File(outputDir, "${baseName}_ocr$ext")
         }
 
-        outputPath.writeText(result, Charsets.UTF_8)
+        outputPath.writeText(finalResult, Charsets.UTF_8)
         logger.lifecycle("[OCR] Résultat écrit dans : {}", outputPath.absolutePath)
     }
 

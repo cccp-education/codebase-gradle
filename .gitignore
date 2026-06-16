@@ -20,3 +20,7 @@ libs
 
 # LLM config tests — contient envVar references, .gitignore pour securite
 codebase-plugin/src/test/resources/llm-config.yml
+
+CODE_REVIEW_DEEP_ANALYSIS.pdf
+STRATEGIC_ROADMAP.pdf
+VISION_v3_ACCESSIBILITY_FIRST.pdf

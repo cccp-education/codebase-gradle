@@ -1,0 +1,90 @@
+= Session 116 — OCR-4.2+4.3 Chunking→pgvector + E2E
+:session: 116
+:date: 2026-06-16
+:type: feat+tdd+ddd+bdd
+:score: 10/10
+:borough: Queens — codebase-gradle (N1)
+
+== Contexte
+
+Session 115 avait livré OCR-3 (batch inputDir) + OCR-4 anonymisation (TextAnonymizer).
+PROMPT_REPRISE demandait OCR-4 chunking→pgvector + EPIC CR P0.
+
+== Actions
+
+=== VectorStore.ensureSchema()
+Ajout d'une méthode non-destructive (`CREATE TABLE IF NOT EXISTS`) pour l'ingestion
+sans écraser les données existantes. `initSchema()` reste destructif pour les tests.
+
+=== OcrIngestTask
+Nouvelle tâche Gradle `ocrIngest` (groupe `collect`) :
+- Lit les fichiers `.adoc` depuis `build/ocr/`
+- Chunking via `ChunkTokenizer.splitIntoSentenceLevelChunks()`
+- Insertion documents+chunks dans pgvector via `VectorStore.insertDocument()`
+- Embedding ONNX AllMiniLmL6V2 via `EmbeddingPipeline.embedAll()`
+- Options CLI : `--ocrOutputDir`, `--jdbcUrl`, `--jdbcUser`, `--jdbcPassword`
+- Résilient : répertoire absent → warning, pas de crash
+
+=== CodebasePlugin
+Enregistrement `ocrIngest` avec convention `ocrOutputDir = build/ocr/`.
+
+=== Tests JUnit5 — OcrIngestTaskTest (14/14 PASS)
+Testcontainers `pgvector/pgvector:pg17` :
+- Registration + groupe
+- Répertoire vide → 0 document
+- Single file → chunk + embed
+- Multi files → 3 documents
+- Filtre .adoc uniquement
+- Idempotence
+- ensureSchema préserve données existantes
+- Queryable via RAG (similarité vectorielle)
+- Contenu anonymisé queryable
+- Répertoire inexistant → pas de crash
+- JDBC URL custom
+- Document large → multiple chunks
+- E2E : image→OCR→anonymize→ingest→query
+
+=== Cucumber — OcrIngestSteps (5/5 @epic_ocr_4_ingest PASS)
+Testcontainers pgvector partagé via `@Before("@epic_ocr_4_ingest")` :
+- Single document ingest
+- Multiple documents (3)
+- RAG queryable
+- Skip non-adoc files
+- Anonymized content queryable
+
+=== Runner dédié
+`OcrIngestCucumberRunner` + `cucumberTestEpicOcrIngest` dans `build.gradle.kts`
+(timeout 15 min pour Testcontainers).
+
+== Fichiers
+
+| Fichier | Action
+| `VectorStore.kt` | +ensureSchema() (30 lignes)
+| `OcrIngestTask.kt` | Créé (120 lignes)
+| `CodebasePlugin.kt` | +import + registration ocrIngest
+| `OcrIngestTaskTest.kt` | Créé (433 lignes, 14 tests)
+| `OcrIngestSteps.kt` | Créé (140 lignes, 5 scénarios)
+| `OcrIngestCucumberRunner.kt` | Créé (16 lignes)
+| `ocr.feature` | +5 scénarios @epic_ocr_4_ingest
+| `build.gradle.kts` | +cucumberTestEpicOcrIngest
+| `BACKLOG.adoc` | OCR-4 4/5
+| `PROMPT_REPRISE.adoc` | Session 116→117
+| `.agents/INDEX.adoc` | Session 116
+| `.agents/SESSIONS_HISTORY.adoc` | Session 116
+| `.agents/PROMPT_REPRISE.adoc` | Session 117
+
+== Résultats
+
+- 14 JUnit5 PASS
+- 5 Cucumber @epic_ocr_4_ingest PASS
+- 1 E2E PASS
+- Total : 20/20 PASS
+- compileKotlin OK
+- publishToMavenLocal OK
+
+== Leçons
+
+- `ensureSchema()` non-destructif est le bon pattern pour l'ingestion incrémentale
+- Le pipeline OCR→chunk→embed→pgvector→query est fonctionnel de bout en bout
+- FakeVisionProvider + FakeOcrEngine permettent le test E2E sans appel réseau
+- OCR-4 = 4/5, reste OCR-4.5 (métriques)

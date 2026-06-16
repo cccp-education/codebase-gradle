@@ -66,19 +66,27 @@ class OcrSteps {
 
     @Then("the OCR result for {string} exists")
     fun ocrResultExists(expectedBase: String) {
-        assertNotNull(lastOutputPath, "No OCR output path recorded")
-        assertTrue(lastOutputPath!!.exists(), "OCR output should exist: ${lastOutputPath!!.absolutePath}")
+        val file = resolveOutputFile(expectedBase)
+        assertTrue(file.exists(), "OCR output should exist: ${file.absolutePath}")
     }
 
     @Then("the OCR result for {string} contains {string}")
     fun ocrResultContains(expectedBase: String, text: String) {
-        val content = lastOutputPath!!.readText(Charsets.UTF_8)
+        val file = resolveOutputFile(expectedBase)
+        val content = file.readText(Charsets.UTF_8)
         assertTrue(content.contains(text), "Expected '$text' in OCR output. Got:\n$content")
     }
 
     @Then("the OCR result for {string} ends with {string}")
     fun ocrResultEndsWith(expectedBase: String, suffix: String) {
-        assertTrue(lastOutputPath!!.name.endsWith(suffix), "Expected suffix '$suffix': ${lastOutputPath!!.name}")
+        val file = resolveOutputFile(expectedBase)
+        assertTrue(file.name.endsWith(suffix), "Expected suffix '$suffix': ${file.name}")
+    }
+
+    private fun resolveOutputFile(expectedBase: String): File {
+        if (lastOutputPath != null) return lastOutputPath!!
+        if (batchOutputDir != null) return batchOutputDir!!.resolve("${expectedBase}_ocr.adoc")
+        throw AssertionError("No OCR output path recorded")
     }
 
     @Then("task {string} should be registered")
@@ -146,6 +154,114 @@ class OcrSteps {
         val ext = ".adoc"
         lastOutputPath = project.layout.buildDirectory.dir("ocr").get().asFile
             .resolve("${inputFile.nameWithoutExtension}_ocr$ext")
+    }
+
+    // ── OCR-3 : Batch inputDir ─────────────────────────────────────────
+
+    private var batchOutputDir: File? = null
+    private var lastError: Exception? = null
+
+    @Given("an OCR test directory {string} with files:")
+    fun createOcrTestDirectory(dirName: String, table: io.cucumber.datatable.DataTable) {
+        tmpDir = Files.createTempDirectory("ocr-cucumber").toFile()
+        val dir = File(tmpDir, dirName)
+        dir.mkdirs()
+        for (row in table.asLists()) {
+            if (row.size < 2) continue
+            val name = row[0]
+            val content = row[1]
+            File(dir, name).writeText(content, Charsets.UTF_8)
+        }
+    }
+
+    @Given("an OCR test directory {string} with no files")
+    fun createEmptyOcrTestDirectory(dirName: String) {
+        tmpDir = Files.createTempDirectory("ocr-cucumber").toFile()
+        File(tmpDir, dirName).mkdirs()
+    }
+
+    @When("I OCR the directory {string} in French")
+    fun ocrDirectoryInFrench(dirName: String) {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tmpDir!!)
+            .withName("ocr-batch")
+            .build()
+        project.pluginManager.apply(CodebasePlugin::class.java)
+
+        val task = project.tasks.getByName("ocrDocument") as OcrTask
+        task.ocrEngine = FakeOcrEngine()
+        task.geminiVisionProvider = FakeVisionProvider()
+        task.inputDir.set(project.layout.projectDirectory.dir(dirName))
+        task.ocrLanguage.set("fr")
+        task.outputFormat.set("asciidoc")
+
+        try {
+            task.executeOcr()
+            batchOutputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        } catch (e: Exception) {
+            lastError = e
+        }
+    }
+
+    @When("I OCR file {string} with directory {string} in French")
+    fun ocrFileWithDirectory(filename: String, dirName: String) {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tmpDir!!)
+            .withName("ocr-mixed")
+            .build()
+        project.pluginManager.apply(CodebasePlugin::class.java)
+
+        val task = project.tasks.getByName("ocrDocument") as OcrTask
+        task.ocrEngine = FakeOcrEngine()
+        task.geminiVisionProvider = FakeVisionProvider()
+        task.inputFile.set(project.layout.projectDirectory.file(filename))
+        task.inputDir.set(project.layout.projectDirectory.dir(dirName))
+        task.ocrLanguage.set("fr")
+        task.outputFormat.set("asciidoc")
+
+        task.executeOcr()
+        batchOutputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+    }
+
+    @Then("the OCR result for {string} does not exist")
+    fun ocrResultDoesNotExist(expectedBase: String) {
+        val file = batchOutputDir!!.resolve("${expectedBase}_ocr.adoc")
+        assertTrue(!file.exists(), "OCR output should NOT exist: ${file.absolutePath}")
+    }
+
+    @Then("an error is raised with message containing {string}")
+    fun errorRaisedWithMessage(expectedText: String) {
+        assertNotNull(lastError, "Expected an error to be raised")
+        assertTrue(lastError!!.message!!.contains(expectedText),
+            "Error message should contain '$expectedText'. Got: ${lastError!!.message}")
+    }
+
+    @When("I OCR {string} in French with anonymization enabled")
+    fun ocrInFrenchWithAnonymization(filename: String) {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tmpDir!!)
+            .withName("ocr-anonymize")
+            .build()
+        project.pluginManager.apply(CodebasePlugin::class.java)
+
+        val inputFile = File(tmpDir, filename)
+        val task = project.tasks.getByName("ocrDocument") as OcrTask
+        task.ocrEngine = FakeOcrEngine()
+        task.inputFile.set(project.layout.projectDirectory.file(filename))
+        task.ocrLanguage.set("fr")
+        task.outputFormat.set("asciidoc")
+        task.anonymizeOutput.set(true)
+        task.executeOcr()
+
+        lastOutputPath = project.layout.buildDirectory.dir("ocr").get().asFile
+            .resolve("${inputFile.nameWithoutExtension}_ocr.adoc")
+    }
+
+    @Then("the OCR result for {string} does not contain {string}")
+    fun ocrResultDoesNotContain(expectedBase: String, text: String) {
+        val file = resolveOutputFile(expectedBase)
+        val content = file.readText(Charsets.UTF_8)
+        assertTrue(!content.contains(text), "OCR output should NOT contain '$text'. Got:\n$content")
     }
 
     @After

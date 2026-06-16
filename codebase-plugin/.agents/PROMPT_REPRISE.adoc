@@ -1,22 +1,29 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 115
-:session: 115
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 117
+:session: 117
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 114 — SP-6 ✅ LiveContextInjector (14 JUnit5 + 3 Cucumber @epic_sp_6 = 17/17 PASS)
+:sessions_precedente: 116 — OCR-4.2+4.3 ✅ chunking→pgvector + E2E (14 JUnit5 + 5 Cucumber + 1 E2E = 20/20 PASS)
 
 == Contexte Hérité
 
-- EPIC SP TERMINÉ 7/7 — SP-6 LiveContextInjector (80l) + câblage VibecodingGraph + SessionProtocolTask/Server + fix dead code agentContext
-- 14 JUnit5 LiveContextInjectorTest + 3 Cucumber @epic_sp_6 = 17/17 PASS
-- Full suite ~400+ PASS
+- EPIC W TERMINÉ (7/7)
+- EPIC X TERMINÉ (7/7)
+- EPIC Y TERMINÉ (8/8 ✅)
+- EPIC Z TERMINÉ (7/7)
+- EPIC 12 TERMINÉ — 19/19 PASS
+- EPIC 5 MIGRÉ → training-gradle TRN-8
+- EPIC SP TERMINÉ (7/7 — SP-0→SP-6, 83 JUnit5 + 33 Cucumber = 116/116 PASS)
+- EPIC OCR 16/26
+  - OCR-4 EN COURS (4/5 — chunking→pgvector ✅, métriques restantes)
+- Full suite ~420+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 115 — OCR Pipeline
+== Mission Session 117 — OCR-4.5 Métriques + EPIC CR P0
 
-- OCR-3 : Support batch inputDir — tous les fichiers d'un répertoire
-- OCR-4 : Intégration pipeline complet OCR → anonymisation → chunking → pgvector
+*OCR-4.5* : Métriques temps OCR, qualité extraction, coût tokens Gemini.
+*EPIC CR P0* : CR-1 Cucumber Task Factory, CR-2 Test Timeouts, CR-3 Build Cache, CR-4 Adaptive Heap.
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 115 | OCR-3 + OCR-4 | Pipeline OCR batch complet
-| 116 | OCR | Finalisation, tests E2E
+| 117 | OCR-4.5 + CR P0 | Métriques OCR + build perf
+| 118 | CR P1 | JVM tuning, testcontainer reuse, Kover threshold

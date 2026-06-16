@@ -41,6 +41,38 @@ class VectorStore(
         }
     }
 
+    fun ensureSchema() {
+        connection().use { conn ->
+            conn.createStatement().use { stmt ->
+                stmt.execute("CREATE EXTENSION IF NOT EXISTS vector")
+                stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS documents (
+                        id BIGSERIAL PRIMARY KEY,
+                        file_name TEXT NOT NULL,
+                        file_path TEXT NOT NULL,
+                        file_size BIGINT NOT NULL,
+                        chunk_count INTEGER NOT NULL,
+                        package_name TEXT,
+                        class_name TEXT,
+                        repo_name TEXT,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    )
+                """.trimIndent())
+                stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS chunks (
+                        id BIGSERIAL PRIMARY KEY,
+                        document_id BIGINT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+                        chunk_index INTEGER NOT NULL,
+                        chunk_text TEXT NOT NULL,
+                        token_count INTEGER,
+                        embedding vector(384),
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    )
+                """.trimIndent())
+            }
+        }
+    }
+
     fun insertDocument(
         fileName: String,
         filePath: String,
