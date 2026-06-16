@@ -124,13 +124,16 @@ Le `CompositeContextBuilder` (déjà fait via EPIC 9) agrège ces canaux.
 * [x] Circuit de retry (max 3 iterations, feedback au LLM)
 
 == EPIC 7 : Wiring LangChain4j + pgvector experts
-**Statut** : A FAIRE
+**Statut** : ✅ TERMINE (Session 126 — 55 JUnit5 + 5 Cucumber = 60/60 PASS)
 **Priorite** : P1
 
-* [ ] Persistance partagee entre agents (PostgreSQL + pgvector)
-* [ ] API d'appel aux experts fine-tunes (via Ollama)
-* [ ] Integration avec le dispatcher deepseek-v4-pro
-* [ ] Anonymisation pre-query automatique via EPIC 2
+* [x] Persistance partagee entre agents (PostgreSQL + pgvector) — ExpertCallRepository R2DBC, table expert_calls, 13/13 PASS
+* [x] API d'appel aux experts fine-tunes (via Ollama) — ExpertAgent (LangChain4j AiServices) + ExpertAgentFactory + ExpertRegistry, 14/14 PASS
+* [x] Integration avec le dispatcher deepseek-v4-pro — DispatcherAgent (decomposition + routage + synthese), 14/14 PASS
+* [x] Anonymisation pre-query automatique via EPIC 2 — ExpertCallPipeline (anonymize→dispatch→call→collect→synthesize), 7/7 PASS + 5 Cucumber
+
+Package `codebase.koog.expert/` : 7 fichiers src (ExpertContracts, ExpertRegistry, ExpertAgent, DispatcherContracts, DispatcherAgent, ExpertCallPipeline, ExpertCallRecord, ExpertCallRepository).
+Domaines generiques (ExpertDomain data class) — les domaines metier CDA/FPA sont dans training-gradle (N2).
 
 == EPIC 8 : Exposer experts via Ollama (consommation par plugins)
 **Statut** : A FAIRE

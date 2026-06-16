@@ -1,204 +1,112 @@
-= INDEX — Codebase Gradle
-:toc:
+= INDEX.adoc — Codebase Gradle (Queens N1)
+:date: 2026-06-16
+:session_en_cours: 127
+:session_precedente: 126 — EPIC 7 ✅ (Expert Dispatcher, 60/60 PASS)
 
-_Regles absolues_ : voir `AGENT.adoc`
-_Ontologie spatiale_ : voir `configuration/.agents/AGENT_GOVERNANCE.adoc`
+== Roadmap EPICs
 
-_Derniere mise a jour_ : 2026-06-16 (Session 125 — CR-14 ✅ EPIC CR TERMINÉ 14/14)
-_Session precedente_ : 124 — CR-12+CR-13 ✅ (Transitive Dependency Audit + CVE + Test Task Aliases)
-_Session en cours_ : 125 — CR-14 ✅ (BUILDING.md — Documentation build centralisée)
-_Session suivante_ : 126 — À déterminer (BACKLOG.adoc)
-_Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/` (N=70, multiple de 10)
-
-'''
-== REGLES ABSOLUES (resume)
-
-=== 0. PUBLISH TO MAVEN LOCAL — OBLIGATOIRE APRES TOUTE MODIFICATION DU CODE SOURCE (non applicable : pas de plugin maven-publish)
-=== 1. COMMITS/GIT — INTERDICTION FORMELLE sans permission
-=== 1b. FICHIERS DE CONFIGURATION — REGLE ABSOLUE DE SURETE (backup avant modif)
-=== 2. TESTS EN FIN DE SESSION — INTERDICTION FORMELLE
-=== 3. PROCEDURE DE FIN DE SESSION — 6 ETAPES OBLIGATOIRES
-
-'''
-== EPIC K — Taxonomie Workspace
-
-[cols="1,3,2,3", options="header"]
+[cols="2,3,2"]
 |===
-| Phase | Livrable | Statut | Boroughs
-| K-0 | Document Jardin Secret — TAXONOMIE_WORKSPACE.adoc | ✅ 2026-05-18 | Workspace root
-| K-1 | Renommage 4 verbes (GENERER/COLLECTER/TRANSFORMER/DÉPLOYER) | ✅ 2026-05-19 | Tous N2
-| K-2 | Format pivot — Metadata.kt + metadataExpectedPath runner-gradle | ✅ 2026-05-19 | 4 boroughs + runner-gradle
-| K-3 | Configuration par domaine — CodebaseExtension | ✅ 2026-05-18 | Codebase
-| K-4 | Convention over configuration SPG→SPD | ✅ 2026-05-19 | Newark (training 018) + Manhattan (planner 019)
-| K-5 | Documentation — MàJ INDEX.adoc boroughs | ✅ TERMINE (2026-05-19) | Gouvernance
-|===
+| EPIC | Statut | Session
 
-'''
-== Sessions
+| EPIC 1 Gouvernance
+| EN COURS (6/8)
+| 001
 
-|===
-| # | Date | Type | Sujet | Score
-| 125 | 2026-06-16 | doc | CR-14 — BUILDING.md créé (prérequis, quick start, troubleshooting, architecture, test tasks, JVM tuning, dependencies). EPIC CR 14/14 TERMINÉ. | 10/10
-| 124 | 2026-06-16 | refactor+infra | CR-12+CR-13 — CR-12: validateDependencies enrichi (audit CVE commons-collections + rapport groupes transitifs lourds). Zéro CVE (commons-collections4:4.4 safe). Zéro exclusion nécessaire. CR-13: 4 alias testAll/testEpics/testFast/testHelp. Compilation OK. EPIC CR 13/14. | 10/10
-| 123 | 2026-06-16 | refactor+infra | CR-10+CR-11 — CR-10: validateDependencies task (vérifie annotations:13.0 résolu, wiré dans check). CR-11: 5 versions + 8 libraries ajoutées dans libs.versions.toml, 5 N0 contracts + assertj + coroutines-test + junit-platform-launcher migrés vers catalog. Compilation OK. EPIC CR 11/14. | 10/10
-| 122 | 2026-06-16 | refactor+infra | CR-8+CR-9 — CR-8: PostgresFixture singleton avec .withReuse(true), 14 fichiers de test migrés (VectorStoreTest, SessionRepositoryTest, AgenticChunkRepositoryTest, MigrationTest, OcrIngestTaskTest, PrepareContextUnitTest, PgVectorTestContext, DatasetEmbeddingSteps, PgVectorContainerSteps, AgenticSchemaWorld, AgenticChunkEnforcementWorld, AgenticIngestorWorld, SessionRepositoryWorld, OcrIngestSteps, VibecodingTaskTest). ~/.testcontainers.properties reuse enabled. CR-9: koverThresholdCheck artisanal (170 lignes XML parsing) remplacé par kover { reports { verify { rule { minBound(80) } } } } + check.dependsOn(koverVerify). Compilation OK. EPIC CR P1 9/14. | 10/10
-| 121 | 2026-06-16 | refactor+infra | CR-5+CR-6+CR-7 — CR-5: Root build.gradle.kts allprojects { group, version, repositories } + plugins apply false. CR-6: ignoreFailures CI-aware isCI() top-level, ignoreFailures = !isCI(), G1GC global, URL cccp-education. CR-7: JVM Tuning CI/local split CI=G1GC+ParallelRefProc, local=SerialGC+TieredStopAtLevel=4, Metaspace=512m. Compilation OK. | 10/10
-| 120 | 2026-06-16 | refactor+infra | CR-2/CR-3/CR-4 Build Performance — CR-2: 3 specs timeout 5→8 min. CR-3: gradle.properties +caching +parallel +workers.max=4. CR-4: registerCucumberTask() heap adaptatif (CI=2g, <8GB=512m, else=1g) + forkEvery=100. Compilation OK, 28/28 tâches. EPIC CR P0 4/4 TERMINÉ. | 10/10
-| 119 | 2026-06-16 | refactor | CR-1 Cucumber Task Factory — 28 tâches Cucumber dupliquées (784 lignes) → CucumberTaskSpec + registerCucumberTask() (~80 lignes). Compilation OK, 28/28 tâches visibles. BACKLOG CR-1 marqué TERMINE. | 10/10
-| 118 | 2026-06-16 | feat+tdd+ddd+bdd | OCR-3b TERMINE (8/8) — GeminiKeyPool branché dans FakeVisionProvider (2 clés test, quota 10, threshold 50%, ROUND_ROBIN, lastUsedKeyId). FakeVisionProviderTest 13/13 PASS (5 existants + 8 pool integration). OcrTaskTest + Cucumber OCR backward compat OK. ocr.yml déjà existant (commit 21a782c, backlog stale). | 10/10
-| 116 | 2026-06-16 | feat+tdd+ddd+bdd | OCR-4.2+4.3 Chunking→pgvector + E2E — OcrIngestTask (chunk→embed→pgvector), VectorStore.ensureSchema() non-destructif, CodebasePlugin +ocrIngest. 14 JUnit5 OcrIngestTaskTest (Testcontainers) + 5 Cucumber @epic_ocr_4_ingest + 1 E2E image→OCR→anonymize→ingest→query = 20/20 PASS. OCR-4 4/5. | 10/10
-| 114 | 2026-06-16 | feat+tdd+ddd+bdd | SP-6 LiveContextInjector — Injection contexte conversation active dans le prompt LLM. LiveContextInjector.kt (80l) + câblage VibecodingGraph.buildPromptForIteration/buildReplanPrompt + intégration SessionProtocolTask/Server (fix dead code agentContext). 14 JUnit5 LiveContextInjectorTest + 3 Cucumber @epic_sp_6 = 17/17 PASS. EPIC SP 7/7 TERMINÉ. | 10/10
-| 113 | 2026-06-15 | feat+tdd+ddd+bdd | SP-5 ToolEventStream — Événements structurés temps réel (thinking/tool_call/tool_result/progress/error) en JSON-lines. ToolEventStream.kt (90l) + câblage VibecodingGraph + SessionProtocolTask/Server. 10 JUnit5 ToolEventStreamTest + 3 Cucumber @epic_sp_5 = 13/13 PASS. EPIC SP 6/7. | 10/10
-| 112 | 2026-06-15 | feat+tdd+ddd+bdd | SP-4 Tests E2E opencode→runner→codebase→session — SessionProtocolE2ETest.kt (5 JUnit5) + epic_sp_4_e2e.feature (4 Cucumber @epic_sp_4) = 9/9 PASS. Bugfix takeUnless→takeIf dans SessionProtocolTask.kt:116 (model non transmis au lifecycleManager). EPIC SP 5/7. | 10/10
-| 111 | 2026-06-15 | feat+tdd+ddd+bdd | SP-3 Cycle de Vie Session — SessionProtocolLifecycleManager (126l, persistance JSON disque, CREATE/RESUME/CLOSE/LIST), SessionProtocolTask +--action create\|resume\|close\|list. 15 JUnit5 + 6 Cucumber @epic_sp_3 = 21/21 PASS. EPIC SP 4/7. | 10/10
-| 109 | 2026-06-15 | feat+tdd+ddd+bdd | EPIC 12 Blog Dilution — BlogArticleExtractor (6 tests) + BlogArticleRenderer (7 tests) + EndSessionBlogTask (3 tests) + Wiring diluteStimuli --blog + Cucumber (3 scénarios). 19/19 PASS (16 JUnit5 + 3 Cucumber). 16 fichiers créés/modifiés. BACKLOG EPIC 12 ✅ TERMINÉ. | 10/10
-| 107 | 2026-06-15 | feat+tdd+ddd+bdd | EPIC Z-5 + Z-6 — Câblage ContextZoomer.zoom() dans zoomNode + zoomInOnError + buildPromptForIteration + buildReplanPrompt. VibecodingState +compositeContext +zoomedContext. 16 JUnit5 + 4 Cucumber @epic_z_6 PASS. Zéro régression. | 10/10
-| 106 | 2026-06-15 | feat+tdd+ddd | EPIC Z-0 + Z-1 — Cadrage Autofocus (CADRAGE_AUTOFOCUS.adoc, 7 ateliers agile, 23 pts EPIC Z) + AutofocusLevel enum (4 niveaux BIG_PICTURE/ARCHITECTURE/MODULE/IMPLEMENTATION, token budgets 8000→500, file patterns, LevelMetadata). 16/16 JUnit5 PASS. Package codebase/koog/autofocus/ créé. BACKLOG + INDEX mis à jour. | 10/10
-| 105 | 2026-06-15 | feat+tdd+ddd+bdd | EPIC X TERMINÉ 7/7 — X-4 RollbackStrategyExecutor (4 stratégies, 74l), X-5 TaskCatalog intégré buildReplanPrompt, X-6 E2E plan→fail→adapt→succeed. 8 JUnit5 + 5 Cucumber X-4 + 3 X-5 + 3 X-6 = 19/19 PASS. VibecodingGraph 17/17, planning 43/43. Zéro régression. | 10/10
-| 102 | 2026-06-14 | feat+tdd+ddd+bdd | X-2 + X-3 TaskResultVerifier + boucle verify→adapt. TaskResultVerifier.kt (52l, 4 verdicts), StepVerifier.kt (98l, retry/LLM replan). Intégration VibecodingGraph.execute() — verifyStepNode + V-6 fallback. 14 unit + 6 Cucumber X-2 + 7 unit X-3 = 27/27 PASS. Full suite 330+/333 PASS. EPIC X 4/7. publishToMavenLocal OK. | 10/10
-| 101 | 2026-06-14 | feat+tdd+ddd+bdd | X-0 + X-1 Cadrage + VibecodingPlan structuré. X-0: 6 points insertion verify→adapt documentés dans VibecodingGraph.kt. X-1: VibecodingPlan.kt (3 data classes, 14l), RollbackStrategy enum (4 valeurs). 14 JUnit5 + 8 Cucumber @epic_x_1 = 22/22 PASS. Full suite 330/333 PASS (3 pré-existants). publishToMavenLocal OK. | 10/10
-| 100 | 2026-06-14 | feat+tdd+ddd+bdd | W-4+W-5+W-6 list_tasks + mapping args + cache → EPIC W TERMINÉ. TaskListFormatter (36l, 9 tests), GradleTaskArgsMapper (27l, 6 tests), SchemaCache (22l, 6 tests). Cucumber @epic_w_4 7/7 PASS. Full suite 316/320 PASS (4 pré-existants). publishToMavenLocal OK. | 10/10
-| 099 | 2026-06-14 | feat+tdd+ddd+bdd | W-2+W-3 OpenAPI Spec + Auto-register ToolRegistry (21/21 PASS, audit BACKLOG) | 10/10
-| 096 | 2026-06-13 | feat+tdd+ddd+bdd | Y-6 AgenticExternalImporter — Import littérature agentique externe (Copilot, Cursor, Claude, Gemini). AgenticExternalImporter.kt (55l), normalizeContent() markdown→AsciiDoc. 7 JUnit5 + 5 Cucumber @epic_y_6 = 12/12 PASS. cucumberTestEpicY6 task. Total agentic 90 unit + 30 Cucumber = 120/120 PASS. | 10/10
-| 095 | 2026-06-13 | feat+tdd+ddd+bdd | Y-5 AgenticIngestor — Pipeline ingestion complet (chunk→ontologize→diff detection→store→compile). AgenticIngestor.kt, IngestionReport. 7 JUnit5 + 5 Cucumber = 12/12 PASS. cucumberTestEpicY5 task. Total agentic 83 unit + 25 Cucumber = 108/108 PASS. | 10/10
-| 088 | 2026-05-30 | feat+tests+infra | OCR-3b P1 Config YAML/CLI/DSL + P2 CI/CD — -PinputFile CLI mappe CodebasePlugin → OcrTask, llm-config.yml → GeminiConfig → OcrTask, chaîne priorite CLI>DSL>YAML>convention, YAML corrompu fallback, .github/workflows/ocr.yml (push/PR JDK 24 OCR), 22/22 tests PASS (16 existants + 6 nouveaux), zero regression, publishToMavenLocal OK | 10/10
-| 087 | 2026-05-30 | feat+tests+refactor | OCR-3b FakeVisionProvider + VisionProvider interface — P0 terminé, 6 tests PASS, ZERO regression, publishToMavenLocal OK, cross-borough codex+planner compile OK | 10/10
-| 085 | 2026-05-30 | feat+tests | OCR-2 GeminiVisionProvider (multimodal) — 95 lignes, package codebase.koog.llm. `suspend fun processImage(bytes, mimeType, lang, model, maxTokens)`. Cache lazy GoogleAiGeminiChatModel, encode base64 → ImageContent, prompt OCR AsciiDoc structuré. 6 tests JUnit5 PASS (image PNG synthétique, erreur sans clé API, grande image 2000×2000). Zéro régression. | 10/10
-| 084 | 2026-05-30 | feat+tests | OCR-1 GeminiKeyPool (rotation clés API Gemini) — 82 lignes, pattern OllamaPool (session 065). Implémente LlmInstancePool N0. Rotation ROUND_ROBIN/LEAST_USED, skip quota exceeded. 9 tests JUnit5 PASS (fan-out 2 @xp parallèles). 0 régression OllamaPool. | 10/10
-| 083 | 2026-05-30 | feat+tests | Bootstrapping EPIC OCR : DSL CodebaseOcrExtension + OcrTask + OcrEngine + FakeOcrEngine. 36 tests PASS (12 JUnit5 ext + 8 JUnit5 task + 5 Cucumber @ocr + 11 CodebasePlugin). Chaîne priorité CLI>env>DSL>convention. Extension/Task/Cucumber isolé. 12 fichiers créés, 4 modifiés. | 9/10
-| 082 | 2026-05-29 | infra+tests | Docker pgvector câblé (pgvector-epic4:5432) → BUILD SUCCESSFUL 31m 8s. 119 Cucumber PASSED, 0 FAILED Cucumber. 4 timeouts cucumberTestEpic corrigés (5→15 min). `build.gradle.kts` modifié. 1 failure JUnit5 pré-existant (PgVectorConfigTest.fromEnv JDK 24+). | 9/10
-| 081 | 2026-05-29 | bugfix+feat | Fix EpicL3 Cucumber timeout (PgVectorConfig JDBC connectTimeout=5s) + propagation erreur pgvector indisponible (KoogAugmentedContextGraph). EpicL3 7/7 PASS. EpicV6/V7/V8 14/14 isolés PASS. 3 fichiers modifiés. | 9/10
-| 080 | 2026-05-29 | feat+tests | Kover coverage 85.81% → 100.00% (74 tests JUnit5 + exclusions stratégiques). 0 missed, 55 classes métier. | 10/10
-| 078 | 2026-05-28 | review+cleanup | GLOBAL_CODE_REVIEW v14 — codebase en profondeur (64 sources + 68 tests + 23 features). Score 4.0/5.0. P1: mapstruct mort supprimé (3 fichiers, −10 lignes). 8 issues restantes (P2+P3). | 10/10
-| 074 | 2026-05-27 | feat+tdd | EPIC V-6 Feedback Loop — error→replan→retry. Boucle vibecoding autonome 100%. 4/4 JUnit5 + 3/3 Cucumber @epic_v_6 PASS. Fix compilation libs.versions.toml. 24/24 PASS, zero régression. | 10/10
-| 070 | 2026-05-27 | feat+refactor+contract | Cache dedup OllamaLlmProvider (ConcurrentHashMap) + E2E VibecodingTaskTest Testcontainers (14/14 PASS) + Nettoyage 11434-11436 (24 fichiers) + Rotation 29 ports x5 modeles + MigrationTest fix (V1+V2) + Contrat Craftsmanship EAGER | 10/10
-| 069 | 2026-05-26 | feat+bugfix | Resume session --resume + Dashboard CLI + ConnectionFactory fix — 17 JUnit5 + 4 Cucumber PASS (2 @epic_v_7, 2 @epic_v_8) | 10/10
-| 068 | 2026-05-26 | feat | LlmProviderResolver model→provider mapping + --model option + completion tracking — 34 tests PASS | 10/10
-| 065 | 2026-05-27 | feat | EPIC V-6 Cablage Ollama Cloud Docker + ConnectionFactory R2DBC — Contrat N0 llm-pool-contracts (LlmInstance/QuotaConfig/LlmInstancePool) publie Maven Local. OllamaPool (rotation ROUND_ROBIN/LEAST_USED, skip quota exceeded). OllamaLlmProvider (LlmProvider, cache OllamaChatModel, timeout 60s, zero API key). ConnectionFactory injecte dans VibecodingGraph. SessionRepository.updateSession persiste TokenTracker (prompt/completion/cost/model). V2__add_session_model migration. 12/12 JUnit5 + 1/1 Cucumber @epic_v_6 PASS. 0 regression. | 10/10
-| 064 | 2026-05-27 | feat | EPIC V-5 Cablage Gemini + Persistance — LlmProvider fun interface (Clean Architecture) + GeminiLlmProvider (production System.getenv) + FakeLlmProvider (test) + VibecodingGraph 5 noeuds (callLLM+persistState) + TokenTracker.trackPrompt + createSession init + Cucumber @epic_v_5 PASS. 11/11 JUnit5, 101/101 Cucumber, ZERO secret, ZERO regression. | 9/10
-| 063 | 2026-05-27 | feat | Configuration LLM YAML + Data class Jackson. LlmConfig.kt (4 data classes, 66l) + llm-config.yml (pattern envVar) + .gitignore + 4/4 tests PASS. | 10/10
-| 062 | 2026-05-27 | review | Code review boucle vibecoding — GLOBAL_CODE_REVIEW v12→v13. Audit 10 fichiers sources + 10 tests + schema SQL + contracts N0. 5 gaps identifies (V-5→V-9). Machine a 70%. | 9/10
-| 061 | 2026-05-27 | feat+infra | EPIC-V-FLYWAY — MigrationRunner artisanal (125 lignes, scan classpath V{n}__*.sql, table schema_version, SHA-256, idempotent). 3/3 MigrationTest PASS (Testcontainers). SessionRepository.initSchema() delegue (19→3 lignes). 35/35 JUnit5, 100/100 Cucumber, 0 regression. | 10/10
-| 060 | 2026-05-27 | consolidation | Consolidation craftman SessionRepository + Cucumber BDD — 3 correctifs : @Before Cucumber (9/9 PASS), constructeur secondaire SessionRecord (supprime, factory session()), couverture BDD→TDD (32/32 JUnit5, 150/150 Cucumber). Commit 3b95ff4. | 10/10
-| 058 | 2026-05-27 | refactor | Renommage global packages cccp/education — workspace-bom (21 fichiers), codebase (4+~25), planner (2), codex (31+2), training-private (1). 0 residu. | 10/10
-| 057 | 2026-05-26 | migration | Migration contrats vibecoding N1→N0 — 4 fichiers → vibecoding-contracts. 169 tests PASS. | 10/10
-| 056 | 2026-05-23 | feat | EPIC 6 Intégration ONNX boucle qualité. 86 tests PASS. | 10/10
-| 053 | 2026-05-21 | cleanup+feat | Cleanup langgraph4j residuel + Reconnexion Vibecoding | 10/10
-| 052 | 2026-05-21 | cleanup | Nettoyage couverture Cucumber : runner dedupe (−57 SKIPPED), EPIC 4 active (4/4 PASS), 62 PASSED/0 FAILED/10 SKIPPED intentionnels. | 10/10
-| 051 | 2026-05-22 | cross-borough | Cablage codex→codebase→planner — DOCS canal 10%, IntentionPlanner remplace KoogPlanningGraph, codex dependency. 205/209 PASS. | 9/10
-| 050 | 2026-05-20 | debug | Debug .gradlew check — 12→3 echecs (75% resolution). Gherkin 100% anglais. 8 fichiers. | 9/10
-| 049 | 2026-05-20 | cleanup+finalisation | Cleanup post-migration (12 tests Vibecoding* + 4 features EPIC V + 5 runners + 5 taches Gradle dead) + EPIC L finalisation (package langgraph supprime + dependance langgraph4j retiree). 7/7 Cucumber @epic_l_3 PASS. EPIC L = 8/8 TERMINE. | 10/10
-| 046 | 2026-05-19 | audit | EPIC G Audit publication — Credentials verifies, namespace education.cccp actif sur Maven Central + Portal. Build config pret (group=education.cccp, Sonatype staging, GPG). publishToMavenLocal suffit pour conso N1→N2. BACKLOG nettoye. | 10/10
-| 045 | 2026-05-19 | feat | EPIC V-4 Integration validation — Test end-to-end VibecodingTask sur projet reel ProjectBuilder. 8/8 JUnit5 + 5/5 Cucumber @epic_v_4 PASS. Fix jsonlEscape dans VibecodingTask.kt. 15/15 pts EPIC V. | 10/10
-| 044 | 2026-05-19 | feat | EPIC V-3 Security constraints — Sandbox workspaceRoot + dryRun guard + audit trail (AuditEntry). 30/30 JUnit5 + 11/11 Cucumber @epic_v_3 PASS. 12/15 pts EPIC V. | 10/10
-| 043 | 2026-05-19 | feat | EPIC V-2 VibecodingTask — ToolRegistry (7 tools) + VibecodingTask Gradle (vibecode task, audit trail JSONL). 17/17 JUnit5 + 4/4 Cucumber @epic_v_2 PASS. 10/15 pts EPIC V. | 10/10
-| 042 | 2026-05-19 | feat | EPIC V-1 VibecodingGraph — Graphe koog buildContext→classify→plan→executeTools→sendToolResult. VibecodingState (itérations, maxActions, dryRun). systemPrompt dynamique. Reutilisation KoogAugmentedContextGraph. 10/10 JUnit5 + 5/5 Cucumber PASS. cucumberTestEpicV1 task. 5/15 pts EPIC V. | 10/10
-| 041 | 2026-05-19 | feat | EPIC V-0 Custom tools shell — ExecShellTool + ExecGradleTool (extends SimpleTool<Args> koog). Blacklist bash 10 patterns + Gradle 4 patterns. 7/7 Cucumber @epic_v_0 PASS + 20/20 JUnit5 PASS. cucumberTestEpicV0 task. 2/15 pts EPIC V. | 10/10
-| 033 | 2026-05-19 | feat | EPIC K K-2 Format pivot metadata.json (classe Metadata.kt dans 4 boroughs producteurs + Engine N3). Codebase-plugin non impacté directement (pas de nouvelle metadata source), alignement indirect via K-4 convention over config. | —
-| 032 | 2026-05-19 | refactor | EPIC K K-1 Renommage taxonomie — `prepareContext`→`collectFromCodebase`, `assembleWorkspaceContext`→`collectCompositeContext`, `planIntention`→`generatePlan` (groupes collect/generate, 6 fichiers modifiés, compile OK) | 10/10
-| 031 | 2026-05-18 | feat+deploy | Déploiement codebase-plugin sur 10 boroughs N2 (catalog TOML + mavenLocal) + Fix Jackson mismatch quizz-benchmark (2.18.2→2.19.1 + dedup) | 8/10
-| 030 | 2026-05-18 | feat+tests | Cadrage agile 7 ateliers + Tests JUnit5 PrepareContextTask (5 PASS) + assembleWorkspaceContext task | 9/10
-| 029 | 2026-05-18 | feat+architecture | Bootstrapping Pipeline Contexte Augmente per Borough : PrepareContextTask + buildScoped + CodebasePlugin.apply() non-vide + opencode.json branche + runner.sh cleanup + GCR v7. Compilation+publication OK, test codex-gradle OK | 8/10
-| 028 | 2026-05-14 | architecture | Split architecture : racine consommateur 6 lignes + codebase-plugin autonome (gradlew, settings, libs.versions.toml, buildSrc, src, tests, .agents/), publishToMavenLocal OK, article 0124 | 10/10
-| 027 | 2026-05-14 | infra | CI Template — .github/workflows/test.yml (JDK 24, Gradle, JUnit), build OK, EPIC F cross-boroughs | 10/10
-| 026 | 2026-05-13 | feat | Benchmark Flash + Graphify — deepseek-v4-flash:cloud sur instance B, OLLAMA_BASE_URL/MODEL env vars, fix @JsonIgnoreProperties office/graph.json (21174n/22286e), benchmark-output/ (+.gitignore), 175 classifications 0% erreur, gate MVP1 PASS | 10/10
-| 025 | 2026-05-12 | feat | EPIC 10 STIMULUS Cascade — DilutionExecutor (injection auto + backup + dryRun), StimulusDetector (scan workspace/*.adoc + stale > 2j), detectStimuli + detectStaleStimuli Gradle tasks, StdoutFormatter.error(), 8/8 JUnit5 PASS | 10/10
-| 022 | 2026-05-12 | feat | EPIC 4 Benchmark MVP1 — Pipeline multi-canal finalisé (4 canaux réels, scope LOCAL/WORKSPACE, comparaison AsciiDoc, runComparisonBenchmark, gate <5%) | 10/10
-| 021 | 2026-05-11 | feat | US-9.14 Segregation Vision/Opinion — prompt engineering, classifier VisionOpinionClassifier, 10 sections test (5 VISION + 5 OPINION), gate 80%, 5 scenarios Cucumber | 10/10
-| 020 | 2026-05-11 | feat | US-9.13 Pertinence Benchmark — 10 questions metier, baseline vs augmented, report AsciiDoc, gate MVP0 >70% | 10/10
-| 019 | 2026-05-11 | feat | US-9.11 OpencodeInjector + US-9.12 augmentOpencode — pipeline walk→index→query→format→/tmp/opencode-context.txt (5 pts) | 10/10
-| 018 | 2026-05-11 | feat | US-9.10 CompositeContextBuilder FINALISE — tache Gradle augmentContext (JavaExec, -PragQuestion) + 2 scenarios Cucumber | 10/10
-| 017 | 2026-05-11 | feat | US-9.10 CompositeContextBuilder — config 40/30/20/10, builder EAGER+RAG+Graphify, main CLI | 8/10
-| 016 | 2026-05-11 | feat | US-9.9 Filtered query : fileType LIKE SQL + 3 scenarios | 10/10
-| 015 | 2026-05-11 | feat | US-9.8 VectorQueryService + Gradle task queryCodebase + 2 scenarios Cucumber | 10/10
-| 014 | 2026-05-11 | feat | US-9.7 Validation batch : 3 scenarios (full pipeline 9 fichiers, cross-type query, secret integrity) | 10/10
-| 013 | 2026-05-11 | bugfix+ci | A1: Fix `it.sourcePath` → `request.sourcePath` dans AnonymizationExpert.kt + CI `anonymize.yml` complet (outputFile vide géré) | 10/10
-| 012 | 2026-05-10 | feat+ci | CI anonymizeWithExpert : workflow_dispatch + OLLAMA_DEVICE_KEY_A + serve manuel, pipeline OK (bug métier restant) | 8/10
-| 011 | 2026-05-10 | feat | EPIC 4 Benchmark Execution — 5 scénarios Ollama deepseek-v4-pro:cloud (0% erreur, 2 bugs corrigés) | 10/10
-| 010 | 2026-05-10 | feat | EPIC 4 MVP0 — Nettoyage duplication 006, 4 scénarios Cucumber @wip, export AsciiDoc (parser JSON minimal) | 10/10
-| 009 | 2026-05-10 | feat | EPIC 2 MVP0 — Expert Anonymisation LangChain4j: interface + factory + deterministic fallback + Cucumber @wip | 10/10
-| 008 | 2026-05-09 | feat | US-9.6 — Indexation YAML/JSON configs anonymisées: YamlConfigAnonymizer + 3 scenarios Cucumber + 11/11 PASS | 10/10
-| 007 | 2026-05-09 | audit | Audit global + vérification socle : 8/8 Cucumber PASS, 4/4 anonymizers PASS, compile OK | 10/10
-| 006 | 2026-05-09 | feat | US-9.5 — Indexation metadata Kotlin: KotlinMetadataExtractor + VectorStore metadata + findByPackage + 3 scenarios Cucumber | 10/10
-| 005 | 2026-05-07 | feat | US-9.PROD — Bridge to Production: src/main/kotlin + VectorStore + EmbeddingPipeline + indexCodebase | 10/10
-| 004 | 2026-05-07 | bugfix | US-9.3 & US-9.4 — Dedup steps Cucumber + PgVectorTestContext | 10/10
-| 003 | 2026-05-07 | feat | US-9.2 & US-9.3 Dataset + Embeddings ONNX → pgvector | 10/10
-| 002 | 2026-05-07 | chore | Migration chemins foundry/ → foundry/OSS/ | -
-| 001 | 2026-05-04 | governance | Renommage openclaw→quizz-benchmark | -
-| 000 | 2026-05-03 | init | Migration gouvernance depuis quizz-benchmark-gradle + US-9.1 pgvector container | -
+| EPIC 2 Anonymisation
+| ✅ TERMINE
+| 009
+
+| EPIC 3 Multi-Canal
+| ✅ TERMINE
+| 046
+
+| EPIC 4 Benchmark
+| ✅ TERMINE
+| 026
+
+| EPIC 5 Fine-tuning
+| MIGRÉ → training
+| 110
+
+| EPIC 6 ONNX Qualité
+| ✅ TERMINE
+| 056
+
+| EPIC 7 Expert Dispatcher
+| ✅ TERMINE
+| 126
+
+| EPIC 8 Exposer experts
+| A FAIRE
+| 127
+
+| EPIC 9 Opencode Augmenté
+| ✅ TERMINE
+| 001-021
+
+| EPIC 10 STIMULUS
+| ✅ TERMINE
+| 022+025
+
+| EPIC 12 Blog Narration
+| ✅ TERMINE
+| 109
+
+| EPIC K Ontologie
+| ✅ TERMINE
+| 015-020
+
+| EPIC L koog+langchain4j
+| ✅ TERMINE
+| 034-049
+
+| EPIC V Vibecoding
+| ✅ TERMINE
+| 041-045
+
+| EPIC W Auto-discovery
+| ✅ TERMINE
+| 100
+
+| EPIC X Multi-Step
+| ✅ TERMINE
+| 101-105
+
+| EPIC Y AgenticSchema
+| ✅ TERMINE
+| 097
+
+| EPIC OCR
+| ✅ TERMINE
+| 26/26
+
+| EPIC CR Code Review
+| ✅ TERMINE
+| 14/14
+
+| EPIC SP SessionProtocol
+| ✅ TERMINE
+| 114
+
+| EPIC Z Autofocus
+| ✅ TERMINE
+| 108
+
+| EPIC PUB Publication
+| AUDITÉ
+| —
 |===
 
-'''
-== Roadmap — Etat Actuel
+== Sessions Récentes
 
-|===
-| EPIC | Description | Statut | Priorite
-| EPIC 1 | Initialisation gouvernance agent codebase-gradle | EN COURS | P0
-| EPIC 9 | Opencode Augmente — 15 US baby-step (US-9.1 ✅, US-9.2 ✅, US-9.3 ✅, US-9.4 ✅, US-9.5 ✅, US-9.6 ✅, US-9.7 ✅, US-9.8 ✅, US-9.9 ✅, US-9.10 ✅, US-9.11 ✅, US-9.12 ✅, US-9.13 ✅, US-9.14 ✅, US-9.PROD ✅) | TERMINE (15/15 US DONE) | P0
-| EPIC 2 | Expert Anonymisation LangChain4j — MVP0 | MVP0 TERMINE (session 009) | P0
-| EPIC 3 | Architecture Multi-Canal Convergent — Interfaces sealed class ContextChannel (Eager/Rag/Graphify/Resource), ChannelBudget, MultiChannelContextGraph koog+langchain4j | ✅ TERMINE (2026-05-19). 9/9 ContextChannelTest + 8/8 ChannelBudgetTest + 7/7 MultiChannelContextGraphTest PASS. CompositeContextBuilder.toChannels(), OpencodeInjector polymorphe. | P0
-| EPIC 4 | Benchmark de perception spatiale LLM | MVP1 TERMINE (session 026 : flash + Graphify reel 0% erreur) | P0
-| EPIC 5 | Pipeline fine-tuning experts CDA/FPA | MIGRÉ → training TRN-8 (Session 110) | P0
-| EPIC 6 | Intégration ONNX boucle qualité — 3 checkers déterministes (sentiment, off-topic CDA/FPA, PII résiduelle) + QualityGate + QualityRetryCircuit (max 3 retries, feedback LLM) + QualityGateTask Gradle. Package codebase/quality/. Interface QualityChecker (fun interface) prête pour plug ONNX réel quand modèles fine-tunés disponibles (EPIC 5). | ✅ TERMINE (2026-05-23). Session 056. 78 JUnit5 + 8 Cucumber = 86 tests PASS, 0 failure, 0 régression. | P1
-| EPIC 7 | Wiring LangChain4j + pgvector experts | A FAIRE | P1
-| EPIC 8 | Exposer experts via Ollama (consommation plugins) | A FAIRE | P2
-| EPIC 10 | Instrumentation STIMULUS — cascade automatique | TERMINE (10/10 sous-taches, session 025) | P0
-| EPIC 12 | Dilution Article de Blog automatique | A FAIRE | P1
-| EPIC K | Ontologie Workspace — Taxonomie unifiée (4 verbes, format pivot, convention over configuration) | ✅ TERMINE (2026-05-19). K-0→K-5 toutes les 6 phases terminées. | P0
-| EPIC L | Migration langgraph4j → koog — koog DSL (`ai.koog:koog-agents:0.8.0`) remplace langgraph4j comme orchestrateur. langchain4j préservé pour LLM/RAG/pgvector. 4 sous-EPICs (L-0→L-4, 8 pts). | ✅ TERMINE (2026-05-21). L-0→L-4 8/8 pts. Session 053 : dernier cleanup catalog/build/docs. Zéro dépendance ni référence langgraph4j dans le projet. | P0
-| EPIC V | *Vibecoding* — Remplacer opencode par VibecodingTask Gradle (agent koog autonome : LLM + filesystem + shell koog). 7 tools (5 built-in + ExecShellTool + ExecGradleTool). pipeline buildContext→classify→plan→executeTools. 5 sous-EPICs (V-0→V-4, 15 pts). | ✅ TERMINE (2026-05-19). V-0 ✅, V-1 ✅, V-2 ✅, V-3 ✅, V-4 ✅. 15/15 pts. | P0
-| EPIC-V-SESSION-REPO | *SessionRepository* — Persistance vibecoding R2DBC (PostgreSQL + pgvector). SessionRepository, TokenTracker, Dashboard, Jardin Secret (confidentiality_level). Schema V1__init_vibecoding.sql (Flyway convention sans dependance). 32/32 JUnit5, 150/150 Cucumber. | ✅ TERMINE (2026-05-27). Sessions 059+060. Commit 3b95ff4. | P0
-| EPIC-V-FLYWAY | *Migration Flyway* — MigrationRunner artisanal (sans dependance), table schema_version, gestion versions/rollback V{n}__*.sql. Pipeline initSchema → migrate. | ✅ TERMINE (Session 061). 4 fichiers (MigrationRunner 125l, SessionRepository -16l, MigrationTest 136l 3/3, SessionRepositoryTest +1 fix). | P1
-| EPIC-V-5 | *Cablage Gemini + Persistance* — LlmProvider fun interface + GeminiLlmProvider (production) + FakeLlmProvider (test). VibecodingGraph 5 nœuds koog (callLLM, persistState). TokenTracker cablé. Cucumber @epic_v_5 PASS. | ✅ TERMINE (Session 064). 11/11 JUnit5, 101/101 Cucumber, ZERO secret. Machine a 95%. | P0
-| EPIC-V-6 | *Cablage Ollama Cloud Docker + ConnectionFactory R2DBC* — Contrat N0 llm-pool-contracts publie. OllamaPool rotation instances. OllamaLlmProvider zero API key. ConnectionFactory injecte dans VibecodingGraph. SessionRepository.updateSession persiste TokenTracker. V2 migration. 12/12 JUnit5 + 1/1 Cucumber @epic_v_6 PASS. | ✅ TERMINE (2026-05-25, Session 066 vibecoding ameliorations) | P0
-| EPIC-V-7 | *Resume Session* — Option --resume sur VibecodingTask + VibecodingGraph.resumeSession(SessionRecord). 4/4 JUnit5 + 2/2 Cucumber @epic_v_7 PASS. | ✅ TERMINE (Session 069) | P0
-| EPIC-V-8 | *Dashboard CLI* — DashboardTask Gradle (vibecodingDashboard) + enregistrement CodebasePlugin. 3/3 JUnit5 + 2/2 Cucumber @epic_v_8 PASS. | ✅ TERMINE (Session 069) | P0
-| EPIC-V-6-FEEDBACK | *Feedback Loop error→replan→retry* — Boucle de retry autonome (maxRetries=3), buildReplanPrompt, checkProgress revisité. Dernier gap avant agent 100%. 4/4 JUnit5 + 3/3 Cucumber @epic_v_6 PASS. Machine vibecoding = 100%. | ✅ TERMINE (Session 074) | P0
-| EPIC G | Publication Maven Central + Gradle Portal — groupId education.cccp, namespace cccp-education. | ✅ TERMINE (session 091 — codebase-plugin:0.0.2 publié via nmcp, contrats N0 corrigés 0.0.1). | P0
-| EPIC W | *Auto-discovery Gradle Tasks* — ToolRegistry + OpenAPI Spec. | ✅ TERMINE (7/7 — W-0→W-6, session 100). 21 unit + 7 Cucumber PASS. | P1
-| EPIC X | *Décision Multi-Step verify→adapt* — Plan structuré, TaskResultVerifier, RollbackStrategy. | ✅ TERMINÉ (7/7 — X-0→X-6, session 105). 19/19 PASS. | P1
-| EPIC Y | *Agentic Literature Compiler* — Compiler littérature agentique → artefacts exécutables. | ✅ TERMINÉ (8/8 — Y-0→Y-7, session 097). 120+ PASS. | P1
-| EPIC-V-6-POOL | *Adaptation Ollama Cloud Pool* — Le pool 11437-11465 ne contient que gemma4:31b-cloud (pas de modèles premium qwen3.5/deepseek-v4/glm-5.1/minimax-m2.7/kimi-k2.6). Adaptation OllamaLlmProvider pour utiliser gemma4:31b-cloud. Script scan-ollama-cloud.sh. 4 sous-EPICs (V-6-POOL-0→V-6-POOL-3, ~5 pts). | 🔴 EN ATTENTE (cadré Session 077). | P0
-| EPIC Z | *Autofocus* — Accommodation contextuelle programmatique (zoom x1↔x1000). 11ème doc Jardin Secret. Package `autofocus/` dans `codebase/koog/`. 5ème verbe ZOOMER. | ✅ TERMINÉ (7/7 — Z-0 ✅ Z-1 ✅ Z-2 ✅ Z-3 ✅ Z-4 ✅ Z-5 ✅ Z-6 ✅ Z-7 ✅, session 108). 92 JUnit5 + 8 Cucumber = 100 PASS. Voir `AUTOFOCUS_CAPABILITY.adoc` + `CADRAGE_AUTOFOCUS.adoc`. | P1
-| EPIC SP | *Session Protocol* — Protocole opencode↔Gradle (thin client + moteur Gradle). Contrats N0 dans workspace-bom (MEMPHIS), SessionProtocolTask dans codebase, pont N3 runner. 7 sous-EPICs (SP-0→SP-6), ~27 pts. LiveContextInjector — injection contexte conversation dans le prompt LLM, fix dead code agentContext. | ✅ TERMINÉ (7/7 — SP-0→SP-6, session 114). 83 JUnit5 + 33 Cucumber = 116/116 PASS. Voir `BACKLOG.adoc` §EPIC SP. | P1
-| EPIC CR | *Code Review Deep Analysis* — 14 items (P0→P3). CR-1 ✅ Cucumber Task Factory (Session 119, 784→80 lignes), CR-2 ✅ Test Timeouts (Session 120), CR-3 ✅ Build Cache (Session 120), CR-4 ✅ Adaptive Heap (Session 120), CR-5 ✅ Root build.gradle.kts (Session 121), CR-6 ✅ ignoreFailures CI-aware (Session 121), CR-7 ✅ JVM Tuning (Session 121), CR-8 ✅ PostgreSQL Testcontainer Reuse (Session 122), CR-9 ✅ Kover Coverage Threshold (Session 122), CR-10 ✅ Dependency Conflict Validation (Session 123), CR-11 ✅ Version Catalog Centralisé (Session 123), CR-12 ✅ Transitive Dependency Audit + CVE (Session 124), CR-13 ✅ Test Task Aliases (Session 124), CR-14 ✅ BUILDING.md (Session 125). | ✅ TERMINÉ (14/14) | P0→P3
-|===
-
-'''
-== Fichiers Associes
-
-|===
-| Fichier | Role | Type
-| `AGENT.adoc` | Directives completes (cercles de confiance inclus) | EAGER
-| `LAZY_EAGER_ESSENTIALS.adoc` | Principes LAZY/EAGER compacts | EAGER
-| `PROMPT_REPRISE.adoc` | Mission session en cours | EAGER
-| `VISION_ORCHESTRATION_LLM.adoc` | Vision dispatcher + experts (275 lignes) | LAZY
-| `BACKLOG.adoc` | Suivi prioritaire des taches codebase (EPICs W/X/Y/Z) | LAZY
-| `AUTOFOCUS_CAPABILITY.adoc` (racine workspace) | Spécification complete Autofocus (11ème doc Jardin Secret) | LAZY
-| `AGENT_GOVERNANCE.adoc` (dans configuration/) | Gouvernance transverse globale | LAZY
-| `.agents/SESSIONS_HISTORY.adoc` | Historique des sessions | EAGER
-| `.agents/TEST_COVERAGE_ANALYSIS.adoc` | Analyse couverture tests | LAZY
-| `CODE_REVIEW_DEEP_ANALYSIS.adoc` | Code review approfondie (1535 lignes, score 4.0/5.0) | LAZY
-| `.agents/archives/COMPLETED_TASKS_ARCHIVE_*.adoc` | Archives taches | LAZY
-| `.agents/sessions/` | Archives par session | LAZY
-| `.agents/encyclopedies/` | Connaissance froide exhaustive | COLD
-| `.agents/backup/` | Vague froide distillation | FROZEN
-|===
-
-'''
-== Portefeuille — Projets Gouvernes
-
-|===
-| Projet | Chemin | Sessions | Derniere maj
-| plantuml-gradle | `foundry/public/plantuml-gradle/plantuml-plugin/` | ~138 | 2026-05-01
-| codex-gradle | `foundry/public/codex-gradle/` | 26 | 2026-05-22
-| planner-gradle | `foundry/public/planner-gradle/` | 50 | 2026-05-22
-| training-gradle | `foundry/public/training-gradle/training-plugin/` | ~10 | 2026-05-14
-| quizz-benchmark | `foundry/public/quizz-benchmark-gradle/quizz-benchmark-plugin/` | 6 | 2026-05-11
-| runner-gradle | `foundry/public/runner-gradle/` | 17 | 2026-05-19
-| capsule-gradle | `foundry/public/capsule-gradle/capsule-plugin/` | 11 | 2026-05-19
-| workspace-gradle | `foundry/public/workspace-gradle/` | 1 | 2026-05-17
-| waiter-gradle | `foundry/public/waiter-gradle/` | 0 (bootstrap) | 2026-05-11
-|===
-
-Voir aussi : `TAXONOMIE_WORKSPACE.adoc` (racine workspace) pour l'ontologie complete.
+| Session | Date | EPIC | Résultat
+| 126 | 2026-06-16 | EPIC 7 Expert Dispatcher | 60/60 PASS ✅
+| 125 | 2026-06-14 | CR-14 BUILDING.md | TERMINE ✅
+| 124 | 2026-06-14 | CR-12/13 Audit+Alias | TERMINE ✅
+| 123 | 2026-06-14 | CR-10/11 Dependencies | TERMINE ✅
+| 122 | 2026-06-14 | CR-8/9 Postgres+Kover | TERMINE ✅
+| 121 | 2026-06-14 | CR-5/6/7 Root+CI+JVM | TERMINE ✅
+| 120 | 2026-06-14 | CR-2/3/4 Timeout+Cache+Heap | TERMINE ✅
+| 119 | 2026-06-14 | CR-1 Cucumber Factory | TERMINE ✅
+| 118 | 2026-06-14 | OCR-3b FakeVision+CI | TERMINE ✅

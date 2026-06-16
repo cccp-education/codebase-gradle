@@ -1,0 +1,102 @@
+= Session 126 — EPIC 7 Expert Dispatcher (TERMINE)
+:session: 126
+:date: 2026-06-16
+:borough: Queens — codebase-gradle (N1)
+:duree: ~2h
+:epic: EPIC 7 — Wiring LangChain4j + pgvector experts
+
+== Contexte
+
+Session 126, mission PROMPT_REPRISE : EPIC 7 P1 — Wiring LangChain4j + pgvector experts.
+Build cassé au démarrage (libs.versions.toml incomplet) → corrigé avant EPIC 7.
+
+== Actions
+
+=== Fix build (prérequis)
+
+- `libs.versions.toml` : ajout 5 contrats N0 (codebase-contracts, agent-contracts, vibecoding-contracts, llm-pool-contracts, openencode-session-contracts) + 3 libs test (junit-platform-launcher, assertj-core, kotlinx-coroutines-test)
+- Fix version codex-plugin : 0.0.1 → 0.1.0-SNAPSHOT (seule version dans ~/.m2)
+
+=== EPIC 7 — Baby steps TDD/BDD/DDD
+
+[cols="2,3,2,2"]
+|===
+| Baby step | Fichiers | Tests | Statut
+
+| 1. Contrats
+| `ExpertContracts.kt` (ExpertDomain, ExpertCallRequest/Response/Context, ExpertTokenUsage)
+| 7 JUnit5
+| ✅
+
+| 2. Registry
+| `ExpertRegistry.kt` + `ExpertRegistration`
+| 9 JUnit5
+| ✅
+
+| 3. ExpertAgent
+| `ExpertAgent.kt` (LangChain4j AiServices) + `FakeExpertAgent.kt` + `ThrowingExpertAgent.kt`
+| 5 JUnit5
+| ✅
+
+| 4. Dispatcher
+| `DispatcherAgent.kt` + `DispatcherContracts.kt` (DispatcherSubtask, DispatcherDecomposition)
+| 14 JUnit5
+| ✅
+
+| 5. Pipeline
+| `ExpertCallPipeline.kt` (anonymize→dispatch→call→collect→synthesize)
+| 7 JUnit5
+| ✅
+
+| 6. Persistance
+| `ExpertCallRecord.kt` + `ExpertCallRepository.kt` (R2DBC, table expert_calls)
+| 13 JUnit5
+| ✅
+
+| 7. Cucumber
+| `epic_7_expert_dispatcher.feature` + `Epic7ExpertSteps.kt` + `Epic7ExpertWorld.kt` + `Epic7CucumberRunner.kt`
+| 5 Cucumber
+| ✅
+|===
+
+== Résultat
+
+- **60/60 PASS** (55 JUnit5 + 5 Cucumber)
+- Package `codebase.koog.expert/` : 8 fichiers src, 4 fichiers test, 1 feature, 1 runner
+- Domaines génériques (ExpertDomain data class) — les domaines métier CDA/FPA sont dans training-gradle (N2)
+- BACKLOG.adoc EPIC 7 marqué TERMINE
+
+== Fichiers modifiés/créés
+
+*Modifiés* :
+- `gradle/libs.versions.toml` (fix build)
+- `codebase-plugin/build.gradle.kts` (ajout cucumberTestEpic7)
+- `codebase-plugin/BACKLOG.adoc` (EPIC 7 TERMINE)
+
+*Créés* :
+- `codebase-plugin/src/main/kotlin/codebase/koog/expert/ExpertContracts.kt`
+- `codebase-plugin/src/main/kotlin/codebase/koog/expert/ExpertRegistry.kt`
+- `codebase-plugin/src/main/kotlin/codebase/koog/expert/ExpertAgent.kt`
+- `codebase-plugin/src/main/kotlin/codebase/koog/expert/DispatcherContracts.kt`
+- `codebase-plugin/src/main/kotlin/codebase/koog/expert/DispatcherAgent.kt`
+- `codebase-plugin/src/main/kotlin/codebase/koog/expert/ExpertCallPipeline.kt`
+- `codebase-plugin/src/main/kotlin/codebase/koog/expert/ExpertCallRecord.kt`
+- `codebase-plugin/src/main/kotlin/codebase/koog/expert/ExpertCallRepository.kt`
+- `codebase-plugin/src/test/kotlin/codebase/koog/expert/ExpertContractsTest.kt`
+- `codebase-plugin/src/test/kotlin/codebase/koog/expert/ExpertRegistryTest.kt`
+- `codebase-plugin/src/test/kotlin/codebase/koog/expert/FakeExpertAgent.kt`
+- `codebase-plugin/src/test/kotlin/codebase/koog/expert/ExpertAgentTest.kt`
+- `codebase-plugin/src/test/kotlin/codebase/koog/expert/DispatcherAgentTest.kt`
+- `codebase-plugin/src/test/kotlin/codebase/koog/expert/ExpertCallPipelineTest.kt`
+- `codebase-plugin/src/test/kotlin/codebase/koog/expert/ExpertCallRepositoryTest.kt`
+- `codebase-plugin/src/test/features/epic_7_expert_dispatcher.feature`
+- `codebase-plugin/src/test/kotlin/codebase/scenarios/Epic7ExpertSteps.kt`
+- `codebase-plugin/src/test/kotlin/codebase/scenarios/Epic7ExpertWorld.kt`
+- `codebase-plugin/src/test/kotlin/codebase/scenarios/Epic7CucumberRunner.kt`
+
+== Leçons
+
+- R2DBC `bind()` n'accepte pas les valeurs null → utiliser `bindNull()` pour les champs nullable
+- `Mono.from(conn.close()).awaitSingle()` échoue (Publisher<Void>) → utiliser `.subscribe()`
+- `awaitSingleOrNull()` n'existe pas → utiliser `.collectList().awaitSingle().firstOrNull()`
+- Cucumber est strict sur singulier/pluriel dans les steps

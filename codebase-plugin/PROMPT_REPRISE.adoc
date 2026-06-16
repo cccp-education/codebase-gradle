@@ -1,31 +1,34 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 126
-:session: 126
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 127
+:session: 127
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 125 — CR-14 ✅ (BUILDING.md — EPIC CR 14/14 TERMINÉ)
+:session_precedente: 126 — EPIC 7 ✅ (Expert Dispatcher, 60/60 PASS)
 
 == Contexte Hérité
 
-- EPIC W TERMINÉ (7/7)
-- EPIC X TERMINÉ (7/7)
-- EPIC Y TERMINÉ (8/8 ✅)
-- EPIC Z TERMINÉ (7/7)
-- EPIC 12 TERMINÉ — 19/19 PASS
-- EPIC SP TERMINÉ (7/7 — SP-0→SP-6, 83 JUnit5 + 33 Cucumber = 116/116 PASS)
-- EPIC OCR 26/26 ✅
-- EPIC CR TERMINÉ (14/14 ✅ — CR-1→CR-14)
-- Full suite ~450+ PASS
+- EPIC W TERMINE (7/7)
+- EPIC X TERMINE (7/7)
+- EPIC Y TERMINE (8/8)
+- EPIC Z TERMINE (7/7)
+- EPIC 12 TERMINE — 19/19 PASS
+- EPIC SP TERMINE (7/7)
+- EPIC OCR 26/26
+- EPIC CR TERMINE (14/14)
+- EPIC 7 TERMINE (60/60 PASS — Expert Dispatcher)
+- Full suite ~510+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 125 — CR-14 ✅
+== Mission Session 126 — EPIC 7 ✅
 
-- CR-14 : BUILDING.md créé (prérequis, quick start, troubleshooting, architecture, test tasks, JVM tuning, dependencies). EPIC CR 14/14 TERMINÉ.
+- ExpertContracts, ExpertRegistry, ExpertAgent, DispatcherAgent, ExpertCallPipeline, ExpertCallRepository
+- 55 JUnit5 + 5 Cucumber = 60/60 PASS
+- Package `codebase.koog.expert/` — infrastructure générique, domaines métier dans training-gradle (N2)
 
-== Priorités Session 126
+== Priorités Session 127
 
-- EPIC 7 : Wiring LangChain4j + pgvector experts — Persistance partagée entre agents, API d'appel aux experts fine-tunés, intégration dispatcher deepseek-v4-pro, anonymisation pre-query automatique. (P1, A FAIRE)
+- EPIC 8 : Exposer experts via Ollama — Packaging ONNX→Ollama, anonymisation des modèles exposés, modèles pré-chargés dans Magic Stick, documentation consommation par slider/plantuml/bakery. (P2, A FAIRE)
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 126 | EPIC 7 P1 | Wiring LangChain4j + pgvector experts
 | 127 | EPIC 8 P2 | Exposer experts via Ollama
+| 128 | EPIC PUB | Publication Maven Central codebase-plugin + codebase-contracts

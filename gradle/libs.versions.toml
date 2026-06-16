@@ -15,8 +15,14 @@ r2dbc-pool = "1.0.2.RELEASE"
 r2dbc-spi = "1.0.0.RELEASE"
 arrow = "2.2.2"
 plugin-publish = "2.1.0"
-codex-plugin = "0.0.1"
+codex-plugin = "0.1.0-SNAPSHOT"
 planner-plugin = "0.0.1"
+codebase-contracts = "0.0.1"
+agent-contracts = "0.0.1"
+vibecoding-contracts = "0.0.1"
+llm-pool-contracts = "0.1.0"
+opencode-session-contracts = "0.0.1"
+assertj = "3.27.7"
 koog = "0.8.0"
 
 [libraries]
@@ -45,6 +51,14 @@ arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines", version.ref = "arrow" }
 codex-plugin = { module = "education.cccp:codex-plugin", version.ref = "codex-plugin" }
 planner-plugin = { module = "education.cccp:planner-plugin", version.ref = "planner-plugin" }
+codebase-contracts = { module = "education.cccp:codebase-contracts", version.ref = "codebase-contracts" }
+agent-contracts = { module = "education.cccp:agent-contracts", version.ref = "agent-contracts" }
+vibecoding-contracts = { module = "education.cccp:vibecoding-contracts", version.ref = "vibecoding-contracts" }
+llm-pool-contracts = { module = "education.cccp:llm-pool-contracts", version.ref = "llm-pool-contracts" }
+opencode-session-contracts = { module = "education.cccp:opencode-session-contracts", version.ref = "opencode-session-contracts" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 koog-agents = { module = "ai.koog:koog-agents", version.ref = "koog" }
 
 [bundles]
