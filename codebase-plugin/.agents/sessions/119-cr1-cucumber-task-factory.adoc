@@ -1,0 +1,36 @@
+= Session 119 — CR-1 Cucumber Task Factory
+:date: 2026-06-16
+:type: refactor
+:score: 10/10
+
+== Contexte
+
+EPIC CR P0 — Code Review Deep Analysis (§2.2). 28 tâches Cucumber dupliquées
+dans `build.gradle.kts` (784 lignes, ~26 lignes/tâche, 95% identiques).
+
+== Actions
+
+. Analyse des 28 définitions de tâches Cucumber — 3 paramètres variables :
+  `taskName`, `description`, `runnerClass` (filter), `timeoutMinutes`
+. Définition de `CucumberTaskSpec` data class (4 champs, timeoutMinutes=15 par défaut)
+. Définition de `registerCucumberTask(spec)` — factorise tout le boilerplate
+  (classpath, dependsOn, useJUnitPlatform, systemProperty, jvmArgs, testLogging, outputs)
+. Remplacement des 28 tâches par `cucumberTaskSpecs` list + `cucumberTasks = cucumberTaskSpecs.map { registerCucumberTask(it) }`
+
+== Résultats
+
+- 784 lignes → ~80 lignes (data class + factory + 28 specs)
+- Compilation OK (`./gradlew compileKotlin`)
+- 28/28 tâches Cucumber visibles dans `./gradlew tasks --group=verification`
+- Zéro régression fonctionnelle
+
+== Fichiers modifiés
+
+- `codebase-plugin/build.gradle.kts` : remplacement lignes 86-869
+- `codebase-plugin/BACKLOG.adoc` : CR-1 marqué [x] TERMINE
+
+== Leçons
+
+- Pattern factory Gradle DSL : `data class` + `fun registerCucumberTask()` + `listOf(...).map { ... }`
+- Ajouter une nouvelle tâche Cucumber = 1 ligne dans `cucumberTaskSpecs`
+- Prochaine session : CR-2 Test Timeouts + CR-3 Build Cache + CR-4 Adaptive Heap

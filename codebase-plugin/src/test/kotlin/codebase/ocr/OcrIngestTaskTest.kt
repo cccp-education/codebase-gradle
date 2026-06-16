@@ -430,4 +430,82 @@ class OcrIngestTaskTest {
         assertTrue(results.any { it.text.contains("Document OCRisé") || it.text.contains("FakeVisionProvider") },
             "E2E results should contain OCR content")
     }
+
+    @Test
+    fun `ocrIngest collects metrics per file`(@TempDir tempDir: Path) {
+        val ocrDir = tempDir.resolve("ocr").toFile()
+        ocrDir.mkdirs()
+        ocrDir.resolve("doc_ocr.adoc").writeText("= Document\n\nContenu test.")
+
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("ocr-ingest-metrics")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
+        task.ocrOutputDir.set(project.layout.projectDirectory.dir("ocr"))
+        task.vectorStore = store
+        task.embeddingPipeline = pipeline
+
+        task.executeIngest()
+
+        assertEquals(1, task.ingestMetricsCollector.size)
+        val m = task.ingestMetricsCollector[0]
+        assertEquals("doc_ocr.adoc", m.fileName)
+        assertTrue(m.chunkCount > 0)
+        assertTrue(m.ingestDurationMs >= 0)
+        assertTrue(m.embeddingDurationMs >= 0)
+    }
+
+    @Test
+    fun `ocrIngest generates metrics report`(@TempDir tempDir: Path) {
+        val ocrDir = tempDir.resolve("ocr").toFile()
+        ocrDir.mkdirs()
+        ocrDir.resolve("doc_ocr.adoc").writeText("= Document\n\nContenu test.")
+
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("ocr-ingest-report")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
+        task.ocrOutputDir.set(project.layout.projectDirectory.dir("ocr"))
+        task.vectorStore = store
+        task.embeddingPipeline = pipeline
+
+        task.executeIngest()
+
+        val reportFile = project.layout.buildDirectory.dir("reports/ocr").get().asFile.resolve("ocr-ingest-metrics.adoc")
+        assertTrue(reportFile.exists(), "Ingest metrics report should be generated")
+        val report = reportFile.readText()
+        assertTrue(report.contains("= Rapport Métriques OCR"))
+        assertTrue(report.contains("doc_ocr.adoc"))
+    }
+
+    @Test
+    fun `ocrIngest with multiple files collects metrics for all`(@TempDir tempDir: Path) {
+        val ocrDir = tempDir.resolve("ocr").toFile()
+        ocrDir.mkdirs()
+        ocrDir.resolve("doc1_ocr.adoc").writeText("= Doc 1\n\nContenu 1.")
+        ocrDir.resolve("doc2_ocr.adoc").writeText("= Doc 2\n\nContenu 2.")
+
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("ocr-ingest-multi-metrics")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
+        task.ocrOutputDir.set(project.layout.projectDirectory.dir("ocr"))
+        task.vectorStore = store
+        task.embeddingPipeline = pipeline
+
+        task.executeIngest()
+
+        assertEquals(2, task.ingestMetricsCollector.size)
+        val names = task.ingestMetricsCollector.map { it.fileName }.sorted()
+        assertEquals(listOf("doc1_ocr.adoc", "doc2_ocr.adoc"), names)
+    }
 }

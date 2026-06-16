@@ -69,6 +69,9 @@ abstract class OcrTask : DefaultTask() {
     @get:Internal
     var llmConfigFile: java.io.File? = null
 
+    @get:Internal
+    val metricsCollector: MutableList<OcrMetrics> = mutableListOf()
+
     @get:Input
     @get:Optional
     @get:Option(option = "ocrProvider", description = "Fournisseur IA : gemini, ollama, ou gemini+ollama (fallback)")
@@ -183,6 +186,15 @@ abstract class OcrTask : DefaultTask() {
         }
 
         logger.lifecycle("[OCR] Batch terminé : {} fichier(s) traités", files.size)
+
+        if (metricsCollector.isNotEmpty()) {
+            val report = OcrMetricsReport.generateAsciiDoc(metricsCollector.toList())
+            val reportDir = project.layout.buildDirectory.dir("reports/ocr").get().asFile
+            reportDir.mkdirs()
+            val reportFile = File(reportDir, "ocr-metrics.adoc")
+            reportFile.writeText(report, Charsets.UTF_8)
+            logger.lifecycle("[OCR] Rapport métriques écrit dans : {}", reportFile.absolutePath)
+        }
     }
 
     private fun resolveInputFiles(): List<File> {
@@ -220,19 +232,23 @@ abstract class OcrTask : DefaultTask() {
         val isImage = isImageFile(file)
         val mimeType = detectMimeType(file.extension)
 
+        val startTime = System.currentTimeMillis()
         val result = if (isImage) {
             executeImageOcr(file, mimeType, lang, model, tokens, provider, ollamaUrl, ollamaVisionModel)
         } else {
             executeTextOcr(file, lang, model, tokens)
         }
+        val ocrDuration = System.currentTimeMillis() - startTime
 
-        val finalResult = if (anonymizeOutput.orNull == true) {
+        val effectiveModel = if (provider == "ollama") ollamaVisionModel else model
+
+        val (finalResult, replacements, categories) = if (anonymizeOutput.orNull == true) {
             val anonymized = TextAnonymizer.anonymize(result)
             val replaced = TextAnonymizer.countReplacements(result, anonymized)
-            val categories = TextAnonymizer.detectedCategories(result)
-            logger.lifecycle("[OCR] Anonymisation : {} remplacement(s), catégories={}", replaced, categories)
-            anonymized
-        } else result
+            val cats = TextAnonymizer.detectedCategories(result)
+            logger.lifecycle("[OCR] Anonymisation : {} remplacement(s), catégories={}", replaced, cats)
+            Triple(anonymized, replaced, cats)
+        } else Triple(result, 0, emptyList<String>())
 
         val baseName = file.nameWithoutExtension
         val outputPath = if (outputFile.isPresent && totalFiles == 1) {
@@ -243,6 +259,26 @@ abstract class OcrTask : DefaultTask() {
 
         outputPath.writeText(finalResult, Charsets.UTF_8)
         logger.lifecycle("[OCR] Résultat écrit dans : {}", outputPath.absolutePath)
+
+        val metrics = OcrMetricsCalculator.buildMetrics(
+            fileName = file.name,
+            fileSizeBytes = file.length(),
+            isImage = isImage,
+            provider = provider,
+            model = effectiveModel,
+            language = lang,
+            ocrDurationMs = ocrDuration,
+            outputLengthChars = finalResult.length,
+            anonymizationReplacements = replacements,
+            anonymizationCategories = categories
+        )
+        metricsCollector.add(metrics)
+        logger.lifecycle(
+            "[OCR] Métriques {} : durée={}, coût={}",
+            file.name,
+            OcrMetricsCalculator.formatDurationMs(ocrDuration),
+            "${"%.6f".format(java.util.Locale.US, metrics.estimatedCostUsd)} USD"
+        )
     }
 
     /**

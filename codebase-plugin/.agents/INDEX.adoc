@@ -4,10 +4,10 @@
 _Regles absolues_ : voir `AGENT.adoc`
 _Ontologie spatiale_ : voir `configuration/.agents/AGENT_GOVERNANCE.adoc`
 
-_Derniere mise a jour_ : 2026-06-16 (Session 118 — OCR-3b ✅ TERMINE 8/8)
-_Session precedente_ : 117 — OCR-4.5 ✅ Métriques OCR
-_Session en cours_ : 118 — OCR-3b ✅ (GeminiKeyPool + CI/CD)
-_Session suivante_ : 119 — EPIC CR P0 (CR-1 Cucumber Task Factory)
+_Derniere mise a jour_ : 2026-06-16 (Session 119 — CR-1 ✅ Cucumber Task Factory)
+_Session precedente_ : 118 — OCR-3b ✅ (GeminiKeyPool + CI/CD)
+_Session en cours_ : 119 — CR-1 ✅ (Cucumber Task Factory, 784→80 lignes)
+_Session suivante_ : 120 — EPIC CR P0 (CR-2 Test Timeouts + CR-3 Build Cache + CR-4 Adaptive Heap)
 _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/` (N=70, multiple de 10)
 
 '''
@@ -38,6 +38,7 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 
 |===
 | # | Date | Type | Sujet | Score
+| 119 | 2026-06-16 | refactor | CR-1 Cucumber Task Factory — 28 tâches Cucumber dupliquées (784 lignes) → CucumberTaskSpec + registerCucumberTask() (~80 lignes). Compilation OK, 28/28 tâches visibles. BACKLOG CR-1 marqué TERMINE. | 10/10
 | 118 | 2026-06-16 | feat+tdd+ddd+bdd | OCR-3b TERMINE (8/8) — GeminiKeyPool branché dans FakeVisionProvider (2 clés test, quota 10, threshold 50%, ROUND_ROBIN, lastUsedKeyId). FakeVisionProviderTest 13/13 PASS (5 existants + 8 pool integration). OcrTaskTest + Cucumber OCR backward compat OK. ocr.yml déjà existant (commit 21a782c, backlog stale). | 10/10
 | 116 | 2026-06-16 | feat+tdd+ddd+bdd | OCR-4.2+4.3 Chunking→pgvector + E2E — OcrIngestTask (chunk→embed→pgvector), VectorStore.ensureSchema() non-destructif, CodebasePlugin +ocrIngest. 14 JUnit5 OcrIngestTaskTest (Testcontainers) + 5 Cucumber @epic_ocr_4_ingest + 1 E2E image→OCR→anonymize→ingest→query = 20/20 PASS. OCR-4 4/5. | 10/10
 | 114 | 2026-06-16 | feat+tdd+ddd+bdd | SP-6 LiveContextInjector — Injection contexte conversation active dans le prompt LLM. LiveContextInjector.kt (80l) + câblage VibecodingGraph.buildPromptForIteration/buildReplanPrompt + intégration SessionProtocolTask/Server (fix dead code agentContext). 14 JUnit5 LiveContextInjectorTest + 3 Cucumber @epic_sp_6 = 17/17 PASS. EPIC SP 7/7 TERMINÉ. | 10/10
@@ -154,6 +155,7 @@ _Backup rotation_ : Sessions 061-070 → `.agents/backup/Y2026-sessions-061-070/
 | EPIC-V-6-POOL | *Adaptation Ollama Cloud Pool* — Le pool 11437-11465 ne contient que gemma4:31b-cloud (pas de modèles premium qwen3.5/deepseek-v4/glm-5.1/minimax-m2.7/kimi-k2.6). Adaptation OllamaLlmProvider pour utiliser gemma4:31b-cloud. Script scan-ollama-cloud.sh. 4 sous-EPICs (V-6-POOL-0→V-6-POOL-3, ~5 pts). | 🔴 EN ATTENTE (cadré Session 077). | P0
 | EPIC Z | *Autofocus* — Accommodation contextuelle programmatique (zoom x1↔x1000). 11ème doc Jardin Secret. Package `autofocus/` dans `codebase/koog/`. 5ème verbe ZOOMER. | ✅ TERMINÉ (7/7 — Z-0 ✅ Z-1 ✅ Z-2 ✅ Z-3 ✅ Z-4 ✅ Z-5 ✅ Z-6 ✅ Z-7 ✅, session 108). 92 JUnit5 + 8 Cucumber = 100 PASS. Voir `AUTOFOCUS_CAPABILITY.adoc` + `CADRAGE_AUTOFOCUS.adoc`. | P1
 | EPIC SP | *Session Protocol* — Protocole opencode↔Gradle (thin client + moteur Gradle). Contrats N0 dans workspace-bom (MEMPHIS), SessionProtocolTask dans codebase, pont N3 runner. 7 sous-EPICs (SP-0→SP-6), ~27 pts. LiveContextInjector — injection contexte conversation dans le prompt LLM, fix dead code agentContext. | ✅ TERMINÉ (7/7 — SP-0→SP-6, session 114). 83 JUnit5 + 33 Cucumber = 116/116 PASS. Voir `BACKLOG.adoc` §EPIC SP. | P1
+| EPIC CR | *Code Review Deep Analysis* — 14 items (P0→P3). CR-1 ✅ Cucumber Task Factory (Session 119, 784→80 lignes), CR-2 Test Timeouts, CR-3 Build Cache, CR-4 Adaptive Heap, CR-5 Root build.gradle.kts, CR-6 ignoreFailures CI-aware, CR-7 JVM Tuning, CR-8 PostgreSQL Testcontainer Reuse, CR-9 Kover Coverage Threshold, CR-10 Dependency Conflict Validation, CR-11 Version Catalog Centralisé, CR-12 Transitive Dependency Audit + CVE. | 🔄 EN COURS (1/14) | P0→P3
 |===
 
 '''

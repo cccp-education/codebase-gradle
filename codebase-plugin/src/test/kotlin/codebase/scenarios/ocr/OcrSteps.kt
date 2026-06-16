@@ -264,6 +264,24 @@ class OcrSteps {
         assertTrue(!content.contains(text), "OCR output should NOT contain '$text'. Got:\n$content")
     }
 
+    private var metricsReportPath: File? = null
+
+    @Then("the OCR metrics report exists")
+    fun ocrMetricsReportExists() {
+        val reportFile = batchOutputDir?.parentFile?.resolve("reports/ocr/ocr-metrics.adoc")
+            ?: lastOutputPath?.parentFile?.parentFile?.resolve("reports/ocr/ocr-metrics.adoc")
+        assertNotNull(reportFile, "Cannot resolve metrics report path")
+        assertTrue(reportFile.exists(), "OCR metrics report should exist: ${reportFile.absolutePath}")
+        metricsReportPath = reportFile
+    }
+
+    @Then("the OCR metrics report contains {string}")
+    fun ocrMetricsReportContains(text: String) {
+        assertNotNull(metricsReportPath, "Metrics report path should be set")
+        val content = metricsReportPath!!.readText(Charsets.UTF_8)
+        assertTrue(content.contains(text), "Metrics report should contain '$text'. Got:\n$content")
+    }
+
     @After
     fun cleanup() {
         tmpDir?.deleteRecursively()

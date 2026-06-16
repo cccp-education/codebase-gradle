@@ -945,4 +945,130 @@ class OcrTaskTest {
     private inline fun <reified T : Throwable> assertThrows(noinline block: () -> Unit): T {
         return org.junit.jupiter.api.Assertions.assertThrows(T::class.java) { block() }
     }
+
+    @Test
+    fun `executeOcr collects metrics per file`(@TempDir tempDir: Path) {
+        val inputFile = tempDir.resolve("doc.txt").toFile()
+        inputFile.writeText("Metrics test content")
+
+        val project = org.gradle.testfixtures.ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-metrics-collect")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("ocr", OcrTask::class.java).get()
+        task.inputFile.set(project.layout.projectDirectory.file("doc.txt"))
+        task.ocrEngine = FakeOcrEngine()
+        task.geminiVisionProvider = codebase.koog.llm.FakeVisionProvider()
+
+        task.executeOcr()
+
+        assertEquals(1, task.metricsCollector.size)
+        val m = task.metricsCollector[0]
+        assertEquals("doc.txt", m.fileName)
+        assertTrue(m.ocrDurationMs >= 0)
+        assertTrue(m.outputLengthChars > 0)
+        assertEquals("gemini", m.provider)
+    }
+
+    @Test
+    fun `executeOcr generates metrics report`(@TempDir tempDir: Path) {
+        val inputFile = tempDir.resolve("doc.txt").toFile()
+        inputFile.writeText("Report test")
+
+        val project = org.gradle.testfixtures.ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-metrics-report")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("ocr", OcrTask::class.java).get()
+        task.inputFile.set(project.layout.projectDirectory.file("doc.txt"))
+        task.ocrEngine = FakeOcrEngine()
+        task.geminiVisionProvider = codebase.koog.llm.FakeVisionProvider()
+
+        task.executeOcr()
+
+        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val reportFile = project.layout.buildDirectory.dir("reports/ocr").get().asFile.resolve("ocr-metrics.adoc")
+        assertTrue(reportFile.exists(), "Metrics report should be generated")
+        val report = reportFile.readText()
+        assertTrue(report.contains("= Rapport Métriques OCR"))
+        assertTrue(report.contains("doc.txt"))
+    }
+
+    @Test
+    fun `executeOcr batch collects metrics for all files`(@TempDir tempDir: Path) {
+        val inputDir = tempDir.resolve("scans").toFile()
+        inputDir.mkdirs()
+        inputDir.resolve("a.txt").writeText("A")
+        inputDir.resolve("b.txt").writeText("B")
+
+        val project = org.gradle.testfixtures.ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-batch-metrics")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("ocr", OcrTask::class.java).get()
+        task.inputDir.set(project.layout.projectDirectory.dir("scans"))
+        task.ocrEngine = FakeOcrEngine()
+        task.geminiVisionProvider = codebase.koog.llm.FakeVisionProvider()
+
+        task.executeOcr()
+
+        assertEquals(2, task.metricsCollector.size)
+        val names = task.metricsCollector.map { it.fileName }.sorted()
+        assertEquals(listOf("a.txt", "b.txt"), names)
+    }
+
+    @Test
+    fun `executeOcr with ollama provider tracks ollama model in metrics`(@TempDir tempDir: Path) {
+        val inputFile = tempDir.resolve("scan.png").toFile()
+        inputFile.writeText("fake png")
+
+        val project = org.gradle.testfixtures.ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-ollama-metrics")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("ocr", OcrTask::class.java).get()
+        task.inputFile.set(project.layout.projectDirectory.file("scan.png"))
+        task.ocrProvider.set("ollama")
+        task.ollamaOcrProvider = codebase.koog.llm.FakeOllamaOcrProvider()
+
+        task.executeOcr()
+
+        assertEquals(1, task.metricsCollector.size)
+        val m = task.metricsCollector[0]
+        assertEquals("ollama", m.provider)
+        assertEquals("qwen3-vl:235b-cloud", m.model)
+        assertEquals(0.0, m.estimatedCostUsd)
+    }
+
+    @Test
+    fun `executeOcr with anonymizeOutput tracks replacements in metrics`(@TempDir tempDir: Path) {
+        val inputFile = tempDir.resolve("doc.txt").toFile()
+        inputFile.writeText("Contact: jean.dupont@example.com, Tel: 06 12 34 56 78")
+
+        val project = org.gradle.testfixtures.ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-anonymize-metrics")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("ocr", OcrTask::class.java).get()
+        task.inputFile.set(project.layout.projectDirectory.file("doc.txt"))
+        task.ocrEngine = FakeOcrEngine()
+        task.anonymizeOutput.set(true)
+
+        task.executeOcr()
+
+        assertEquals(1, task.metricsCollector.size)
+        val m = task.metricsCollector[0]
+        assertTrue(m.anonymizationReplacements > 0)
+        assertTrue(m.anonymizationCategories.isNotEmpty())
+    }
 }

@@ -45,6 +45,9 @@ abstract class OcrIngestTask : DefaultTask() {
     @get:Internal
     var embeddingPipeline: EmbeddingPipeline? = null
 
+    @get:Internal
+    val ingestMetricsCollector: MutableList<OcrMetrics> = mutableListOf()
+
     init {
         group = "collect"
         description = "Ingère les fichiers OCR dans pgvector (chunk → embedding → RAG)"
@@ -80,6 +83,7 @@ abstract class OcrIngestTask : DefaultTask() {
 
         var totalChunks = 0
         for (file in ocrFiles) {
+            val ingestStart = System.currentTimeMillis()
             val text = file.readText(Charsets.UTF_8)
             val chunks = ChunkTokenizer.splitIntoSentenceLevelChunks(text)
             store.insertDocument(
@@ -91,17 +95,42 @@ abstract class OcrIngestTask : DefaultTask() {
                 className = null,
                 repoName = "ocr"
             )
+            val ingestDuration = System.currentTimeMillis() - ingestStart
             totalChunks += chunks.size
-            logger.lifecycle("[ocrIngest] {} : {} chunks", file.name, chunks.size)
+            logger.lifecycle("[ocrIngest] {} : {} chunks, durée={}", file.name, chunks.size,
+                OcrMetricsCalculator.formatDurationMs(ingestDuration))
+
+            val metrics = OcrMetricsCalculator.buildMetrics(
+                fileName = file.name,
+                fileSizeBytes = file.length(),
+                isImage = false,
+                provider = "ingest",
+                model = "pgvector",
+                language = "n/a",
+                ocrDurationMs = 0,
+                outputLengthChars = text.length,
+                anonymizationReplacements = 0,
+                anonymizationCategories = emptyList()
+            )
+            ingestMetricsCollector.add(OcrMetricsCalculator.mergeIngestMetrics(
+                metrics, chunkCount = chunks.size, ingestDurationMs = ingestDuration, embeddingDurationMs = 0
+            ))
         }
 
         logger.lifecycle("[ocrIngest] {} documents, {} chunks insérés", ocrFiles.size, totalChunks)
 
         if (totalChunks > 0) {
+            val embedStart = System.currentTimeMillis()
             val allRecords = store.fetchAllChunks()
             logger.lifecycle("[ocrIngest] Calcul des embeddings ONNX pour {} chunks...", allRecords.size)
             pipeline.embedAll(allRecords)
-            logger.lifecycle("[ocrIngest] Embeddings calculés et stockés")
+            val embedDuration = System.currentTimeMillis() - embedStart
+            logger.lifecycle("[ocrIngest] Embeddings calculés et stockés en {}",
+                OcrMetricsCalculator.formatDurationMs(embedDuration))
+
+            ingestMetricsCollector.forEachIndexed { i, m ->
+                ingestMetricsCollector[i] = m.copy(embeddingDurationMs = embedDuration / ocrFiles.size)
+            }
         }
 
         logger.lifecycle(
@@ -109,6 +138,15 @@ abstract class OcrIngestTask : DefaultTask() {
             store.countDocuments(),
             store.countChunks()
         )
+
+        if (ingestMetricsCollector.isNotEmpty()) {
+            val report = OcrMetricsReport.generateAsciiDoc(ingestMetricsCollector.toList())
+            val reportDir = project.layout.buildDirectory.dir("reports/ocr").get().asFile
+            reportDir.mkdirs()
+            val reportFile = File(reportDir, "ocr-ingest-metrics.adoc")
+            reportFile.writeText(report, Charsets.UTF_8)
+            logger.lifecycle("[ocrIngest] Rapport métriques écrit dans : {}", reportFile.absolutePath)
+        }
     }
 
     private fun resolveStore(): VectorStore {

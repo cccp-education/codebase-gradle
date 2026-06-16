@@ -189,3 +189,49 @@ Feature: OCR — Extraction de texte assistée IA
     And I query pgvector for "projet Alpha version production"
     Then the RAG query returns at least 1 result
     And at least 1 result contains "Alpha" or "production"
+
+  @unit @epic_ocr_4_5
+  Scenario: OCR collects metrics per file
+    Given an OCR test file "metrics-doc.txt" with text "Metrics test content"
+    When I OCR "metrics-doc.txt" in French
+    Then the OCR result for "metrics-doc" exists
+    And the OCR metrics report exists
+    And the OCR metrics report contains "metrics-doc.txt"
+
+  @unit @epic_ocr_4_5
+  Scenario: OCR batch collects metrics for all files
+    Given an OCR test directory "batch-metrics" with files:
+      | a.txt | Content A |
+      | b.txt | Content B |
+    When I OCR the directory "batch-metrics" in French
+    Then the OCR result for "a" exists
+    And the OCR result for "b" exists
+    And the OCR metrics report exists
+    And the OCR metrics report contains "a.txt"
+    And the OCR metrics report contains "b.txt"
+
+  @unit @epic_ocr_4_5
+  Scenario: OCR with ollama provider tracks zero cost in metrics
+    Given an OCR test file "ollama-metrics.png" with text "fake png for ollama metrics"
+    When I OCR "ollama-metrics.png" with provider "ollama"
+    Then the OCR result for "ollama-metrics" exists
+    And the OCR metrics report exists
+    And the OCR metrics report contains "ollama"
+    And the OCR metrics report contains "0.000000"
+
+  @unit @epic_ocr_4_5
+  Scenario: OCR with anonymization tracks replacements in metrics
+    Given an OCR test file "pii-metrics.txt" with text "Contact: jean.dupont@example.com"
+    When I OCR "pii-metrics.txt" in French with anonymization enabled
+    Then the OCR result for "pii-metrics" exists
+    And the OCR metrics report exists
+    And the OCR metrics report contains "Remplacements anonymisation"
+
+  @unit @epic_ocr_4_5
+  Scenario: OCR metrics report contains duration and cost
+    Given an OCR test file "cost-doc.txt" with text "Cost tracking test content"
+    When I OCR "cost-doc.txt" in French
+    Then the OCR result for "cost-doc" exists
+    And the OCR metrics report exists
+    And the OCR metrics report contains "Durée totale"
+    And the OCR metrics report contains "Coût total estimé"
