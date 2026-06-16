@@ -29,15 +29,15 @@ dependencies {
     implementation(libs.planner.plugin)
 
     // N0 codebase contracts — source unique de vérité (ContextChannel, ChannelBudget, CompositeContext, CompositeContextConfig)
-    implementation("education.cccp:codebase-contracts:0.0.1")
+    implementation(libs.codebase.contracts)
     // N0 agent contracts — Epic, UserStory, GradleTask, AgentState (partagés cross-borough)
-    implementation("education.cccp:agent-contracts:0.0.1")
+    implementation(libs.agent.contracts)
     // N0 vibecoding contracts — ToolRegistry, ExecShellTool, ExecGradleTool, ToolkitIsMissingException
-    implementation("education.cccp:vibecoding-contracts:0.0.1")
+    implementation(libs.vibecoding.contracts)
     // N0 llm-pool contracts — LlmInstancePool, LlmInstance, QuotaConfig, RotationStrategy (shared N1→N2)
-    implementation("education.cccp:llm-pool-contracts:0.0.1")
+    implementation(libs.llm.pool.contracts)
     // N0 opencode-session contracts — SessionPrompt, SessionResponse, AgentContext, SessionStatus, TokenUsage, ToolCallRecord
-    implementation("education.cccp:opencode-session-contracts:0.0.1")
+    implementation(libs.opencode.session.contracts)
     implementation(libs.bundles.arrow)
     implementation(libs.koog.agents) {
         // Exclusion nécessaire : koog 26.0.2-1 conflict with Kotlin embedded 13.0
@@ -67,9 +67,9 @@ dependencies {
 
 
     testImplementation(kotlin("test-junit5"))
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
-    testImplementation("org.assertj:assertj-core:3.27.3")
+    testRuntimeOnly(libs.junit.platform.launcher)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.assertj.core)
     runtimeOnly(libs.logback.classic)
     testRuntimeOnly(libs.logback.classic)
     testImplementation(libs.testcontainers.postgresql)
@@ -259,7 +259,26 @@ kover {
     }
 }
 
-tasks.check { dependsOn("koverVerify") }
+tasks.register("validateDependencies") {
+    description = "Validates dependency conflict resolution (annotations:13.0 constraint)"
+    group = "verification"
+    doLast {
+        val resolved = configurations.runtimeClasspath.get()
+            .resolvedConfiguration
+            .resolvedArtifacts
+        val annotationsVersion = resolved
+            .find { it.moduleVersion.id.name == "annotations" }
+            ?.moduleVersion
+            ?.id
+            ?.version
+        require(annotationsVersion == "13.0") {
+            "Annotations version mismatch: expected 13.0, got $annotationsVersion. " +
+            "Check for koog-agents upgrade conflicts."
+        }
+    }
+}
+
+tasks.check { dependsOn("koverVerify", "validateDependencies") }
 
 signing {
     if (System.getenv("CI") != "true" && !version.toString().endsWith("-SNAPSHOT")) {

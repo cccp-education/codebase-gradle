@@ -19,6 +19,12 @@ kover = "0.9.8"
 codex-plugin = "0.0.1"
 planner-plugin = "0.0.1"
 koog = "0.8.0"
+assertj = "3.27.3"
+codebase-contracts = "0.0.1"
+agent-contracts = "0.0.1"
+vibecoding-contracts = "0.0.1"
+llm-pool-contracts = "0.0.1"
+opencode-session-contracts = "0.0.1"
 
 [libraries]
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
@@ -47,6 +53,14 @@ arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines", version.ref 
 codex-plugin = { module = "education.cccp:codex-plugin", version.ref = "codex-plugin" }
 planner-plugin = { module = "education.cccp:planner-plugin", version.ref = "planner-plugin" }
 koog-agents = { module = "ai.koog:koog-agents", version.ref = "koog" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
+codebase-contracts = { module = "education.cccp:codebase-contracts", version.ref = "codebase-contracts" }
+agent-contracts = { module = "education.cccp:agent-contracts", version.ref = "agent-contracts" }
+vibecoding-contracts = { module = "education.cccp:vibecoding-contracts", version.ref = "vibecoding-contracts" }
+llm-pool-contracts = { module = "education.cccp:llm-pool-contracts", version.ref = "llm-pool-contracts" }
+opencode-session-contracts = { module = "education.cccp:opencode-session-contracts", version.ref = "opencode-session-contracts" }
 
 [bundles]
 cucumber = [

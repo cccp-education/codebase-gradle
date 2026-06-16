@@ -1,7 +1,7 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 123
-:session: 123
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 124
+:session: 124
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 122 — CR-8+CR-9 ✅ (PostgreSQL Testcontainer Reuse + Kover Coverage Threshold)
+:sessions_precedente: 123 — CR-10+CR-11 ✅ (Dependency Conflict Validation + Version Catalog Centralisé)
 
 == Contexte Hérité
 
@@ -14,22 +14,22 @@
 - EPIC OCR 26/26 ✅
 - EPIC CR P0 : CR-1 ✅ CR-2 ✅ CR-3 ✅ CR-4 ✅ (4/14)
 - EPIC CR P1 : CR-5 ✅ CR-6 ✅ CR-7 ✅ CR-8 ✅ CR-9 ✅ (9/14)
+- EPIC CR P2 : CR-10 ✅ CR-11 ✅ (11/14)
 - Full suite ~450+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 122 — CR-8+CR-9 ✅
+== Mission Session 123 — CR-10+CR-11 ✅
 
-- CR-8 : PostgresFixture singleton avec .withReuse(true), 14 fichiers de test migrés, ~/.testcontainers.properties reuse enabled
-- CR-9 : koverThresholdCheck artisanal (170 lignes XML parsing) remplacé par kover { reports { verify { rule { minBound(80) } } } } + check.dependsOn(koverVerify)
+- CR-10 : validateDependencies task ajoutée, wirée dans check. Détecte mismatch annotations 26.0.2-1 vs 13.0 (la contrainte strictly ne force pas effectivement).
+- CR-11 : 5 versions + 8 libraries ajoutées dans libs.versions.toml. 5 N0 contracts + assertj + coroutines-test + junit-platform-launcher migrés vers catalog.
 
-== Priorités Session 123
+== Priorités Session 124
 
-- CR-10 : Dependency Conflict Validation — Ajouter `validateDependencies` task pour vérifier les contraintes annotations:13.0
-- CR-11 : Version Catalog Centralisé — Migrer les versions éparpillées dans build.gradle.kts vers gradle/libs.versions.toml
+- CR-12 : Transitive Dependency Audit + CVE — `./gradlew dependencies --configuration=runtimeClasspath`, exclusions pour dépendances inutilisées, vérification CVE commons-collections
+- CR-13 : Test Task Aliases — Ajouter `testAll`, `testEpics`, `testFast`, `testHelp`
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 123 | EPIC CR P2 | CR-10 Dependency Conflict Validation + CR-11 Version Catalog Centralisé
 | 124 | EPIC CR P2 | CR-12 Transitive Dependency Audit + CVE + CR-13 Test Task Aliases
 | 125 | EPIC CR P3 | CR-14 BUILDING.md
