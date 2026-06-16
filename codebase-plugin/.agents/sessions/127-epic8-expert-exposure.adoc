@@ -1,0 +1,69 @@
+= Session 127 — EPIC 8 Expert Exposure via Ollama
+:session: 127
+:date: 2026-06-16
+:epic: EPIC 8 — Exposer experts via Ollama
+:borough: Queens — codebase-gradle (N1)
+
+== Contexte
+
+EPIC 7 (Expert Dispatcher) terminé session 126 (60/60 PASS).
+EPIC 8 priorité P2 : exposer les experts enregistrés via Ollama pour consommation par slider/plantuml/bakery.
+
+== Actions
+
+=== Baby Step 1 — Contrats (TDD)
+- ExpertExposureContractsTest.kt : 9 tests (manifest, entry, config, anonymization, from registration)
+- ExpertExposureContracts.kt : ExpertExposureEntry, ExpertExposureManifest, ExpertExposureConfig
+- 9/9 PASS
+
+=== Baby Step 2 — Tâche Gradle + Extension (TDD)
+- ExpertExposureTaskTest.kt : 7 tests (manifest generation, anonymization, domain filtering, empty registry, valid JSON, class structure)
+- ExpertExposureTask.kt : @DisableCachingByDefault abstract class DefaultTask, kotlinx.serialization JSON output
+- CodebaseExpertExtension.kt : abstract class (domains, anonymizeEndpoints, outputFile)
+- CodebasePlugin.kt : extension "codebaseExpert" + task "exposeExperts" (group "generate")
+- 7/7 PASS
+
+=== Baby Step 3 — Anonymisation (couvert par task test)
+- Anonymisation endpoints testée dans ExpertExposureTaskTest (anonymizeEndpoints=true → ***anonymized***)
+- Déjà couvert
+
+=== Baby Step 4 — Cucumber BDD
+- epic_8_expert_exposure.feature : 5 scénarios (@epic8 @wip)
+- Epic8ExpertExposureWorld.kt + Epic8ExpertExposureSteps.kt + Epic8CucumberRunner.kt
+- cucumberTestEpic8 enregistré dans build.gradle.kts
+- 5/5 PASS
+
+== Résultats
+
+- 16 nouveaux JUnit5 PASS (9 contrats + 7 tâche)
+- 5 nouveaux Cucumber PASS
+- 72 tests expert existants (EPIC 7) toujours PASS
+- Compilation OK
+
+== Fichiers Modifiés
+
+- src/main/kotlin/codebase/koog/expert/ExpertExposureContracts.kt (NOUVEAU)
+- src/main/kotlin/codebase/koog/expert/ExpertExposureTask.kt (NOUVEAU)
+- src/main/kotlin/codebase/koog/expert/CodebaseExpertExtension.kt (NOUVEAU)
+- src/main/kotlin/codebase/CodebasePlugin.kt (MODIFIÉ — extension + task)
+- src/test/kotlin/codebase/koog/expert/ExpertExposureContractsTest.kt (NOUVEAU)
+- src/test/kotlin/codebase/koog/expert/ExpertExposureTaskTest.kt (NOUVEAU)
+- src/test/features/epic_8_expert_exposure.feature (NOUVEAU)
+- src/test/kotlin/codebase/scenarios/Epic8ExpertExposureWorld.kt (NOUVEAU)
+- src/test/kotlin/codebase/scenarios/Epic8ExpertExposureSteps.kt (NOUVEAU)
+- src/test/kotlin/codebase/scenarios/Epic8CucumberRunner.kt (NOUVEAU)
+- build.gradle.kts (MODIFIÉ — cucumberTestEpic8)
+- BACKLOG.adoc (MODIFIÉ — EPIC 8 statut)
+
+== Leçons
+
+- DuplicateStepDefinitionException : les steps Cucumber dans le même package GLUE doivent avoir des noms uniques. Préfixer avec le contexte EPIC ("expert exposure registry", "exposure task").
+- @DisableCachingByDefault vient de org.gradle.work, pas org.gradle.api.tasks.
+- kotlinx.serialization déjà dans les dépendances (kotlin("plugin.serialization")), pas besoin d'ajout.
+
+== Prochaine Session
+
+Session 128 — EPIC PUB : Publication Maven Central codebase-plugin + codebase-contracts.
+Dépend de codex-plugin et planner-plugin (N2) en library.
+Option A : publier codex + planner avant codebase.
+Option B : includeBuild temporaire.

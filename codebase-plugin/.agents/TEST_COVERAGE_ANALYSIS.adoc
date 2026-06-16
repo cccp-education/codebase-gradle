@@ -1,6 +1,6 @@
-= TEST_COVERAGE_ANALYSIS — Session 126
+= TEST_COVERAGE_ANALYSIS — Session 127
 :date: 2026-06-16
-:epic: EPIC 7 — Expert Dispatcher
+:epic: EPIC 8 — Expert Exposure via Ollama
 
 == Nouveaux tests ajoutés
 
@@ -8,22 +8,18 @@
 |===
 | Classe | Type | Count
 
-| ExpertContractsTest | JUnit5 | 7
-| ExpertRegistryTest | JUnit5 | 9
-| ExpertAgentTest | JUnit5 | 5
-| DispatcherAgentTest | JUnit5 | 14
-| ExpertCallPipelineTest | JUnit5 | 7
-| ExpertCallRepositoryTest | JUnit5 | 13
-| Epic7CucumberRunner | Cucumber | 5
+| ExpertExposureContractsTest | JUnit5 | 9
+| ExpertExposureTaskTest | JUnit5 | 7
+| Epic8CucumberRunner | Cucumber | 5
 |===
 
 == Total session
 
-- JUnit5 : 55
+- JUnit5 : 16
 - Cucumber : 5
-- **Total : 60 PASS**
+- **Total : 21 PASS**
 
 == Total projet (estimé)
 
-- Avant session 126 : ~450 PASS
-- Après session 126 : ~510 PASS
+- Avant session 127 : ~510 PASS
+- Après session 127 : ~531 PASS

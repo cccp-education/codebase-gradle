@@ -3,6 +3,8 @@ package codebase
 import codebase.blog.EndSessionBlogTask
 import codebase.koog.SessionProtocolDaemonTask
 import codebase.koog.VibecodingTask
+import codebase.koog.expert.CodebaseExpertExtension
+import codebase.koog.expert.ExpertExposureTask
 import codebase.koog.tracking.DashboardTask
 import codebase.ocr.CodebaseOcrExtension
 import codebase.ocr.OcrIngestTask
@@ -25,6 +27,11 @@ class CodebasePlugin : Plugin<Project> {
         ocrExt.ocrEnabled.convention(false)
         ocrExt.maxTokens.convention(8192)
         ocrExt.inputDir.convention(project.layout.projectDirectory)
+
+        val expertExt = project.extensions.create("codebaseExpert", CodebaseExpertExtension::class.java)
+        expertExt.domains.convention(emptyList())
+        expertExt.anonymizeEndpoints.convention(true)
+        expertExt.outputFile.convention("build/experts/exposure-manifest.json")
 
         project.tasks.register(
             "collectFromCodebase",
@@ -178,6 +185,30 @@ class CodebasePlugin : Plugin<Project> {
             task.group = "collect"
             task.description = "Ingère les fichiers OCR dans pgvector (chunk → embedding ONNX → RAG)"
             task.ocrOutputDir.convention(project.layout.buildDirectory.dir("ocr"))
+        }
+
+        project.tasks.register(
+            "exposeExperts",
+            ExpertExposureTask::class.java
+        ) { task ->
+            task.group = "generate"
+            task.description = "Expose les experts enregistrés via Ollama — génère un manifest JSON consommable par slider/plantuml/bakery"
+            task.domains.set(
+                project.providers.gradleProperty("domains")
+                    .map { it.split(",").map { d -> d.trim() } }
+                    .orElse(expertExt.domains)
+            )
+            task.anonymizeEndpoints.set(
+                project.providers.gradleProperty("anonymizeEndpoints")
+                    .map { it.toBoolean() }
+                    .orElse(expertExt.anonymizeEndpoints)
+            )
+            task.outputFile.set(
+                project.layout.buildDirectory.file(
+                    project.providers.gradleProperty("outputFile")
+                        .orElse(expertExt.outputFile)
+                )
+            )
         }
     }
 }

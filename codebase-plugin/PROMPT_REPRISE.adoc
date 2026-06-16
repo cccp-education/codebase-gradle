@@ -1,7 +1,7 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 127
-:session: 127
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 128
+:session: 128
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 126 — EPIC 7 ✅ (Expert Dispatcher, 60/60 PASS)
+:session_precedente: 127 — EPIC 8 ✅ (Expert Exposure, 16 JUnit5 + 5 Cucumber = 21/21 PASS)
 
 == Contexte Hérité
 
@@ -14,21 +14,18 @@
 - EPIC OCR 26/26
 - EPIC CR TERMINE (14/14)
 - EPIC 7 TERMINE (60/60 PASS — Expert Dispatcher)
-- Full suite ~510+ PASS
+- EPIC 8 EN COURS (3/4 — Expert Exposure, 21/21 PASS)
+- Full suite ~530+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 126 — EPIC 7 ✅
+== Mission Session 128
 
-- ExpertContracts, ExpertRegistry, ExpertAgent, DispatcherAgent, ExpertCallPipeline, ExpertCallRepository
-- 55 JUnit5 + 5 Cucumber = 60/60 PASS
-- Package `codebase.koog.expert/` — infrastructure générique, domaines métier dans training-gradle (N2)
-
-== Priorités Session 127
-
-- EPIC 8 : Exposer experts via Ollama — Packaging ONNX→Ollama, anonymisation des modèles exposés, modèles pré-chargés dans Magic Stick, documentation consommation par slider/plantuml/bakery. (P2, A FAIRE)
+EPIC PUB : Publication Maven Central codebase-plugin + codebase-contracts.
+Dépend de codex-plugin et planner-plugin (N2) en library.
+Option A : publier codex + planner avant codebase.
+Option B : includeBuild temporaire.
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 127 | EPIC 8 P2 | Exposer experts via Ollama
 | 128 | EPIC PUB | Publication Maven Central codebase-plugin + codebase-contracts

@@ -150,6 +150,7 @@ val cucumberTaskSpecs = listOf(
     CucumberTaskSpec("cucumberTestEpicSp5", "Runs Cucumber BDD tests — EPIC SP-5 (ToolEventStream) only", "codebase.scenarios.EpicSp5CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicSp6", "Runs Cucumber BDD tests — EPIC SP-6 (LiveContextInjector) only", "codebase.scenarios.EpicSp6CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpic7", "Runs Cucumber BDD tests — EPIC 7 (Expert Dispatcher) only", "codebase.scenarios.Epic7CucumberRunner"),
+    CucumberTaskSpec("cucumberTestEpic8", "Runs Cucumber BDD tests — EPIC 8 (Expert Exposure via Ollama) only", "codebase.scenarios.Epic8CucumberRunner"),
 )
 
 val cucumberTasks = cucumberTaskSpecs.map { registerCucumberTask(it) }

@@ -1,29 +1,31 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 117
-:session: 117
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 128
+:session: 128
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 116 — OCR-4.2+4.3 ✅ chunking→pgvector + E2E (14 JUnit5 + 5 Cucumber + 1 E2E = 20/20 PASS)
+:session_precedente: 127 — EPIC 8 ✅ (Expert Exposure, 16 JUnit5 + 5 Cucumber = 21/21 PASS)
 
 == Contexte Hérité
 
-- EPIC W TERMINÉ (7/7)
-- EPIC X TERMINÉ (7/7)
-- EPIC Y TERMINÉ (8/8 ✅)
-- EPIC Z TERMINÉ (7/7)
-- EPIC 12 TERMINÉ — 19/19 PASS
-- EPIC 5 MIGRÉ → training-gradle TRN-8
-- EPIC SP TERMINÉ (7/7 — SP-0→SP-6, 83 JUnit5 + 33 Cucumber = 116/116 PASS)
-- EPIC OCR 16/26
-  - OCR-4 EN COURS (4/5 — chunking→pgvector ✅, métriques restantes)
-- Full suite ~420+ PASS
+- EPIC W TERMINE (7/7)
+- EPIC X TERMINE (7/7)
+- EPIC Y TERMINE (8/8)
+- EPIC Z TERMINE (7/7)
+- EPIC 12 TERMINE — 19/19 PASS
+- EPIC SP TERMINE (7/7)
+- EPIC OCR 26/26
+- EPIC CR TERMINE (14/14)
+- EPIC 7 TERMINE (60/60 PASS — Expert Dispatcher)
+- EPIC 8 EN COURS (3/4 — Expert Exposure, 21/21 PASS)
+- Full suite ~530+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 117 — OCR-4.5 Métriques + EPIC CR P0
+== Mission Session 128
 
-*OCR-4.5* : Métriques temps OCR, qualité extraction, coût tokens Gemini.
-*EPIC CR P0* : CR-1 Cucumber Task Factory, CR-2 Test Timeouts, CR-3 Build Cache, CR-4 Adaptive Heap.
+EPIC PUB : Publication Maven Central codebase-plugin + codebase-contracts.
+Dépend de codex-plugin et planner-plugin (N2) en library.
+Option A : publier codex + planner avant codebase.
+Option B : includeBuild temporaire.
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 117 | OCR-4.5 + CR P0 | Métriques OCR + build perf
-| 118 | CR P1 | JVM tuning, testcontainer reuse, Kover threshold
+| 128 | EPIC PUB | Publication Maven Central codebase-plugin + codebase-contracts

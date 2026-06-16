@@ -1,6 +1,14 @@
 = COMPLETED_TASKS_ARCHIVE — Juin 2026
 :date: 2026-06-16
 
+== Session 127 — EPIC 8 Expert Exposure via Ollama
+
+- ExpertExposureContracts (ExpertExposureEntry, ExpertExposureManifest, ExpertExposureConfig) — 9 JUnit5
+- ExpertExposureTask (@DisableCachingByDefault, kotlinx.serialization JSON, filtrage domaines, anonymisation) — 7 JUnit5
+- CodebaseExpertExtension (domains, anonymizeEndpoints, outputFile) + CodebasePlugin registration
+- Cucumber BDD (feature + world + steps + runner) — 5 Cucumber
+- **21/21 PASS** — Tâche `exposeExperts` (groupe "generate")
+
 == Session 126 — EPIC 7 Expert Dispatcher
 
 - ExpertContracts (ExpertDomain, ExpertCallRequest/Response/Context, ExpertTokenUsage) — 7 JUnit5
