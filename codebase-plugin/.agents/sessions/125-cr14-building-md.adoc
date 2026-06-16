@@ -1,0 +1,40 @@
+= Session 125 — CR-14 BUILDING.md
+:session: 125
+:date: 2026-06-16
+:type: doc
+:score: 10/10
+
+== Contexte
+
+EPIC CR — Code Review Deep Analysis. Dernier item restant (14/14).
+
+== Actions
+
+. Lecture PROMPT_REPRISE, AGENT.adoc, INDEX.adoc, BACKLOG.adoc, SESSION_CHECKLIST
+. git status → clean
+. ./gradlew compileKotlin → BUILD SUCCESSFUL
+. Création BUILDING.md (1 fichier) — documentation build centralisée :
+  * Prérequis (Java 24+, PostgreSQL 15+, Docker, 8GB RAM)
+  * Quick Start (build, publishToMavenLocal, test tasks)
+  * Build Cache (caching=true, --no-build-cache)
+  * Troubleshooting (OOM, PostgreSQL container, test timeouts)
+  * Performance Profiling (--profile)
+  * Architecture (packages, test tasks table, verification tasks, JVM tuning)
+  * Dependencies (N0 contracts, N2 dependencies, key libraries)
+. Mise à jour BACKLOG.adoc — CR-14 marqué [x] TERMINÉ
+. Mise à jour INDEX.adoc — EPIC CR 14/14 ✅ TERMINÉ, session 125 ajoutée
+. Mise à jour SESSIONS_HISTORY.adoc — session 125 ajoutée
+. Mise à jour PROMPT_REPRISE.adoc — session 126
+
+== Résultat
+
+- EPIC CR 14/14 TERMINÉ
+- BUILDING.md créé (1 fichier, ~150 lignes)
+- 4 fichiers gouvernance mis à jour (BACKLOG, INDEX, SESSIONS_HISTORY, PROMPT_REPRISE)
+- Zéro modification code source, compilation OK
+
+== Leçons
+
+- CR-14 était le dernier item P3 nice-to-have de l'EPIC CR
+- BUILDING.md couvre tous les aspects : prérequis, quick start, troubleshooting, architecture, test tasks, JVM tuning, dependencies
+- EPIC CR est le premier EPIC à couvrir les 4 niveaux de priorité (P0→P3) en 14 items

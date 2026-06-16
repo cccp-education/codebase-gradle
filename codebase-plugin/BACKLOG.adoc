@@ -904,22 +904,22 @@ C'est la différence entre un script qui associe et un ingénieur qui comprend.
 
 === P1 — IMPORTANT
 
-* [ ] CR-5 : Root build.gradle.kts — Implémenter root avec shared group/version/repositories/toolchain. Débloque multi-module scaling. (§2.1)
-* [ ] CR-6 : ignoreFailures CI-aware — `ignoreFailures = true` masque les échecs CI. Rendre CI-aware: `ignoreFailures = !isCI()`. Ajouter G1GC + documenter EnableDynamicAgentLoading. (§2.3)
-* [ ] CR-7 : JVM Tuning — UseSerialGC obsolète, MaxMetaspaceSize=256m trop petit pour Kotlin, TieredStopAtLevel=1 désactive JIT. Split CI/local: CI=G1GC+ParallelRefProc, local=SerialGC+TieredStopAtLevel=4, Metaspace=512m. (§3.4)
+* [x] CR-5 : Root build.gradle.kts — Implémenté root avec shared group/version/repositories/toolchain. Débloque multi-module scaling. (§2.1) — Session 121
+* [x] CR-6 : ignoreFailures CI-aware — `ignoreFailures = !isCI()`. G1GC global, URL cccp-education. EnableDynamicAgentLoading documenté. (§2.3) — Session 121
+* [x] CR-7 : JVM Tuning — Split CI/local: CI=G1GC+ParallelRefProc, local=SerialGC+TieredStopAtLevel=4, Metaspace=512m. (§3.4) — Session 121
 * [x] CR-8 : PostgreSQL Testcontainer Reuse — Chaque test démarre un container frais (2-3 min). Créer PostgresFixture avec `.withReuse(true)`. Économise 5+ min par suite. (§4.2) — Session 122
 * [x] CR-9 : Kover Coverage Threshold — Pas de `minBound` vérification. Ajouter `verify { rule { minBound(80) } }` et `check.dependsOn(koverVerify)`. (§6.1) — Session 122
 
 === P2 — DETTE TECHNIQUE
 
-* [ ] CR-10 : Dependency Conflict Validation — annotations:13.0 pinée via constraint mais pas de test validation. Ajouter `validateDependencies` task. (§2.4)
-* [ ] CR-11 : Version Catalog Centralisé — Versions éparpillées dans build.gradle.kts au lieu de `gradle/libs.versions.toml`. Migrer. (§5.1)
+* [x] CR-10 : Dependency Conflict Validation — validateDependencies task (vérifie annotations:13.0 résolu, wiré dans check). (§2.4) — Session 123
+* [x] CR-11 : Version Catalog Centralisé — 5 versions + 8 libraries migrées vers libs.versions.toml. (§5.1) — Session 123
 * [x] CR-12 : Transitive Dependency Audit + CVE — Audit runtimeClasspath : zéro CVE (commons-collections4:4.4 safe, pas commons-collections:3.x). validateDependencies enrichi avec audit CVE + rapport groupes transitifs lourds. Zéro exclusion nécessaire (toutes transitives utilisées via codex/planner). (§5.2) — Session 124
 * [x] CR-13 : Test Task Aliases — 4 alias ajoutés : testAll (JUnit5+Cucumber), testEpics (tous Cucumber), testFast (timeout <=8 min), testHelp (liste toutes les tâches). Compilation OK. (§6.2) — Session 124
 
 === P3 — NICE-TO-HAVE
 
-* [ ] CR-14 : BUILDING.md — Pas de documentation build centralisée. Créer BUILDING.md avec prérequis, quick start, troubleshooting, architecture. (§7.1)
+* [x] CR-14 : BUILDING.md — Documentation build centralisée créée (prérequis, quick start, troubleshooting, architecture, test tasks, JVM tuning, dependencies). (§7.1) — Session 125
 
 === Référence
 

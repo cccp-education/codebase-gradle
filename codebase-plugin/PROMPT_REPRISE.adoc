@@ -1,7 +1,7 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 125
-:session: 125
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 126
+:session: 126
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 124 — CR-12+CR-13 ✅ (Transitive Dependency Audit + CVE + Test Task Aliases)
+:sessions_precedente: 125 — CR-14 ✅ (BUILDING.md — EPIC CR 14/14 TERMINÉ)
 
 == Contexte Hérité
 
@@ -12,23 +12,20 @@
 - EPIC 12 TERMINÉ — 19/19 PASS
 - EPIC SP TERMINÉ (7/7 — SP-0→SP-6, 83 JUnit5 + 33 Cucumber = 116/116 PASS)
 - EPIC OCR 26/26 ✅
-- EPIC CR P0 : CR-1 ✅ CR-2 ✅ CR-3 ✅ CR-4 ✅ (4/4)
-- EPIC CR P1 : CR-5 ✅ CR-6 ✅ CR-7 ✅ CR-8 ✅ CR-9 ✅ (5/5)
-- EPIC CR P2 : CR-10 ✅ CR-11 ✅ CR-12 ✅ CR-13 ✅ (4/4)
-- EPIC CR 13/14
+- EPIC CR TERMINÉ (14/14 ✅ — CR-1→CR-14)
 - Full suite ~450+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 124 — CR-12+CR-13 ✅
+== Mission Session 125 — CR-14 ✅
 
-- CR-12 : validateDependencies enrichi (audit CVE commons-collections + rapport groupes transitifs lourds). Zéro CVE (commons-collections4:4.4 safe). Zéro exclusion nécessaire.
-- CR-13 : 4 alias testAll/testEpics/testFast/testHelp. Compilation OK.
+- CR-14 : BUILDING.md créé (prérequis, quick start, troubleshooting, architecture, test tasks, JVM tuning, dependencies). EPIC CR 14/14 TERMINÉ.
 
-== Priorités Session 125
+== Priorités Session 126
 
-- CR-14 : BUILDING.md — Documentation build centralisée (prérequis, quick start, troubleshooting, architecture). (§7.1)
+- EPIC 7 : Wiring LangChain4j + pgvector experts — Persistance partagée entre agents, API d'appel aux experts fine-tunés, intégration dispatcher deepseek-v4-pro, anonymisation pre-query automatique. (P1, A FAIRE)
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 125 | EPIC CR P3 | CR-14 BUILDING.md
+| 126 | EPIC 7 P1 | Wiring LangChain4j + pgvector experts
+| 127 | EPIC 8 P2 | Exposer experts via Ollama
