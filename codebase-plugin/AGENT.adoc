@@ -232,6 +232,7 @@ il DOIT consulter ces codebases comme reference. Ces chemins sont LAZY — ne ja
 | `.agents/INDEX.adoc` | Regles absolues + sessions recentes
 | `LAZY_EAGER_ESSENTIALS.adoc` | Principes LAZY/EAGER + politique de chargement
 | `AGENT.adoc` | Ce fichier — Directives completes
+| `LOCAL_VIBECODING_LOOP.adoc` | Documentation boucle vibecoding locale (session 128)
 |===
 
 === Mecanisme de Backup — Hot/Warm/Cold Storage

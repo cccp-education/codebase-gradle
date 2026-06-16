@@ -85,6 +85,10 @@
 | ✅ TERMINE
 | 14/14
 
+| Documentation Locale
+| ✅ TERMINE
+| Session 128
+
 | EPIC SP SessionProtocol
 | ✅ TERMINE
 | 114

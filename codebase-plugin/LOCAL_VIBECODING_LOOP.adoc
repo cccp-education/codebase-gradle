@@ -1,0 +1,254 @@
+= Local Vibecoding Loop avec Codebase, ses tâches et Opencode
+:toc:
+:date: 2026-06-16
+:version: 1.0
+
+== 🎯 Objectif
+
+Cette documentation explique comment configurer et utiliser la boucle de vibecoding local avec :
+- **codebase-gradle** comme moteur d'exécution (N1)
+- **VibecodingTask** et **SessionProtocolTask** comme points d'entrée
+- **opencode** comme interface utilisateur thin client
+
+== 📋 Ce qui est déjà implémenté
+
+=== Composants Noyau
+
+* ✅ `SessionProtocolServer` - Serveur JSON-lines stdin/stdout
+* ✅ `SessionProtocolDaemonTask` - Tâche Gradle daemon
+* ✅ Contrats N0 : `SessionPrompt`, `SessionResponse`, `AgentContext`
+* ✅ `ToolEventStream` - Streaming temps réel des événements
+* ✅ `LiveContextInjector` - Injection de contexte dynamique
+
+=== Architecture Cible
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ opencode (thin client)                                  │
+│ - Capture prompt utilisateur                            │
+│ - Affiche réponse                                       │
+│ - ZÉRO logique LLM, ZÉRO RAG, ZÉRO tools               │
+└───────────┬─────────────────────────────────────────────┘
+            │ SessionPrompt (contrat N0)
+            ▼
+┌─────────────────────────────────────────────────────────┐
+│ runner-gradle (N3) ou workspace-gradle (N4)             │
+│ - Pont thin-client ↔ Gradle engine                      │
+│ - Gère le cycle de vie de session                       │
+│ - Mode daemon/serveur pour latence interactive          │
+└───────────┬─────────────────────────────────────────────┘
+            │ VibecodingTask (contrat N0)
+            ▼
+┌─────────────────────────────────────────────────────────┐
+│ codebase-gradle (N1) — Moteur                           │
+│ - VibecodingTask : LLM + ToolRegistry + RAG             │
+│ - SessionRepository : persistance cross-session         │
+│ - CompositeContextBuilder : contexte augmenté           │
+│ - EPIC X : plan→execute→verify→adapt                    │
+└─────────────────────────────────────────────────────────┘
+```
+
+== 🚀 Configuration et Utilisation Locale
+
+=== 1. Démarrer le Daemon Session Protocol
+
+[source,bash]
+----
+# Dans le répertoire codebase-gradle
+./gradlew sessionProtocolDaemon
+----
+
+Cette commande démarre un serveur en écoute sur stdin/stdout qui :
+- Accepte des `SessionPrompt` en JSON-lines sur stdin
+- Retourne des `SessionResponse` en JSON-lines sur stdout
+- Réutilise le Gradle daemon pour éviter la latence de compilation
+
+=== 2. Format SessionPrompt
+
+[source,json]
+----
+{
+  "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+  "prompt": "Génère un rapport sur l'architecture du projet",
+  "maxActions": 5,
+  "model": "deepseek-v4-pro:cloud"
+}
+----
+
+=== 3. Format SessionResponse
+
+[source,json]
+----
+{
+  "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+  "output": "=== Session Result ===\nIntention: Génère un rapport...\n...",
+  "toolCalls": [
+    {
+      "toolName": "exec_gradle",
+      "result": "BUILD SUCCESSFUL",
+      "timestamp": "2026-06-16T10:00:00Z"
+    }
+  ],
+  "tokenUsage": {
+    "promptTokens": 150,
+    "completionTokens": 320,
+    "totalTokens": 470,
+    "cost": 0.0047
+  },
+  "status": "COMPLETED"
+}
+----
+
+== 🛠️ Intégration Opencode
+
+=== Configuration opencode.json
+
+[source,json]
+----
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "AGENT.adoc"
+  ],
+  "tools": {
+    "vibecoding": {
+      "type": "daemon",
+      "command": "./gradlew sessionProtocolDaemon",
+      "description": "Vibecoding local via codebase-gradle"
+    }
+  }
+}
+----
+
+=== Agent Opencode Personnalisé
+
+Pour utiliser le daemon dans opencode, créer un agent qui :
+1. Démarre le daemon en arrière-plan
+2. Envoie des SessionPrompt sur stdin
+3. Lit les SessionResponse sur stdout
+4. Affiche les résultats formatés
+
+== 📊 Outils Vibecoding Disponibles
+
+Le `ToolRegistry` inclut 7 outils par défaut :
+
+. `read_file` - Lire un fichier
+. `write_file` - Écrire dans un fichier
+. `edit_file` - Modifier un fichier
+. `list_directory` - Lister un répertoire
+. `exit` - Terminer la session
+. `exec_shell` - Exécuter une commande shell
+. `exec_gradle` - Exécuter une tâche Gradle
+
+== 🔧 Scripts de Démarrage
+
+=== start-vibecoding-daemon.sh
+
+[source,bash]
+----
+#!/bin/bash
+# Script pour démarrer le daemon vibecoding en arrière-plan
+
+DAEMON_PID_FILE="/tmp/vibecoding-daemon.pid"
+LOG_FILE="/tmp/vibecoding-daemon.log"
+
+echo "Démarrage du daemon vibecoding..."
+cd /home/cheroliv/workspace/foundry/public/codebase-gradle/codebase-plugin
+
+# Démarrer le daemon en arrière-plan
+nohup ./gradlew sessionProtocolDaemon > "$LOG_FILE" 2>&1 &
+DAEMON_PID=$!
+
+# Sauvegarder le PID
+echo $DAEMON_PID > "$DAEMON_PID_FILE"
+
+echo "Daemon démarré avec PID: $DAEMON_PID"
+echo "Logs disponibles dans: $LOG_FILE"
+----
+
+=== stop-vibecoding-daemon.sh
+
+[source,bash]
+----
+#!/bin/bash
+# Script pour arrêter le daemon vibecoding
+
+DAEMON_PID_FILE="/tmp/vibecoding-daemon.pid"
+
+if [ -f "$DAEMON_PID_FILE" ]; then
+    DAEMON_PID=$(cat "$DAEMON_PID_FILE")
+    echo "Arrêt du daemon avec PID: $DAEMON_PID"
+    kill $DAEMON_PID
+    rm "$DAEMON_PID_FILE"
+    echo "Daemon arrêté"
+else
+    echo "Aucun daemon en cours d'exécution"
+fi
+----
+
+== 🚨 Dépannage
+
+=== Problèmes Courants
+
+==== 1. Le daemon ne démarre pas
+[source,bash]
+----
+cd /home/cheroliv/workspace/foundry/public/codebase-gradle/codebase-plugin
+./gradlew --version
+./gradlew dependencies
+./gradlew compileKotlin
+----
+
+==== 2. Erreurs de connexion
+[source,bash]
+----
+# Vérifier que le daemon est en cours d'exécution
+ps aux | grep gradle
+
+# Vérifier les logs
+tail -f /tmp/vibecoding-daemon.log
+----
+
+==== 3. Problèmes de permissions
+[source,bash]
+----
+cd /home/cheroliv/workspace/foundry/public/codebase-gradle/codebase-plugin
+ls -la .agents/*.adoc
+chmod +x start-vibecoding-daemon.sh
+----
+
+== 📈 Monitoring
+
+=== Événements en Temps Réel
+
+Le `ToolEventStream` émet des événements JSON-lines :
+[source,json]
+----
+{"type":"thinking","content":"Analyse de l'intention...","timestamp":"2026-06-16T10:00:01Z"}
+{"type":"tool_call","name":"exec_gradle","args":{"task":"tasks"},"timestamp":"2026-06-16T10:00:02Z"}
+{"type":"tool_result","name":"exec_gradle","output":"BUILD SUCCESSFUL","timestamp":"2026-06-16T10:00:03Z"}
+----
+
+=== Contexte Dynamique
+
+Le `LiveContextInjector` permet d'injecter du contexte pendant l'exécution :
+- Fichier : `/tmp/opencode-live.adoc`
+- Format : AsciiDoc structuré
+- Mise à jour automatique dans la conversation
+
+== 📚 Références
+
+* EPIC SESSION-PROTOCOL (BACKLOG.adoc, lignes 743-836)
+* Session 114 — Finalisation EPIC SP (7/7)
+* Architecture Thin Client (Session 103)
+* ToolEventStream (Session 113)
+* LiveContextInjector (Session 114)
+
+== 🆕 Mises à Jour
+
+[cols="1,2,3"]
+|===
+| Date | Version | Changements
+
+| 2026-06-16 | 1.0 | Première version - Documentation complète
+|===

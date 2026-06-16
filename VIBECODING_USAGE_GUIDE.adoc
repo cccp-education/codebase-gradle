@@ -1,0 +1,315 @@
+= Guide d'Utilisation Complet du Vibecoding
+:toc:
+:date: 2026-06-17
+:version: 1.0
+
+== 🎯 Objectif
+
+Ce guide explique comment utiliser le vibecoding avec et sans runner, configurer opencode, et personnaliser les modèles et pools d'API.
+
+== 🔄 Deux Modes d'Utilisation
+
+=== 1. Avec Runner (Standard)
+```
+opencode ↔ runner-gradle ↔ codebase-gradle
+```
+
+=== 2. Sans Runner (Direct)
+```
+opencode ↔ codebase-gradle (direct)
+```
+
+== 🚀 Mode 1 : Avec Runner (Recommandé)
+
+=== Prérequis
+1. Avoir runner-gradle installé
+2. Avoir codebase-gradle publié localement
+
+=== Commandes de Base
+
+==== Exécuter une tâche simple
+```bash
+cd /chemin/vers/runner-gradle
+./gradlew vibecode --intention="Liste les tâches Gradle disponibles" --dryRun
+```
+
+==== Exécuter avec LLM
+```bash
+cd /chemin/vers/runner-gradle
+./gradlew vibecode --intention="Génère un rapport d'architecture" --model=deepseek
+```
+
+==== Options disponibles
+```bash
+./gradlew vibecode --intention="..." \
+  --dryRun \                    # Mode simulation
+  --maxActions=5 \              # Limite d'actions
+  --model=deepseek \            # Choix du modèle
+  --sessionTimeout=300 \        # Timeout en secondes
+  --resume=<sessionId>          # Reprendre une session
+```
+
+== ⚡ Mode 2 : Sans Runner (Direct)
+
+=== Utilisation du Daemon Session Protocol
+
+==== Démarrer le daemon
+```bash
+cd /chemin/vers/codebase-gradle
+./gradlew sessionProtocolDaemon
+```
+
+==== Envoyer des requêtes directement
+```bash
+# Créer une session
+./gradlew sessionProtocol \
+  --action=create \
+  --prompt="Analyse le code source" \
+  --model=deepseek \
+  --maxActions=3
+
+# Lister les sessions
+./gradlew sessionProtocol --action=list
+
+# Fermer une session
+./gradlew sessionProtocol --action=close --sessionId=<id>
+```
+
+==== Options de SessionProtocolTask
+```bash
+./gradlew sessionProtocol \
+  --action=create \
+  --prompt="..." \
+  --sessionId=<uuid> \          # ID personnalisé
+  --model=deepseek \            # Modèle LLM
+  --maxActions=10 \             # Actions max
+  --contextFile=context.json \  # Contexte additionnel
+  --responseFile=output.json    # Fichier de sortie
+```
+
+== ⚙️ Configuration Opencode
+
+=== Avec Runner (opencode.json dans runner-gradle)
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "AGENT.adoc"
+  ],
+  "tools": {
+    "vibecode": {
+      "type": "shell",
+      "command": "cd /chemin/vers/runner-gradle && ./gradlew vibecode --intention=\"$prompt\" --model=deepseek",
+      "description": "Exécute une tâche vibecoding via runner-gradle"
+    }
+  },
+  "default_model": "ollama-developer/deepseek-v4-pro:cloud"
+}
+```
+
+=== Sans Runner (opencode.json dans codebase-gradle)
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "AGENT.adoc",
+    "LOCAL_VIBECODING_LOOP.adoc"
+  ],
+  "tools": {
+    "session_protocol": {
+      "type": "shell",
+      "command": "cd /chemin/vers/codebase-gradle && ./gradlew sessionProtocol --action=create --prompt=\"$prompt\"",
+      "description": "Exécute une session vibecoding directement"
+    }
+  }
+}
+```
+
+== 🧠 Choix des Modèles
+
+=== Modèles Disponibles
+1. **deepseek-v4-pro:cloud** - Pour raisonnement complexe
+2. **deepseek-v4-flash:cloud** - Pour rapidité
+3. **gemma4:31b-cloud** - Alternative économique
+4. **qwen3-coder:480b-cloud** - Spécialisé code
+5. **gpt-oss:120b-cloud** - Grand modèle généraliste
+
+=== Configuration dans build.gradle.kts
+```kotlin
+// Dans codebase-gradle/codebase-plugin/build.gradle.kts
+val llmProvider = when(modelName) {
+    "deepseek" -> LlmProviderResolver.resolve("deepseek-v4-pro:cloud")
+    "flash" -> LlmProviderResolver.resolve("deepseek-v4-flash:cloud")
+    "gemma" -> LlmProviderResolver.resolve("gemma4:31b-cloud")
+    "qwen" -> LlmProviderResolver.resolve("qwen3-coder:480b-cloud")
+    else -> LlmProviderResolver.resolve("gpt-oss:120b-cloud")
+}
+```
+
+== 🔑 Gestion des Pools de Clés API
+
+=== Configuration Ollama Cloud
+Les pools sont configurés via des variables d'environnement :
+
+```bash
+# Ports disponibles (11434-11465)
+export OLLAMA_CLOUD_PORTS="11434,11435,11437,11438,11439"
+
+# Modèles par pool
+export OLLAMA_MODEL_11434="deepseek-v4-pro:cloud"
+export OLLAMA_MODEL_11435="deepseek-v4-flash:cloud"
+export OLLAMA_MODEL_11437="gemma4:31b-cloud"
+```
+
+=== Rotation et Quotas
+Le système utilise une rotation ROUND_ROBIN avec gestion des quotas :
+
+```kotlin
+// Dans LlmProviderResolver.kt
+when (rotationStrategy) {
+    RotationStrategy.ROUND_ROBIN -> nextInstanceRoundRobin()
+    RotationStrategy.LEAST_USED -> nextInstanceLeastUsed()
+    RotationStrategy.WEIGHTED -> nextInstanceWeighted()
+}
+```
+
+== 📡 Ports et Configuration Réseau
+
+=== Ports par Défaut
+- **11434** : Ollama principal
+- **11435-11465** : Ollama Cloud pool
+- **8080** : API REST (si activée)
+
+=== Configuration Personnalisée
+```bash
+# Dans gradle.properties ou via -P
+-Pollama.port=11434
+-Pollama.baseUrl=http://localhost:11434
+-Papi.timeout=300
+```
+
+== 📋 Exemples Pratiques
+
+=== Exemple 1 : Analyse de Code
+```bash
+# Avec runner
+./gradlew vibecode --intention="Analyse l'architecture du projet codebase" --model=qwen
+
+# Sans runner
+./gradlew sessionProtocol --action=create --prompt="Analyse l'architecture du projet" --model=qwen
+```
+
+=== Exemple 2 : Génération de Documentation
+```bash
+# Session avec contexte
+echo '{"eagerRules": "Suivre AGENTS.adoc", "ragChunks": ["Documentation importante"]}' > context.json
+
+./gradlew sessionProtocol \
+  --action=create \
+  --prompt="Génère la documentation utilisateur" \
+  --contextFile=context.json \
+  --responseFile=doc-response.json
+```
+
+=== Exemple 3 : Réparation de Code
+```bash
+# Mode dry-run pour vérification
+./gradlew vibecode --intention="Corrige les warnings de compilation" --dryRun
+
+# Exécution réelle
+./gradlew vibecode --intention="Corrige les warnings de compilation" --model=flash
+```
+
+== 🛠️ Scripts Utiles
+
+=== start-vibecoding-session.sh
+```bash
+#!/bin/bash
+SESSION_ID=$(uuidgen)
+echo "Démarrage session: $SESSION_ID"
+
+./gradlew sessionProtocol \
+  --action=create \
+  --sessionId=$SESSION_ID \
+  --prompt="$1" \
+  --model=${2:-deepseek} \
+  --maxActions=${3:-5}
+```
+
+=== resume-vibecoding-session.sh
+```bash
+#!/bin/bash
+./gradlew sessionProtocol \
+  --action=resume \
+  --sessionId=$1 \
+  --prompt="$2" \
+  --model=${3:-deepseek}
+```
+
+=== list-vibecoding-sessions.sh
+```bash
+#!/bin/bash
+./gradlew sessionProtocol --action=list
+```
+
+== 🚨 Dépannage
+
+=== Problèmes Courants
+
+==== 1. Modèle non disponible
+```bash
+# Vérifier les modèles disponibles
+curl http://localhost:11434/api/tags
+
+# Solution: Utiliser un modèle disponible
+./gradlew vibecode --intention="..." --model=gemma
+```
+
+==== 2. Timeout API
+```bash
+# Augmenter le timeout
+./gradlew vibecode --intention="..." --sessionTimeout=600
+```
+
+==== 3. Erreurs de permissions
+```bash
+# Vérifier les droits
+ls -la /chemin/vers/projet
+chmod +x gradlew
+```
+
+==== 4. Problèmes de pool Ollama
+```bash
+# Vérifier les pools actifs
+netstat -tulpn | grep 1143
+
+# Redémarrer Ollama
+sudo systemctl restart ollama
+```
+
+== 📊 Monitoring et Logs
+
+=== Fichiers de Log
+- `build/vibecoding/audit.jsonl` - Audit des actions
+- `build/session-protocol/session-lifecycle.json` - État des sessions
+- `build/session-protocol/session-response.json` - Réponses des sessions
+
+=== Format de l'Audit
+```json
+{
+  "timestamp": "2026-06-17T10:00:00Z",
+  "tool": "exec_gradle",
+  "dryRun": false,
+  "result": "BUILD SUCCESSFUL",
+  "error": null
+}
+```
+
+== 📚 Références
+
+* EPIC SESSION-PROTOCOL (sessions 104-114)
+* EPIC V VibecodingTask (sessions 27-65)
+* LOCAL_VIBECODING_LOOP.adoc (session 128)
+* SessionProtocolTask.kt (300 lignes)
+* VibecodingTask.kt (237 lignes)
+* LlmProviderResolver.kt

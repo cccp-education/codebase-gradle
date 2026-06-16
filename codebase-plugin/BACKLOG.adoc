@@ -744,6 +744,7 @@ cd foundry/public/codebase-gradle && ./gradlew publish closeAndRelease
 
 **Statut** : ✅ TERMINÉ (7/7 — SP-0→SP-6, session 114). 14 JUnit5 + 3 Cucumber @epic_sp_6 = 17/17 PASS.
 **Priorité** : P1
+**Document** : link:LOCAL_VIBECODING_LOOP.adoc[LOCAL_VIBECODING_LOOP.adoc] (Session 128)
 **Dépend de** : workspace-bom (MEMPHIS N0) pour les contrats, EPIC V (VibecodingTask moteur)
 
 _Pourquoi_ : Aujourd'hui, opencode est un agent complet (LLM + tools + UI terminal).
@@ -816,13 +817,14 @@ data class AgentContext(
 
 === Sous-tâches envisagées
 
-* [x] SP-0 : Cadrage — Définir le contrat `opencode-session-contracts` dans workspace-bom (MEMPHIS N0). Types SessionPrompt/SessionResponse/AgentContext/SessionStatus. 7ème artefact N0. (contrats existent dans workspace-bom/opencode-session-contracts/)
-* [x] SP-1 : Implémenter `SessionProtocolTask` dans codebase — tâche Gradle qui reçoit un SessionPrompt, exécute VibecodingTask, retourne SessionResponse. Point d'entrée unique pour le thin client. (SessionProtocolTask.kt + tests + Cucumber existants)
-* [x] SP-2 : Mode serveur/daemon — Tâche Gradle en écoute continue (stdin/stdout JSON-lines) pour éviter la latence de compilation à chaque tour de dialogue. Réutilisation du Gradle daemon. (SessionProtocolServer.kt 134l + SessionProtocolDaemonTask.kt 37l, 5 JUnit5 + 4 Cucumber PASS)
-* [x] SP-3 : Cycle de vie de session — SessionProtocolLifecycleManager (persistance JSON disque), SessionProtocolTask +--action create|resume|close|list. Création/reprise/clôture/liste sessions. Runner-gradle (N3) consomme sans code métier. (SessionProtocolLifecycleManager.kt 126l, 15 JUnit5 + 6 Cucumber PASS)
-* [x] SP-4 : Tests E2E — opencode → runner → codebase → session. Scénario bout-en-bout complet : création → vibecoding → réponse → clôture. (Session 112 — 5 JUnit5 + 4 Cucumber @epic_sp_4 = 9/9 PASS. Bugfix takeUnless→takeIf dans SessionProtocolTask.kt:116.)
-* [x] SP-5 : ToolEventStream — Événements structurés temps réel (thinking/tool_call/tool_result/progress/error) en JSON-lines sur stdout.
-* [x] SP-6 : LiveContextInjector — Injection contexte conversation active dans le prompt LLM. 5 pts. Dernière brique EPIC SP.
+* [x] SP-0 : Cadrage — Définir le contrat `opencode-session-contracts` dans workspace-bom (MEMPHIS N0). Types SessionPrompt/SessionResponse/AgentContext/SessionStatus. 7ème artefact N0. (contrats existent dans workspace-bom/opencode-session-contracts/) — Session 104
+* [x] SP-1 : Implémenter `SessionProtocolTask` dans codebase — tâche Gradle qui reçoit un SessionPrompt, exécute VibecodingTask, retourne SessionResponse. Point d'entrée unique pour le thin client. (SessionProtocolTask.kt + tests + Cucumber existants) — Session 104
+* [x] SP-2 : Mode serveur/daemon — Tâche Gradle en écoute continue (stdin/stdout JSON-lines) pour éviter la latence de compilation à chaque tour de dialogue. Réutilisation du Gradle daemon. (SessionProtocolServer.kt 140l + SessionProtocolDaemonTask.kt 37l, 5 JUnit5 + 4 Cucumber PASS) — Session 104
+* [x] SP-3 : Cycle de vie de session — SessionProtocolLifecycleManager (persistance JSON disque), SessionProtocolTask +--action create|resume|close|list. Création/reprise/clôture/liste sessions. Runner-gradle (N3) consomme sans code métier. (SessionProtocolLifecycleManager.kt 126l, 15 JUnit5 + 6 Cucumber PASS) — Session 104
+* [x] SP-4 : Tests E2E — opencode → runner → codebase → session. Scénario bout-en-bout complet : création → vibecoding → réponse → clôture. (Session 112 — 5 JUnit5 + 4 Cucumber @epic_sp_4 = 9/9 PASS. Bugfix takeUnless→takeIf dans SessionProtocolTask.kt:116.) — Session 112
+* [x] SP-5 : ToolEventStream — Événements structurés temps réel (thinking/tool_call/tool_result/progress/error) en JSON-lines sur stdout. (Session 113 — 10 JUnit5 + 3 Cucumber @epic_sp_5 = 13/13 PASS) — Session 113
+* [x] SP-6 : LiveContextInjector — Injection contexte conversation active dans le prompt LLM. (Session 114 — 5 JUnit5 + 4 Cucumber @epic_sp_6 = 9/9 PASS) — Session 114
+* [x] Documentation Locale — LOCAL_VIBECODING_LOOP.adoc (composants, configuration, scripts, dépannage). — Session 128
 
 === Bénéfice attendu
 
@@ -898,6 +900,18 @@ C'est la différence entre un script qui associe et un ingénieur qui comprend.
 **Priorité** : P0→P3
 **Source** : CODE_REVIEW_DEEP_ANALYSIS.adoc (score 4.0/5.0)
 
+== Documentation — Boucle Vibecoding Locale
+
+**Statut** : ✅ TERMINÉ
+**Priorité** : P2
+**Source** : Session 128
+
+* [x] LOCAL_VIBECODING_LOOP.adoc — Documentation complète d'utilisation locale avec opencode
+* [x] Scripts de démarrage/arrêt daemon
+* [x] Exemples de SessionPrompt/SessionResponse
+* [x] Configuration opencode.json pour intégration
+* [x] Guide de dépannage et monitoring
+
 === P0 — CRITIQUE
 
 * [x] CR-1 : Cucumber Task Factory — Extraire CucumberTaskSpec + registerCucumberTask pour éliminer 728 lignes de duplication (28 tâches × ~26 lignes, 95% identiques). Réduit à ~80 lignes. (§2.2) — Session 119
@@ -923,6 +937,7 @@ C'est la différence entre un script qui associe et un ingénieur qui comprend.
 === P3 — NICE-TO-HAVE
 
 * [x] CR-14 : BUILDING.md — Documentation build centralisée créée (prérequis, quick start, troubleshooting, architecture, test tasks, JVM tuning, dependencies). (§7.1) — Session 125
+* [x] LOCAL_VIBECODING_LOOP.adoc — Documentation complète boucle vibecoding locale (composants exécutés, configuration opencode, scripts, dépannage). (Session 128)
 
 === Référence
 

@@ -1,0 +1,4 @@
+{
+  "prompt": "Liste les tâches Gradle disponibles dans ce projet",
+  "maxActions": 3
+}

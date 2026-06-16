@@ -25,6 +25,10 @@ Dépend de codex-plugin et planner-plugin (N2) en library.
 Option A : publier codex + planner avant codebase.
 Option B : includeBuild temporaire.
 
+COMPLETION : Documentation boucle vibecoding locale terminée.
+Fichier LOCAL_VIBECODING_LOOP.adoc créé avec tous les éléments nécessaires
+pour utiliser la boucle locale avec opencode.
+
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable

@@ -4,6 +4,7 @@
 |===
 | Session | Date | EPIC | Résultat
 
+| 128 | 2026-06-16 | Documentation Locale Vibecoding | LOCAL_VIBECODING_LOOP.adoc terminé
 | 127 | 2026-06-16 | EPIC 8 Expert Exposure | 21/21 PASS ✅
 | 126 | 2026-06-16 | EPIC 7 Expert Dispatcher | 60/60 PASS ✅
 | 125 | 2026-06-14 | CR-14 BUILDING.md | TERMINE ✅
