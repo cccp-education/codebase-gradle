@@ -2,6 +2,7 @@
 
 |===
 | # | Date | Type | Sujet | Score
+| 118 | 2026-06-16 | feat+tdd+ddd+bdd | OCR-3b TERMINE (8/8) — GeminiKeyPool branché dans FakeVisionProvider (2 clés test, quota 10, threshold 50%, ROUND_ROBIN, lastUsedKeyId). FakeVisionProviderTest 13/13 PASS (5 existants + 8 pool integration). OcrTaskTest + Cucumber OCR backward compat OK. ocr.yml déjà existant (commit 21a782c, backlog stale). BACKLOG + PROMPT_REPRISE mis à jour. | 10/10
 | 116 | 2026-06-16 | feat+tdd+ddd+bdd | OCR-4.2+4.3 Chunking→pgvector + E2E — OcrIngestTask (chunk→embed→pgvector), VectorStore.ensureSchema() non-destructif, CodebasePlugin +ocrIngest. 14 JUnit5 OcrIngestTaskTest (Testcontainers) + 5 Cucumber @epic_ocr_4_ingest + 1 E2E image→OCR→anonymize→ingest→query = 20/20 PASS. OCR-4 4/5. 7 fichiers créés, 4 modifiés. | 10/10
 | 114 | 2026-06-16 | feat+tdd+ddd+bdd | SP-6 LiveContextInjector — Injection contexte conversation active dans le prompt LLM. LiveContextInjector.kt (80l) + câblage VibecodingGraph.buildPromptForIteration/buildReplanPrompt + intégration SessionProtocolTask/Server (fix dead code agentContext). 14 JUnit5 LiveContextInjectorTest + 3 Cucumber @epic_sp_6 = 17/17 PASS. EPIC SP 7/7 TERMINÉ. | 10/10
 | 113 | 2026-06-15 | feat+tdd+ddd+bdd | SP-5 ToolEventStream — Événements structurés temps réel (thinking/tool_call/tool_result/progress/error) en JSON-lines. ToolEventStream.kt (90l) + câblage VibecodingGraph + SessionProtocolTask/Server. 10 JUnit5 ToolEventStreamTest + 3 Cucumber @epic_sp_5 = 13/13 PASS. EPIC SP 6/7. | 10/10

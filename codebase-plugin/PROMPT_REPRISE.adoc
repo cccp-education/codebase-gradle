@@ -1,7 +1,7 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 116
-:session: 116
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 119
+:session: 119
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:sessions_precedente: 115 — OCR-3 ✅ batch inputDir + OCR-4 ✅ anonymisation pipeline (47 JUnit5 + 14 Cucumber PASS)
+:sessions_precedente: 118 — OCR-3b ✅ TERMINE (8/8 — GeminiKeyPool + CI/CD)
 
 == Contexte Hérité
 
@@ -12,42 +12,39 @@
 - EPIC 12 TERMINÉ — 19/19 PASS
 - EPIC 5 MIGRÉ → training-gradle TRN-8
 - EPIC SP TERMINÉ (7/7 — SP-0→SP-6, 83 JUnit5 + 33 Cucumber = 116/116 PASS)
-- EPIC OCR 16/26
+- EPIC OCR 26/26 ✅
   - OCR-0 ✅ (contrats codex)
   - OCR-1 EN COURS (4/6 — GeminiKeyPool)
   - OCR-2 EN COURS (4/5 — GeminiVisionProvider)
   - OCR-2b ✅ (OllamaOcrProvider cloud)
   - OCR-3 ✅ (OcrTask batch inputDir)
-  - OCR-3b EN COURS (5/8 — FakeVisionProvider + CI + Config)
-  - OCR-4 EN COURS (4/5 — chunking→pgvector ✅, métriques restantes)
-- Full suite ~420+ PASS
+  - OCR-3b ✅ (8/8 — FakeVisionProvider + GeminiKeyPool + CI/CD)
+  - OCR-4 ✅ (5/5 — chunking→pgvector + métriques)
+- Full suite ~450+ PASS
 - publishToMavenLocal OK
 
-== Mission Session 116 — OCR-4.2+4.3 Chunking→pgvector + E2E
+== Mission Session 118 — OCR-3b ✅
 
-*OCR-4.2+4.3* : OcrIngestTask — chunk→embed→pgvector. Pipeline complet OCR→RAG.
-14 JUnit5 OcrIngestTaskTest + 5 Cucumber @epic_ocr_4_ingest + 1 E2E = 20/20 PASS.
+*OCR-3b.1* : Brancher GeminiKeyPool + secrets de test dans FakeVisionProvider.
+FakeVisionProvider accepte GeminiKeyPool (2 clés test, quota 10, threshold 50%, ROUND_ROBIN).
+lastUsedKeyId exposé. FakeVisionProviderTest 13/13 PASS (5 existants + 8 pool integration).
+OcrTaskTest + Cucumber OCR backward compat OK.
 
-*Fichiers créés/modifiés* :
-- VectorStore.kt : +ensureSchema() non-destructif
-- OcrIngestTask.kt : nouvelle tâche Gradle (chunk→embed→pgvector)
-- CodebasePlugin.kt : +ocrIngest registration
-- OcrIngestTaskTest.kt : 14 JUnit5 (Testcontainers pgvector)
-- OcrIngestSteps.kt : 5 scénarios Cucumber
-- OcrIngestCucumberRunner.kt : runner dédié
-- ocr.feature : +5 scénarios @epic_ocr_4_ingest
-- build.gradle.kts : +cucumberTestEpicOcrIngest task
-- BACKLOG.adoc : OCR-4 4/5
+*OCR-3b.2* : CI/CD ocr.yml déjà existant (commit 21a782c) — backlog était stale.
+
+*Fichiers modifiés* :
+- FakeVisionProvider.kt : +GeminiKeyPool, +lastUsedKeyId, +pool metadata dans output
+- FakeVisionProviderTest.kt : +8 tests pool integration (rotation, quota, reset, custom pool)
+- BACKLOG.adoc : OCR-3b 8/8 TERMINE
 
 == Priorités restantes
 
-  - OCR-4.5 : Métriques temps OCR, qualité extraction, coût tokens Gemini
-  - OCR-3b : Brancher GeminiKeyPool + secrets de test dans FakeVisionProvider
-  - OCR-3b : CI/CD workflow .github/workflows/ocr.yml
+  - OCR-1 : env var mapping + HTTP 429 detection (4/6)
+  - OCR-2 : Tesseract fallback (4/5)
   - EPIC CR P0 : CR-1 Cucumber Task Factory, CR-2 Test Timeouts, CR-3 Build Cache, CR-4 Adaptive Heap
 
 == Ordonnancement Sessions Suivantes
 
 | Session | EPIC | Livrable
-| 117 | OCR-4.5 | Métriques OCR (temps, qualité, coût tokens)
-| 118+ | EPIC CR P0 | Build cache, timeouts, heap, Cucumber Task Factory
+| 119 | EPIC CR P0 | CR-1 Cucumber Task Factory (728 lignes → ~80 lignes)
+| 120 | EPIC CR P0 | CR-2 Test Timeouts + CR-3 Build Cache + CR-4 Adaptive Heap

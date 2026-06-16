@@ -642,34 +642,27 @@ Résilience : si Gemini down/quota dépassé, Ollama cloud prend le relais autom
 * [x] Intégration avec `GeminiConfig` existant (OcrTask.kt:116-119 resolveGeminiConfig via llm-config.yml)
 * [x] Tests Cucumber : "je scanne une image → j'obtiens du texte structuré AsciiDoc" (OcrCucumberRunner.kt + OcrSteps.kt 120 lignes)
 
-==== OCR-3b : FakeVisionProvider + CI + Config YAML/CLI/gradle.properties — EN COURS (5/8, audité 2026-06-14)
-
-*Gaps identifiés session 086*
-- Pas de test réel Gemini (pas de `GEMINI_API_KEY`)
-- Pas de CI/CD OCR (`ocr.yml`)
-- Pas de config YAML testée pour OCR
-- Pas de test CLI `-P` params réels
-- Pas de test DSL `gradle.properties`
+==== OCR-3b : FakeVisionProvider + CI + Config YAML/CLI/gradle.properties — ✅ TERMINE (8/8, session 118)
 
 *Objectif* : Valider la plomberie OCR avec un `FakeVisionProvider` branché sur `GeminiKeyPool`
 (secrets de test, rotation, quota, fallback) — zéro appel réseau.
 
 * [x] `FakeVisionProvider` — même signature que `GeminiVisionProvider`, retourne faux AsciiDoc structuré (FakeVisionProvider.kt 62 lignes)
-* [ ] Brancher `GeminiKeyPool` + secrets de test dans `FakeVisionProvider` — PENDING : FakeVisionProvider standalone, pas de dependance pool
+* [x] Brancher `GeminiKeyPool` + secrets de test dans `FakeVisionProvider` — Session 118 : FakeVisionProvider accepte GeminiKeyPool avec 2 clés test (quota 10, threshold 50%), rotation ROUND_ROBIN, lastUsedKeyId. FakeVisionProviderTest 13/13 PASS (5 existants + 8 nouveaux pool integration).
 * [x] Tests : rotation pool, quota exceeded, fallback best-effort (GeminiKeyPoolTest.kt 162 lignes + PoolSteps.kt Cucumber)
 * [x] Config YAML `llm-config.yml` testée pour la branche `gemini.ocr` (OcrTaskTest.kt:176-236)
 * [x] CLI `-P` params : `./gradlew ocrDocument -PinputFile=x.png` via `ProjectBuilder` (OcrTaskTest.kt:239-274)
 * [x] DSL `gradle.properties` : `codebaseOcr { model, maxTokens, language }` testé en intégration (CodebaseOcrExtensionTest.kt 126 lignes, 12 tests)
-* [ ] CI/CD : workflow `.github/workflows/ocr.yml` — PENDING : aucun fichier ocr.yml trouve
+* [x] CI/CD : workflow `.github/workflows/ocr.yml` — commit 21a782c (backlog était stale, fichier existait déjà)
 * [x] Tests Cucumber : "je scanne une image → j'obtiens du texte structuré AsciiDoc" (OcrCucumberRunner.kt + OcrSteps.kt)
 
-==== OCR-4 : Intégration pipeline complet — EN COURS (4/5, session 116)
+==== OCR-4 : Intégration pipeline complet — TERMINE (5/5, session 117)
 
 * [x] OcrResult → anonymisation automatique — TextAnonymizer.kt (emails, téléphones, clés API, IBAN, SSN) + anonymizeOutput option dans OcrTask (18 JUnit5 + 3 Cucumber @epic_ocr_4 PASS)
 * [x] OcrResult AsciiDoc → chunking sémantique — OcrIngestTask (chunk→embed→pgvector). VectorStore.ensureSchema() non-destructif. 14 JUnit5 + 5 Cucumber @epic_ocr_4_ingest PASS.
 * [x] Chunks → embedding ONNX → pgvector — EmbeddingPipeline AllMiniLmL6V2 réutilisé. Pipeline complet OCR→chunk→embed→pgvector.
 * [x] Test end-to-end : image scannée → pgvector → requêtable via RAG — E2E test dans OcrIngestTaskTest (FakeVisionProvider→OCR→anonymize→ingest→query). 1/1 PASS.
-* [ ] Métriques : temps OCR, qualité extraction, coût tokens Gemini
+* [x] Métriques : temps OCR, qualité extraction, coût tokens Gemini — OcrMetricsCalculator (estimation tokens/cost, formatDurationMs), OcrMetricsReport (rapport AsciiDoc), câblage OcrTask + OcrIngestTask. 13 JUnit5 OcrMetricsCalculator + 5 JUnit5 OcrTask + 3 JUnit5 OcrIngestTask + 5 Cucumber @epic_ocr_4_5 = 26/26 PASS.
 
 === Bénéfice attendu
 

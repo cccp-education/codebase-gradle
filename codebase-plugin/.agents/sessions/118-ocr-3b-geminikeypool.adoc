@@ -1,0 +1,39 @@
+= Session 118 — OCR-3b GeminiKeyPool + CI/CD
+:date: 2026-06-16
+:type: feat+tdd+ddd+bdd
+:score: 10/10
+
+== Contexte
+
+EPIC OCR 26/26. OCR-3b EN COURS (5/8) → TERMINE (8/8).
+Deux items restants : GeminiKeyPool dans FakeVisionProvider + CI/CD ocr.yml.
+
+== Actions
+
+=== OCR-3b.1 — Brancher GeminiKeyPool + secrets de test dans FakeVisionProvider
+
+- FakeVisionProvider.kt : +GeminiKeyPool (2 clés test, quota 10, threshold 50%, ROUND_ROBIN), +lastUsedKeyId, +pool metadata dans output
+- FakeVisionProviderTest.kt : +8 tests pool integration (rotation ROUND_ROBIN, quota exceeded detection, skip quota-exceeded key, resetUsage, custom pool injection, lastUsedKeyId null/after-call)
+- 13/13 PASS (5 existants + 8 nouveaux)
+- OcrTaskTest backward compat OK
+- Cucumber OCR backward compat OK
+
+=== OCR-3b.2 — CI/CD ocr.yml
+
+- Fichier déjà existant (commit 21a782c) — backlog était stale
+- Contenu : JDK 24, Gradle setup, tests codebase.ocr.* + codebase.koog.llm.*
+
+== Fichiers modifiés
+
+- FakeVisionProvider.kt : +GeminiKeyPool, +lastUsedKeyId, +pool metadata
+- FakeVisionProviderTest.kt : +8 tests pool integration
+- BACKLOG.adoc : OCR-3b 8/8 TERMINE
+- PROMPT_REPRISE.adoc : Session 119 → EPIC CR P0
+
+== Résultats
+
+- FakeVisionProviderTest 13/13 PASS
+- OcrTaskTest PASS (backward compat)
+- Cucumber OCR PASS
+- Compilation OK
+- OCR-3b 8/8 TERMINE
