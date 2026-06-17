@@ -37,7 +37,9 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | EPIC Y | Agentic Literature Compiler | N1 | ✅ TERMINE | 088-097
 | EPIC Z | Autofocus | N1 | ✅ TERMINE | 106-108
 | EPIC OCR | OCR Assisté IA (Gemini Vision) | N1 | 4/4 pts | 117-120
-| EPIC PUB | Publication Maven Central | NX | 🔄 PREFLIGHT OK — prêt pour Central | 129
+| EPIC PUB | Publication Maven Central | NX | ⏸️ DIFFÉRÉ — publishToMavenLocal OK, Central reporté | 129
+| EPIC V-LOCAL | Vibecoding local auto-alimenté par gouvernance textuelle | N1 | 🔄 EN COURS (GovernanceContextLoader créé) | 129-130
+| EPIC Y | Agentic Literature Compiler (gouvernance augmentée) | N1 | ✅ TERMINÉ — pont vers ingest local à câbler | 088-097
 | EPIC CR | Code Review Deep Analysis | N1 | ✅ TERMINÉ | 119-125
 | EPICsession-proTOCOL | opencode↔Gradle Thin Client | N1 | ✅ TERMINE | 112-114
 |===

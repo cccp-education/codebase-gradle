@@ -1,28 +1,34 @@
 = PROMPT_REPRISE — Codebase (Queens N1) — Session 130
 :session: 130
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 129 — EPIC PUB Preflight ✅ (build + validateDependencies + validatePlugins + publishToMavenLocal OK)
+:session_precedente: 129 — EPIC PUB Preflight + Pivot Gouvernance Locale ✅
 
 == Contexte Hérité
 
-- Prérequis PUB débloqués en session 129 :
-** Conflit annotations fixé (resolutionStrategy force 13.0)
-** codex-plugin aligné sur 0.0.1 (Central)
-** 8 erreurs validatePlugins corrigées
-** `publishToMavenLocal` signé et OK
-- `codebase-plugin` version 0.0.2 (libs.versions.toml)
-- Gouvernance `.agents/` réconciliée (archive 129, SESSIONS_HISTORY, INDEX)
+- Build débloqué (annotations fix, codex 0.0.1, validatePlugins OK).
+- `publishToMavenLocal` signé et OK.
+- Gouvernance `.agents/` versionnée et réconciliée.
+- `GovernanceContextLoader` créé avec tests JUnit5 pour charger AGENT/INDEX/PROMPT_REPRISE/SESSIONS_HISTORY/TEST_COVERAGE/BACKLOG dans un `AgentContext`.
+- Décision : ne pas publier sur Maven Central maintenant ; prioriser la boucle vibecoding locale auto-alimentée puis le pont vers la gouvernance augmentée (EPIC Y).
 
 == Mission Session 130
 
-EPIC PUB — Finaliser la publication Maven Central de `codebase-plugin`.
+Finaliser la boucle vibecoding locale avec gouvernance textuelle, puis ouvrir le pont EPIC Y.
 
-. Vérifier credentials `~/.gradle/gradle.properties` (signing + nmcp centralPortal).
-. Lancer `./gradlew publishAggregationToCentralPortal --no-daemon` si credentials OK.
-. Vérifier artefacts sur https://central.sonatype.com/artifact/education.cccp/codebase-plugin.
-. Si publication réussie : marquer EPIC PUB ✅ TERMINÉ dans BACKLOG.adoc et INDEX.adoc.
-. Si échec credentials : documenter le blocage et passer à l'audit PUB-5.8.
+. Câbler `GovernanceContextLoader` dans `SessionProtocolServer` et `SessionProtocolTask` :
+** fallback auto quand aucun `--contextFile` n'est fourni ;
+** utiliser le répertoire racine du projet Gradle comme source de gouvernance.
+. Tests baby-step :
+** Test unitaire : `GovernanceContextLoader` ✅ (déjà fait session 129)
+** Test fonctionnel : `SessionProtocolTask` sans `--contextFile` charge la gouvernance.
+** Test Cucumber : scénario "opencode prompt → daemon répond avec contexte EAGER injecté".
+. Mettre à jour `LOCAL_VIBECODING_LOOP.adoc` :
+** Documenter le chargement automatique des fichiers agents.
+** Expliquer le fallback textuel vs contexte augmenté (EPIC Y).
+. Préparer le pont EPIC Y :
+** Stuber ou implémenter une tâche Gradle `IngestGovernanceTask` qui envoie les fichiers agents dans `AgenticIngestor` (chunks → ontologie → SQL → pgvector).
+** Documenter la transition "texte → chunks → SQL → augmented context".
 
 == Méthodologie
 
-Baby-step DDD/TDD/BDD : chaque étape validée par build/test avant la suivante.
+Baby-step DDD/TDD/BDD : un fichier modifié à la fois, compilation + tests entre chaque étape, pas de publication Central.

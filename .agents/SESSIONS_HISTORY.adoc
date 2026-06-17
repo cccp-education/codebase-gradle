@@ -46,9 +46,11 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** Garden secret/anonymisation aligné
 ** Architecture EAGER/LAZY cross-borough validée (codebase, plantuml, bakery, runner, magic-stick)
 ** EPIC V-9 prêt à démarrer (35 items, ~70 pts, 7-10 sessions)
-* Session 129 — EPIC PUB Preflight (session de reprise)
+* Session 129 — EPIC PUB Preflight + Pivot Gouvernance Locale (session de reprise)
 ** Fix conflit annotations 13.0 vs 26.0.2-1 (resolutionStrategy)
 ** Alignement codex-plugin 0.1.0-SNAPSHOT → 0.0.1 (Central)
 ** Correction 8 erreurs validatePlugins (annotations Gradle task inputs/outputs)
 ** publishToMavenLocal OK (signé GPG)
 ** Mise à jour gouvernance : archive 129, INDEX, PROMPT_REPRISE
+** Décision : publication Central différée → priorité boucle vibecoding locale + gouvernance augmentée
+** Création `GovernanceContextLoader` + tests JUnit5

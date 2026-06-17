@@ -20,4 +20,5 @@
 == Notes de période
 
 * `.agents/` non versionné jusqu'à la session 129 ; historique des sessions 085-128 présent dans le code source et `BACKLOG.adoc` mais pas archivé dans `.agents/sessions/`.
-* EPIC PUB passe de ✅ AUDITE à 🔄 PREFLIGHT OK.
+* EPIC PUB passe de ✅ AUDITE à 🔄 PREFLIGHT OK, puis ⏸️ DIFFÉRÉ.
+* Pivot stratégique : priorité donnée à la boucle vibecoding locale auto-alimentée (EPIC V-LOCAL) et au pont vers la gouvernance augmentée (EPIC Y).

@@ -1,4 +1,4 @@
-= Session 129 — EPIC PUB Preflight (Codebase Gradle)
+= Session 129 — EPIC PUB Preflight + Pivot Gouvernance Locale (Codebase Gradle)
 :date: 2026-06-17
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
 
@@ -7,13 +7,14 @@
 - Reprise de la mission session 128 : publication Maven Central codebase-plugin + codebase-contracts.
 - État hérité incohérent : `.agents/` non versionné, SESSIONS_HISTORY arrêté à la session 084, PROMPT_REPRISE indiquait encore la 128.
 - Build compile OK mais `validateDependencies` échouait et `validatePlugins` révélait 8 erreurs d'annotations Gradle.
+- Décision utilisateur : **pivoter** — ne pas poursuivre la publication Central maintenant, mais finaliser la boucle vibecoding locale avec chargement automatique des fichiers de gouvernance textuelle, puis préparer la migration vers la gouvernance augmentée managée par Gradle (EPIC Y).
 
 == Objectifs
 
-. Débloquer la publication Maven Central en alignant les dépendances publiées.
-. Corriger les erreurs de validation plugin Gradle (task inputs/outputs).
+. Débloquer le build (annotations + validatePlugins) comme fondation.
 . Publier en local comme preflight.
 . Réconcilier la gouvernance agentique (session 129).
+. Poser la première brique de la boucle locale auto-alimentée : `GovernanceContextLoader`.
 
 == Actions
 
@@ -26,8 +27,10 @@
 ** `DashboardTask` : supprimer `@Console` sur `executeDashboard()`, `@Internal` sur `connectionFactory`.
 ** `OcrTask` : `@PathSensitive` sur `inputFile` et `inputDir`.
 ** `OcrIngestTask` : `@PathSensitive` sur `ocrOutputDir`.
-* [x] Vérifier `./gradlew :codebase-plugin:build -x test :codebase-plugin:validateDependencies` — BUILD SUCCESSFUL.
+* [x] Vérifier `./gradlew :codebase-plugin:build -x test -x koverVerify -x koverHtmlReport` — BUILD SUCCESSFUL.
 * [x] Publier en local `./gradlew :codebase-plugin:publishToMavenLocal` — signature GPG OK.
+* [x] Créer `GovernanceContextLoader` dans `codebase.koog.governance` pour charger `AGENT.adoc`, `.agents/INDEX.adoc`, `PROMPT_REPRISE.adoc`, `.agents/SESSIONS_HISTORY.adoc`, `.agents/TEST_COVERAGE_ANALYSIS.adoc`, `BACKLOG.adoc` dans un `AgentContext`.
+* [x] Créer `GovernanceContextLoaderTest` (JUnit5) avec 5 cas : fichier racine, sous-projet, backlog items, contexte vide, chargement réel.
 
 == Commandes
 
@@ -46,13 +49,19 @@
 | validateDependencies | OK |
 | validatePlugins | OK (0 erreurs) |
 | publishToMavenLocal | OK (signé) |
+| GovernanceContextLoader | Créé, tests écrits |
 
 == Leçons
 
-* La publication Central ne peut pas être lancée tant que `validatePlugins` échoue — Gradle Plugin Portal est strict.
+* La publication Central est une porte de sortie, pas une étape productive quand on est le seul consommateur local. Pivoter vers la gouvernance locale/auto-alimentée respecte DOGFOOD FIRST.
 * `constraints { implementation(...) }` ne force pas la résolution ; `resolutionStrategy.eachDependency` est nécessaire quand plusieurs transitives demandent des versions incompatibles.
 * Le `.agents/` de codebase-gradle n'avait pas été maintenu depuis la session 084 ; cette session rétablit le fil de l'historique.
+* Un `GovernanceContextLoader` simple et testé est plus utile immédiatement qu'un artefact publié sur Central.
 
 == Suite
 
-Session 130 : exécuter `./gradlew publishAggregationToCentralPortal` pour `codebase-plugin` après vérification finale des credentials et du POM.
+Session 130 : finaliser la boucle vibecoding locale :
+. Câbler `GovernanceContextLoader` dans `SessionProtocolServer` et `SessionProtocolTask` (fallback auto quand pas de `--contextFile`).
+. Ajouter tests fonctionnels + Cucumber.
+. Mettre à jour `LOCAL_VIBECODING_LOOP.adoc`.
+. Préparer le pont EPIC Y : tâche Gradle `IngestGovernanceTask` qui envoie les fichiers agents dans `AgenticSchema` (chunks → ontologie → pgvector).
