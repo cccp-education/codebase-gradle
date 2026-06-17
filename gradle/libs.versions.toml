@@ -1,65 +1,42 @@
 [versions]
 codebase-plugin = "0.0.2"
-kotlin = "2.3.20"
-kotlinx-serial = "1.7.3"
-jackson = "2.21.2"
-langchain4j = "1.14.1"
-langchain4j-beta = "1.14.1-beta24"
-testcontainers = "1.21.4"
-cucumber = "7.34.3"
-junit-platform = "1.14.3"
-logback = "1.5.32"
-coroutines = "1.10.2"
-r2dbc-postgresql = "1.0.7.RELEASE"
-r2dbc-pool = "1.0.2.RELEASE"
-r2dbc-spi = "1.0.0.RELEASE"
-arrow = "2.2.2"
-plugin-publish = "2.1.0"
-codex-plugin = "0.0.1"
-planner-plugin = "0.0.1"
-codebase-contracts = "0.0.1"
-agent-contracts = "0.0.1"
-vibecoding-contracts = "0.0.1"
-llm-pool-contracts = "0.1.0"
-opencode-session-contracts = "0.0.1"
-assertj = "3.27.7"
 koog = "1.0.0"
 
 [libraries]
-jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
-jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
-jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
-langchain4j = { module = "dev.langchain4j:langchain4j", version.ref = "langchain4j" }
-langchain4j-pgvector = { module = "dev.langchain4j:langchain4j-pgvector", version.ref = "langchain4j-beta" }
-langchain4j-minilm = { module = "dev.langchain4j:langchain4j-embeddings-all-minilm-l6-v2", version.ref = "langchain4j-beta" }
-langchain4j-ollama = { module = "dev.langchain4j:langchain4j-ollama", version.ref = "langchain4j" }
-googleAiGemini = { module = "dev.langchain4j:langchain4j-google-ai-gemini", version.ref = "langchain4j" }
-testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
-testcontainers-junit5 = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
-cucumber-java = { module = "io.cucumber:cucumber-java", version.ref = "cucumber" }
-cucumber-junit-platform-engine = { module = "io.cucumber:cucumber-junit-platform-engine", version.ref = "cucumber" }
-cucumber-picocontainer = { module = "io.cucumber:cucumber-picocontainer", version.ref = "cucumber" }
-junit-platform-suite = { module = "org.junit.platform:junit-platform-suite", version.ref = "junit-platform" }
-logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
-kotlinx-coroutines-reactive = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactive", version.ref = "coroutines" }
-r2dbc-postgresql = { module = "org.postgresql:r2dbc-postgresql", version.ref = "r2dbc-postgresql" }
-r2dbc-pool = { module = "io.r2dbc:r2dbc-pool", version.ref = "r2dbc-pool" }
-r2dbc-spi = { module = "io.r2dbc:r2dbc-spi", version.ref = "r2dbc-spi" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serial" }
-arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
-arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines", version.ref = "arrow" }
-codex-plugin = { module = "education.cccp:codex-plugin", version.ref = "codex-plugin" }
-planner-plugin = { module = "education.cccp:planner-plugin", version.ref = "planner-plugin" }
-codebase-contracts = { module = "education.cccp:codebase-contracts", version.ref = "codebase-contracts" }
-agent-contracts = { module = "education.cccp:agent-contracts", version.ref = "agent-contracts" }
-vibecoding-contracts = { module = "education.cccp:vibecoding-contracts", version.ref = "vibecoding-contracts" }
-llm-pool-contracts = { module = "education.cccp:llm-pool-contracts", version.ref = "llm-pool-contracts" }
-opencode-session-contracts = { module = "education.cccp:opencode-session-contracts", version.ref = "opencode-session-contracts" }
-assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
-junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
-koog-agents = { module = "ai.koog:koog-agents", version.ref = "koog" }
+jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version = "2.21.2" }
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version = "2.21.2" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version = "2.21.2" }
+langchain4j = { module = "dev.langchain4j:langchain4j", version = "1.16.3" }
+langchain4j-pgvector = { module = "dev.langchain4j:langchain4j-pgvector", version = "1.16.3-beta26" }
+langchain4j-minilm = { module = "dev.langchain4j:langchain4j-embeddings-all-minilm-l6-v2", version = "1.16.3-beta26" }
+langchain4j-ollama = { module = "dev.langchain4j:langchain4j-ollama", version = "1.16.3" }
+googleAiGemini = { module = "dev.langchain4j:langchain4j-google-ai-gemini", version = "1.16.3" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version = "1.21.4" }
+testcontainers-junit5 = { module = "org.testcontainers:junit-jupiter", version = "1.21.4" }
+cucumber-java = { module = "io.cucumber:cucumber-java", version = "7.34.3" }
+cucumber-junit-platform-engine = { module = "io.cucumber:cucumber-junit-platform-engine", version = "7.34.3" }
+cucumber-picocontainer = { module = "io.cucumber:cucumber-picocontainer", version = "7.34.3" }
+junit-platform-suite = { module = "org.junit.platform:junit-platform-suite", version = "1.14.3" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version = "1.5.32" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.2" }
+kotlinx-coroutines-reactive = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactive", version = "1.10.2" }
+r2dbc-postgresql = { module = "org.postgresql:r2dbc-postgresql", version = "1.0.7.RELEASE" }
+r2dbc-pool = { module = "io.r2dbc:r2dbc-pool", version = "1.0.2.RELEASE" }
+r2dbc-spi = { module = "io.r2dbc:r2dbc-spi", version = "1.0.0.RELEASE" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.7.3" }
+arrow-core = { module = "io.arrow-kt:arrow-core", version = "2.2.2" }
+arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines", version = "2.2.2" }
+codex-plugin = { module = "education.cccp:codex-plugin", version = "0.0.1" }
+planner-plugin = { module = "education.cccp:planner-plugin", version = "0.0.1" }
+codebase-contracts = { module = "education.cccp:codebase-contracts", version = "0.0.1" }
+agent-contracts = { module = "education.cccp:agent-contracts", version = "0.0.1" }
+vibecoding-contracts = { module = "education.cccp:vibecoding-contracts", version = "0.0.1" }
+llm-pool-contracts = { module = "education.cccp:llm-pool-contracts", version = "0.0.1" }
+opencode-session-contracts = { module = "education.cccp:opencode-session-contracts", version = "0.0.1" }
+assertj-core = { module = "org.assertj:assertj-core", version = "3.25.3" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.14.3" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = "1.10.2" }
+koog-agents = { module = "ai.koog:koog-agents", version = "1.0.0" }
 
 [bundles]
 cucumber = [
@@ -87,6 +64,6 @@ arrow = [
 ]
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-publish = { id = "com.gradle.plugin-publish", version.ref = "plugin-publish" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.3.20" }
+publish = { id = "com.gradle.plugin-publish", version = "2.1.0" }
 codebase = { id = "education.cccp.codebase", version.ref = "codebase-plugin" }
