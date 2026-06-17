@@ -1,0 +1,38 @@
+= Session 130 — Koog 1.0.0 API : replacement forwardTo
+:date: 2026-06-17
+:epic: EPIC L — Migration langgraph4j → koog (maintenance)
+:type: refactoring
+
+== Contexte
+
+Le plugin koog-agents a été mis à jour vers v1.0.0. Dans cette version,
+`forwardTo` n'est plus une fonction top-level dans `ai.koog.agents.core.dsl.builder`
+mais une fonction membre de `AIAgentNodeBase`.
+
+L'import `import ai.koog.agents.core.dsl.builder.forwardTo` ne compile plus.
+
+== Actions
+
+- Retrait import `forwardTo` dans 4 fichiers main + 1 fichier test :
+  * `KoogAugmentedContextGraph.kt`
+  * `MultiChannelContextGraph.kt`
+  * `KoogPlanningOrchestrator.kt`
+  * `VibecodingGraph.kt`
+  * `KoogPlanningGraphTest.kt`
+- Les appels infixes `nodeStart forwardTo buildContext` continuent de fonctionner
+  via l'héritage membre de `AIAgentNodeBase`.
+
+== Commandes
+
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:compileTestKotlin
+
+== Résultats
+
+- BUILD SUCCESSFUL (0 erreur, warnings préexistants uniquement)
+- Aucune régression de compilation
+
+== Leçons
+
+Le changement koog 0.8.x → 1.0.0 est mineur pour ce codebase : seul l'import change.
+L'API infixe reste identique via la fonction membre héritée.

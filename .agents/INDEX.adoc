@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-06-17
-*Version* : 1.1.0 (Session 129 — EPIC PUB Preflight)
+*Version* : 1.1.1 (Session 130 — Koog 1.0.0 forwardTo)
 
 == Regles Absolues
 
@@ -20,6 +20,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | 📋 | Backlog cadré — EPIC Y (Agentic Literature Compiler) complet, EPIC V-9 terminé |
 | ✅ | Vibecoding complet — Fichiers agentiques et gouvernance analysés/structurés (EPIC V-9) |
 | ✅ | Session 129 — Reprise EPIC PUB : preflight publication OK (build + validate + MavenLocal)
+| ✅ | Session 130 — Koog 1.0.0 : replacement forwardTo (5 fichiers, build OK)
 
 === EPICs & Projects
 

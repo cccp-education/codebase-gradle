@@ -54,3 +54,6 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** Mise à jour gouvernance : archive 129, INDEX, PROMPT_REPRISE
 ** Décision : publication Central différée → priorité boucle vibecoding locale + gouvernance augmentée
 ** Création `GovernanceContextLoader` + tests JUnit5
+* Session 130 — Koog 1.0.0 : replacement forwardTo (EPIC L maintenance)
+** Retrait import `forwardTo` dans 5 fichiers (koog 1.0.0 : membre vs top-level)
+** BUILD SUCCESSFUL — compileKotlin + compileTestKotlin OK

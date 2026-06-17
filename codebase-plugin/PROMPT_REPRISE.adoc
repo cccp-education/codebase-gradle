@@ -1,34 +1,20 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 130
-:session: 130
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 131
+:session: 131
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 129 — EPIC PUB Preflight + Pivot Gouvernance Locale ✅
+:session_precedente: 130 — Koog 1.0.0 API : replacement forwardTo ✅
 
 == Contexte Hérité
 
-- Build débloqué (annotations fix, codex 0.0.1, validatePlugins OK).
-- `publishToMavenLocal` signé et OK.
-- Gouvernance `.agents/` versionnée et réconciliée.
-- `GovernanceContextLoader` créé avec tests JUnit5 pour charger AGENT/INDEX/PROMPT_REPRISE/SESSIONS_HISTORY/TEST_COVERAGE/BACKLOG dans un `AgentContext`.
-- Décision : ne pas publier sur Maven Central maintenant ; prioriser la boucle vibecoding locale auto-alimentée puis le pont vers la gouvernance augmentée (EPIC Y).
+- koog-agents 1.0.0 déployé, imports `forwardTo` corrigés dans 5 fichiers.
+- Build compile et tests compilent (0 erreur).
+- `GovernanceContextLoader` créé session 129.
+- Boucle vibecoding locale + pont EPIC Y en attente.
 
-== Mission Session 130
+== Mission Session 131
 
-Finaliser la boucle vibecoding locale avec gouvernance textuelle, puis ouvrir le pont EPIC Y.
-
-. Câbler `GovernanceContextLoader` dans `SessionProtocolServer` et `SessionProtocolTask` :
-** fallback auto quand aucun `--contextFile` n'est fourni ;
-** utiliser le répertoire racine du projet Gradle comme source de gouvernance.
-. Tests baby-step :
-** Test unitaire : `GovernanceContextLoader` ✅ (déjà fait session 129)
-** Test fonctionnel : `SessionProtocolTask` sans `--contextFile` charge la gouvernance.
-** Test Cucumber : scénario "opencode prompt → daemon répond avec contexte EAGER injecté".
-. Mettre à jour `LOCAL_VIBECODING_LOOP.adoc` :
-** Documenter le chargement automatique des fichiers agents.
-** Expliquer le fallback textuel vs contexte augmenté (EPIC Y).
-. Préparer le pont EPIC Y :
-** Stuber ou implémenter une tâche Gradle `IngestGovernanceTask` qui envoie les fichiers agents dans `AgenticIngestor` (chunks → ontologie → SQL → pgvector).
-** Documenter la transition "texte → chunks → SQL → augmented context".
+Câbler `GovernanceContextLoader` dans `SessionProtocolServer` et `SessionProtocolTask` :
+fallback auto quand aucun `--contextFile` n'est fourni.
 
 == Méthodologie
 
-Baby-step DDD/TDD/BDD : un fichier modifié à la fois, compilation + tests entre chaque étape, pas de publication Central.
+Baby-step DDD/TDD/BDD : un fichier modifié à la fois, compilation + tests entre chaque étape.
