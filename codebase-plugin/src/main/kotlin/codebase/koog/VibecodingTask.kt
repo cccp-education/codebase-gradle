@@ -224,9 +224,7 @@ abstract class VibecodingTask : DefaultTask() {
             auditFile.appendText(toolEntry)
         }
 
-        if (result.error != null) {
-            throw RuntimeException("Vibecoding failed: ${result.error}")
-        }
+        if (result.error != null) throw RuntimeException("Vibecoding failed: ${result.error}")
     }
 
     private fun jsonlEscape(raw: String): String =

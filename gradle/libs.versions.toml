@@ -23,7 +23,7 @@ vibecoding-contracts = "0.0.1"
 llm-pool-contracts = "0.1.0"
 opencode-session-contracts = "0.0.1"
 assertj = "3.27.7"
-koog = "0.8.0"
+koog = "1.0.0"
 
 [libraries]
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }

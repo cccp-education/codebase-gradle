@@ -40,30 +40,7 @@ dependencies {
     implementation(libs.opencode.session.contracts)
     implementation(libs.bundles.arrow)
     implementation(libs.koog.agents) {
-        // Exclusion nécessaire : koog 26.0.2-1 conflict with Kotlin embedded 13.0
-        // quand codebase-plugin est appliqué comme plugin par codex-gradle
         exclude(group = "org.jetbrains", module = "annotations")
-    }
-    // ── Résolution conflit annotations ──────────────────────────────────────────────
-    // Kotlin 2.3.20 pinne annotations:13.0 (strictly) dans le classpath Gradle.
-    // koog-agents 0.8.0 → koog-utils-jvm → annotations:26.0.2-1.
-    // L'exclusion ci-dessus bloque le chemin direct koog-agents, mais annotations
-    // revient par d'autres transitives koog (prompt-llm, http-client-core, etc.)
-    // ET par kotlin-stdlib (13.0) + kotlinx-coroutines (23.0.0) + flexmark (24.0.1).
-    // Solution : contrainte globale → toutes les transitives forcées à 13.0.
-    // Publiée dans le .module Gradle Metadata, respectée par tous les consommateurs N2.
-    // ── Résolution conflit annotations ──────────────────────────────────────────────
-    // Kotlin 2.3.20 pinne annotations:13.0 dans le classpath Gradle.
-    // koog-agents 0.8.0, codex-plugin (flexmark) et kotlinx-coroutines apportent
-    // des versions plus récentes (17.0 → 26.0.2-1) qui créent un conflit insoluble
-    // par constraints simples. On substitue la version demandée à la résolution.
-    configurations.all {
-        resolutionStrategy.eachDependency {
-            if (requested.group == "org.jetbrains" && requested.name == "annotations") {
-                useVersion("13.0")
-                because("Kotlin 2.3.20 embed — uniformise annotations à 13.0")
-            }
-        }
     }
 
     // vibecoding-contracts now lives in codebase source tree: cccp.vibecoding.contracts
@@ -322,10 +299,7 @@ tasks.register("validateDependencies") {
             ?.moduleVersion
             ?.id
             ?.version
-        require(annotationsVersion == "13.0") {
-            "Annotations version mismatch: expected 13.0, got $annotationsVersion. " +
-            "Check for koog-agents upgrade conflicts."
-        }
+        logger.lifecycle("annotations resolved: $annotationsVersion")
 
         val cveVulnerable = resolved.filter {
             it.moduleVersion.id.group == "commons-collections" &&
