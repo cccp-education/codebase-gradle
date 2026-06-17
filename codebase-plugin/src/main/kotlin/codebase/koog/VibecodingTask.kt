@@ -92,6 +92,7 @@ abstract class VibecodingTask : DefaultTask() {
      * ConnectionFactory injectable pour la persistance R2DBC.
      * Null par défaut — sans injection, --resume est inopérant.
      */
+    @get:Internal
     var connectionFactory: ConnectionFactory? = null
 
     init {

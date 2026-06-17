@@ -1,0 +1,43 @@
+= INDEX — Codebase Gradle
+:toc: left
+:icons: font
+
+*Date de creation* : 2026-06-16
+*Derniere mise a jour* : 2026-06-17
+*Version* : 1.1.0 (Session 129 — EPIC PUB Preflight)
+
+== Regles Absolues
+
+Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologie, architecture.
+
+== Etat du Projet
+
+=== Gouvernance Agentique
+
+| Statut | Description |
+|--------|-------------|
+| 🆕 | Bootstrap initialisation — AGENT.adoc, INDEX.adoc, SESSION_CHECKLIST.adoc crées |
+| 📋 | Backlog cadré — EPIC Y (Agentic Literature Compiler) complet, EPIC V-9 terminé |
+| ✅ | Vibecoding complet — Fichiers agentiques et gouvernance analysés/structurés (EPIC V-9) |
+| ✅ | Session 129 — Reprise EPIC PUB : preflight publication OK (build + validate + MavenLocal)
+
+=== EPICs & Projects
+
+[cols="1,4,1,1,1"]
+|===
+| EPIC | Sujet | Portee | Status | Sessions
+| EPIC V | Vibecoding Task + Graph | N1 | 15/15 PTS | 041-045
+| EPIC-V-SESSION-REPO | SessionRepository + TokenTracker + Dashboard | N1 | 3/3 pts | 059
+| EPIC-V-FLYWAY | Migration Flyway (futur) | N2 | BACKLOG | —
+| EPIC-V-9 | Vibecoding Gouvernance Agentique | N1 | ✅ CADRÉ (7 ateliers, 35 items, 7-10 sessions) | 084
+| EPIC K | Ontologie Workspace | NX | ✅ TERMINE | 015-020
+| EPIC L | Migration langgraph4j → koog | NX | ✅ TERMINE | 034-049
+| EPIC W | Auto-discovery Gradle Tasks | N1 | ✅ TERMINE | 098-100
+| EPIC X | Decision Multi-Step | N1 | ✅ TERMINE | 101-105
+| EPIC Y | Agentic Literature Compiler | N1 | ✅ TERMINE | 088-097
+| EPIC Z | Autofocus | N1 | ✅ TERMINE | 106-108
+| EPIC OCR | OCR Assisté IA (Gemini Vision) | N1 | 4/4 pts | 117-120
+| EPIC PUB | Publication Maven Central | NX | 🔄 PREFLIGHT OK — prêt pour Central | 129
+| EPIC CR | Code Review Deep Analysis | N1 | ✅ TERMINÉ | 119-125
+| EPICsession-proTOCOL | opencode↔Gradle Thin Client | N1 | ✅ TERMINE | 112-114
+|===

@@ -4,7 +4,6 @@ import codebase.koog.session.SessionRepository
 import io.r2dbc.spi.ConnectionFactory
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.Console
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
@@ -27,6 +26,7 @@ abstract class DashboardTask : DefaultTask() {
     private val log = LoggerFactory.getLogger(DashboardTask::class.java)
 
     /** ConnectionFactory injectable pour le SessionRepository. */
+    @get:Internal
     var connectionFactory: ConnectionFactory? = null
 
     init {
@@ -34,7 +34,6 @@ abstract class DashboardTask : DefaultTask() {
         description = "Dashboard vibecoding — sessions, coûts, confidentialité"
     }
 
-    @Console
     @TaskAction
     fun executeDashboard() {
         val cf = connectionFactory

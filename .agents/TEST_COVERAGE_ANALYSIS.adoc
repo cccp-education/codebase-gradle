@@ -1,0 +1,86 @@
+= Test Coverage Analysis — Codebase Gradle
+:toc: left
+:icons: font
+:sectnums:
+
+== Vue d'ensemble
+
+| Type | nb Tests | Coverage | Status |
+|------|----------|----------|--------|
+| JUnit5 | 130+ | ~60% | EN COURS |
+| Cucumber | 25+ | ~50% | EN COURS |
+| Total | 155+ | — | — |
+
+== Tests unitaires (JUnit5)
+
+| Classe | nb Tests | Coverage | Status |
+|--------|----------|----------|--------|
+| VibecodingTaskTest | 25 | EAGER + pgvector + Ollama cloud | MATURE |
+| OcrTaskTest | 20 | FakeVisionProvider + CI | EN COURS |
+| OcrIngestTaskTest | 15 | E2E OCR→pgvector | EN COURS |
+| ExpertAgentTest | 10 | LangChain4j AiServices | EN COURS |
+| SessionRepositoryTest | 10 | pgvector + R2DBC | EN COURS |
+| DashboardTaskTest | 5 | Dashboard CLI | EN COURS |
+| AgenticChunkEnforcementTest | 10 | 10 unit + 7 Cucumber = 17/17 PASS | TERMINÉ |
+| TokenTrackerTest | 8 | mesure tokens LLM | EN COURS |
+| LlmProviderResolverTest | 5 | mapping model→provider | EN COURS |
+| GeminiKeyPoolTest | 8 | rotation + quota | EN COURS |
+
+== Tests fonctionnels (Cucumber)
+
+| Classe | nb Tests | Coverage | Status |
+|--------|----------|----------|--------|
+| epic_v_7_expert_call_pipeline.feature | 5 | Expert call pipeline (anonymize→dispatch→call→collect) | TERMINÉ |
+| epic_sp_4_session_protocol.feature | 9 | Session protocol (create→vibecoding→response→close) | TERMINÉ |
+| epic_sp_5_tool_event_stream.feature | 6 | Tool event stream (thinking/tool_call/tool_result/progress/error) | TERMINÉ |
+| epic_sp_6_live_context.feature | 4 | Live context injector | TERMINÉ |
+| epic_ocr_2b.feature | 8 | OCR ollama provider + gemini+ollama fallback | TERMINÉ |
+| epic_ocr_4_ingest.feature | 5 | OCR ingest (anonymize→chunk→embed→pgvector) | TERMINÉ |
+| epic_ocr_4_5_metrics.feature | 5 | OCR metrics (time, quality, cost) | TERMINÉ |
+| pool.feature | 8 | Ollama/Gemini key pool rotation | EN COURS |
+
+== Tests de regression
+
+| EPIC | nb Tests | Status |
+|------|----------|--------|
+| EPIC Y (Agentic Literature Compiler) | 120+ | TERMINÉ |
+| EPIC V (Vibecoding) | 35+ | TERMINÉ |
+| EPIC V-9 (Vibecoding Gouvernance) | 0 | CADRAGE A FAIRE |
+
+== Performance & Benchmarks
+
+| Aspect | Mesure | Status |
+|--------|--------|--------|
+| PostgreSQL startup | 15s avg (testcontainers) | A OPTIMISER |
+| LLM call (gemini-1.5-flash) | 3-5s | OK |
+| pgvector query (k=10) | <100ms | OK |
+| Session reproductibility | <10% variance | OK |
+
+== Anti-patterns tests
+
+| # | Anti-pattern | Symptome | Correction |
+|---|--------------|----------|------------|
+| 1 | **Timeouts flaquants** | Tests Cucumber échouent unpredictably | Augmenter les timeouts (5min→8min) |
+| 2 | **PostgreSQL slow startup** | 15s avg, CI flakiness | Reuse container, longer timeouts |
+| 3 | **Test doubles incomplets** | Fake non representatif de la production | Rapprocher des vrais providers |
+| 4 | **Tests trop longs** | >30min Cucumber | Splitter en suites plus petites |
+
+== Plans d'amélioration
+
+=== Court terme (2-4 semaines)
+
+1. Fixer les timeouts Cucumber (5min→8min)
+2. Améliorer les fake providers (FakeVisionProvider, FakeOllamaOcrProvider)
+3. Automatiser la detection de secrets dans les logs
+
+=== Moyen terme (1-2 mois)
+
+1. Réduire le temps de setup PostgreSQL (Reuse container)
+2. Ajouter des tests E2E complet (end-to-end)
+3. Améliorer la couverture Cucumber (plus de scénarios réels)
+
+=== Long terme (3-6 mois)
+
+1. Migration vers Testcontainers 2.0 (meilleure isolation)
+2. Cypress/Playwright pour tests UI Swing (Javelit)
+3. Benchmark continuous (regression detection)

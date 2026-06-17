@@ -1,0 +1,62 @@
+= Session 084 — Cadrage EPIC V-9 Vibecoding Gouvernance Agentique
+
+== Contexte
+
+* **EPIC** : V-9 — Vibecoding Gouvernance Agentique
+* **Type** : Cadrage agile (7 ateliers) + Alignment garden secret/anonymisation
+* **Session** : 084 (2026-06-17)
+* **Objectif** : Valider cadrage EPIC V-9 et préparer démarrage implémentations (35 items, ~70 pts)
+
+== Actions réalisées
+
+1. Lire AGENT.adoc workspace → règles absolues respectées
+2. Lire TAXONOMIE_WORKSPACE.adoc → EPIC V-9 aligné (verbe GOVERNANCE, domaine AGENTIQUE)
+3. Lire AGENTS.adoc → hook ouverture/fermeture standardisé
+4. Lire CADRAGE_METHODE_EPIC_V9.adoc → validation 7 ateliers
+5. Lire BACKLOG.adoc → EPIC V-9 + dépendances (Y, W, X, Z, OCR)
+6. Identifier duplication BACKLOG vs CADRAGE_METHODE_EPIC_V9 (Under-EPICs)
+7.Identifier fichiers EAGER > 500 lignes (1598 lignes) → trigger backup obligatoire
+8. Nouvelle section dans CADRAGE_METHODE_EPIC_V9.adoc :
+   * Jardin secret = filtre d'intimité (pas de git, snapshot horodaté)
+   * Anonymisation = filtre de protection des données sensibles (pipeline OCR→anonymize→pgvector)
+   * Ces 2 filtres sont complémentaires pour EPIC V-9
+
+== Commandes exécutées
+
+[source,bash]
+----
+./gradlew tasks --all 2>&1 | head -100
+git status
+wc -l .agents/*.adoc
+----
+
+== Résultats obtenus
+
+* ✅ Cadrage EPIC V-9 validé (7 ateliers, 35 items, 7-10 sessions)
+* ✅ Alignment garden secret/anonymisation documenté
+* ✅ BACKLOG + CADRAGE_METHODE_EPIC_V9 alignés
+* ✅ Architecture EAGER/LAZY cross-borough validée (codebase, plantuml, bakery, runner)
+* ⚠️ Fichiers EAGER > 500 lignes (1598 lignes) → backup obligatoire (à faire)
+
+== Leçons apprises
+
+* **Jardin secret** (Cercle 0) = filtre d'intimité (pas de git, snapshot horodaté)
+* **Anonymisation** = filtre de protection des données sensibles (complémentaire)
+* Ces 2 filtres sont **complémentaires** pour EPIC V-9
+
+* **Échelle cross-borough** : chaque borough a sa propre structure EAGER/LAZY
+  * codebase-gradle : AGENT.adoc, INDEX.adoc, SESSION_CHECKLIST.adoc, SESSION_PROCEDURE.adoc, PROMPT_REPRISE.adoc
+  * plantuml-gradle : AGENT.adoc, INDEX.adoc, SESSIONS_HISTORY.adoc, PROCEDURES.adoc, LAZY_EAGER_ESSENTIALS.adoc
+  * bakery-gradle : AGENT.adoc, INDEX.adoc, SESSIONS_HISTORY.adoc, LAZY_EAGER_ESSENTIALS.adoc
+  * runner-gradle : PROMPT_REPRISE.adoc injecté par opencode, pas de AGENT.adoc local
+  * magic-stick : AGENT.adoc, INDEX.adoc, SESSIONS_HISTORY.adoc, LAZY_EAGER_ESSENTIALS.adoc
+
+== Next steps
+
+1. Nettoyer duplication BACKLOG vs CADRAGE_METHODE_EPIC_V9
+2. Aligner EPIC V-9 avec roadmap dans INDEX.adoc
+3. Créer session archive (faire)
+4. Lancer backup fichiers EAGER
+5. Mettre à jour configuration/.agents/PROMPT_REPRISE.adoc
+6. Mettre à jour SESSIONS_HISTORY.adoc, INDEX.adoc
+7. Mettre à jour COMPLETED_TASKS_ARCHIVE_juin_2026.adoc

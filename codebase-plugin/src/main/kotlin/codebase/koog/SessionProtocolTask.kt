@@ -18,6 +18,8 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
 import org.gradle.work.DisableCachingByDefault
@@ -72,6 +74,7 @@ abstract class SessionProtocolTask : DefaultTask() {
     abstract val action: Property<String>
 
     @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     @get:Optional
     @get:Option(option = "contextFile", description = "Fichier JSON AgentContext (optionnel)")
     abstract val contextFile: RegularFileProperty

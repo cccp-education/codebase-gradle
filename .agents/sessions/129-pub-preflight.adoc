@@ -1,0 +1,58 @@
+= Session 129 — EPIC PUB Preflight (Codebase Gradle)
+:date: 2026-06-17
+:borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
+
+== Contexte
+
+- Reprise de la mission session 128 : publication Maven Central codebase-plugin + codebase-contracts.
+- État hérité incohérent : `.agents/` non versionné, SESSIONS_HISTORY arrêté à la session 084, PROMPT_REPRISE indiquait encore la 128.
+- Build compile OK mais `validateDependencies` échouait et `validatePlugins` révélait 8 erreurs d'annotations Gradle.
+
+== Objectifs
+
+. Débloquer la publication Maven Central en alignant les dépendances publiées.
+. Corriger les erreurs de validation plugin Gradle (task inputs/outputs).
+. Publier en local comme preflight.
+. Réconcilier la gouvernance agentique (session 129).
+
+== Actions
+
+* [x] Fix conflit `org.jetbrains:annotations:13.0` vs `26.0.2-1` via `resolutionStrategy.eachDependency` dans `codebase-plugin/build.gradle.kts`.
+* [x] Aligner `codex-plugin` de `0.1.0-SNAPSHOT` → `0.0.1` (version publiée sur Maven Central) dans `gradle/libs.versions.toml`.
+* [x] Corriger `validatePlugins` :
+** `EndSessionBlogTask` : `@DisableCachingByDefault` + `@PathSensitive` sur `foundryDir`.
+** `SessionProtocolTask` : `@PathSensitive` sur `contextFile`.
+** `VibecodingTask` : `@Internal` sur `connectionFactory`.
+** `DashboardTask` : supprimer `@Console` sur `executeDashboard()`, `@Internal` sur `connectionFactory`.
+** `OcrTask` : `@PathSensitive` sur `inputFile` et `inputDir`.
+** `OcrIngestTask` : `@PathSensitive` sur `ocrOutputDir`.
+* [x] Vérifier `./gradlew :codebase-plugin:build -x test :codebase-plugin:validateDependencies` — BUILD SUCCESSFUL.
+* [x] Publier en local `./gradlew :codebase-plugin:publishToMavenLocal` — signature GPG OK.
+
+== Commandes
+
+[source,bash]
+----
+./gradlew :codebase-plugin:validateDependencies
+./gradlew :codebase-plugin:build -x test -x koverVerify -x koverHtmlReport
+./gradlew :codebase-plugin:publishToMavenLocal
+----
+
+== Résultats
+
+| Tâche | Statut |
+|-------|--------|
+| Build compile | OK |
+| validateDependencies | OK |
+| validatePlugins | OK (0 erreurs) |
+| publishToMavenLocal | OK (signé) |
+
+== Leçons
+
+* La publication Central ne peut pas être lancée tant que `validatePlugins` échoue — Gradle Plugin Portal est strict.
+* `constraints { implementation(...) }` ne force pas la résolution ; `resolutionStrategy.eachDependency` est nécessaire quand plusieurs transitives demandent des versions incompatibles.
+* Le `.agents/` de codebase-gradle n'avait pas été maintenu depuis la session 084 ; cette session rétablit le fil de l'historique.
+
+== Suite
+
+Session 130 : exécuter `./gradlew publishAggregationToCentralPortal` pour `codebase-plugin` après vérification finale des credentials et du POM.

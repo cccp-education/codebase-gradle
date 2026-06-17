@@ -700,33 +700,25 @@ En attendant : `publishToMavenLocal` suffit pour conso inter-boroughs N1→N2.
 == EPIC PUB — Publication Maven Central + Plugin Portal
 
 _Source : configuration/EPIC_PUB.adoc (Session 096)_
+**Statut** : 🔄 PREFLIGHT OK (session 129) — build, validateDependencies, validatePlugins, publishToMavenLocal passent.
 
-=== PUB-2.2 — Mettre a jour le commentaire relocation
+=== PUB-2.2 — Mettre a jour le commentaire relocation ✅
 
-Dans le `build.gradle.kts`, remplacer :
-```kotlin
-// RELOCATION : prepare la migration du groupId education.cccp →
-// <futur-domaine>. Activer avec -Prem relocationGroup="io.github.cccp-education"
-// Effet : injecte <distributionManagement><relocation><groupId>...</groupId></relocation>
-// dans le POM publie. Les consommateurs existants seront rediriges automatiquement
-// vers le nouveau groupId lors de la prochaine maj de dependance.
-```
-Par :
-```kotlin
-// RELOCATION : garde comme echappatoire future.
-// Activable avec -Prem relocationGroup="<futur-namespace>"
-```
+Commentaire relocation simplifié dans `build.gradle.kts`.
 
-=== PUB-3.08 — codebase-plugin + codebase-contracts
+=== PUB-3.08 — codebase-plugin + codebase-contracts 🔄
 
 *Artefacts* : `education.cccp:codebase-plugin` + `education.cccp:codebase-contracts`
 
-⚠️ Depend de codex-plugin et planner-plugin (N2) en library.
-Option A : publier codex + planner avant codebase.
-Option B : `includeBuild` temporaire.
+* Prérequis débloqués session 129 :
+** `codex-plugin` aligné sur `0.0.1` (publié Maven Central)
+** `planner-plugin` reste `0.0.1` (publié Maven Central)
+** Conflit `annotations:13.0` résolu via `resolutionStrategy.eachDependency`
+** 8 erreurs `validatePlugins` corrigées
 
+* Commande de publication :
 ```bash
-cd foundry/public/codebase-gradle && ./gradlew publish closeAndRelease
+cd foundry/public/codebase-gradle && ./gradlew publishAggregationToCentralPortal --no-daemon
 ```
 
 === PUB-5.8 — Verification

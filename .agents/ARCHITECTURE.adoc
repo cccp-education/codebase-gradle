@@ -1,0 +1,191 @@
+= Architecture — Codebase Gradle
+:toc: left
+:icons: font
+:sectnums:
+
+== Vue d'ensemble
+
+Codebase gradle est un plugin Gradle N1 qui fournit le socle RAG pgvector, le manager BYOK (7 providers LLM), et le moteur Vibecoding (LLM + Tools + RAG + Graphify).
+
+=== DAG
+
+| Niveau | Projet | Role | Dependances |
+|--------|--------|------|-------------|
+| N0 | workspace-bom | Shared kernels (agent-contracts, codebase-contracts, etc.) | — |
+| N1 | codebase-gradle | RAG pgvector, BYOK, Vibecoding engine | agent-contracts, codebase-contracts, llm-pool-contracts |
+| N2 | training-gradle | Fine-tuning CDA/FPA, pipeline formation | codebase-contracts |
+| N2 | planner-gradle | LLM prompting SPG/SPD | codebase-contracts |
+| N2 | codex-gradle | Asciidoctor→PDF, slides | codebase-contracts |
+| N3 | runner-gradle | Orchestration DAG, provisioning CLI | codebase-contracts |
+| N4 | workspace-gradle | Scaffold workspace, provision runner | codebase-contracts |
+
+=== Architecture technique
+
+[source,bash]
+----
+codebase-gradle/                     # RACINE GIT (cercle 4)
+├── build.gradle.kts                 # Build avec taches : scaffold, snapshot, anonymization, run
+├── settings.gradle.kts              # rootProject.name = "codebase-gradle"
+├── buildSrc/                        # Code source Kotlin (pas un sous-projet Gradle)
+│   ├── build.gradle.kts
+│   └── src/main/kotlin/
+│       ├── codebase/                # Config LLM, BYOK, anonymisation, providers
+│       │   ├── LlmPool.kt           # OllamaPool, GeminiKeyPool
+│       │   ├── Anonymizer.kt        # TextAnonymizer
+│       │   └── CodebaseConfig.kt    # Configuration globale
+│       ├── chatbot/                 # Javelit — Swing UI + RAG
+│       │   ├── JavelitChatbot.kt    # Swing UI
+│       │   └── RAGEnrichment.kt     # Embeddings + pgvector
+│       ├── readme/readme.kt         # README plugin config anonymizer
+│       ├── site/site.kt             # Site plugin config anonymizer
+│       ├── slider/slider.kt         # Slider plugin config anonymizer
+│       └── snapshot/snapshot.kt     # Auto-documentation du codebase
+├── embeds.yml                       # Sources RAG pour Javelit
+├── VISION_ORCHESTRATION_LLM.adoc    # Vision dispatcher + experts (275 lignes)
+├── gradle/libs.versions.toml        # Version catalog
+└── .agents/                         # Gouvernance agent
+    ├── INDEX.adoc                   # Regles absolues + sessions recentes (EAGER)
+    ├── sessions/                    # Archives par session
+    ├── archives/                    # Archives mensuelles
+    ├── encyclopedies/               # Connaissance thematique froide (COLD)
+    └── backup/                      # Vagues froides (snapshots horodates)
+----
+
+=== Canaux de contexte (CompositeContext)
+
+Le contexte augmenté pour l'LLM est compose de 4 canaux convergeants :
+
+| Canal | Technologie | Type d'information | Rôle |
+|-------|------------|-------------------|------|
+| **EAGER/LAZY** | Fichiers AsciiDoc + `.agents/` | Regles, procédures, backlog, historique | Gouvernance deterministe |
+| **RAG pgvector** | LangChain4j + ONNX + PostgreSQL | Documents, code source, SPG, articles | Similarite vectorielle |
+| **Graphify** | `graph.json` + plantuml-gradle | Noeuds, aretes, communautés, depends | Relations exactes |
+| **Ressources** | Dossiers encyclopedies, archives, datasets | Données brutes nettoyées, corpus, historique long | Mémoire froide |
+
+=== Budget de tokens par canal
+
+| Canal | % du budget | Token budget (ex: 128K) |
+|-------|-------------|------------------------|
+| EAGER/LAZY | 40% | 51.2K |
+| RAG pgvector | 30% | 38.4K |
+| Graphify | 20% | 25.6K |
+| Ressources | 10% | 12.8K |
+
+== Architecture agentique
+
+=== Vibecoding Graph (koog+langchain4j)
+
+[source,bash]
+----
+VibecodingGraph.execute() {
+    // Node 0 : BuildContext
+    contextBuilder.build(compositeContext) → augmentedContext (128K tokens)
+    
+    // Node 1 : CallLLM
+    langchain4j.callLLM(augmentedContext, tools) → LLM response
+    
+    // Node 2 : ExecuteTools
+    toolRegistry.execute(toolCalls) → tool results
+    
+    // Node 3 : PersistState
+    sessionRepository.update SessionRecord {
+        sessionId, prompt, result, tools, tokenUsage
+    }
+    
+    // Node 4 : CheckProgress
+    progressChecker.check(sessionRecord) → DONE / NOT_DONE
+}
+----
+
+=== ToolRegistry
+
+Le ToolRegistry expose des outils pour l'LLM :
+
+| Tool | Paramètres | Description |
+|------|-----------|-------------|
+| `exec_gradle` | task, args | Executer une tache Gradle |
+| `read_file` | path | Lire un fichier (EAGER/LAZY) |
+| `list_files` | directory | Lister les fichiers d'un répertoire |
+| `search_files` | pattern, directory | Rechercher des fichiers |
+| `run_command` | command | Executer une commande shell |
+| `list_gradle_tasks` | group, description | Lister les taches Gradle disponibles |
+| `find_similar` | query, k | Rechercher des chunks RAG similaires |
+| `find_relationships` | node_id, direction | Rechercher des relations Graphify |
+
+== Architecture RAG
+
+=== Pipeline d'indexation
+
+[source,bash]
+----
+Document scanne (image/PDF non-textuel)
+    ↓
+OcrTask (Gemini/Gemini+Ollama)
+    ↓
+OcrResult AsciiDoc
+    ↓
+Anonymisation (TextAnonymizer)
+    ↓
+Chunking sémantique (AgenticChunker)
+    ↓
+Embedding ONNX (AllMiniLmL6V2)
+    ↓
+Insertion pgvector (LangChain4j + R2DBC)
+----
+
+=== Repository
+
+[source,kotlin]
+----
+interface SessionRepository {
+    suspend fun createSession(sessionRecord: SessionRecord): UUID
+    suspend fun updateSession(sessionRecord: SessionRecord)
+    suspend fun getSession(sessionId: UUID): SessionRecord?
+}
+----
+
+Implementation : `R2dbcSessionRepository` (PostgreSQL + R2DBC + pgvector).
+
+== Architecture multimodal
+
+=== Fallback OCR
+
+[source,bash]
+----
+Gemini (cloud, 1er choix)
+    ↓ (si quota exceeded ou down)
+Ollama qwen3-vl:235b-cloud (cloud, fallback)
+    ↓ (si indisponible)
+Tesseract (sans IA, last resort)
+----
+
+=== Providers LLM
+
+| Provider | Model | Cloud/Local | Usage |
+|----------|-------|-------------|-------|
+| Ollama | gpt-oss:120b-cloud | Cloud | LLM principal |
+| Ollama | gpt-oss:20b-cloud | Cloud | LLM backup |
+| Ollama | qwen3-coder-next:cloud | Cloud | LLM backup |
+| Ollama | qwen3-next:80b-cloud | Cloud | LLM backup |
+| Ollama | qwen3-coder:480b-cloud | Cloud | LLM backup |
+| Gemini | gemini-1.5-flash | Cloud | OCR principal |
+| Gemini | gemini-1.5-pro | Cloud | OCR backup |
+| Ollama | qwen3-vl:235b-cloud | Cloud | OCR fallback |
+
+=== LLM Provider Resolver
+
+[source,kotlin]
+----
+object LlmProviderResolver {
+    fun resolve(model: String): LlmProvider {
+        return when (model) {
+            "gpt-oss:120b-cloud" -> ollamaPool.providers[0]
+            "gpt-oss:20b-cloud" -> ollamaPool.providers[1]
+            "qwen3-coder-next:cloud" -> ollamaPool.providers[2]
+            "qwen3-next:80b-cloud" -> ollamaPool.providers[3]
+            "qwen3-coder:480b-cloud" -> ollamaPool.providers[4]
+            else -> ollamaPool.providers[0] // default
+        }
+    }
+}
+----

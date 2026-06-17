@@ -1,0 +1,293 @@
+= Session Procedure — Vibecoding Gouvernance Agentique (EPIC V-9)
+:toc: left
+:icons: font
+:sectnums:
+
+== Phase 0 : Preparation (AVANT la session)
+
+=== 0.1 Lire la documentation EAGER
+
+1. Lire `configuration/.agents/PROMPT_REPRISE.adoc` (mission de la session)
+2. Lire `.agents/INDEX.adoc` (etat EPICs, roadmap, portefeuille)
+3. Lire `AGENT.adoc` (regles absolues, methodologie, conventions)
+4. Lire `SESSION_CHECKLIST.adoc` (checklist debut/fin)
+
+=== 0.2 Verifier l'environnement
+
+[source,bash]
+----
+cd /home/cheroliv/workspace/foundry/public/codebase-gradle
+./gradlew tasks --all | head -50
+./gradlew build -x test
+----
+
+== Phase 1 : Debut de Session (15 minutes max)
+
+=== 1.1 Presentation du contexte
+
+L'agent reprend le contexte depuis :
+
+* PROMPT_REPRISE.adoc (mission de la session)
+* INDEX.adoc (etat EPICs, roadmap)
+* SESSIONS_HISTORY.adoc (historique des sessions recentes)
+* SESSION_PROCEDURE.adoc (procedure de travail)
+* SESSION_CHECKLIST.adoc (checklist)
+
+=== 1.2 Cadrage de la tache
+
+L'agent doit specifier exactement :
+
+1. **EPIC concerne** (ex: EPIC V-9, EPIC Y, EPIC W, etc.)
+2. **Type de travail** (implementation, debug, test, documentation, revue)
+3. **Objectif tangible** (ex: "terminer EPIC V-9.1", "ecrire 3 sous-taches")
+4. **Delai estimé** (ex: "1-2h", "3-4 sessions")
+
+=== 1.3 Plan de travail
+
+L'agent propose un plan de travail concret :
+
+1. Quels fichiers vont etre modifies?
+2. Quelles tâches Gradle vont etre ajoutees/modifiees?
+3. Quels tests vont etre ajoutes/modifyes?
+4. Quelle documentation doit etre mise a jour?
+
+**Regle d'or** : 1 fichier a la fois, modifier, valider, puis passer au suivant.
+
+== Phase 2 : Execution (variable)
+
+=== 2.1 Modifier un fichier
+
+Pour chaque fichier a modifier :
+
+1. **Lire le fichier en entier** (read tool)
+2. **Analyser le contexte** (architecture, conventions, patterns)
+3. **Proposer la modification** (edit ou write)
+4. **Attendar confirmation utilisateur** (sauf si permission donnée)
+5. **Compiler/apres modification** (./gradlew build -x test)
+6. **Valider les tests** (./gradlew test, si permission)
+
+=== 2.2 Ajouter un fichier
+
+1. **Creer le fichier** (write tool)
+2. **Respecter les conventions** (naming, structure, documentation)
+3. **Compiler apres creation** (./gradlew build -x test)
+4. **Ajouter les tests si necessaire**
+
+=== 2.3 Revue de code
+
+L'agent doit toujours :
+
+1. Verifier la **coherence architecturale** (clean architecture, patterns)
+2. Verifier la **qualite du code** (Kotlin idiomatic, pas de commentaires superflus)
+3. Verifier la **cobverture de tests** (JUnit5 + Cucumber)
+4. Verifier la **documentation** (JavaDoc, AsciiDoc)
+
+== Phase 3 : Fin de Session (30 minutes max)
+
+=== 3.1 Procedure de fin (6 etapes obligatoires)
+
+==== Etape 1 : Archive session
+
+Creer l'archive LAZY :
+
+[source,bash]
+----
+cat > .agents/sessions/NNN-sujet.adoc << 'EOF'
+= Session NNN — [sujet]
+
+== Contexte
+[CE que l'on voulait faire]
+
+== Actions realisees
+[Les etapes de travail]
+
+== Commandes executees
+[Commandes clés, sans secrets]
+
+== Resultats obtenus
+[Ce qui a été atteint, succes, difficultés]
+
+== Lecons apprises
+[Ce que l'on retient, améliorations a faire]
+
+== next steps
+[Ce qui reste a faire]
+EOF
+----
+
+==== Etape 2 : Mission N+1
+
+Mettre a jour `configuration/.agents/PROMPT_REPRISE.adoc` :
+
+[source,asciidoc]
+----
+= Prompt de Reprise — Session N+1
+
+[Description concise de la mission N+1, max 70 lignes]
+
+EPIC concerne : XXX
+Type de travail : YYY
+Objectif : ZZZ
+----
+
+==== Etape 3 : Dashboard N+1
+
+Mettre a jour `.agents/INDEX.adoc` :
+
+* Ajouter la session terminee (date, EPICs, livrables)
+* Mettre a jour etat EPICs (progression, blocages, termines)
+* Mettre a jour portefeuille (ajouter/supprimer projets)
+
+==== Etape 4 : Historique
+
+Mettre a jour `.agents/SESSIONS_HISTORY.adoc` :
+
+[source,asciidoc]
+----
+=== Session N — [date]
+* EPICs : XXX, YYY
+* Livrables : [description]
+* Tests : [nb tests, coverage]
+* Lecons : [points importants]
+----
+
+==== Etape 5 : Test Coverage (si tests modifies)
+
+Mettre a jour `.agents/TEST_COVERAGE_ANALYSIS.adoc` :
+
+* Ajouter les nouveaux tests
+* Mettre a jour les modifications
+* Ajouter les suppressions
+* Mettre a jour stats
+
+==== Etape 6 : Archivage mensuel (si applicable)
+
+Si `N % 10 == 0` ou fichiers EAGER > 500 lignes :
+
+1. Creer le dossier `.agents/backup/Y{annee}-sessions-{plage}/`
+2. Y copier INDEX, SESSIONS_HISTORY, COMPLETED_TASKS_ARCHIVE
+3. Tronquer fichiers actifs aux 10 dernieres sessions
+4. Mettre a jour INDEX.adoc avec localisation de la nouvelle vague
+
+=== 3.2 Verification post-session
+
+* [ ] Build compile (`./gradlew build -x test`)
+* [ ] Tests unitaires (si permission donnee)
+* [ ] Tests Cucumber (si permission donnee)
+* [ ] Aucun warning ou error critique
+* [ ] Aucun secret trace dans les logs (`grep -r "TOKEN\|SECRET\|PASSWORD\|API_KEY"`)
+
+=== 3.3 Checklist rapide
+
+1. Archive session cree?
+2. PROMPT_REPRISE mis a jour?
+3. INDEX.adoc mis a jour?
+4. SESSIONS_HISTORY mis a jour?
+5. Test coverage mis a jour?
+6. Backup lance si besoin?
+7. Aucun secret trace?
+8. Build compile?
+
+== Gestion des Secrets (regle absolu)
+
+* **NE JAMAIS** afficher de tokens, passwords, API keys dans le terminal
+* **NE JAMAIS** utiliser `echo`, `cat`, ou toute commande qui affiche des secrets
+* **NE JAMAIS** modifier des fichiers gitignores sans sauvegarde (`git check-ignore <fichier>`)
+
+**Checklist securite** :
+
+* [ ] Aucun token en argument de commande
+* [ ] Aucun secret dans les logs
+* [ ] `grep -r "TOKEN\|SECRET\|PASSWORD\|API_KEY\|gho_\|ghp_"` executé
+* [ ] Retirer les faux-positifs si necessaire
+
+== Anti-patterns a eviter
+
+| # | Anti-pattern | Symptome | Correction |
+|---|--------------|----------|------------|
+| 1 | **Session trop longue** | > 50 messages ou > 3 fichiers paralleles | Splitter. 5x20min > 1x2h. |
+| 2 | **PROMPT_REPRISE fantome** | configuration/.agents/PROMPT_RERISE.adoc pas mis a jour | L'etape 2 est obligatoire |
+| 3 | **Archive vide** | Le fichier de session cree mais sans contenu utile | Template obligatoire |
+| 4 | **Portefeuille fantome** | INDEX.adoc liste des projets qui ne sont plus gouvernes | Mettre a jour le portefeuille |
+| 5 | **Secrets dans logs** | Tokens/passwords visibles dans le terminal | Interdit formellement |
+| 6 | **Edit sans sauvegarde** | Modification d'un fichier gitignores sans backup | Sauvegarder avant |
+| 7 | **Trop d'agents** | Multiples agents specialises avant projet stable | Attendre 10+ sessions |
+
+== Refonte EPIC V-9 — Vibecoding Gouvernance Agentique
+
+=== Contexte de la session
+
+* **EPIC concerne** : EPIC V-9 — Vibecoding Gouvernance Agentique
+* **Type de travail** : Cadrage agile (7 ateliers) + Documentation gouvernance
+* **Objectif** : Documenter la gouvernance de la reflexion sur EPIC V-9 (sans encore实施 l'analyse)
+* **Delai estimé** : 1 session (30-45 min)
+
+=== Plan de travail
+
+1. **Lire la documentation EAGER** (koog patterns, EPIC V-9 backlog, SESSION_CHECKLIST)
+2. **Documenter la gouvernance** :
+** AGENT.adoc (mise a jour pour EPIC V-9)
+** INDEX.adoc (ajouter EPIC V-9, roadmap)
+** SESSION_CHECKLIST.adoc (checklist debut/fin session EPIC V-9)
+** SESSION_PROCEDURE.adoc (procedure 3 phases, 8 etapes EPIC V-9)
+** SESSIONS_HISTORY.adoc (session 000 — bootstrap EPIC V-9)
+** TEST_COVERAGE_ANALYSIS.adoc (tests EPIC V-9)
+** ARCHITECTURE.adoc (vision cible EPIC V-9)
+** CADRAGE_METHODE_EPIC_V9.adoc (7 ateliers agile)
+** BACKLOG.adoc (EPIC V-9 backlog complet, 35 items, ~70 pts)
+3. **Validation** (./gradlew build -x test)
+
+=== Execution
+
+. Lire koog_agentic_patterns.adoc (15 patterns, combinatoires)
+. Lire EPIC V-9 backlog (35 items, ~70 pts)
+. Classifier les patterns applicables à EPIC V-9 :
+** Pattern 12 (Memory Tiers) — Hot/Warm/Cold context
+** Pattern 08 (Guardrails) — Input/Output validation
+** Pattern 09 (ReAct) — Thinking/Acting loop
+** Pattern 10 (Self-Reflection) — Autocritique
+** Pattern 13 (Subgraphs) — VibecodingGovernanceSubgraph
+** Pattern 14 (Parallel Execution) — Fan-out/Fan-in
+** Pattern 15 (Checkpoints) — Time Travel
+. Documenter les combinatoires applicables :
+** Combo C — Vibecoding Autonome (Patterns 05, 09, 12, 15)
+** Combo E — Vibecoding Governancé (Patterns 08, 12, 13) + V-9
+. Documenter l'architecture cible :
+** VibecodingTask.execute() avec vibecodingGovernanceEnrichment
+** CompositeContextBuilder avec EAGER 40% = chunks ontologisés
+** SessionRepository checkpoints pour rollback
+. Documenter la gouvernance complete (7 fichiers EAGER)
+. Creer BACKLOG.adoc complet (EPIC V-9, 35 items, ~70 pts)
+. Documenter CADRAGE_METHODE_EPIC_V9.adoc (7 ateliers, 35 items)
+
+=== Resultats obtenus
+
+* **SESSION_CHECKLIST.adoc** — Checklist debut/fin session (6 etapes obligatoires)
+* **SESSION_PROCEDURE.adoc** — Procedure de travail complete (3 phases, 8 etapes)
+* **EPIC V-9 backlog** — 35 items, ~70 pts, 7-10 sessions (vibecoding governance agentique)
+* **CADRAGE_METHODE_EPIC_V9.adoc** — 7 ateliers agile (Vision, Personas, Zoning, etc.)
+
+=== Lecons apprises
+
+* **LeTrue Vibecoding** = LLM qui manipule du **vocabulaire结构é** (non texte brut)
+* **Pattern 12 (Memory Tiers)** = Hot/Warm/Cold context pour réduire tokens
+* **Pattern 08 (Guardrails)** = Input/Output validation pour contraintes exécutables
+* **Pattern 13 (Subgraphs)** = VibecodingGovernanceSubgraph (scan→chunk→ontologize→store)
+* **Pattern 15 (Checkpoints)** = Time Travel pour rollback après action destructive
+* **Combo C (Vibecoding Autonome)** = Routing → Memory Tiers → ReAct → Checkpoints
+
+=== next steps
+
+1. **EPIC V-9.1** : AgenticChunker — Analyse .adoc et segmente en chunks
+2. **EPIC V-9.2** : AgenticChunkType — Enum 5 types (RULE, CONCEPT, PROCEDURE, METADATA, CONSTRAINT)
+3. **EPIC V-9.3** : ScanAgent — Scan les fichiers .adoc du dossier .agents/
+4. **EPIC V-9.6** : AgenticOntologizer — Mappe chunks on TAXONOMIE_WORKSPACE
+5. **EPIC V-9.11** : AgenticCompiler — Transforme chunk en artefact executable
+
+== Anti-patterns a detection
+
+| # | Anti-pattern | Symptome | Status |
+|---|--------------|----------|--------|
+| 1 | **Backlog stale** | EPICs listes mais non priorises | ANETTENTION |
+| 2 | **Backlog doublon** | EPIC V-9 = extension EPIC Y | A ANNULE |
+| 3 | **Backlog non aligné** | EPIC V-9 non aligné avec roadmap | A ALIGNER |

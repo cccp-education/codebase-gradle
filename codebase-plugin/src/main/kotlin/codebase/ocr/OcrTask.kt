@@ -16,6 +16,8 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
 import org.gradle.work.DisableCachingByDefault
@@ -88,11 +90,13 @@ abstract class OcrTask : DefaultTask() {
     abstract val ollamaModel: Property<String>
 
     @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     @get:Optional
     @get:Option(option = "inputFile", description = "Fichier à OCR-iser (mode single-file)")
     abstract val inputFile: RegularFileProperty
 
     @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     @get:Optional
     @get:Option(option = "inputDir", description = "Répertoire contenant les documents à OCR-iser (mode batch)")
     abstract val inputDir: DirectoryProperty

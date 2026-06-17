@@ -1,0 +1,217 @@
+= Backlog — Codebase Gradle
+:sectnums:
+:date: 2026-06-16
+
+== EPIC V-9 — Vibecoding Gouvernance Agentique
+
+**Statut** : CADRÉ — Prêt à démarrer (7 ateliers, 35 items, ~70 pts)
+**Priorite** : P0
+**Origine** : Session 000 (2026-06-16) — diagnostic du gap vibecoding incomplet
+
+=== Prerequis
+
+* [ ] **EPIC V-9.0** : Cadrage agile (7 ateliers) — CADRAGE_METHODE_EPIC_V9.adoc livré (session 000)
+* [ ] **EPIC V-9.1** : Analyser les 10 fichiers .adoc de governance dans .agents/ (AGENT, INDEX, SESSION_CHECKLIST, etc.)
+* [ ] **EPIC V-9.2** : Extraire les chunks (rules, concepts, procedures, metadata, constraints)
+* [ ] **EPIC V-9.3** : Ontologiser les chunks (map on TAXONOMIE_WORKSPACE)
+* [ ] **EPIC V-9.4** : Compiler les règles (ToolRegistry pre/post hooks, gates, validation)
+* [ ] **EPIC V-9.5** : Stocker les chunks dans pgvector avec embedding
+* [ ] **EPIC V-9.6** : Intégrer VibecodingGovernanceTask dans VibecodingTask (EAGER 40%)
+* [ ] **EPIC V-9.7** : Benchmark (extraction, ontologisation, pipeline complet)
+* [ ] **EPIC V-9.8** : Documentation (AGENT.adoc, SESSION_CHECKLIST.adoc, etc.)
+
+=== Under-EPIC 1 : Analyse et Extract (V-9.1→V-9.5)
+
+* [ ] **V-9.1** : AgenticChunker — Analyse un fichier .adoc et segmente en chunks (14 JUnit5 + 8 Cucumber)
+* [ ] **V-9.2** : AgenticChunkType — Enum 5 types (RULE, CONCEPT, PROCEDURE, METADATA, CONSTRAINT) (16 JUnit5)
+* [ ] **V-9.3** : ScanAgent — Scan les fichiers .adoc du dossier .agents/
+* [ ] **V-9.4** : ChunkExtractor — Extraire les chunks avec signature sémantique
+* [ ] **V-9.5** : ChunkValidator — Validate le chunk (id, source, content, type)
+
+=== Under-EPIC 2 : Ontologisation (V-9.6→V-9.10)
+
+* [ ] **V-9.6** : AgenticOntologizer — Mappe chaque chunk sur TAXONOMIE_WORKSPACE (24 JUnit5)
+* [ ] **V-9.7** : TaxonomyMatcher — Pattern matching (regex, keywords) (12 JUnit5)
+* [ ] **V-9.8** : OntologyEnricher — Ajoute metadata (weight, deadline, dependencies) (10 JUnit5)
+* [ ] **V-9.9** : ChunkOntologyStore — Store chunk ontologise avec embedding (12 JUnit5)
+* [ ] **V-9.10** : OntologyQueryService — Query ontologized chunks (RAG) (14 JUnit5)
+
+=== Under-EPIC 3 : Compilation et Enforcement (V-9.11→V-9.15)
+
+* [ ] **V-9.11** : AgenticCompiler — Transforme chunk en artefact executable (27 JUnit5, session 094)
+* [ ] **V-9.12** : RuleCompiler — RULE → ToolRegistry pre/post hook (14 JUnit5)
+* [ ] **V-9.13** : ProcedureCompiler — PROCEDURE → Plan multi-step (EPIC X) (10 JUnit5)
+* [ ] **V-9.14** : ConstraintCompiler — CONSTRAINT → Gate, validation automatique (8 JUnit5)
+* [ ] **V-9.15** : EnforceAgent — Execute les rules enforces (ToolRegistry) (17 JUnit5 + 7 Cucumber)
+
+=== Under-EPIC 4 : Stockage et RAG (V-9.16→V-9.20)
+
+* [ ] **V-9.16** : AgenticIngestor — Pipeline complet (chunk→ontologize→store) (12 JUnit5, session 095)
+* [ ] **V-9.17** : ChunkEmbedder — Embedding ONNX (AllMiniLmL6V2) (14 JUnit5)
+* [ ] **V-9.18** : PgvectorStore — Store chunk avec embedding pgvector (12 JUnit5)
+* [ ] **V-9.19** : PgvectorQueryService — Query chunks RAG pgvector (14 JUnit5)
+* [ ] **V-9.20** : CompositeContextBuilder — EAGER + RAG + Graphify + Ressources (session 046)
+
+=== Under-EPIC 5 : Instrumentation Gradle (V-9.21→V-9.25)
+
+* [ ] **V-9.21** : VibecodingGovernanceTask — Tâche Gradle unique (vibecodingGovernance) (session 000)
+* [ ] **V-9.22** : GovernanceExtension — Extension DSL (action, verbose, debug) (12 JUnit5)
+* [ ] **V-9.23** : GovernanceCliOptions — CLI options (--action, --chunkId, --ruleId) (10 JUnit5)
+* [ ] **V-9.24** : GovernanceDashboardTask — Tableau de bord (chunks, rules, traceability) (14 JUnit5)
+* [ ] **V-9.25** : GovernanceMetricsCalculator — Metrics (chunks count, rules count, enforce rate) (10 JUnit5)
+
+=== Under-EPIC 6 : Benchmark et Validation (V-9.26→V-9.30)
+
+* [ ] **V-9.26** : ChunkExtractionBenchmark — Benchmark extraction (10 JUnit5)
+* [ ] **V-9.27** : OntologizationBenchmark — Benchmark ontologisation (10 JUnit5)
+* [ ] **V-9.28** : End2EndBenchmark — Benchmark pipeline complet (10 JUnit5)
+* [ ] **V-9.29** : ChunkExtractionCucumber — Tests Cucumber (12 Cucumber)
+* [ ] **V-9.30** : OntologizationCucumber — Tests Cucumber (12 Cucumber)
+
+=== Under-EPIC 7 : Documentation et Example (V-9.31→V-9.35)
+
+* [ ] **V-9.31** : Documentation — Writer documentation complete (AGENT.adoc, SESSION_CHECKLIST.adoc, etc.)
+* [ ] **V-9.32** Example1 — Example simple (scan + extract + store) (10 JUnit5)
+* [ ] **V-9.33** Example2 — Example intermediate (scan + ontologize + store) (10 JUnit5)
+* [ ] **V-9.34** : Example3 — Example advanced (pipeline complet + test) (10 JUnit5)
+* [ ] **V-9.35** : Tuto — Tutorial opencode agent (10 JUnit5)
+
+=== Estimation
+
+* **Total items** : 35
+* **Estimation points** : ~70 pts (35 items × ~2 pts)
+* **Estimation sessions** : 7-10 sessions (5-7 items/session)
+
+== EPICs Existent
+
+=== EPIC Y — Agentic Literature Compiler
+
+**Statut** : ✅ TERMINE (8/8 — Y-0→Y-7, session 097). 120+ PASS.
+**Priorite** : P1
+**Dépend de** : EPIC K (Taxonomie Workspace), EPIC W (TaskSchemaScanner)
+
+* [x] Y-0 : Analyse — Inventaire des sources textuelles agentiques du workspace
+* [x] Y-1 : AgenticChunker — Analyse .adoc et segmente en chunks (14 JUnit5 + 8 Cucumber)
+* [x] Y-2 : AgenticOntologizer — Mappe chunks sur TAXONOMIE_WORKSPACE (24 JUnit5)
+* [x] Y-3 : AgenticSchema — Modèle relationnel pgvector (31/31 PASS)
+* [x] Y-4 : AgenticCompiler — Transforme chunk en artefact executable (27/27 PASS)
+* [x] Y-5 : AgenticIngestor — Pipeline complet d'ingestion (12/12 PASS)
+* [x] Y-6 : AgenticExternalImporter — Import littérature agentique externe (12/12 PASS)
+* [x] Y-7 : AgenticChunkEnforcement — Pipeline complet : règle→chunk→ontologize→compile→enforce (17/17 PASS)
+
+=== EPIC V — Vibecoding Task
+
+**Statut** : ✅ TERMINE (15/15 pts — sessions 041-045)
+**Priorite** : P0
+
+=== EPIC V-SESSION-REPO — Session 059
+
+**Statut** : ✅ TERMINE (audité 2026-06-14)
+**Priorite** : P0
+
+* [x] SessionRepository — persistance cross-session dans pgvector via R2DBC (SessionRepository.kt 295 lignes)
+* [x] TokenTracker — mesure réelle consommation tokens LLM (TokenTracker.kt 64 lignes)
+* [x] Dashboard — visibilité historique sessions + coût (Dashboard.kt 95 lignes + DashboardTask.kt 78 lignes)
+
+=== EPIC W — Auto-discovery Gradle Tasks
+
+**Statut** : ✅ TERMINE (7/7 sous-EPICs, session 100)
+**Priorite** : P1
+
+* [x] W-0 : Analyse — Inventaire des schémas de tâches Gradle existants
+* [x] W-1 : Implementer TaskSchemaScanner — inspecte task graph Gradle
+* [x] W-2 : Generer schema structuré (JSON/OpenAPI)
+* [x] W-3 : Auto-registrer les tâches découvertes dans ToolRegistry
+* [x] W-4 : Exposer catalogue au LLM via tool `list_tasks`
+* [x] W-5 : Mapping `--option` → arguments structurés (GradleTaskArgsMapper)
+* [x] W-6 : Cache des schémas + invalidation à chaud
+
+=== EPIC X — Decision Multi-Step
+
+**Statut** : ✅ TERMINÉ (7/7 — sessions 101-105)
+**Priorite** : P1
+
+* [x] X-0 : Analyse — Audit de la boucle actuelle VibecodingGraph.execute()
+* [x] X-1 : VibecodingPlan — Promouvoir le plan vers structure multi-step (14 JUnit5 + 8 Cucumber)
+* [x] X-2 : TaskResultVerifier — Parse sortie tâche Gradle (14 JUnit5 + 6 Cucumber)
+* [x] X-3 : Boucle `verify → adapt` — StepVerifier intégré (7 JUnit5)
+* [x] X-4 : RollbackStrategy — STOP_ON_ERROR / REVERT_AND_CONTINUE / MARK_SKIPPED / FALLBACK_HUMAN (8 JUnit5 + 5 Cucumber)
+* [x] X-5 : Integration avec TaskSchemaScanner (EPIC W) (3 Cucumber)
+* [x] X-6 : Tests — Scénario Cucumber "agent planifie, échoue, adapte, réussit" (3 Cucumber)
+
+=== EPIC Z — Autofocus
+
+**Statut** : ✅ TERMINÉ (7/7 — Z-0→Z-7, session 108)
+**Priorite** : P1
+
+* [x] Z-0 : Cadrage — CADRAGE_AUTOFOCUS.adoc (7 ateliers agile)
+* [x] Z-1 : AutofocusLevel — Enum 4 niveaux (BIG_PICTURE/ARCHITECTURE/MODULE/IMPLEMENTATION) (16/16 JUnit5)
+* [x] Z-2 : AutofocusClassifier — Classifieur heuristique regex + fallback LLM (32/32 JUnit5)
+* [x] Z-3 : ContextZoomer — Filtrage contexte par niveau (14/14 JUnit5)
+* [x] Z-4 : AutofocusStack — Pile LIFO push/pop/currentLevel/isEmpty/clear (14/14 JUnit5)
+* [x] Z-5 : Intégration VibecodingGraph — Node 0 (classify) + Node 1 (zoom) (16 JUnit5)
+* [x] Z-6 : Intégration V-6 Feedback Loop — verifyResult FAILED → zoom(IMPLEMENTATION) (4 Cucumber)
+* [x] Z-7 : Validation cross-borough — Scénario bout-en-bout (4 Cucumber)
+
+=== EPIC OCR — OCR Assisté IA (Gemini Vision)
+
+**Statut** : ✅ TERMINÉ (sessions 117-120)
+**Priorite** : P0
+
+* [x] OCR-0 : Contrats partagés dans codex-gradle (OcrRequest, OcrResult, OcrConfig)
+* [x] OCR-1 : GeminiKeyPool — rotation de clés API (4/6, audité 2026-06-14)
+* [x] OCR-2 : GeminiVisionProvider — multimodal (95 lignes, support UserMessage.multimodal)
+* [x] OCR-2b : OllamaOcrProvider — OCR cloud via Ollama (6/6, session 103)
+* [x] OCR-3 : OcrTask Gradle (341 lignes, support batch, integration GeminiConfig)
+* [x] OCR-3b : FakeVisionProvider + CI + Config YAML/CLI/gradle.properties (8/8, session 118)
+* [x] OCR-4 : Intégration pipeline complet (anonymize→chunk→embed→pgvector) (5/5, session 117)
+
+=== EPICsession-proTOCOL — opencode↔Gradle Thin Client
+
+**Statut** : ✅ TERMINÉ (7/7 — SP-0→SP-6, session 114)
+**Priorite** : P1
+
+* [x] SP-0 : Cadrage — Définir les contrats opencode-session-contracts (SessionPrompt, SessionResponse, AgentContext)
+* [x] SP-1 : Implémenter SessionProtocolTask — point d'entrée unique pour thin client
+* [x] SP-2 : Mode serveur/daemon — Tâche Gradle en écoute continue (stdin/stdout JSON-lines)
+* [x] SP-3 : Cycle de vie de session — SessionProtocolLifecycleManager (create/resume/close/list)
+* [x] SP-4 : Tests E2E — opencode → runner → codebase → session (9/9 PASS)
+* [x] SP-5 : ToolEventStream — Événements structurés temps réel (thinking/tool_call/tool_result/progress/error)
+* [x] SP-6 : LiveContextInjector — Injection contexte conversation active (9/9 PASS)
+
+=== EPIC K — Ontologie Workspace
+
+**Statut** : ✅ TERMINE (2026-05-19, K-0→K-5 toutes les 6 phases)
+**Priorite** : P0
+
+=== EPIC L — Migration langgraph4j → koog+langchain4j
+
+**Statut** : ✅ TERMINE (8/8 pts, sessions 034-049)
+**Priorite** : P0
+
+=== EPIC CR — Code Review Deep Analysis
+
+**Statut** : CADRÉ — 14 items identifiés
+**Priorite** : P3
+
+== Backlog stale
+
+* [ ] **EPIC 3** : Architecture Multi-Canal Convergent — Formalisation (TERMINE, session 046)
+* [ ] **EPIC 4** : Benchmark de perception spatiale LLM (TERMINE, session 026)
+* [ ] **EPIC 5** : Pipeline fine-tuning experts CDA/FPA (MIGRÉ vers training-gradle TRN-8)
+* [ ] **EPIC 6** : Integration ONNX — boucle qualite (TERMINE, session 056)
+* [ ] **EPIC 7** : Wiring LangChain4j + pgvector experts (TERMI
+NE, session 126)
+* [ ] **EPIC 8** : Exposer experts via Ollama (EN COURS, 3/4 — session 127)
+* [ ] **EPIC 9** : Opencode Augmenté — Réalité Augmentée Développeur (TERMINE, sessions 001-021)
+* [ ] **EPIC 10** : Instrumentation Gradle du Pattern STIMULUS (TERMINE, sessions 022 + 025)
+* [ ] **EPIC 12** : Dilution Article de Blog (TERMI
+NE, session 109)
+
+== Anti-patterns à detection
+
+| # | Anti-pattern | Symptome | Status |
+|---|--------------|----------|--------|
+| 1 | **Backlog stale** | EPICs listes mais non priorises (EPIC 3→12) | ANETTENTION |
+| 2 | **Backlog doublon** | EPIC V-9 = extension EPIC Y (Agentic Literature Compiler) | A ANNULE |
+| 3 | **Backlog non aligné** | EPIC V-9 non aligné avec roadmap (EPIC K, L, W, X, Z, OCR) | A ALIGNER |

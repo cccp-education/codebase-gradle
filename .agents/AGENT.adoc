@@ -1,0 +1,220 @@
+= Codebase Gradle — Directives Agent
+:toc: left
+:toclevels: 3
+:icons: font
+:sectnums:
+
+[CAUTION]
+====
+**ARRET OBLIGATOIRE** avant toute action destructive :
+1. LIRE le fichier en entier
+2. VERIFIER `git ls-files -- <fichier>`
+3. DEMANDER confirmation
+4. ATTENDRE "oui" avant d'agir
+====
+
+== Projet
+
+**Nom** : codebase-gradle — RAG socle, pgvector, BYOK, LLM fine-tuning
+**Stack** : Kotlin, Gradle, LangChain4j, ONNX, PostgreSQL, JUnit 5, Swing
+**Documentation** : AsciiDoc + PlantUML + JavaDoc
+
+=== Contexte — Cercles de Confiance
+
+Ce projet vit dans `foundry/public/codebase-gradle/` → *cercle 4 (public, Apache 2.0)*.
+
+- *Cercle 0* (jardin secret) : racine workspace (`WORKSPACE_ORGANIZATION.adoc`, etc.)
+- *Cercle 1* (configuration) : `configuration/` (secrets, tokens, clés API)
+- *Cercle 2* (data) : `office/` (documentation, articles, datasets)
+- *Cercle 3* (sous-traitance) : `foundry/private/` (plugins propriétaires)
+- *Cercle 4* (public) : `foundry/public/` (plugins opensource, codebase inclu)
+
+=== Objectif du Projet
+
+1. **Fine-tuning LLM** : préparer datasets, fine-tuner experts CDA/FPA, exposer via Ollama
+2. **Benchmark perception spatiale** : mesurer seuil tokens où LLM perdnocion cercles
+3. **BYOK management** : 7 providers LLM, multi-compte, CLI override, anonymisation
+4. **Javelit chatbot** : Swing UI + RAG enrichment, snapshot auto-documente
+
+== Contrat Software Craftsmanship (EAGER)
+
+=== Methodologie — Baby Steps TDD/BDD/DDD
+
+* *TDD/BDD/DDD en baby steps* — test unitaire → test fonctionnel → test Cucumber
+* *Clean Architecture + Clean Code* — pas de shortcuts, pas de code jetable
+* *SEQUENTIEL PUR* — interdiction d'utiliser @xp, subagents, parallelisation
+* *1 fichier a la fois* — modifier, valider, puis passer au suivant
+
+=== Instances Ollama — Ports reserves + Rotation
+
+* *11434 a 11436* — PROTEGES, nejamais modifier, nejamais toucher
+* *11437 a 11465* — disponibles (29 ports), rotation OBLIGATOIRE
+* Modeles autorises : gpt-oss:120b-cloud, gpt-oss:20b-cloud, qwen3-coder-next:cloud, qwen3-next:80b-cloud, qwen3-coder:480b-cloud
+* Rotation : distribuer 5 modeles sur 29 ports avec cycling automatique
+* Aucun autre modele ni port ne doitetre utilise dans le code
+
+=== Regle d'or
+
+Mieux vaut 5 sessions de 20 minutes qu'une session de 2 heures avec debugging chaos.
+Si la conversation depasse 50 messages ou plus de 3 fichiers modifies en parallele, splitter en nouvelle session.
+
+== Regles Absolues
+
+=== Git
+
+**INTERDICTION FORMELLE** de commit/push/merge sans permission explicite.
+
+Commandes autorisees (lecture seule) : `git status`, `git diff`, `git log`, `git show`
+Commandes interdites (sauf ordre) : `git add`, `git commit`, `git push`, `git merge`, `git rebase`
+
+=== Tests
+
+L'agent NE DOIT JAMAIS lancer de tests (`./gradlew test`, etc.) lors de la procedure de fin de session SANS permission explicite.
+
+=== Securite
+
+* Jamais de secrets en dur dans le code
+* Jamais de credentials dans les fichiers de config
+* Jamais de tokens API commites dans Git
+* Utiliser des references (`keyRef: ${ANTHROPIC_API_KEY}`)
+
+=== Secrets et tokens — INTERDICTION DE LOG
+
+**PRINCIPE** : Les tokens API, mots de passe, et identifiants credentials NE DOIVENT JAMAIS apparaitre dans la sortie terminal.
+
+**INTERDICTIONS** :
+
+* **NE JAMAIS** passer un token en argument visible d'une commande
+* **NE JAMAIS** afficher le contenu d'un fichier contenant des tokens
+* **NE JAMAIS** utiliser `echo`, `cat`, ou toute commande qui affiche des tokens dans le terminal
+
+=== Fichiers de configuration — REGLE ABSOLUE DE SURETE
+
+**PRINCIPE** : Tout fichier de configuration peut contenir des donnees sensibles non versionnees.
+
+**INTERDICTIONS** :
+
+* **NE JAMAIS ecraser** un fichier de configuration existant avec un `Write` complet si on peut faire un `Edit` partiel
+* **NE JAMAIS remplacer** des valeurs sensibles existantes (tokens, mots de passe, cles API) par des valeurs factices ou placeholders
+* **NE JAMAIS modifier** un fichier sans avoir **d'abord** verifie s'il est dans `.gitignore` (`git check-ignore <fichier>`)
+
+**Procedure OBLIGATOIRE** avant modification :
+
+. `git check-ignore <fichier>` : Verifier si le fichier est versionne
+. `git ls-files -- <fichier>` : Confirmer s'il est tracke
+. Si le fichier **n'est pas tracke** : **CREER UNE SAUVEGARDE** avant toute modification (`cp <fichier> <fichier>.bak`)
+. Si le fichier contient des valeurs sensibles : **les PRESERVER intactes**
+. Privilegier **l'edit partiel** (modification ciblee) plutot que **l'ecriture complete**
+. Apres modification : **verifier** que les valeurs sensibles sont toujours presentes
+
+=== Fichiers personnels — Interdiction de modifier
+
+L'agent NE DOIT JAMAIS modifier, ecraser ou supprimer un fichier personnel de l'utilisateur (`~/.gitconfig`, `~/.bashrc`, etc.) SANS permission explicite.
+
+=== Methodologie de Travail
+
+* **1 fichier a la fois** : Modifier un seul fichier avant de passer au suivant
+* **Validation immediate** : Compiler apres chaque modification
+* **Contexte leger** : Maximum 50k tokens EAGER (~3000 lignes)
+* **Regle d'or** : Mieux vaut 5 sessions de 20 minutes qu'une session de 2 heures avec debugging chaos.
+
+== Architecture du Projet
+
+[source,bash]
+----
+codebase-gradle/                     # RACINE GIT (cercle 4)
+├── build.gradle.kts                 # Build avec taches : scaffold, snapshot, anonymization, run
+├── settings.gradle.kts              # rootProject.name = "codebase-gradle"
+├── buildSrc/                        # Code source Kotlin (pas un sous-projet Gradle)
+│   ├── build.gradle.kts
+│   └── src/main/kotlin/
+│       ├── codebase/codebase.kt     # Configuration LLM, BYOK, anonymisation, providers
+│       ├── chatbot/chatbot.kt       # Javelit — Swing UI + RAG
+│       ├── readme/readme.kt         # README plugin config anonymizer
+│       ├── site/site.kt             # Site plugin config anonymizer
+│       ├── slider/slider.kt         # Slider plugin config anonymizer
+│       └── snapshot/snapshot.kt     # Auto-documentation du codebase
+├── embeds.yml                       # Sources RAG pour Javelit
+├── VISION_ORCHESTRATION_LLM.adoc    # Vision dispatcher + experts (275 lignes)
+├── gradle/libs.versions.toml        # Version catalog
+├── .agents/                         # Gouvernance agent
+│   ├── INDEX.adoc                   # Regles absolues + sessions recentes (EAGER)
+│   ├── sessions/                    # Archives par session
+│   ├── archives/                    # Archives mensuelles
+│   ├── encyclopedies/               # Connaissance thematique froide (COLD)
+│   └── backup/                      # Vagues froides (snapshots horodates)
+├── BACKLOG.adoc                     # Suivi prioritaire des taches
+├── AGENT.adoc                       # Directives completes (ce fichier)
+└── opencode.json                    # Configuration opencode
+----
+
+== Gestion du Contexte — CRITIQUE
+
+* **Que faire ensuite ?** -> **`BACKLOG.adoc`** (suivi autoritaire et prioritaire des taches/bugs)
+* **Mission** -> injectee par opencode depuis `configuration/.agents/PROMPT_REPRISE.adoc`
+* **Session procedure** -> DEFINIE DANS SESSION_PROCEDURE.adoc
+
+== Session Procedure
+
+=== Debut de Session
+
+1. La mission est injectee par opencode — ne pas lire PROMPT_REPRISE localement
+2. Lire `.agents/INDEX.adoc` pour les regles absolues
+3. Charger les fichiers ESSENTIALS si l'EPIC est concernee
+
+=== Fin de Session
+
+**Mots-cles declencheurs** : "nouvelle session", "je quitte", "session terminee", "a plus tard", "on arrete la"
+
+**Procedure obligatoire en 6 etapes** :
+
+1. **Creer l'archive LAZY** : `.agents/sessions/{N}-{type}-{sujet}.adoc`
+2. **Mettre a jour `configuration/.agents/PROMPT_REPRISE.adoc`** — Mission N+1 (max 70 lignes)
+3. **Mettre a jour SESSIONS_HISTORY.adoc** : Ajouter la session terminee
+4. **Mettre a jour INDEX.adoc** : Date, session en cours N+1, roadmap, portefeuille
+5. **Mettre a jour TEST_COVERAGE_ANALYSIS.adoc** (si tests modifies)
+6. **Mettre a jour COMPLETED_TASKS_ARCHIVE.adoc** : `.agents/archives/COMPLETED_TASKS_ARCHIVE_{mois}.adoc`
+
+**Aucune etape ne peut etre marquee OK si le fichier n'a pas ete effectivement modifie et verifie.**
+
+==== Rotation Backup (etape 7 optionnelle)
+
+**Declenchement automatique** — Apres l'etape 6, avant la checklist, l'agent verifie :
+
+. `N % 10 == 0` (session multiple de 10)
+. **OU** les fichiers EAGER cumules depassent **500 lignes** (`wc -l .agents/INDEX.adoc .agents/archives/COMPLETED_TASKS_ARCHIVE_*.adoc PROMPT_REPRISE.adoc`)
+
+Si l'une des conditions est vraie, l'agent **execute l'etape 7** :
+
+. Creer le dossier `.agents/backup/Y{annee}-sessions-{plage}/`
+. Y copier **integralement** INDEX, SESSIONS_HISTORY, COMPLETED_TASKS_ARCHIVE et les fichiers sessions/ concernes
+. Tronquer les fichiers actifs aux **10 dernieres sessions** (sliding window)
+. Ajouter la localisation de la nouvelle vague dans INDEX.adoc
+
+=== Mecanisme de backup — Vague froide
+
+_Principe_ : Tous les **10 sessions**, les donnees historiques sont copiees **integralement**
+dans `.agents/backup/` sans transformation. Les fichiers actifs sont tronques pour ne
+contenir que les 10 dernieres sessions (sliding window).
+
+Le backup **N'EST JAMAIS** charge automatiquement par l'agent.
+
+== Conventions de Code
+
+* Kotlin idiomatic, pas de commentaires sauf demande
+* Tests : JUnit5 (taches `verify*ToAnonymizedYaml` dans build.gradle.kts)
+* Documentation : AsciiDoc (.adoc) uniquement
+
+=== References de Style — Codebases LAZY
+
+_Regle_ : Quand l'agent a besoin de reflechir au style de code, conventions Kotlin/Gradle, ou patterns de plugin,
+il DOIT consulter ces codebases comme reference. Ces chemins sont LAZY — ne jamais charger leur contenu en EAGER.
+
+|===
+| Projet | Chemin | Role
+| plantuml-gradle | `/home/cheroliv/workspace/foundry/public/plantuml-gradle/plantuml-plugin` | Plugin Gradle mature, reference principale
+| bakery-gradle | `/home/cheroliv/workspace/foundry/public/bakery-gradle/bakery-plugin` | Plugin Gradle convention-based
+| slider-gradle | `/home/cheroliv/workspace/foundry/public/slider-gradle` | Plugin Gradle
+| codebase-gradle | `/home/cheroliv/workspace/foundry/public/codebase-gradle` | Plugin Gradle (ce projet)
+| readme-gradle | `/home/cheroliv/workspace/foundry/public/readme-gradle` | Plugin Gradle
+|===

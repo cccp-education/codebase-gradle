@@ -1,0 +1,479 @@
+= Cadrage Méthode — Vibecoding Gouvernance Agentique (EPIC V-9)
+:toc: left
+:icons: font
+:sectnums:
+
+== Référence
+
+Source : `0054_memo_cadrage_post.adoc` (blog 2022-12-31)
+
+Le cadrage de l'EPIC V-9 (Vibecoding Gouvernance Agentique) utilise les 7 ateliers de cadrage agile standardisés.
+
+== Jardin Secret (Contexte Workspace)
+
+=== Jardin Secret — Filtre d'Intimité
+
+Le **jardin secret** (Cercle 0, workspace racine) est le cercle le plus intime :
+
+* **Pas de versionnage Git** — `workspace/` n'a pas de `.git/`, c'est un design délibéré
+* **Historisation par snapshot** — les modifications sont archivées en `configuration/vision-archive/$DATE/`
+* **Filtre d'intimité** — les documents y vivent comme "pensées en cours", sans pression de publication
+
+Contrairement aux autres cercles (versionnés, collaboratifs), le jardin secret est **out-of-CVS-system** :
+on n'y écrit pas pour être lu — on y écrit pour **clarifier sa propre vision**.
+
+=== Anonymisation — Filtre de Protection des Données
+
+L'anonymisation est le **complément** du jardin secret pour EPIC V-9 :
+
+* **Pipeline OCR→anonymize→pgvector** — tout contenu sensible (documents, images, PDF) passe par l'anonymizer
+* **TextAnonymizer** — extraction des données personnelles (Noms, Emails, Tél, Adresse, etc.)
+* **Filtre de保护** — les fichiers agentiques de gouvernance ne doivent jamais contenir de données sensibles
+
+=== Impact sur EPIC V-9
+
+L'EPIC V-9 traite des **fichiers agentiques de gouvernance** (AGENT.adoc, INDEX.adoc, SESSION_CHECKLIST.adoc, etc.) situés dans `.agents/` → *cercle 4, mais référence le cercle 0* :
+
+* Les règles agentiques (AGENT.adoc, SESSION_CHECKLIST.adoc) doivent respecter **les 2 filtres** :
+  * **Filtre d'intimité** → pas de commit/merge, snapshot horodaté
+  * **Filtre d'anonymisation** → zéro donnée personnelle, tout est généré synthétiquement
+* L'historisation passe par **snapshot dans `configuration/vision-archive/`**, pas par git
+
+=== Impact sur EPIC V-9
+
+L'EPIC V-9 traite des **fichiers agentiques de gouvernance** (AGENT.adoc, INDEX.adoc, SESSION_CHECKLIST.adoc, etc.) situés dans `.agents/` → *cercle 4, mais référence le cercle 0* :
+
+* Les règles agentiques (AGENT.adoc, SESSION_CHECKLIST.adoc) sont **également valables pour le jardin secret** (copie fichiers, sauvegarde, séparation secrets)
+* L'historisation des modifications passe par **snapshot dans `configuration/vision-archive/`**, pas par git
+* Les tests et builds doivent respecter les **règles absolues du jardin secret** (aucun secret dans logs, git status seulement)
+
+== Atelier 1 : Vision
+
+=== 1. Le pattern "QQOQCP" – Qui, Quoi, Où, Quand, Comment, Pourquoi
+
+| Question | Réponse |
+|----------|---------|
+| **Qui** | Développeurs codebase-gradle, maintainers plugins N1/N2 |
+| **Quoi** | Analyser et structurer les fichiers agentiques/gouvernance, transformer en tâches Gradle |
+| **Où** | codebase-gradle (N1), Foundry public (cercle 4) |
+| **Quand** | Après EPIC Y (Agentic Literature Compiler), avant MVP1 |
+| **Comment** | 7 ateliers agile + analyse de la gouvernance existante |
+| **Pourquoi** | Le vibecoding actuel ne couvre pas la totalité du spectre opencode (fichiers agentiques/gouvernance) |
+
+=== 2. Le Product Vision Board
+
+==== Target Group
+
+* **Direct** : développeurs codebase-gradle, maintainers plugins N1/N2
+* **Indirect** : opencode agent, utilisateur final (humain qui dialogue avec opencode)
+
+==== Needs
+
+1. **Vibecoding complet** : le LLM doit manipuler TOUS les fichiers du workspace (non seulement le code applicatif)
+2. **Gouvernance exécutable** : les règles agentiques (AGENT.adoc, INDEX.adoc, etc.) doivent être transformées en contraintes exécutables
+3. **Pipeline agentique** : les procédures de session (ouverture/fermeture, backup, archive) doivent être automatisées
+4. **DAG complet** : tous les fichiers .adoc de governance doivent être analysés, structurés, chunkés, embeddingés, pgvectorisés
+5. **Integration opencode** : opencode doit consommer le pipeline Vibecoding pour dialoguer avec le LLM
+
+==== Product
+
+1. **AnalyzeAgent** : analyse les fichiers .adoc de governance, extrait les chunks (rules/concepts/procedures/metadatas)
+2. **OntologizeAgent** : mappe chaque chunk sur TAXONOMIE_WORKSPACE (verbe, domaine, DAG level, cercle)
+3. **EnforceAgent** : transforme les règles en contraintes exécutables (ToolRegistry pre/post hooks)
+4. **ChunkingPipeline** : pipeline complet (scan→chunk→ontologize→store→compile→enforce)
+5. **VibecodingGovernanceTask** : tâche Gradle unique pour lancer le pipeline complet
+
+==== Business Goal
+
+* **Critères de succès** :
+** 100% des fichiers .adoc de governance anal
+ysés/structurés
+** 90%+ de chunks extraits correctement (pattern matching + LLM fallback)
+** 100% des règles transformées en contraintes exécutables
+** 100% des procédures transformées en tâches Gradle
+** 0 violations de règles en production (ToolRegistry bloque)
+
+==== Vision
+
+En transformant la littérature agentique textuelle (AGENT.adoc, INDEX.adoc, SESSION_CHECKLIST.adoc, etc.) en chunks ontologisés et contraintes exécutables, le Vibecoding devient un **système agentique complet** qui peut :
+- Lire, analyser, et structurer TOUS les fichiers du workspace
+- Transformer les règles en contraintes exécutables (ToolRegistry pre/post hooks)
+- Automatiser les procédures de session (ouverture/fermeture, backup, archive)
+- Fournir un contexte augmenté complet à l'LLM (RAG pgvector + Graphify + EAGER/LAZY)
+
+== Atelier 2 : Personas/Parcours utilisateurs
+
+=== Persona 1 : Développeur codebase-gradle
+
+* **Qui** : Mainteneur du plugin codebase-gradle, expert Kotlin/Gradle/RAG
+* **But** : Analyser et structurer les fichiers agentiques/gouvernance, transformer en tâches Gradle
+* **Parcours** :
+** 1. Git clone codebase-gradle
+** 2. ./gradlew vibecodingGovernance --analyze
+** 3. Viewer le résultat (chunks ontologisés, rules enforces)
+** 4. Intégrer les contraintes dans le build
+** 5. Valider avec tests (./gradlew check)
+
+=== Persona 2 : Opencode Agent
+
+* **Qui** : Interface utilisateur terminal qui dialogue avec le LLM via opencode-session-protocol
+* **But** : Consommer le pipeline Vibecoding pour obtenir le contexte augmenté complet
+* **Parcours** :
+** 1. opencode → SessionProtocolTask (SessionPrompt)
+** 2. SessionProtocolTask → VibecodingTask (buildContext, callLLM, executeTools)
+** 3. VibecodingTask → VibecodingGovernanceTask (analyzer, ontologize, enforce)
+** 4. VibecodingGovernanceTask → pgvector (chunks ontologisés)
+** 5. pgvector → LLM (contexte augmenté complet)
+
+=== Persona 3 : LLM Agent
+
+* **Qui** : LLM (gemini-1.5-flash, qwen3-coder-next:cloud, etc.) qui reçoit le contexte augmenté
+* **But** : Consommer le contexte augmenté (EAGER/LAZY + RAG pgvector + Graphify + Ressources) pour décider
+* **Parcours** :
+** 1. VibecodingTask → compositeContext (EAGER 40% + RAG 30% + Graphify 20% + Ressources 10%)
+** 2. VibecodingGovernanceTask → enrichir EAGER avec chunks ontologisés
+** 3. pgvector → répondre aux requêtes par similarité
+** 4. Graphify → répondre aux requêtes par relations
+
+== Atelier 3 : Zoning, Storyboard, Sitemap
+
+=== Zoning
+
+| Zone | Contenu | Accès |
+|------|--------|-------|
+| **EAGER** | AGENT.adoc, INDEX.adoc, SESSION_CHECKLIST.adoc, SESSION_PROCEDURE.adoc | LRU (10 dernieres sessions) |
+| **LAZY** | PROMPT_REPRISE, ARCHITECTURE.adoc, CADRAGE_METHODE_*.adoc | On-demand |
+| **RAG** | Chunks ontologisés (pgvector) | RAG similarity |
+| **Graphify** | graph.json (nodes, edges, communities) | GraphQuery |
+| **Ressources** | Dossiers encyclopedies, archives, datasets | Cold storage |
+
+=== StoryBoard
+
+1. **Opencode Agent → VibecodingGovernanceTask**
+** "Analyze the governance files in the .agents/ folder"
+** VibecodingGovernanceTask scan les fichiers .adoc
+
+2. **VibecodingGovernanceTask → AnalyzeAgent**
+** "Extract chunks from AGENT.adoc"
+** AnalyzeAgent extrait les chunks (rules/concepts/procedures)
+
+3. **AnalyzeAgent → OntologizeAgent**
+** "Map chunk on TAXONOMIE_WORKSPACE"
+** OntologizeAgent mappe sur TAXONOMIE_WORKSPACE (verbe, domaine, DAG level)
+
+4. **OntologizeAgent → EnforceAgent**
+** "Compile rule to ToolRegistry pre/post hook"
+** EnforceAgent compile la règle en contrainte executable
+
+5. **EnforceAgent → pgvector**
+** "Store chunk with embedding"
+** Chunk stocké avec embedding pgvector
+
+6. **pgvector → LLM**
+** "Query chunks for relevance"
+** LLM consomme le contexte augmenté complet
+
+=== Sitemap
+
+[source,bash]
+----
+VibecodingGovernanceTask (entry point)
+    ↓
+    ├─ AnalyzeAgent (scan + chunk)
+    │   └─ AgenticChunker
+    │       └─ ChunkType: RULE, CONCEPT, PROCEDURE, METADATA, CONSTRAINT
+    │
+    ├─ OntologizeAgent (map on TAXONOMIE_WORKSPACE)
+    │   └─ AgenticOntologizer
+    │       └─ Verb: GENERER, COLLECTER, TRANSFORMER, DÉPLOYER, INTERDIRE, VALIDER
+    │
+    ├─ EnforceAgent (compile to executable)
+    │   └─ AgenticCompiler
+    │       └─ Compilation: RULE → ToolRegistry, PROCEDURE → Plan, CONSTRAINT → Gate
+    │
+    └─ StoreAgent (persist in pgvector)
+        └─ AgenticIngestor
+            └─ Chunk → embedding → pgvector
+
+VibecodingTask (consommateur)
+    ↓
+    compositeContext (EAGER + RAG + Graphify + Ressources)
+        ↓
+        VibecodingGovernanceTask → enrichir EAGER
+        ↓
+        LLM appelle
+----
+
+== Atelier 4 : Wireframe/Moodboard
+
+=== Wireframes
+
+==== Wireframe 1 : VibecodingGovernanceTask CLI
+
+[source,bash]
+----
+./gradlew vibecodingGovernance --action <analyze|ontologize|enforce|store|all>
+
+Options:
+--analyze    : Scan les fichiers .adoc et extrait les chunks
+--ontologize : Mappe les chunks sur TAXONOMIE_WORKSPACE
+--enforce    : Compile les règles en contraintes exécutables
+--store      : Stocke les chunks dans pgvector
+--all        : Execute le pipeline complet
+--verbose    : Affiche les logs details
+--debug      : Mode debug (log level DEBUG)
+----
+
+==== Wireframe 2 : Chunk Inspector
+
+[source,bash]
+----
+./gradlew vibecodingGovernance --inspect <chunkId>
+
+Options:
+--chunkId <id> : Affiche les details d'un chunk specifique
+--format <json|adoc|yaml> : Format de sortie
+--diff <chunkId1 chunkId2> : Affiche les differences entre 2 chunks
+----
+
+==== Wireframe 3 : Rule Traceability
+
+[source,bash]
+----
+./gradlew vibecodingGovernance --trace <ruleId>
+
+Options:
+--ruleId <id> : Affiche la trace d'une regle (source → chunk → compile → enforce)
+--from <timestamp> : Trace a partir de
+--to <timestamp> : Trace jusqu'a
+--history <nbSessions> : Trace les N dernieres sessions
+----
+
+=== Moodboard
+
+| Element | Style | Couleur | Position |
+|---------|-------|---------|----------|
+| **Header** | Bold, monospace | #2E86C1 (accent) | Top bar |
+| **Section** | Section, monospace | #3498DB (primary) | Section |
+| ** subsection** | Subsection, normal | #E74C3C (secondary) | Subsection |
+| **List item** | Bullet, normal | #27AE60 (success) | List |
+| **Warning** | Caution, normal | #F39C12 (warning) | Warning box |
+| **Code** | Monospace, normal | #2C3E50 (dark) | Code block |
+| **Table** | Centered, bordered | #ECF0F1 (light) | Table |
+
+== Atelier 5 : Story Mapping/ User stories
+
+=== Story mapping
+
+==== Vertical (by role)
+
+| Role | Story 1 | Story 2 | Story 3 | Story 4 | Story 5 |
+|------|---------|---------|---------|---------|---------|
+| **Dev codebase** | Scan fichiers .adoc | Extract chunks | Map sur TAXONOMIE | Compile rules | Store in pgvector |
+| **Opencode** | Consommer Vibecoding | Re
+quest context | Display result | Feedback loop | Close session |
+| **LLM** | Receive context | Process query | Decide tool | Execute tool | Update state |
+
+==== Horizontal (by priority)
+
+| Priority | Story 1 | Story 2 | Story 3 | Story 4 | Story 5 |
+|----------|---------|---------|---------|---------|---------|
+| **P0** | Scan fichiers .adoc | Extract chunks | Store in pgvector | Compile rules | Display_chunks |
+| **P1** | Map on TAXONOMIE | Enforce rules | Query pgvector | Traceability | Inspector |
+| **P2** | Benchmark | Performance | Analytics | Alerts | Documentation |
+
+=== User stories (format)
+
+En tant que **développeur codebase-gradle**, je veux **analyser les fichiers .adoc de governance** afin que **je puisse les transformer en tâches Gradle**
+
+En tant que **opencode agent**, je veux **consommer le pipeline Vibecoding** afin que **je puisse obtenir le contexte augmenté complet**
+
+En tant que **LLM agent**, je veux **consommer le contexte augmenté complet** afin que **je puisse décider avec une vision globale du workspace**
+
+En tant que **mainteneur plugin**, je veux **enforcer les règles de governance** afin que **je puisse garantir la qualité du code et la securité des secrets**
+
+En tant que **utilisateur opencode**, je veux **dialoguer avec le LLM via opencode** afin que **je puisse obtenir le code que je demande**
+
+== Atelier 6 : Backlog
+
+=== EPIC V-9 — Vibecoding Gouvernance Agentique
+
+**Statut** : CADRÉ — Prêt à démarrer
+**Priorite** : P0
+**Origine** : Session 000 (2026-06-16) — diagnostic du gap vibecoding incomplet
+
+=== Under-EPIC 1 : Analyse et Extract
+
+* [ ] **V-9.1** : AgenticChunker — Analyse un fichier .adoc et segmente en chunks (14 JUnit5 + 8 Cucumber)
+* [ ] **V-9.2** : AgenticChunkType — Enum 5 types (RULE, CONCEPT, PROCEDURE, METADATA, CONSTRAINT) (16 JUnit5)
+* [ ] **V-9.3** : ScanAgent — Scan les fichiers .adoc du dossier .agents/ (12 JUnit5)
+* [ ] **V-9.4** : ChunkExtractor — Extraire les chunks avec signature sémantique (18 JUnit5)
+* [ ] **V-9.5** : ChunkValidator — Validate le chunk (id, source, content, type) (10 JUnit5)
+
+=== Under-EPIC 2 : Ontologisation
+
+* [ ] **V-9.6** : AgenticOntologizer — Mappe chaque chunk sur TAXONOMIE_WORKSPACE (24 JUnit5)
+* [ ] **V-9.7** : TaxonomyMatcher — Pattern matching (regex, keywords) (12 JUnit5)
+* [ ] **V-9.8** : OntologyEnricher — Ajoute metadata (weight, deadline, dependencies) (10 JUnit5)
+* [ ] **V-9.9** : ChunkOntologyStore — Store chunk ontologise avec embedding (12 JUnit5)
+* [ ] **V-9.10** : OntologyQueryService — Query ontologized chunks (RAG) (14 JUnit5)
+
+=== Under-EPIC 3 : Compilation et Enforcement
+
+* [ ] **V-9.11** : AgenticCompiler — Transforme chunk en artefact executable (27 JUnit5, session 094)
+* [ ] **V-9.12** : RuleCompiler — RULE → ToolRegistry pre/post hook (14 JUnit5)
+* [ ] **V-9.13** : ProcedureCompiler — PROCEDURE → Plan multi-step (EPIC X) (10 JUnit5)
+* [ ] **V-9.14** : ConstraintCompiler — CONSTRAINT → Gate, validation automatique (8 JUnit5)
+* [ ] **V-9.15** : EnforceAgent — Execute les rules enforces (ToolRegistry) (17 JUnit5 + 7 Cucumber)
+
+=== Under-EPIC 4 : Stockage et RAG
+
+* [ ] **V-9.16** : AgenticIngestor — Pipeline complet (chunk→ontologize→store) (12 JUnit5, session 095)
+* [ ] **V-9.17** : ChunkEmbedder — Embedding ONNX (AllMiniLmL6V2) (14 JUnit5)
+* [ ] **V-9.18** : PgvectorStore — Store chunk avec embedding pgvector (12 JUnit5)
+* [ ] **V-9.19** : PgvectorQueryService — Query chunks RAG pgvector (14 JUnit5)
+* [ ] **V-9.20** : CompositeContextBuilder — EAGER + RAG + Graphify + Ressources (session 046)
+
+=== Under-EPIC 5 : Instrumentation Gradle
+
+* [ ] **V-9.21** : VibecodingGovernanceTask — Tâche Gradle unique (vibecodingGovernance) (session 000)
+* [ ] **V-9.22** : GovernanceExtension — Extension DSL (acti
+on, verbose, debug) (12 JUnit5)
+* [ ] **V-9.23** : GovernanceCliOptions — CLI options (--action, --chunkId, --ruleId) (10 JUnit5)
+* [ ] **V-9.24** : GovernanceDashboardTask — Tableau de bord (chunks, rules, traceability) (14 JUnit5)
+* [ ] **V-9.25** : GovernanceMetricsCalculator — Metrics (chunks count, rules count, enforce rate) (10 JUnit5)
+
+=== Under-EPIC 6 : Benchmark et Validation
+
+* [ ] **V-9.26** : ChunkExtractionBenchmark — Benchmark extraction (10 JUnit5)
+* [ ] **V-9.27** : OntologizationBenchmark — Benchmark ontologisation (10 JUnit5)
+* [ ] **V-9.28** : End2EndBenchmark — Benchmark pipeline complet (10 JUnit5)
+* [ ] **V-9.29** : ChunkExtractionCucumber — Tests Cucumber (12 Cucumber)
+* [ ] **V-9.30** : OntologizationCucumber — Tests Cucumber (12 Cucumber)
+
+=== Under-EPIC 7 : Documentation et Example
+
+* [ ] **V-9.31** : Documentation — Writer documentation complete (AGENT.adoc, SESSION_CHECKLIST.adoc, etc.)
+* [ ] **V-9.32** : Example1 — Example simple (scan + extract + store) (10 JUnit5)
+* [ ] **V-9.33** Example2 — Example intermediate (scan + ontologize + store) (10 JUnit5)
+* [ ] **V-9.34** : Example3 — Example advanced (pipeline complet + test) (10 JUnit5)
+* [ ] **V-9.35** : Tuto — Tutorial opencode agent (10 JUnit5)
+
+=== Total
+
+* **Under-EPIC 1** : 5 items (V-9.1→V-9.5)
+* **Under-EPIC 2** : 5 items (V-9.6→V-9.10)
+* **Under-EPIC 3** : 5 items (V-9.11→V-9.15)
+* **Under-EPIC 4** : 5 items (V-9.16→V-9.20)
+* **Under-EPIC 5** : 5 items (V-9.21→V-9.25)
+* **Under-EPIC 6** : 5 items (V-9.26→V-9.30)
+* **Under-EPIC 7** : 5 items (V-9.31→V-9.35)
+* **Total** : 35 items
+
+=== Estimation
+
+* **Points EPIC** : 35 items × ~2 pts = 70 pts
+* **Sessions** : 35 items × ~1 session = 35 sessions (ou 7 sessions × 5 items/session)
+
+== Atelier 7 : Technique et Architecture
+
+=== Architecture cible
+
+[source,bash]
+----
+VibecodingGovernanceTask (Gradle)
+    ↓
+    ├─ AnalyzeAgent (scan + chunk)
+    │   └─ AgenticChunker
+    │       └─ ChunkType: RULE, CONCEPT, PROCEDURE, METADATA, CONSTRAINT
+    │
+    ├─ OntologizeAgent (map on TAXONOMIE_WORKSPACE)
+    │   └─ AgenticOntologizer
+    │       └─ Verb: GENERER, COLLECTER, TRANSFORMER, DÉPLOYER, INTERDIRE, VALIDER
+    │
+    ├─ EnforceAgent (compile to executable)
+    │   └─ AgenticCompiler
+    │       └─ Compilation: RULE → ToolRegistry, PROCEDURE → Plan, CONSTRAINT → Gate
+    │
+    └─ StoreAgent (persist in pgvector)
+        └─ AgenticIngestor
+            └─ Chunk → embedding → pgvector
+
+VibecodingTask (consommateur)
+    ↓
+    compositeContext (EAGER + RAG + Graphify + Ressources)
+        ↓
+        VibecodingGovernanceTask → enrichir EAGER
+        ↓
+        LLM appelle
+----
+
+=== Contrats N0 (workspace-bom)
+
+1. **AgenticChunk** : (id, sourceFile, chunkType, content, verb, domain, dagLevel, circle, weight, checksum)
+2. **OntologizedChunk** : (chunk, ontology, verb, domain, dagLevel, circle, weight, validFrom, validUntil)
+3. **CompiledRule** : (ruleId, type, action, conditions, consequence, priority, status)
+4. **EnforcementResult** : (ruleId, status, executedAt, executedBy, result)
+
+=== Dependency graph
+
+[source,bash]
+----
+VibecodingGovernanceTask (codebase-gradle N1)
+    ↓
+    ├─ AgenticChunker (codebase-gradle N1)
+    │
+    ├─ OntologizeAgent (codebase-gradle N1)
+    │
+    ├─ EnforceAgent (codebase-gradle N1)
+    │   └─ ToolRegistry (codebase-gradle N1)
+    │
+    └─ StoreAgent (codebase-gradle N1)
+        └─ pgvector (codebase-contracts N0)
+            └─ LangChain4j (llm-pool-contracts N0)
+
+TAXONOMIE_WORKSPACE (workspace-bom N0)
+    ↓
+    ├─ TaxonomyVerb (enum)
+    ├─ DagLevel (enum)
+    └─ Circle (enum)
+
+TICKETING (harlem N4)
+    ↓
+    └─ Ticket API (GitHub)
+----
+
+=== Integration avec EPICs existants
+
+| EPIC | Status | Integration | Notes |
+|------|--------|-------------|-------|
+| EPIC Y (Agentic Literature Compiler) | ✅ TERMINE | Reutiliser AgenticChunk, AgenticOntologizer, AgenticCompiler | EPIC V-9 = extension de EPIC Y |
+| EPIC W (Auto-discovery Gradle Tasks) | ✅ TERMINE | VibecodingGovernanceTask expose le catalogue de taches | EPIC V-9 = consommateur de EPIC W |
+| EPIC X (Decision Multi-Step) | ✅ TERMINE | Procedure → Plan multi-step (EPIC X) | EPIC V-9 = fournisseur de procedure |
+| EPIC Z (Autofocus) | ✅ TERMINE | ContextZoomer → zoom(IMPLEMENTATION) pour chunks | EPIC V-9 = fournisseur de contexte |
+
+=== Tech stack
+
+| Component | Technology | Version |
+|-----------|------------|---------|
+| **Kotlin** | Kotlin | 2.3.20 |
+| **Gradle** | Gradle | 9.5.0 |
+| **LLM** | LangChain4j | 1.14.1 |
+| **Embedding** | ONNX | AllMiniLmL6V2 |
+| **Vector store** | pgvector | Postgres + R2DBC |
+| **Chunking** | Chunker | regex + LLM fallback |
+| **Testing** | JUnit5 + Cucumber | 5.10.0 + 7.20.1 |
+
+== Conclusion
+
+La governance agentique est le **seul manque** dans le vibecoding actuel.
+Sans cette brique, le LLM ne peut pas consulter TOUS les fichiers du workspace (seulement le code applicatif).
+
+Le pipeline VibecodingGover
+nanceComplete doit transformer :
+- **Littérature textuelle** (AGENT.adoc, INDEX.adoc, SESSION_CHECKLIST.adoc, etc.)
+- → **Chunks ontologisés** (chunkId, verb, domain, dagLevel, circle, weight)
+- → **Contraintes exécutables** (ToolRegistry pre/post hooks, gates, validation)
+- → **Contexte augmenté complet** (EAGER 40% + RAG 30% + Graphify 20% + Ressources 10%)
+
+C'est le **chaînon manquant** entre "agent qui lit du code" et "agent qui utilise Tout le workspace".

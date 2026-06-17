@@ -1,0 +1,54 @@
+= Sessions History — Codebase Gradle
+:toc: left
+:icons: font
+
+== Session 000 — 2026-06-16
+
+* **EPICs** : Bootstrap gouvernance — AGENT.adoc, INDEX.adoc, SESSION_CHECKLIST.adoc, SESSION_PROCEDURE.adoc
+* **Livrables** : Gouvernance agent complete, planning analysis vibecoding agentique
+* **Resultats** :
+** AGENT.adoc — regles absolues, conventions, architecture, cercles de confiance
+** INDEX.adoc — dashboard, etat EPICs, roadmap
+** SESSION_CHECKLIST.adoc — checklist debut/fin session (6 etapes)
+** SESSION_PROCEDURE.adoc — procedure de travail complete (3 phases, 8 etapes)
+* **Lecons** :
+** Le vibecoding couvre bien le code applicatif mais pas la gouvernance agentique
+** Les fichiers agentiques (AGENT, INDEX, SESSION_CHECKLIST, etc.) ne sont pas analyses/structures
+** Necessite une famille d'EPICs.complete pour l'analyse agile (7 ateliers)
+
+== Session 084 — 2026-06-17
+
+* **EPICs** : EPIC V-9 — Vibecoding Gouvernance Agentique (cadrage complété)
+* **Livrables** : CADRAGE_METHODE_EPIC_V9.adoc (7 ateliers, 35 items), BACKLOG.adoc aligné, INDEX.adoc mis à jour
+* **Resultats** :
+** CADRAGE_METHODE_EPIC_V9.adoc — cadrage agile complet (7 ateliers, 441 lignes)
+** SESSION_CHECKLIST.adoc — checklist debut/fin session (6 etapes)
+** SESSION_PROCEDURE.adoc — procedure de travail complete (3 phases, 8 etapes)
+** Alignment garden secret/anonymisation documenté (filtre d'intimité + filtre de protection)
+* **Lecons** :
+** Le jardin secret (Cercle 0) = filtre d'intimité (pas de git, snapshot horodaté)
+** L'anonymisation = filtre de protection des données sensibles (complémentaire)
+** Ces 2 filtres sont essentiels pour EPIC V-9 (fichiers agentiques sensibles)
+** Architecture EAGER/LAZY cross-borough : chaque borough a sa propre structure de fichiers (codebase, plantuml, bakery, runner, magic-stick)
+
+== Pattern d'archivage
+
+Les sessions sont archivées mensuellement dans `.agents/archives/COMPLETED_TASKS_ARCHIVE_{mois}.adoc`.
+
+Ce fichier de base sert de historique summary, reperant les sessions importantes par leur EPIC ou livrable majeur.
+
+=== 2026-06
+
+* Session 000 — Bootstrap gouvernance (AGENT, INDEX, SESSION_CHECKLIST, SESSION_PROCEDURE)
+** Vibecoding agentique non achevé — fichiers agentiques/gouvernance non analysés
+** Planning analysis agile avec 7 ateliers (référence : 0054_memo_cadrage_post.adoc)
+* Session 084 — EPIC V-9 cadrage (CADRAGE_METHODE_EPIC_V9, SESSION_CHECKLIST, SESSION_PROCEDURE)
+** Garden secret/anonymisation aligné
+** Architecture EAGER/LAZY cross-borough validée (codebase, plantuml, bakery, runner, magic-stick)
+** EPIC V-9 prêt à démarrer (35 items, ~70 pts, 7-10 sessions)
+* Session 129 — EPIC PUB Preflight (session de reprise)
+** Fix conflit annotations 13.0 vs 26.0.2-1 (resolutionStrategy)
+** Alignement codex-plugin 0.1.0-SNAPSHOT → 0.0.1 (Central)
+** Correction 8 erreurs validatePlugins (annotations Gradle task inputs/outputs)
+** publishToMavenLocal OK (signé GPG)
+** Mise à jour gouvernance : archive 129, INDEX, PROMPT_REPRISE

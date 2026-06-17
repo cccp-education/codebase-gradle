@@ -52,9 +52,17 @@ dependencies {
     // ET par kotlin-stdlib (13.0) + kotlinx-coroutines (23.0.0) + flexmark (24.0.1).
     // Solution : contrainte globale → toutes les transitives forcées à 13.0.
     // Publiée dans le .module Gradle Metadata, respectée par tous les consommateurs N2.
-    constraints {
-        implementation("org.jetbrains:annotations:13.0") {
-            because("Kotlin 2.3.20 embed — évite conflit koog-agents 26.0.2-1 dans les plugins N2 consommateurs")
+    // ── Résolution conflit annotations ──────────────────────────────────────────────
+    // Kotlin 2.3.20 pinne annotations:13.0 dans le classpath Gradle.
+    // koog-agents 0.8.0, codex-plugin (flexmark) et kotlinx-coroutines apportent
+    // des versions plus récentes (17.0 → 26.0.2-1) qui créent un conflit insoluble
+    // par constraints simples. On substitue la version demandée à la résolution.
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.jetbrains" && requested.name == "annotations") {
+                useVersion("13.0")
+                because("Kotlin 2.3.20 embed — uniformise annotations à 13.0")
+            }
         }
     }
 

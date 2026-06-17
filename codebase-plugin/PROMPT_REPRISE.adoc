@@ -1,35 +1,28 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 128
-:session: 128
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 130
+:session: 130
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 127 — EPIC 8 ✅ (Expert Exposure, 16 JUnit5 + 5 Cucumber = 21/21 PASS)
+:session_precedente: 129 — EPIC PUB Preflight ✅ (build + validateDependencies + validatePlugins + publishToMavenLocal OK)
 
 == Contexte Hérité
 
-- EPIC W TERMINE (7/7)
-- EPIC X TERMINE (7/7)
-- EPIC Y TERMINE (8/8)
-- EPIC Z TERMINE (7/7)
-- EPIC 12 TERMINE — 19/19 PASS
-- EPIC SP TERMINE (7/7)
-- EPIC OCR 26/26
-- EPIC CR TERMINE (14/14)
-- EPIC 7 TERMINE (60/60 PASS — Expert Dispatcher)
-- EPIC 8 EN COURS (3/4 — Expert Exposure, 21/21 PASS)
-- Full suite ~530+ PASS
-- publishToMavenLocal OK
+- Prérequis PUB débloqués en session 129 :
+** Conflit annotations fixé (resolutionStrategy force 13.0)
+** codex-plugin aligné sur 0.0.1 (Central)
+** 8 erreurs validatePlugins corrigées
+** `publishToMavenLocal` signé et OK
+- `codebase-plugin` version 0.0.2 (libs.versions.toml)
+- Gouvernance `.agents/` réconciliée (archive 129, SESSIONS_HISTORY, INDEX)
 
-== Mission Session 128
+== Mission Session 130
 
-EPIC PUB : Publication Maven Central codebase-plugin + codebase-contracts.
-Dépend de codex-plugin et planner-plugin (N2) en library.
-Option A : publier codex + planner avant codebase.
-Option B : includeBuild temporaire.
+EPIC PUB — Finaliser la publication Maven Central de `codebase-plugin`.
 
-COMPLETION : Documentation boucle vibecoding locale terminée.
-Fichier LOCAL_VIBECODING_LOOP.adoc créé avec tous les éléments nécessaires
-pour utiliser la boucle locale avec opencode.
+. Vérifier credentials `~/.gradle/gradle.properties` (signing + nmcp centralPortal).
+. Lancer `./gradlew publishAggregationToCentralPortal --no-daemon` si credentials OK.
+. Vérifier artefacts sur https://central.sonatype.com/artifact/education.cccp/codebase-plugin.
+. Si publication réussie : marquer EPIC PUB ✅ TERMINÉ dans BACKLOG.adoc et INDEX.adoc.
+. Si échec credentials : documenter le blocage et passer à l'audit PUB-5.8.
 
-== Ordonnancement Sessions Suivantes
+== Méthodologie
 
-| Session | EPIC | Livrable
-| 128 | EPIC PUB | Publication Maven Central codebase-plugin + codebase-contracts
+Baby-step DDD/TDD/BDD : chaque étape validée par build/test avant la suivante.
