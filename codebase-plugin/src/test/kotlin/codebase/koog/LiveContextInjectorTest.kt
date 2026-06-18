@@ -1,6 +1,6 @@
 package codebase.koog
 
-import contracts.session.AgentContext
+import codebase.koog.session.AgentContext
 import contracts.vibecoding.registry.AuditEntry
 import codebase.koog.state.VibecodingState
 import org.junit.jupiter.api.Assertions.assertFalse

@@ -34,6 +34,8 @@ dependencies {
     implementation(libs.agent.contracts)
     // N0 llm-pool contracts — LlmInstancePool, LlmInstance, QuotaConfig, RotationStrategy (shared N1→N2)
     implementation(libs.llm.pool.contracts)
+    // N0 opencode-session contracts — AgentContext, SessionStatus (SessionProtocol, LiveContextInjector)
+    implementation(libs.opencode.session.contracts)
     implementation(libs.bundles.arrow)
     implementation(libs.koog.agents) {
         exclude(group = "org.jetbrains", module = "annotations")
@@ -229,7 +231,7 @@ publishing {
                     developer {
                         id.set("cccp-education")
                         name.set("CCCP Education")
-                        email.set("cccp.education@gmail.com")
+                        email.set("cccp.edu@gmail.com")
                     }
                 }
                 scm {
