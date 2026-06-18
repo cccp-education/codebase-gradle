@@ -1,5 +1,6 @@
 package codebase.koog.planning
 
+import codebase.koog.state.VibecodingState
 import contracts.vibecoding.registry.ToolRegistry
 import org.slf4j.LoggerFactory
 
@@ -11,11 +12,11 @@ class RollbackStrategyExecutor(
     private val log = LoggerFactory.getLogger(RollbackStrategyExecutor::class.java)
 
     fun execute(
-        state: vibecoding.contracts.state.VibecodingState,
+        state: VibecodingState,
         plan: VibecodingPlan,
         failedStep: VibecodingStep,
         modifiedFiles: List<String> = emptyList()
-    ): vibecoding.contracts.state.VibecodingState {
+    ): VibecodingState {
         return when (plan.rollbackStrategy) {
             RollbackStrategy.STOP_ON_ERROR -> executeStopOnError(state, failedStep)
             RollbackStrategy.REVERT_AND_CONTINUE -> executeRevertAndContinue(state, failedStep, modifiedFiles)
@@ -25,9 +26,9 @@ class RollbackStrategyExecutor(
     }
 
     private fun executeStopOnError(
-        state: vibecoding.contracts.state.VibecodingState,
+        state: VibecodingState,
         failedStep: VibecodingStep
-    ): vibecoding.contracts.state.VibecodingState {
+    ): VibecodingState {
         log.warn("[RollbackStrategy] STOP_ON_ERROR — step '{}' failed, stopping", failedStep.description)
         return state.copy(
             finished = true,
@@ -36,10 +37,10 @@ class RollbackStrategyExecutor(
     }
 
     private fun executeRevertAndContinue(
-        state: vibecoding.contracts.state.VibecodingState,
+        state: VibecodingState,
         failedStep: VibecodingStep,
         modifiedFiles: List<String>
-    ): vibecoding.contracts.state.VibecodingState {
+    ): VibecodingState {
         log.info("[RollbackStrategy] REVERT_AND_CONTINUE — reverting step '{}'", failedStep.description)
 
         if (modifiedFiles.isNotEmpty()) {
@@ -65,9 +66,9 @@ class RollbackStrategyExecutor(
     }
 
     private fun executeMarkSkipped(
-        state: vibecoding.contracts.state.VibecodingState,
+        state: VibecodingState,
         failedStep: VibecodingStep
-    ): vibecoding.contracts.state.VibecodingState {
+    ): VibecodingState {
         log.info("[RollbackStrategy] MARK_SKIPPED — skipping step '{}'", failedStep.description)
         return state.copy(
             error = null,
@@ -79,9 +80,9 @@ class RollbackStrategyExecutor(
     }
 
     private fun executeFallbackHuman(
-        state: vibecoding.contracts.state.VibecodingState,
+        state: VibecodingState,
         failedStep: VibecodingStep
-    ): vibecoding.contracts.state.VibecodingState {
+    ): VibecodingState {
         log.warn("[RollbackStrategy] FALLBACK_HUMAN — requesting human input for step '{}'", failedStep.description)
         return state.copy(
             finished = true,

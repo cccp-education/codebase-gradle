@@ -10,9 +10,6 @@ import codebase.koog.llm.LlmProvider
 import codebase.koog.planning.RollbackStrategy
 import codebase.koog.planning.RollbackStrategyExecutor
 import codebase.koog.planning.StepVerifier
-import codebase.koog.planning.TaskResult
-import codebase.koog.planning.TaskResultVerifier
-import codebase.koog.planning.TaskVerdict
 import codebase.koog.planning.VibecodingPlan
 import codebase.koog.planning.VibecodingStep
 import codebase.koog.session.SessionRecord
@@ -20,8 +17,8 @@ import codebase.koog.session.SessionRepository
 import codebase.koog.tracking.TokenTracker
 import contracts.vibecoding.registry.ToolRegistry
 import io.r2dbc.spi.ConnectionFactory
-import vibecoding.contracts.state.AugmentedState
-import vibecoding.contracts.state.VibecodingState
+import codebase.koog.state.AugmentedState
+import codebase.koog.state.VibecodingState
 import ai.koog.agents.core.agent.asMermaidDiagram
 import ai.koog.agents.core.agent.entity.AIAgentGraphStrategy
 import ai.koog.agents.core.agent.entity.ToolSelectionStrategy
@@ -102,7 +99,7 @@ class VibecodingGraph(
     val liveContextInjector: LiveContextInjector? = null
 ) {
 
-    var staticContext: contracts.session.AgentContext? = null
+    var staticContext: codebase.koog.session.AgentContext? = null
 
     private val log = LoggerFactory.getLogger(VibecodingGraph::class.java)
 

@@ -1,15 +1,14 @@
 package codebase.scenarios
 
 import codebase.koog.VibecodingGraph
-import codebase.koog.discovery.TaskSchema
 import codebase.koog.llm.FakeLlmProvider
-import codebase.koog.planning.RollbackStrategyExecutor
+import codebase.koog.state.VibecodingState
 import contracts.vibecoding.registry.ToolRegistry
 
 class E2EPlanFailAdaptWorld {
     var graph: VibecodingGraph? = null
-    var state: vibecoding.contracts.state.VibecodingState? = null
-    var result: vibecoding.contracts.state.VibecodingState? = null
+    var state: VibecodingState? = null
+    var result: VibecodingState? = null
     var fakeLlm: FakeLlmProvider? = null
     var toolRegistry: ToolRegistry? = null
     var gradleCallCount: Int = 0

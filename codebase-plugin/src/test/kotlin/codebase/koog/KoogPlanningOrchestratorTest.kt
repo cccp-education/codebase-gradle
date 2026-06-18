@@ -1,6 +1,6 @@
 package codebase.koog
 
-import vibecoding.contracts.state.AugmentedState
+import codebase.koog.state.AugmentedState
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File

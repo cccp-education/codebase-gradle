@@ -1,17 +1,15 @@
 package codebase.scenarios
 
 import codebase.koog.VibecodingGraph
-import codebase.koog.autofocus.AutofocusLevel
-import codebase.koog.autofocus.ContextZoomer
 import codebase.koog.llm.FakeLlmProvider
 import contracts.agent.Epic
-import vibecoding.contracts.plan.Plan
+import codebase.koog.planning.Plan
 import contracts.agent.GradleTask as PlanTask
 import contracts.agent.UserStory
 import contracts.context.CompositeContext
 import contracts.context.CompositeContextConfig
 import contracts.vibecoding.registry.ToolRegistry
-import vibecoding.contracts.state.VibecodingState
+import codebase.koog.state.VibecodingState
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When

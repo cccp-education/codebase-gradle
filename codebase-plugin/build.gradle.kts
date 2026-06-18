@@ -32,12 +32,8 @@ dependencies {
     implementation(libs.codebase.contracts)
     // N0 agent contracts — Epic, UserStory, GradleTask, AgentState (partagés cross-borough)
     implementation(libs.agent.contracts)
-    // N0 vibecoding contracts — ToolRegistry, ExecShellTool, ExecGradleTool, ToolkitIsMissingException
-    implementation(libs.vibecoding.contracts)
     // N0 llm-pool contracts — LlmInstancePool, LlmInstance, QuotaConfig, RotationStrategy (shared N1→N2)
     implementation(libs.llm.pool.contracts)
-    // N0 opencode-session contracts — SessionPrompt, SessionResponse, AgentContext, SessionStatus, TokenUsage, ToolCallRecord
-    implementation(libs.opencode.session.contracts)
     implementation(libs.bundles.arrow)
     implementation(libs.koog.agents) {
         exclude(group = "org.jetbrains", module = "annotations")

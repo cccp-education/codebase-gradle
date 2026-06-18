@@ -1,11 +1,8 @@
 package codebase.scenarios
 
 import codebase.koog.VibecodingGraph
-import codebase.koog.discovery.TaskOption
 import codebase.koog.discovery.TaskSchema
-import codebase.koog.llm.LlmProvider
-import codebase.koog.planning.RollbackStrategyExecutor
-import codebase.koog.planning.StepVerifier
+import codebase.koog.state.VibecodingState
 import contracts.vibecoding.registry.ToolRegistry
 import io.cucumber.java.Before
 import io.cucumber.java.en.Given
@@ -56,7 +53,7 @@ class ReplanCatalogSteps(private val world: ReplanCatalogWorld) {
 
     @Given("a VibecodingState with error {string} and retryCount {int} and maxRetries {int}")
     fun `state with error and retries`(error: String, retryCount: Int, maxRetries: Int) {
-        world.state = vibecoding.contracts.state.VibecodingState(
+        world.state = VibecodingState(
             intention = "test",
             workspaceRoot = "/tmp/test",
             error = error,

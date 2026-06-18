@@ -1,6 +1,6 @@
 package codebase.koog.governance
 
-import contracts.session.AgentContext
+import codebase.koog.session.AgentContext
 import java.io.File
 
 /**

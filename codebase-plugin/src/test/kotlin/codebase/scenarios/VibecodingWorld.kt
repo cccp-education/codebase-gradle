@@ -1,7 +1,6 @@
 package codebase.scenarios
 
 import codebase.koog.llm.FakeLlmProvider
-import codebase.koog.llm.LlmProvider
 import codebase.koog.llm.pool.OllamaLlmProvider
 import codebase.koog.llm.pool.OllamaPool
 import codebase.koog.session.SessionRecord
@@ -12,10 +11,9 @@ import contracts.llmpool.QuotaConfig
 import contracts.llmpool.ResetPolicy
 import contracts.llmpool.RotationStrategy
 import contracts.vibecoding.registry.ToolRegistry
-import vibecoding.contracts.state.VibecodingState
+import codebase.koog.state.VibecodingState
 import codebase.koog.VibecodingGraph
 import kotlin.test.assertTrue
-import java.time.Instant
 
 /**
  * World Object injecté par PicoContainer dans toutes les Steps Cucumber

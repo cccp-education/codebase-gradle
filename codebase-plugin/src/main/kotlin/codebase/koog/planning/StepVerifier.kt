@@ -1,6 +1,7 @@
 package codebase.koog.planning
 
 import codebase.koog.llm.LlmProvider
+import codebase.koog.state.VibecodingState
 import codebase.koog.tracking.TokenTracker
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
@@ -14,9 +15,9 @@ class StepVerifier(
     private val resultVerifier = TaskResultVerifier()
 
     fun verifyAndAdapt(
-        state: vibecoding.contracts.state.VibecodingState,
+        state: VibecodingState,
         step: VibecodingStep
-    ): vibecoding.contracts.state.VibecodingState {
+    ): VibecodingState {
         val taskResult = resultVerifier.verify(state.lastToolResult, "")
 
         return when (taskResult.verdict) {
@@ -77,7 +78,7 @@ class StepVerifier(
     }
 
     private fun buildReplanPrompt(
-        state: vibecoding.contracts.state.VibecodingState,
+        state: VibecodingState,
         step: VibecodingStep,
         taskResult: TaskResult
     ): String {

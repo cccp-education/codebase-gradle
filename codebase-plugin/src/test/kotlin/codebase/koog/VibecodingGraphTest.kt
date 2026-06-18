@@ -3,11 +3,11 @@ package codebase.koog
 import codebase.koog.session.SessionRecord
 import codebase.koog.llm.FakeLlmProvider
 import contracts.agent.Epic
-import vibecoding.contracts.plan.Plan
+import codebase.koog.planning.Plan
 import contracts.agent.GradleTask as PlanTask
 import contracts.agent.UserStory
 import contracts.vibecoding.registry.ToolRegistry
-import vibecoding.contracts.state.VibecodingState
+import codebase.koog.state.VibecodingState
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.time.Instant

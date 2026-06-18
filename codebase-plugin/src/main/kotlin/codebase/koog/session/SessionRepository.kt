@@ -5,7 +5,7 @@ import io.r2dbc.spi.Connection
 import io.r2dbc.spi.ConnectionFactory
 import kotlinx.coroutines.reactive.awaitSingle
 import reactor.core.publisher.Mono
-import vibecoding.contracts.state.VibecodingState
+import codebase.koog.state.VibecodingState
 import java.time.Instant
 import java.util.UUID
 

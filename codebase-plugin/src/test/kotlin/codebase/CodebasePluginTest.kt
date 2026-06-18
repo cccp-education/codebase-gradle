@@ -161,7 +161,7 @@ class CodebasePluginTest {
         println("║                    END OF TASK DUMP                        ║")
         println("╚══════════════════════════════════════════════════════════════╝")
 
-        for (task in expectedTasks) {
+        expectedTasks.forEach { task ->
             assertTrue(output.contains(task), "Task '$task' should appear in task list")
         }
     }

@@ -2,9 +2,7 @@ package codebase.koog
 
 import contracts.session.AgentContext
 import contracts.vibecoding.registry.AuditEntry
-import contracts.vibecoding.registry.ToolRegistry
-import vibecoding.contracts.state.VibecodingState
-import org.junit.jupiter.api.Assertions.assertEquals
+import codebase.koog.state.VibecodingState
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

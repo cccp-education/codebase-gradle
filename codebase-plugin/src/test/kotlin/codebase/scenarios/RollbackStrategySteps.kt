@@ -4,6 +4,7 @@ import codebase.koog.planning.RollbackStrategy
 import codebase.koog.planning.RollbackStrategyExecutor
 import codebase.koog.planning.VibecodingPlan
 import codebase.koog.planning.VibecodingStep
+import codebase.koog.state.VibecodingState
 import contracts.vibecoding.registry.ToolRegistry
 import io.cucumber.java.Before
 import io.cucumber.java.en.Given
@@ -33,7 +34,7 @@ class RollbackStrategySteps(private val world: RollbackStrategyWorld) {
 
     @Given("a VibecodingState with retryCount {int} and maxRetries {int}")
     fun `state with retries`(retryCount: Int, maxRetries: Int) {
-        world.state = vibecoding.contracts.state.VibecodingState(
+        world.state = VibecodingState(
             intention = "test",
             workspaceRoot = world.workspaceRoot,
             retryCount = retryCount,

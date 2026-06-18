@@ -1,6 +1,6 @@
 package codebase.scenarios
 
-import vibecoding.contracts.state.AugmentedState
+import codebase.koog.state.AugmentedState
 import codebase.koog.KoogPlanningOrchestrator
 import java.io.File
 

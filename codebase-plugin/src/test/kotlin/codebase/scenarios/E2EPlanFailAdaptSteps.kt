@@ -7,7 +7,8 @@ import contracts.agent.Epic
 import contracts.agent.GradleTask as PlanTask
 import contracts.agent.UserStory
 import contracts.vibecoding.registry.ToolRegistry
-import vibecoding.contracts.plan.Plan
+import codebase.koog.planning.Plan
+import codebase.koog.state.VibecodingState
 import io.cucumber.java.Before
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
@@ -62,7 +63,7 @@ class E2EPlanFailAdaptSteps(private val world: E2EPlanFailAdaptWorld) {
             totalPoints = steps.size,
             estimatedSessions = "1"
         )
-        world.state = vibecoding.contracts.state.VibecodingState(
+        world.state = VibecodingState(
             intention = "E2E test: $planDesc",
             workspaceRoot = "/tmp/test",
             maxActions = 10,
@@ -86,7 +87,7 @@ class E2EPlanFailAdaptSteps(private val world: E2EPlanFailAdaptWorld) {
             totalPoints = steps.size,
             estimatedSessions = "1"
         )
-        world.state = vibecoding.contracts.state.VibecodingState(
+        world.state = VibecodingState(
             intention = "E2E test: $planDesc",
             workspaceRoot = "/tmp/test",
             maxActions = 10,

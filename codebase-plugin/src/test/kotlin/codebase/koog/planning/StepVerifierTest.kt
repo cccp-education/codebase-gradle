@@ -1,7 +1,7 @@
 package codebase.koog.planning
 
 import codebase.koog.llm.LlmProvider
-import kotlinx.coroutines.runBlocking
+import codebase.koog.state.VibecodingState
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -98,7 +98,7 @@ class StepVerifierTest {
         retryCount: Int = 0,
         maxRetries: Int = 3,
         executedTasks: List<String> = emptyList()
-    ) = vibecoding.contracts.state.VibecodingState(
+    ) = VibecodingState(
         intention = "test",
         workspaceRoot = "/tmp",
         lastToolResult = lastToolResult,

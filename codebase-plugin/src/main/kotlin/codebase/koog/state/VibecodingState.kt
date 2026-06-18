@@ -1,4 +1,4 @@
-package vibecoding.contracts.state
+package codebase.koog.state
 
 import contracts.context.CompositeContext
 import codebase.koog.planning.Plan

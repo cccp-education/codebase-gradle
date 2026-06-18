@@ -2,14 +2,13 @@ package codebase.koog
 
 import codebase.koog.llm.LlmProvider
 import codebase.koog.tracking.TokenTracker
-import contracts.session.AgentContext
-import contracts.session.SessionPrompt
-import contracts.session.SessionResponse
-import contracts.session.SessionStatus
-import contracts.session.TokenUsage
-import contracts.session.ToolCallRecord
+import codebase.koog.session.AgentContext
+import codebase.koog.session.SessionResponse
+import codebase.koog.session.SessionStatus
+import codebase.koog.session.TokenUsage
+import codebase.koog.session.ToolCallRecord
 import contracts.vibecoding.registry.ToolRegistry
-import vibecoding.contracts.state.VibecodingState
+import codebase.koog.state.VibecodingState
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
@@ -25,7 +24,6 @@ import org.gradle.api.tasks.options.Option
 import org.gradle.work.DisableCachingByDefault
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.time.Instant
 import java.util.UUID
 
 @DisableCachingByDefault(because = "Session protocol — LLM calls non-deterministic, non-cacheable")

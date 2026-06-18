@@ -1,17 +1,15 @@
 package codebase.scenarios
 
-import codebase.koog.planning.RollbackStrategy
 import codebase.koog.planning.RollbackStrategyExecutor
 import codebase.koog.planning.VibecodingPlan
-import codebase.koog.planning.VibecodingStep
-import contracts.vibecoding.registry.ToolRegistry
+import codebase.koog.state.VibecodingState
 
 class RollbackStrategyWorld {
     var workspaceRoot: String = "/tmp/test"
-    var state: vibecoding.contracts.state.VibecodingState? = null
+    var state: VibecodingState? = null
     var plan: VibecodingPlan? = null
     var modifiedFiles: List<String> = emptyList()
-    var result: vibecoding.contracts.state.VibecodingState? = null
+    var result: VibecodingState? = null
     var executor: RollbackStrategyExecutor? = null
 
     fun reset() {

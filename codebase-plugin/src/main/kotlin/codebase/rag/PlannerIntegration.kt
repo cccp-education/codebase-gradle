@@ -4,9 +4,9 @@ import contracts.agent.Epic
 import contracts.agent.GradleTask
 import contracts.agent.UserStory
 import contracts.context.CompositeContext
-import vibecoding.contracts.plan.Plan
-import vibecoding.contracts.plan.PlanState
-import vibecoding.contracts.state.AugmentedState
+import codebase.koog.planning.Plan
+import codebase.koog.planning.PlanState
+import codebase.koog.state.AugmentedState
 import org.slf4j.LoggerFactory
 import planning.IntentionPlanner
 import planning.PlanningContext
@@ -88,19 +88,19 @@ fun AugmentedState.toPlanMetadata(source: String = "codebase"): PlanMetadata? {
     )
 }
 
-private fun planning.Plan.toContractPlan(): vibecoding.contracts.plan.Plan =
-    vibecoding.contracts.plan.Plan(
+private fun planning.Plan.toContractPlan(): Plan =
+    Plan(
         title = title,
         epics = epics.map { e ->
-            contracts.agent.Epic(
+            Epic(
                 name = e.name,
                 description = e.description,
                 points = e.points,
                 userStories = e.userStories.map { us ->
-                    contracts.agent.UserStory(
+                    UserStory(
                         description = us.description,
                         tasks = us.tasks.map { t ->
-                            contracts.agent.GradleTask(
+                            GradleTask(
                                 description = t.description,
                                 gradleTask = t.gradleTask
                             )

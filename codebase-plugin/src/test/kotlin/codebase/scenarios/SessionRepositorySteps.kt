@@ -1,8 +1,7 @@
 package codebase.scenarios
 
-import codebase.koog.session.SessionRepository
 import codebase.koog.tracking.Dashboard
-import vibecoding.contracts.state.VibecodingState
+import codebase.koog.state.VibecodingState
 import io.cucumber.java.Before
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then

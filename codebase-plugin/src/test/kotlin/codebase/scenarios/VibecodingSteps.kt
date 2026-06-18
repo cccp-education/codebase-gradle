@@ -3,10 +3,10 @@ package codebase.scenarios
 import codebase.koog.llm.FakeLlmProvider
 import codebase.koog.session.SessionRecord
 import contracts.agent.Epic
-import vibecoding.contracts.plan.Plan
+import codebase.koog.planning.Plan
 import contracts.agent.GradleTask as PlanTask
 import contracts.agent.UserStory
-import vibecoding.contracts.state.VibecodingState
+import codebase.koog.state.VibecodingState
 import codebase.koog.VibecodingGraph
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then

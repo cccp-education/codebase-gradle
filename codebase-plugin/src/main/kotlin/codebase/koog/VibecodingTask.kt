@@ -10,7 +10,7 @@ import codebase.koog.session.SessionRepository
 import codebase.koog.tracking.TokenTracker
 import contracts.vibecoding.registry.ToolInfo
 import contracts.vibecoding.registry.ToolRegistry
-import vibecoding.contracts.state.VibecodingState
+import codebase.koog.state.VibecodingState
 import io.r2dbc.spi.ConnectionFactory
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask

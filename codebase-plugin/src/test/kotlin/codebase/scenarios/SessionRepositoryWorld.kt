@@ -3,8 +3,6 @@ package codebase.scenarios
 import codebase.infrastructure.PostgresFixture
 import codebase.koog.session.SessionRecord
 import codebase.koog.session.SessionRepository
-import vibecoding.contracts.state.VibecodingState
-import java.time.Instant
 
 class SessionRepositoryWorld {
 

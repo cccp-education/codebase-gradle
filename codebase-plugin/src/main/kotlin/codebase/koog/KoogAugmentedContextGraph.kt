@@ -2,7 +2,7 @@ package codebase.koog
 
 import contracts.context.CompositeContext
 import contracts.context.CompositeContextConfig
-import vibecoding.contracts.state.AugmentedState
+import codebase.koog.state.AugmentedState
 import ai.koog.agents.core.agent.asMermaidDiagram
 import ai.koog.agents.core.agent.entity.AIAgentGraphStrategy
 import ai.koog.agents.core.agent.entity.ToolSelectionStrategy

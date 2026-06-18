@@ -2,13 +2,13 @@ package codebase.koog
 
 import codebase.koog.llm.LlmProvider
 import codebase.koog.tracking.TokenTracker
-import contracts.session.SessionPrompt
-import contracts.session.SessionResponse
-import contracts.session.SessionStatus
-import contracts.session.TokenUsage
-import contracts.session.ToolCallRecord
+import codebase.koog.session.SessionPrompt
+import codebase.koog.session.SessionResponse
+import codebase.koog.session.SessionStatus
+import codebase.koog.session.TokenUsage
+import codebase.koog.session.ToolCallRecord
 import contracts.vibecoding.registry.ToolRegistry
-import vibecoding.contracts.state.VibecodingState
+import codebase.koog.state.VibecodingState
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.slf4j.LoggerFactory
@@ -84,7 +84,7 @@ class SessionProtocolServer(
             eventStream = eventStream,
             liveContextInjector = liveContextInjector
         )
-        graph.staticContext = sessionPrompt.context
+        graph.staticContext = sessionPrompt.context?.let { codebase.koog.session.AgentContext(eagerRules = it) }
 
         val state = VibecodingState(
             intention = sessionPrompt.prompt,

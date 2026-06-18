@@ -1,8 +1,8 @@
 package codebase.koog
 
-import contracts.session.AgentContext
+import codebase.koog.session.AgentContext
 import contracts.vibecoding.registry.AuditEntry
-import vibecoding.contracts.state.VibecodingState
+import codebase.koog.state.VibecodingState
 
 class LiveContextInjector {
 

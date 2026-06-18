@@ -1,5 +1,6 @@
 package codebase.koog.planning
 
+import codebase.koog.state.VibecodingState
 import contracts.vibecoding.registry.ToolRegistry
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -183,7 +184,7 @@ class RollbackStrategyExecutorTest {
         retryCount: Int = 0,
         maxRetries: Int = 3,
         executedTasks: List<String> = emptyList()
-    ) = vibecoding.contracts.state.VibecodingState(
+    ) = VibecodingState(
         intention = "test",
         workspaceRoot = workspaceRoot,
         retryCount = retryCount,

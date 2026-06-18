@@ -16,7 +16,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import reactor.core.publisher.Mono
-import vibecoding.contracts.state.VibecodingState
+import codebase.koog.state.VibecodingState
 
 class SessionRepositoryTest {
 
