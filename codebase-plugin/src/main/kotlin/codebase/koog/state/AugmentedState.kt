@@ -1,7 +1,7 @@
 package vibecoding.contracts.state
 
 import contracts.context.CompositeContext
-import vibecoding.contracts.plan.Plan
+import codebase.koog.planning.Plan
 
 /**
  * État augmenté pour le graphe koog+langchain4j.
