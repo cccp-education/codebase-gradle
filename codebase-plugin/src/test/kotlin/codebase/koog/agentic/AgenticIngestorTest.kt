@@ -11,13 +11,13 @@ class AgenticIngestorTest {
     private val chunker = AgenticChunker()
     private val ontologizer = AgenticOntologizer()
     private val compiler = AgenticCompiler()
-    private lateinit var fakeRepo: FakeAgenticChunkRepository
+    private lateinit var repo: InMemoryAgenticChunkRepository
     private lateinit var ingestor: AgenticIngestor
 
     @BeforeEach
     fun setup() {
-        fakeRepo = FakeAgenticChunkRepository()
-        ingestor = AgenticIngestor(chunker, ontologizer, fakeRepo, compiler)
+        repo = InMemoryAgenticChunkRepository()
+        ingestor = AgenticIngestor(chunker, ontologizer, repo, compiler)
     }
 
     @Test
@@ -43,7 +43,7 @@ class AgenticIngestorTest {
         assertEquals(0, report.chunksSkipped, "No chunks should be skipped on first ingest")
         assertEquals(0, report.chunksModified, "No chunks should be modified on first ingest")
         assertTrue(report.artifactsCompiled > 0, "Should compile artifacts from chunks")
-        assertEquals(report.chunksAdded, fakeRepo.countChunks(), "Repo should have all added chunks")
+        assertEquals(report.chunksAdded, repo.countChunks(), "Repo should have all added chunks")
     }
 
     @Test
@@ -54,14 +54,14 @@ class AgenticIngestorTest {
         """.trimIndent()
 
         val firstReport = ingestor.ingest(listOf("AGENT.adoc" to content))
-        val firstCount = fakeRepo.countChunks()
+        val firstCount = repo.countChunks()
 
         val secondReport = ingestor.ingest(listOf("AGENT.adoc" to content))
 
         assertEquals(0, secondReport.chunksAdded, "No new chunks should be added for unchanged file")
         assertEquals(firstCount, secondReport.chunksSkipped, "All chunks should be skipped")
         assertEquals(0, secondReport.chunksModified, "No chunks should be modified")
-        assertEquals(firstCount, fakeRepo.countChunks(), "Repo count should remain unchanged")
+        assertEquals(firstCount, repo.countChunks(), "Repo count should remain unchanged")
     }
 
     @Test
@@ -77,12 +77,12 @@ class AgenticIngestorTest {
         """.trimIndent()
 
         ingestor.ingest(listOf("AGENT.adoc" to originalContent))
-        val originalCount = fakeRepo.countChunks()
+        val originalCount = repo.countChunks()
 
         val report = ingestor.ingest(listOf("AGENT.adoc" to modifiedContent))
 
         assertTrue(report.chunksModified > 0, "Should detect modified chunks")
-        assertTrue(fakeRepo.countChunks() >= originalCount, "Repo should have updated chunks")
+        assertTrue(repo.countChunks() >= originalCount, "Repo should have updated chunks")
     }
 
     @Test

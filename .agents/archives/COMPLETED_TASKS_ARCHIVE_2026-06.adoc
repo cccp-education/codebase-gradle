@@ -41,8 +41,30 @@
 ** `./gradlew :codebase-plugin:test --tests "codebase.koog.SessionProtocolServerTest"`
 * **Statut** : ✅ Terminé (Cucumber non finalisé — timeout lifecycle sans pgvector)
 
+== Session 134 — Doublon + catalogue stale + Publication N0 Central
+
+* **Type** : Maintenance + Publication Maven Central
+* **Boroughs** : Queens (codebase-gradle N1) + MEMPHIS (workspace-bom N0)
+* **Livrables** :
+** `FakeAgenticChunkRepository.kt` (src/test, 73 lignes) supprimé — strict doublon de `InMemoryAgenticChunkRepository.kt` (src/main). Migration des 2 tests consommateurs (`AgenticIngestorTest`, `AgenticExternalImporterTest`), 14/14 PASS.
+** `codebase-plugin/gradle/libs.versions.toml` supprimé — catalogue stale jamais résolu par Gradle (langchain4j 1.14.1 vs 1.16.3 utilisé).
+** Diagnostic EPIC PUB option B (nmcp) : 2 deps N0 manquantes sur Central (`opencode-session-contracts:0.0.1` + `i18n-contracts:0.0.1`), supprimées de workspace-bom en session 084 mais toujours référencées par codebase + bakery.
+** Restauration modules N0 depuis git history MEMPHIS :
+--- `git checkout 5472115 -- opencode-session-contracts/` (6 classes main + tests)
+--- `git checkout 633219d -- i18n-contracts/` (5 classes main + tests)
+--- Ajout `TranslationService.kt` dans i18n-contracts (depuis code local session 133)
+** Publication Maven Central via nmcp :
+--- `opencode-session-contracts:0.0.1` — deployment 97aceef0, HTTP 200 ✅
+--- `i18n-contracts:0.0.1` — deployment 01a0198a, propagation en cours
+* **Commandes clés** :
+** `git rm codebase-plugin/src/test/kotlin/codebase/koog/agentic/FakeAgenticChunkRepository.kt`
+** `./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.AgenticIngestorTest" --tests "codebase.koog.agentic.AgenticExternalImporterTest"`
+** `./gradlew publishAggregationToCentralPortal --no-daemon` (depuis chaque module N0)
+* **Statut** : ✅ Terminé (EPIC PUB codebase-plugin lui-même reporté à session 135)
+
 == Notes de période
 
 * `.agents/` non versionné jusqu'à la session 129 ; historique des sessions 085-128 présent dans le code source et `BACKLOG.adoc` mais pas archivé dans `.agents/sessions/`.
-* EPIC PUB passe de ✅ AUDITE à 🔄 PREFLIGHT OK, puis ⏸️ DIFFÉRÉ.
+* EPIC PUB passe de ✅ AUDITE à 🔄 PREFLIGHT OK, puis ⏸️ DIFFÉRÉ, puis 🔄 EN COURS (session 134 : N0 restaurés et publiés, codebase-plugin à publier en session 135).
 * Pivot stratégique : priorité donnée à la boucle vibecoding locale auto-alimentée (EPIC V-LOCAL) et au pont vers la gouvernance augmentée (EPIC Y).
+* Session 134 : anti-pattern détecté — un artefact N0 supprimé de workspace-bom peut encore être référencé via MavenLocal par d'autres boroughs. Le build compile mais la publication Central casse.

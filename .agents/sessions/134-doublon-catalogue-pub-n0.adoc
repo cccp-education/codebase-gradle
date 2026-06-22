@@ -1,0 +1,92 @@
+= Session 134 — Doublon FakeAgenticChunkRepository + Catalogue stale + Publication N0 Central
+
+*Date* : 2026-06-22
+*Borough* : Queens — codebase-gradle (N1) + MEMPHIS — workspace-bom (N0)
+*EPICs* : EPIC PUB (Publication Maven Central), maintenance
+
+== Contexte
+
+Session 133 avait livré EPIC TRAD (TranslationService N1). La mission 134 était le nettoyage post-V-LOCAL/TRAD + décision EPIC PUB :
+1. Nettoyer le doublon `FakeAgenticChunkRepository` (src/test) vs `InMemoryAgenticChunkRepository` (src/main).
+2. Supprimer le catalogue stale `codebase-plugin/gradle/libs.versions.toml` si non-référencé.
+3. Vérifier l'état EPIC PUB — si stable, publier via nmcp (méthode standard AGENTS.adoc).
+
+== Actions
+
+=== Étape 1 — Doublon FakeAgenticChunkRepository
+
+* Constat : `FakeAgenticChunkRepository.kt` (src/test, 73 lignes) et `InMemoryAgenticChunkRepository.kt` (src/main, 73 lignes) étaient **strictement identiques**.
+* `FakeAgenticChunkRepository` utilisé par 2 tests : `AgenticIngestorTest`, `AgenticExternalImporterTest`.
+* `InMemoryAgenticChunkRepository` utilisé par 1 classe prod : `IngestGovernanceTask`.
+* Migration : renommage des références `fakeRepo` → `repo` et `FakeAgenticChunkRepository` → `InMemoryAgenticChunkRepository` dans les 2 fichiers de test (package identique, pas d'import à ajouter).
+* Suppression du fichier `FakeAgenticChunkRepository.kt` via `git rm`.
+* Validation : `compileTestKotlin` OK + 14/14 tests PASS (7 + 7), 0 failure.
+
+=== Étape 2 — Catalogue stale
+
+* Constat : deux catalogues présents — `gradle/libs.versions.toml` (racine, résolu par Gradle par défaut) et `codebase-plugin/gradle/libs.versions.toml` (jamais résolu car `settings.gradle.kts` ne déclare pas de `versionCatalogs` custom).
+* Différence majeure : celui de `codebase-plugin/` était stale (langchain4j 1.14.1 vs 1.16.3, jackson 2.21.2 dupliqué, etc.).
+* Suppression via `git rm`.
+* Validation : `compileTestKotlin` OK.
+
+=== Étape 3 — Vérification EPIC PUB (option B nmcp)
+
+* Vérification Central disponibilité des dépendances N0 `education.cccp:*` :
+  ** `codebase-contracts:0.0.1` ✅, `agent-contracts:0.0.1` ✅, `vibecoding-contracts:0.0.1` ✅, `llm-pool-contracts:0.0.1` ✅, `codex-plugin:0.0.1` ✅, `planner-plugin:0.0.1` ✅
+  ** `opencode-session-contracts:0.0.1` ❌ 404, `i18n-contracts:0.0.1` ❌ 404
+* Diagnostic : ces 2 artefacts avaient été supprimés de workspace-bom dans la session 084 (MEMPHIS BOM refactor — "suppression contrats non partagés"), mais codebase-gradle et bakery-gradle dépendent toujours d'eux.
+* Code source :
+  ** `opencode-session-contracts` : code source supprimé, mais JAR MavenLocal still présent (6 classes `contracts.session.*`).
+  ** `i18n-contracts` : 5 classes originales (`SupportedLanguage`, `LanguageCatalog`, `I18nConfig`, `MessageBundle`, `LocaleResolver`) supprimées, plus `TranslationService` ajouté en local dans codebase (`contracts/i18n/TranslationService.kt`, session 133).
+
+=== Étape 3a — Restauration N0 depuis git history MEMPHIS
+
+* `git checkout 5472115 -- opencode-session-contracts/` : restauration complète du module (6 classes main + 6 tests JUnit5 + Cucumber + build.gradle.kts + settings.gradle.kts nmcp + libs.versions.toml).
+* `git checkout 633219d -- i18n-contracts/` : restauration complète du module (5 classes main + 5 tests JUnit5 + build/settings/libs).
+* Ajout de `TranslationService.kt` dans `i18n-contracts/src/main/kotlin/contracts/i18n/` (depuis le code local codebase, package `contracts.i18n`).
+* Mise à jour description POM `i18n-contracts` pour mentionner `TranslationService`.
+
+=== Étape 3b — Publication Maven Central via nmcp
+
+* Build `opencode-session-contracts` : `./gradlew build -x test` SUCCESSFUL. N0 pur (zéro dépendance interne).
+* Publication : `./gradlew publishAggregationToCentralPortal --no-daemon` SUCCESSFUL. Deployment `97aceef0-fecd-45f7-8d4b-495c8f5c04f7`. Publishing AUTOMATIC.
+* Build `i18n-contracts` : `./gradlew build -x test` SUCCESSFUL. N0 pur.
+* Publication : `./gradlew publishAggregationToCentralPortal --no-daemon` SUCCESSFUL. Deployment `01a0198a-8292-4973-9719-675d695e4b24`. Publishing AUTOMATIC.
+* Vérification HTTP : `opencode-session-contracts` → 200 (propagé), `i18n-contracts` → 404 (en cours de propagation, publié il y a 10s).
+
+== Commandes
+
+----
+# codebase-gradle (doublon + catalogue)
+git rm codebase-plugin/src/test/kotlin/codebase/koog/agentic/FakeAgenticChunkRepository.kt
+git rm codebase-plugin/gradle/libs.versions.toml
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.AgenticIngestorTest" --tests "codebase.koog.agentic.AgenticExternalImporterTest"
+
+# workspace-bom (restauration + publication)
+git checkout 5472115 -- opencode-session-contracts/
+git checkout 633219d -- i18n-contracts/
+# ajout TranslationService.kt dans i18n-contracts
+cd opencode-session-contracts && ./gradlew build -x test && ./gradlew publishAggregationToCentralPortal --no-daemon
+cd i18n-contracts && ./gradlew build -x test && ./gradlew publishAggregationToCentralPortal --no-daemon
+----
+
+== Résultats
+
+* `FakeAgenticChunkRepository.kt` supprimé (doublon strict). 14/14 tests PASS.
+* Catalogue stale `codebase-plugin/gradle/libs.versions.toml` supprimé.
+* `opencode-session-contracts:0.0.1` publié sur Maven Central ✅ (HTTP 200).
+* `i18n-contracts:0.0.1` publié sur Maven Central ✅ (propagation en cours).
+* EPIC PUB (codebase-gradle lui-même) : **non démarré** — la session a été consommée par la restauration N0. Mission reportée à session 135.
+
+== Leçons
+
+* **Anti-pattern detection** : un artefact supprimé du workspace-bom peut encore être référencé par des boroughs via MavenLocal. Le build compile mais la publication Central casse. La règle DAG nmcp (toutes les deps `education.cccp:*` doivent être sur Central) est un garde-fou précieux.
+* **Git history comme sauvegarde** : `git checkout <sha> -- <path>/` permet de restaurer un module complet supprimé, avec build/scripts/tests. Plus sûr que de réécrire.
+* **Convention nmcp uniforme** : tous les modules N0 de workspace-bom utilisent exactement le même pattern `settings.gradle.kts` (nmcp 1.5.0 + centralPortal AUTOMATIC + globalProps). Reproduire ce pattern est trivial.
+* **Baby-step respecté** : 1 fichier à la fois, compilation après chaque édition, tests ciblés après suppression du doublon. Pas de parallélisation.
+* **Reste à faire (session 135)** :
+  ** Retirer de codebase-gradle les duplications locales (`contracts/i18n/TranslationService.kt`, `codebase.koog.session.AgentContext`, etc.) — désormais fournies par les JARs N0.
+  ** Migrer `codebase-gradle/settings.gradle.kts` vers nmcp (plugin + nmcpSettings).
+  ** Bump version `0.0.2 → 0.0.3` dans `build.gradle.kts` racine.
+  ** Publier `codebase-plugin:0.0.3` sur Maven Central via `publishAggregationToCentralPortal`.
+  ** Impact bakery : vérifier que `bakery-gradle` compile toujours avec les artefacts N0 restaurés (le JAR MavenLocal était identique au contenu source, donc transparent).

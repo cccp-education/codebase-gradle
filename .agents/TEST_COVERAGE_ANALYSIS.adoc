@@ -22,6 +22,8 @@
 | SessionRepositoryTest | 10 | pgvector + R2DBC | EN COURS |
 | DashboardTaskTest | 5 | Dashboard CLI | EN COURS |
 | AgenticChunkEnforcementTest | 10 | 10 unit + 7 Cucumber = 17/17 PASS | TERMINÉ |
+| AgenticIngestorTest | 7 | Ingest pipeline (chunk→ontologize→store) — `InMemoryAgenticChunkRepository` | TERMINÉ (session 134 migration doublon) |
+| AgenticExternalImporterTest | 7 | External prompts import (copilot/cursor/claude/gemini) — `InMemoryAgenticChunkRepository` | TERMINÉ (session 134 migration doublon) |
 | GovernanceContextLoaderTest | 5 | Chargement AGENT/INDEX/PROMPT_REPRISE/BACKLOG | TERMINÉ |
 | SessionProtocolTaskTest | 21 | Fallback governance + lifecycle + contextFile | TERMINÉ |
 | SessionProtocolServerTest | 6 | JSON-lines daemon + governance fallback | TERMINÉ |

@@ -8,14 +8,14 @@ import org.junit.jupiter.api.Test
 
 class AgenticExternalImporterTest {
 
-    private lateinit var fakeRepo: FakeAgenticChunkRepository
+    private lateinit var repo: InMemoryAgenticChunkRepository
     private lateinit var importer: AgenticExternalImporter
 
     @BeforeEach
     fun setup() {
-        fakeRepo = FakeAgenticChunkRepository()
+        repo = InMemoryAgenticChunkRepository()
         importer = AgenticExternalImporter(
-            ingestor = AgenticIngestor(repository = fakeRepo)
+            ingestor = AgenticIngestor(repository = repo)
         )
     }
 
@@ -40,7 +40,7 @@ class AgenticExternalImporterTest {
         assertTrue(report.chunksAdded > 0, "Should add chunks from copilot prompt")
         assertTrue(report.artifactsCompiled > 0, "Should compile artifacts")
         assertEquals(1, report.filesScanned, "Should scan one pseudo-file")
-        assertTrue(fakeRepo.countChunks() > 0, "Repo should have chunks")
+        assertTrue(repo.countChunks() > 0, "Repo should have chunks")
     }
 
     @Test
@@ -153,7 +153,7 @@ class AgenticExternalImporterTest {
         val report = importer.import("copilot", "some-rules", rawExternal)
 
         assertTrue(report.chunksAdded > 0)
-        val chunks = fakeRepo.listChunks(Int.MAX_VALUE)
+        val chunks = repo.listChunks(Int.MAX_VALUE)
         val ruleChunks = chunks.filter { it.chunk.chunkType == ChunkType.RULE }
         assertTrue(ruleChunks.isNotEmpty(), "Should have at least one RULE chunk from INTERDICTION pattern")
         val sourceFiles = chunks.map { it.chunk.sourceFile }.toSet()
@@ -172,7 +172,7 @@ class AgenticExternalImporterTest {
         val report = importer.import("copilot", "tdd-rules", copilotRules)
 
         assertTrue(report.chunksAdded > 0)
-        val chunks = fakeRepo.listChunks(Int.MAX_VALUE)
+        val chunks = repo.listChunks(Int.MAX_VALUE)
         val sourceFiles = chunks.map { it.chunk.sourceFile }.toSet()
         assertTrue(sourceFiles.all { it.startsWith("copilot:") },
             "All chunks should have 'copilot:' prefix in sourceFile, got: $sourceFiles")

@@ -63,3 +63,12 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** Tests unitaires/fonctionnels ciblés PASS
 ** Correction ports 11434 → 11437-11465 et modèles → `gpt-oss:120b-cloud`
 ** Cucumber non finalisé (timeout lifecycle sans pgvector)
+
+* Session 134 — Doublon + catalogue stale + Publication N0 Central
+** `FakeAgenticChunkRepository.kt` (src/test) supprimé — strict doublon de `InMemoryAgenticChunkRepository` (src/main). 2 tests migrés, 14/14 PASS.
+** `codebase-plugin/gradle/libs.versions.toml` supprimé — catalogue stale jamais résolu par Gradle.
+** Découverte : `opencode-session-contracts:0.0.1` et `i18n-contracts:0.0.1` supprimés de workspace-bom en session 084 mais toujours dépendus par codebase + bakery.
+** Restauration depuis git history MEMPHIS : `git checkout 5472115 -- opencode-session-contracts/` + `git checkout 633219d -- i18n-contracts/`.
+** Ajout `TranslationService.kt` dans i18n-contracts (depuis code local session 133).
+** Publication Maven Central via nmcp : `opencode-session-contracts:0.0.1` (deployment 97aceef0, HTTP 200 ✅) + `i18n-contracts:0.0.1` (deployment 01a0198a, propagation en cours).
+** EPIC PUB codebase-plugin lui-même : reporté à session 135 (retrait duplications locales + migration nmcp settings + bump 0.0.3).

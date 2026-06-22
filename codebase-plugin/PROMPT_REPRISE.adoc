@@ -1,33 +1,41 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 134
-:session: 134
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 135
+:session: 135
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 133 — EPIC TRAD TranslationService N1 ✅
+:session_precedente: 134 — Doublon + catalogue stale + N0 Central ✅
 
 == Contexte Hérité
 
-- EPIC TRAD COMPLET : `TranslationService` (contrat N0) + `LlmTranslator` (impl N1)
-  + `FakeLlmTranslator` + 8 JUnit5 + 6 Cucumber = 14 PASS. Débloque bakery
-  BKY-I18N-MIG US-4.
-- EPIC V-LOCAL COMPLET (sessions 129-132).
-- `GovernanceContextLoader` câblé + `IngestGovernanceTask` stubbé.
-- Build assemble OK. Pas de publication Maven Central (EPIC PUB différé).
-- Catalogue `codebase-plugin/gradle/libs.versions.toml` semble historique
-  (non référencé) — à nettoyer.
+- Session 134 livrée :
+  ** Doublon `FakeAgenticChunkRepository` supprimé (14/14 tests PASS).
+  ** Catalogue stale `codebase-plugin/gradle/libs.versions.toml` supprimé.
+  ** `opencode-session-contracts:0.0.1` + `i18n-contracts:0.0.1` restaurés
+     depuis git history MEMPHIS et publiés sur Maven Central via nmcp
+     (deployments 97aceef0 + 01a0198a, AUTOMATIC).
+- État : `opencode-session-contracts` HTTP 200 confirmé.
+  `i18n-contracts` en propagation (publication AUTOMATIC confirmée).
+- Reste à faire : EPIC PUB codebase-gradle lui-même (mission reportée).
 
-== Mission Session 134
+== Mission Session 135
 
-Nettoyage post-V-LOCAL/TRAD + décision EPIC PUB :
-1. Nettoyer le doublon `FakeAgenticChunkRepository` (src/test) vs
-   `InMemoryAgenticChunkRepository` (src/main) — migrer les tests vers la
-   version main et supprimer le doublon test (reporté de session 133).
-2. Supprimer le catalogue stale `codebase-plugin/gradle/libs.versions.toml`
-   si confirmé non-référencé.
-3. Vérifier l'état EPIC PUB — si V-LOCAL + TRAD stables, considérer lancer
-   `publishAggregationToCentralPortal` (publication Maven Central).
-4. Si EPIC PUB toujours différé, attaquer un EPIC du BACKLOG restant
-   (ex: EPIC OCR-1/OCR-2 items PARTIEL, ou EPIC CR-1 backlog stale).
+Finaliser EPIC PUB — publication Maven Central de `codebase-plugin:0.0.3` :
+
+1. Retirer de codebase-gradle les duplications locales de contrats N0 :
+   - `codebase-plugin/src/main/kotlin/contracts/i18n/TranslationService.kt`
+     (désormais fourni par `i18n-contracts:0.0.1` du JAR Central).
+   - Vérifier `codebase.koog.session.AgentContext` et autres classes
+     dupliquées avec `contracts.session.*` — migrer vers le JAR N0.
+2. Migrer `codebase-gradle/settings.gradle.kts` vers nmcp :
+   - Plugin `com.gradleup.nmcp.settings` version `1.5.0`.
+   - `nmcpSettings { centralPortal { username/password depuis
+     ~/.gradle/gradle.properties, publishingType = "AUTOMATIC" } }`.
+   - Pattern référence : `workspace-bom/agent-contracts/settings.gradle.kts`.
+3. Bump version `0.0.2 → 0.0.3` dans `build.gradle.kts` racine.
+4. `./gradlew build -x test` puis `./gradlew publishAggregationToCentralPortal
+   --no-daemon`.
+5. Vérifier `codebase-plugin:0.0.3` HTTP 200 sur Central.
 
 == Méthodologie
 
-Baby-step DDD/TDD/BDD : un fichier modifié à la fois, compilation + tests entre chaque étape.
-SEQUENTIEL PUR — pas de subagent, pas de parallelisation.
+Baby-step DDD/TDD/BDD : un fichier modifié à la fois, compilation + tests
+entre chaque étape. SEQUENTIEL PUR — pas de subagent, pas de parallelisation.
+Build compile obligatoire avant chaque édition suivante.
