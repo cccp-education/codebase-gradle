@@ -99,7 +99,7 @@ class VibecodingGraph(
     val liveContextInjector: LiveContextInjector? = null
 ) {
 
-    var staticContext: codebase.koog.session.AgentContext? = null
+    var staticContext: contracts.session.AgentContext? = null
 
     private val log = LoggerFactory.getLogger(VibecodingGraph::class.java)
 

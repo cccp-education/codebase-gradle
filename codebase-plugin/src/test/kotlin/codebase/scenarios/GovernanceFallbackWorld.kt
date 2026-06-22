@@ -3,7 +3,7 @@ package codebase.scenarios
 import codebase.koog.SessionProtocolTask
 import codebase.koog.llm.FakeLlmProvider
 import codebase.koog.llm.LlmProvider
-import codebase.koog.session.AgentContext
+import contracts.session.AgentContext
 import contracts.session.SessionStatus
 import contracts.vibecoding.registry.ToolRegistry
 import org.gradle.testfixtures.ProjectBuilder

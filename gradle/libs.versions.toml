@@ -1,5 +1,5 @@
 [versions]
-codebase-plugin = "0.0.2"
+codebase-plugin = "0.0.3"
 koog = "1.0.0"
 
 [libraries]

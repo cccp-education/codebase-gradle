@@ -263,31 +263,6 @@ publishing {
     }
 }
 
-kover {
-    currentProject {
-        sources {
-            excludedSourceSets.add("test")
-        }
-    }
-    reports {
-        total {
-            html {
-                onCheck.set(false)
-                htmlDir.set(layout.buildDirectory.dir("reports/kover/html"))
-            }
-            xml {
-                onCheck.set(false)
-                xmlFile.set(layout.buildDirectory.file("reports/kover/xml/report.xml"))
-            }
-        }
-        verify {
-            rule {
-                minBound(79)
-            }
-        }
-    }
-}
-
 tasks.register("validateDependencies") {
     description = "Validates dependency conflict resolution + CVE audit + heavy transitive report"
     group = "verification"
@@ -329,6 +304,31 @@ tasks.register("validateDependencies") {
 }
 
 tasks.check { dependsOn("koverVerify", "validateDependencies") }
+
+kover {
+    currentProject {
+        sources {
+            excludedSourceSets.add("test")
+        }
+    }
+    reports {
+        total {
+            html {
+                onCheck.set(false)
+                htmlDir.set(layout.buildDirectory.dir("reports/kover/html"))
+            }
+            xml {
+                onCheck.set(false)
+                xmlFile.set(layout.buildDirectory.file("reports/kover/xml/report.xml"))
+            }
+        }
+        verify {
+            rule {
+                minBound(79)
+            }
+        }
+    }
+}
 
 signing {
     if (System.getenv("CI") != "true" && !version.toString().endsWith("-SNAPSHOT")) {

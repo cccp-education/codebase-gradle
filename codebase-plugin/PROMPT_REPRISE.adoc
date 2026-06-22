@@ -1,41 +1,29 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 135
-:session: 135
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 136
+:session: 136
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 134 — Doublon + catalogue stale + N0 Central ✅
+:session_precedente: 135 — EPIC PUB N0 migration + codebase-plugin 0.0.3 publié Central ✅
 
 == Contexte Hérité
 
-- Session 134 livrée :
-  ** Doublon `FakeAgenticChunkRepository` supprimé (14/14 tests PASS).
-  ** Catalogue stale `codebase-plugin/gradle/libs.versions.toml` supprimé.
-  ** `opencode-session-contracts:0.0.1` + `i18n-contracts:0.0.1` restaurés
-     depuis git history MEMPHIS et publiés sur Maven Central via nmcp
-     (deployments 97aceef0 + 01a0198a, AUTOMATIC).
-- État : `opencode-session-contracts` HTTP 200 confirmé.
-  `i18n-contracts` en propagation (publication AUTOMATIC confirmée).
-- Reste à faire : EPIC PUB codebase-gradle lui-même (mission reportée).
+- Session 135 a migré les duplications N0 locales vers les JARs Central
+  (`i18n-contracts:0.0.1`, `opencode-session-contracts:0.0.1`),
+  bumpé la version `0.0.3`, et exécuté `publishAggregationToCentralPortal`
+  (deployment `adc37d1c-...` en validation/publishing sur Central).
+- La propagation Central est en cours ; la méthode de publication reste à
+  aligner sur la méthode préférée de l'utilisateur (déjà validée ailleurs).
 
-== Mission Session 135
+== Mission Session 136
 
-Finaliser EPIC PUB — publication Maven Central de `codebase-plugin:0.0.3` :
-
-1. Retirer de codebase-gradle les duplications locales de contrats N0 :
-   - `codebase-plugin/src/main/kotlin/contracts/i18n/TranslationService.kt`
-     (désormais fourni par `i18n-contracts:0.0.1` du JAR Central).
-   - Vérifier `codebase.koog.session.AgentContext` et autres classes
-     dupliquées avec `contracts.session.*` — migrer vers le JAR N0.
-2. Migrer `codebase-gradle/settings.gradle.kts` vers nmcp :
-   - Plugin `com.gradleup.nmcp.settings` version `1.5.0`.
-   - `nmcpSettings { centralPortal { username/password depuis
-     ~/.gradle/gradle.properties, publishingType = "AUTOMATIC" } }`.
-   - Pattern référence : `workspace-bom/agent-contracts/settings.gradle.kts`.
-3. Bump version `0.0.2 → 0.0.3` dans `build.gradle.kts` racine.
-4. `./gradlew build -x test` puis `./gradlew publishAggregationToCentralPortal
-   --no-daemon`.
-5. Vérifier `codebase-plugin:0.0.3` HTTP 200 sur Central.
+1. Vérifier `codebase-plugin:0.0.3` HTTP 200 sur Maven Central
+   (`https://repo1.maven.org/maven2/education/cccp/codebase-plugin/0.0.3/`).
+2. Si 200 confirmé : passer EPIC PUB à ✅ TERMINÉ.
+3. Adapter la configuration de publication selon la méthode éprouvée
+   de l'utilisateur (remplacer nmcp si nécessaire).
+4. Corriger la session checklist racine vs `codebase-plugin/.agents/`
+   (split-brain gouvernance détecté).
+5. `./gradlew build -x test` propre.
 
 == Méthodologie
 
-Baby-step DDD/TDD/BDD : un fichier modifié à la fois, compilation + tests
-entre chaque étape. SEQUENTIEL PUR — pas de subagent, pas de parallelisation.
-Build compile obligatoire avant chaque édition suivante.
+Baby-step DDD/TDD/BDD : un fichier modifié à la fois, compilation entre
+chaque étape. Pas de subagent, pas de parallélisation.

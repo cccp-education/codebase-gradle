@@ -1,4 +1,55 @@
-= TEST_COVERAGE_ANALYSIS — Session 133
+= TEST_COVERAGE_ANALYSIS — Session 135
+:date: 2026-06-22
+:epic: EPIC PUB — Suppression duplications N0 + migration vers JARs Central
+
+== Fichiers source supprimés (duplications N0)
+
+[cols="2,3"]
+|===
+| Fichier | Remplacement
+
+| `contracts/i18n/TranslationService.kt` | `education.cccp:i18n-contracts:0.0.1`
+| `codebase/koog/session/AgentContext.kt` | `education.cccp:opencode-session-contracts:0.0.1`
+| `codebase/koog/session/SessionProtocolContracts.kt` | `education.cccp:opencode-session-contracts:0.0.1`
+|===
+
+== Fichiers source modifiés (migration imports)
+
+[cols="2,2"]
+|===
+| Fichier | Changement
+
+| `codebase/koog/LiveContextInjector.kt` | `codebase.koog.session.AgentContext` → `contracts.session.AgentContext`
+| `codebase/koog/governance/GovernanceContextLoader.kt` | idem
+| `codebase/koog/SessionProtocolServer.kt` | `SessionPrompt/Response/Status/TokenUsage/ToolCallRecord` → `contracts.session.*` + adaptation `context`
+| `codebase/koog/SessionProtocolTask.kt` | idem + `ToolCallRecord(args = emptyMap())`
+| `codebase/koog/VibecodingGraph.kt` | `AgentContext` → `contracts.session.AgentContext`
+| `codebase/koog/LiveContextInjectorTest.kt` | import `AgentContext` N0
+| `codebase/scenarios/GovernanceFallbackWorld.kt` | import `AgentContext` N0
+|===
+
+== Fichiers build modifiés
+
+[cols="2,3"]
+|===
+| Fichier | Changement
+
+| `settings.gradle.kts` | Migration nmcp `com.gradleup.nmcp.settings` 1.5.0
+| `build.gradle.kts` | version `0.0.2` → `0.0.3`
+| `gradle/libs.versions.toml` | `codebase-plugin` version `0.0.3`
+|===
+
+== Tests
+
+- `compileKotlin` ✅
+- `compileTestKotlin` ✅
+- `publishAggregationToCentralPortal` ✅ (deployment `adc37d1c-...`)
+
+== Couverture
+
+- Pas de nouveaux tests, mais suppression de code local déjà couvert par tests existants.
+- Kover inchangé (`minBound(79)`).
+
 :date: 2026-06-22
 :epic: EPIC TRAD — TranslationService N1 (contrat N0 + impl + tests)
 

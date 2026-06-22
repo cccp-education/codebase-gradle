@@ -2,11 +2,11 @@ package codebase.koog
 
 import codebase.koog.llm.LlmProvider
 import codebase.koog.tracking.TokenTracker
-import codebase.koog.session.AgentContext
-import codebase.koog.session.SessionResponse
-import codebase.koog.session.SessionStatus
-import codebase.koog.session.TokenUsage
-import codebase.koog.session.ToolCallRecord
+import contracts.session.AgentContext
+import contracts.session.SessionResponse
+import contracts.session.SessionStatus
+import contracts.session.TokenUsage
+import contracts.session.ToolCallRecord
 import contracts.vibecoding.registry.ToolRegistry
 import codebase.koog.governance.GovernanceContextLoader
 import codebase.koog.state.VibecodingState
@@ -213,6 +213,7 @@ abstract class SessionProtocolTask : DefaultTask() {
         val toolCalls = toolRegistry.auditEntries().map { entry ->
             ToolCallRecord(
                 toolName = entry.tool,
+                args = emptyMap(),
                 result = entry.result,
                 timestamp = entry.timestamp
             )

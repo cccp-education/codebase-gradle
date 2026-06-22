@@ -1,6 +1,19 @@
 = COMPLETED_TASKS_ARCHIVE — Juin 2026
 :date: 2026-06-22
 
+== Session 135 — EPIC PUB codebase-plugin 0.0.3
+
+- Suppression duplications N0 locales :
+  * `contracts/i18n/TranslationService.kt` → `education.cccp:i18n-contracts:0.0.1`
+  * `codebase/koog/session/AgentContext.kt` → `education.cccp:opencode-session-contracts:0.0.1`
+  * `codebase/koog/session/SessionProtocolContracts.kt` → `education.cccp:opencode-session-contracts:0.0.1`
+- Migration imports dans `LiveContextInjector`, `GovernanceContextLoader`, `SessionProtocolServer`, `SessionProtocolTask`, `VibecodingGraph`, tests associés
+- Adaptation `SessionPrompt.context` (`String?` → `AgentContext?`) et `ToolCallRecord` (`args = emptyMap()`)
+- Migration `settings.gradle.kts` racine vers nmcp 1.5.0
+- Bump version `0.0.2 → 0.0.3`
+- `compileKotlin` ✅, `compileTestKotlin` ✅
+- `publishAggregationToCentralPortal` ✅ (deployment `adc37d1c-...`)
+
 == Session 133 — EPIC TRAD TranslationService (baby-step cross-borough)
 
 - Dépendance `education.cccp:i18n-contracts:0.0.1` ajoutée au catalogue root + build.gradle.kts

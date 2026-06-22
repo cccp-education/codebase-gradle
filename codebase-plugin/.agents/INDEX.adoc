@@ -1,7 +1,7 @@
 = INDEX.adoc — Codebase Gradle (Queens N1)
 :date: 2026-06-16
-:session_en_cours: 128
-:session_precedente: 127 — EPIC 8 ✅ (Expert Exposure, 21/21 PASS)
+:session_en_cours: 135
+:session_precedente: 134 — Doublon + catalogue stale + N0 Central ✅
 
 == Roadmap EPICs
 
@@ -98,20 +98,20 @@
 | 108
 
 | EPIC PUB Publication
-| AUDITÉ
-| —
+| 🔄 EN COURS — codebase-plugin 0.0.3 publié (deployment Central OK), propagation en attente
+| 135
 |===
 
 == Sessions Récentes
 
 | Session | Date | EPIC | Résultat
+| 135 | 2026-06-22 | EPIC PUB | N0 migration + codebase-plugin 0.0.3 publié Central (propagation en cours) ✅
+| 134 | 2026-06-22 | EPIC PUB | Doublon + catalogue stale + N0 Central publiés ✅
+| 133 | 2026-06-22 | EPIC TRAD | TranslationService N1 (contrat N0 + LlmTranslator + Fake + 8 JUnit5 + 6 Cucumber) ✅
+| 132 | 2026-06-22 | EPIC V-LOCAL | V-LOCAL-4/5/6 terminés — 5 scénarios Cucumber + IngestGovernanceTask stub ✅
+| 131 | 2026-06-22 | EPIC V-LOCAL | GovernanceContextLoader fallback + compliance ports ✅
+| 130 | 2026-06-22 | EPIC L | Koog 1.0.0 replacement forwardTo ✅
+| 129 | 2026-06-22 | EPIC V-LOCAL | GovernanceContextLoader + tests + docs ✅
+| 128 | 2026-06-16 | Documentation Locale Vibecoding | LOCAL_VIBECODING_LOOP.adoc terminé
 | 127 | 2026-06-16 | EPIC 8 Expert Exposure | 21/21 PASS ✅
 | 126 | 2026-06-16 | EPIC 7 Expert Dispatcher | 60/60 PASS ✅
-| 125 | 2026-06-14 | CR-14 BUILDING.md | TERMINE ✅
-| 124 | 2026-06-14 | CR-12/13 Audit+Alias | TERMINE ✅
-| 123 | 2026-06-14 | CR-10/11 Dependencies | TERMINE ✅
-| 122 | 2026-06-14 | CR-8/9 Postgres+Kover | TERMINE ✅
-| 121 | 2026-06-14 | CR-5/6/7 Root+CI+JVM | TERMINE ✅
-| 120 | 2026-06-14 | CR-2/3/4 Timeout+Cache+Heap | TERMINE ✅
-| 119 | 2026-06-14 | CR-1 Cucumber Factory | TERMINE ✅
-| 118 | 2026-06-14 | OCR-3b FakeVision+CI | TERMINE ✅

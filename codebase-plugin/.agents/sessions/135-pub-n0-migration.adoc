@@ -1,0 +1,58 @@
+= Session 135 — EPIC PUB : codebase-plugin 0.0.3 + migration N0
+:date: 2026-06-22
+:borough: Queens — codebase-gradle (N1)
+
+== Contexte
+
+- Session 134 avait restauré et publié `opencode-session-contracts:0.0.1` et `i18n-contracts:0.0.1` sur Maven Central.
+- Restait à finaliser EPIC PUB pour `codebase-plugin` lui-même.
+
+== Actions réalisées
+
+. **Audit duplications N0** dans `codebase-plugin` :
+  - `contracts.i18n.TranslationService.kt` dupliqué par `i18n-contracts:0.0.1`
+  - `codebase.koog.session.AgentContext` dupliqué par `opencode-session-contracts:0.0.1`
+  - `codebase.koog.session.SessionPrompt|Response|Status|TokenUsage|ToolCallRecord` dupliqués par le même JAR N0.
+
+. **Suppression fichiers locaux** (avec confirmation utilisateur) :
+  - `codebase-plugin/src/main/kotlin/contracts/i18n/TranslationService.kt`
+  - `codebase-plugin/src/main/kotlin/codebase/koog/session/AgentContext.kt`
+  - `codebase-plugin/src/main/kotlin/codebase/koog/session/SessionProtocolContracts.kt`
+
+. **Migration imports** vers JARs N0 :
+  - `contracts.i18n.*` → `i18n-contracts`
+  - `contracts.session.*` → `opencode-session-contracts`
+  - Adaptation `ToolCallRecord` (ajout `args = emptyMap()`)
+  - Adaptation `SessionProtocolServer.resolveAgentContext` (`SessionPrompt.context` devient `AgentContext?`, plus `String?`)
+
+. **Configuration publication** :
+  - Migration `settings.gradle.kts` racine vers nmcp (`com.gradleup.nmcp.settings` 1.5.0)
+  - Bump version `0.0.2 → 0.0.3` (`build.gradle.kts` + `gradle/libs.versions.toml`)
+
+. **Validation** :
+  - `compileKotlin` ✅
+  - `compileTestKotlin` ✅
+  - `publishAggregationToCentralPortal` exécuté avec succès (deployment `adc37d1c-...`)
+  - Propagation Central en cours — 404 initial, délai de propagation habituel.
+
+== Problèmes rencontrés
+
+- JAR `i18n-contracts:0.0.1` dans `~/.m2/repository` était stale (pas les classes `Translation*`).
+  - Fix : suppression du cache Maven Local, re-download depuis Central.
+- Conflit sémantique entre contrats locaux et N0 sur `SessionPrompt.context` (`String?` vs `AgentContext?`).
+  - Fix : adaptation du server.
+
+== Commandes
+
+[source,bash]
+----
+./gradlew :codebase-plugin:compileKotlin --no-daemon
+./gradlew :codebase-plugin:compileTestKotlin --no-daemon
+./gradlew publishAggregationToCentralPortal --no-daemon
+----
+
+== Leçons
+
+- Toujours vérifier `~/.m2/repository` quand Gradle résout `mavenLocal()` avant Central.
+- La suppression de contrats locaux doit être suivie d'une adaptation des appelants, pas seulement des imports.
+- L'utilisateur a une méthode de publication préférée ; ne pas imposer nmcp si une autre méthode est déjà validée dans le repo.

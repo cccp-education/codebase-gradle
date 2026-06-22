@@ -2,11 +2,12 @@ package codebase.koog
 
 import codebase.koog.llm.LlmProvider
 import codebase.koog.tracking.TokenTracker
-import codebase.koog.session.SessionPrompt
-import codebase.koog.session.SessionResponse
-import codebase.koog.session.SessionStatus
-import codebase.koog.session.TokenUsage
-import codebase.koog.session.ToolCallRecord
+import contracts.session.AgentContext
+import contracts.session.SessionPrompt
+import contracts.session.SessionResponse
+import contracts.session.SessionStatus
+import contracts.session.TokenUsage
+import contracts.session.ToolCallRecord
 import contracts.vibecoding.registry.ToolRegistry
 import codebase.koog.governance.GovernanceContextLoader
 import codebase.koog.state.VibecodingState
@@ -26,7 +27,7 @@ class SessionProtocolServer(
     private val llmProvider: LlmProvider? = null,
     private val eventStream: ToolEventStream? = null,
     private val liveContextInjector: LiveContextInjector? = null,
-    var lastAgentContext: codebase.koog.session.AgentContext? = null
+    var lastAgentContext: contracts.session.AgentContext? = null
 ) {
     private val log = LoggerFactory.getLogger(SessionProtocolServer::class.java)
     private val mapper = jacksonObjectMapper()
@@ -98,9 +99,10 @@ class SessionProtocolServer(
 
         val result = graph.execute(state)
 
-        val toolCalls = toolRegistry.auditEntries().map { entry ->
+            val toolCalls = toolRegistry.auditEntries().map { entry ->
             ToolCallRecord(
                 toolName = entry.tool,
+                args = emptyMap(),
                 result = entry.result,
                 timestamp = entry.timestamp
             )
@@ -126,18 +128,15 @@ class SessionProtocolServer(
         )
     }
 
-    private fun resolveAgentContext(sessionPrompt: SessionPrompt): codebase.koog.session.AgentContext {
-        if (!sessionPrompt.context.isNullOrBlank()) {
-            return codebase.koog.session.AgentContext(eagerRules = sessionPrompt.context)
-        }
-        return try {
+    private fun resolveAgentContext(sessionPrompt: SessionPrompt): contracts.session.AgentContext {
+        return sessionPrompt.context ?: try {
             log.info("[SessionProtocolServer] No context provided — auto-loading governance from {}", workspaceRoot)
             val ctx = GovernanceContextLoader().load(File(workspaceRoot))
             lastAgentContext = ctx
             ctx
         } catch (e: Exception) {
             log.warn("[SessionProtocolServer] Failed to auto-load governance context: {} — continuing without context", e.message)
-            codebase.koog.session.AgentContext()
+            contracts.session.AgentContext()
         }
     }
 
