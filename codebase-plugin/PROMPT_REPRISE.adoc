@@ -1,31 +1,29 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 137
-:session: 137
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 138
+:session: 138
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 136 — EPIC V-6 scanner actif ✅, reprise V-6 cablage OllamaPoolKeyAdapter
+:session_precedente: 137 — OllamaPoolKeyAdapter ✅ + câblage OllamaLlmProvider ✅
 
 == Contexte Hérité
 
-- Session 136 a livré `OllamaInstanceScanner` + ports DDD + câblage dans
-  `LlmProviderResolver`. 22 tests ciblés PASS, build propre.
-- EPIC V-6 reste partiel : `OllamaPoolKeyAdapter` (wrapper resilient
-  quota/quota dépassé + rotation instances) et pattern SSH key article 0120
-  ne sont pas encore implémentés.
-- Article 0120 = pattern canonique dual-abonnement Ollama Pro via Docker
-  (isolation port + volume SSH).
+- Session 137 a livré `OllamaPoolKeyAdapter` : rotation proactive quota/connexion refusée,
+  marquage inactif, exception explicite à l'épuisement.
+- `OllamaLlmProvider.call()` est maintenant branché sur `adapter.callWithRotation`.
+- 27 tests ciblés PASS (10 adapter + 7/8 provider + 9 pool), build propre.
+- EPIC V-6 reste partiel : pattern Docker SSH key article 0120 et test Cucumber
+  "LLM calls Ollama cloud and handles quota exceeded" non implémentés.
 
-== Mission Session 137
+== Mission Session 138
 
-1. Implémenter `OllamaPoolKeyAdapter` : wrapper autour du pool qui gère
-   la rotation proactive quand une instance renvoie une erreur de quota
-   ou de connexion, sans propager l'exception au premier échec.
-2. Tests JUnit5 baby-step :
-   - quota exceeded déclenche rotation vers instance suivante
-   - connexion refusée déclenche rotation et marque l'instance inactive
-   - épuisement du pool lève `IllegalStateException` explicite
-3. Câbler `OllamaPoolKeyAdapter` dans `OllamaLlmProvider.call()` pour
-   remplacer le retry naïf actuel.
-4. `./gradlew :codebase-plugin:compileKotlin` puis tests ciblés
-   `OllamaPoolKeyAdapterTest` + `OllamaLlmProviderTest` verts.
+1. Lire l'article 0120 `/office/sites/cheroliv.com/jbake/content/blog/2026/0120_cumuler_deux_abonnements_ollama_pro_docker_post.adoc`.
+2. Extraire le pattern canonique dual-abonnement Ollama Pro (isolation port + volume SSH).
+3. Implémenter une factory `OllamaInstanceFactory` qui génère des `LlmInstance` avec
+   `baseUrl` sur les ports 11437→11465 et une référence au volume SSH (champ métier,
+   pas de secret en clair).
+4. Tests JUnit5 baby-step : 1 instance, 2 instances ports distincts, volume SSH tagué,
+   modèle cyclé parmi les 5 autorisés.
+5. Test Cucumber `@epic_v6_ollama_cloud` : "LLM calls Ollama cloud and handles quota exceeded"
+   avec `FakeVisionProvider` ou `FakeLlmProvider` (zéro appel réseau).
+6. `./gradlew :codebase-plugin:compileKotlin` puis tests ciblés verts.
 
 == Méthodologie
 

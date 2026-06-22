@@ -55,7 +55,7 @@ class OllamaLlmProviderTest {
     }
 
     @Test
-    fun `OllamaLlmProvider should rotate through pool instances`() {
+    fun `OllamaLlmProvider should rotate through pool instances on ModelNotFoundException`() {
         val instances = (11437..11438).map { port ->
             LlmInstance("ollama-$port", "http://localhost:$port", "gpt-oss:120b-cloud", quota = defaultQuota)
         }
@@ -71,6 +71,8 @@ class OllamaLlmProviderTest {
             kotlinx.coroutines.runBlocking { provider.call("One word") }
         } catch (_: dev.langchain4j.exception.ModelNotFoundException) {
             // OK — modèle non pullé, mais le pool a quand même comptabilisé l'appel
+        } catch (_: IllegalStateException) {
+            // Pool épuisé = acceptable, la rotation a été tentée
         }
 
         // Vérifie que l'instance a a bien été utilisée (usage incrémenté)
@@ -117,5 +119,44 @@ class OllamaLlmProviderTest {
         val modelB = provider.getCachedModel(instB)
 
         assertNotSame(modelA, modelB, "Different baseUrls should have separate cache entries")
+    }
+
+    @Test
+    fun `OllamaLlmProvider should rotate on quota exceeded using adapter`() {
+        val instanceA = LlmInstance(
+            "a", "http://localhost:11437", "gpt-oss:120b-cloud",
+            quota = QuotaConfig(limitValue = 1, thresholdPercent = 50, resetPolicy = ResetPolicy.NEVER)
+        )
+        val instanceB = LlmInstance(
+            "b", "http://localhost:11438", "gpt-oss:120b-cloud",
+            quota = QuotaConfig(limitValue = 100, thresholdPercent = 80, resetPolicy = ResetPolicy.NEVER)
+        )
+        val pool = OllamaPool(listOf(instanceA, instanceB), rotationStrategy = RotationStrategy.ROUND_ROBIN)
+        val provider = OllamaLlmProvider(pool)
+
+        assumeTrue(isOllamaReady(11438), "Ollama not ready on port 11438 — skipping integration test")
+
+        // L'instance A est déjà en quota dépassé (limite 1, seuil 50% → usage 0 suffit)
+        // Le provider doit donc sauter A et appeler B
+        val response = kotlinx.coroutines.runBlocking { provider.call("hello") }
+        assertTrue(response.isNotBlank(), "Expected a non-blank response from instance B")
+    }
+
+    @Test
+    fun `OllamaLlmProvider should throw when all instances refuse connection`() {
+        val instances = listOf(
+            LlmInstance("a", "http://localhost:1", "gpt-oss:120b-cloud", quota = defaultQuota),
+            LlmInstance("b", "http://localhost:2", "gpt-oss:120b-cloud", quota = defaultQuota)
+        )
+        val pool = OllamaPool(instances, rotationStrategy = RotationStrategy.ROUND_ROBIN)
+
+        val provider = OllamaLlmProvider(pool)
+        val exception = assertFailsWith<IllegalStateException> {
+            kotlinx.coroutines.runBlocking { provider.call("One word") }
+        }
+        assertTrue(
+            exception.message?.contains("All Ollama instances failed") ?: false,
+            "Expected pool exhaustion message but got: ${exception.message}"
+        )
     }
 }

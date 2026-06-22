@@ -1,6 +1,6 @@
-= TEST_COVERAGE_ANALYSIS — Session 136
+= TEST_COVERAGE_ANALYSIS — Session 137
 :date: 2026-06-22
-:epic: EPIC V-6 — OllamaInstanceScanner actif + câblage resolver
+:epic: EPIC V-6 — OllamaPoolKeyAdapter + câblage OllamaLlmProvider
 
 == Nouveaux fichiers source
 
@@ -8,31 +8,26 @@
 |===
 | Fichier | Rôle
 
-| `port/InstanceScanner.kt` | Port secondaire probe HTTP
-| `port/EnvironmentReader.kt` | Port secondaire lecture env var
-| `HttpInstanceScanner.kt` | Implémentation HTTP `GET /api/tags`
-| `OllamaInstanceScanner.kt` | Domaine scan plage + fallback env var + cycle modèles
+| `pool/OllamaPoolKeyAdapter.kt` | Wrapper résilient autour de `LlmInstancePool` : rotation proactive, marquage inactif, exception explicite à l'épuisement.
 |===
 
-== Nouveaux fichiers test
-
-[cols="2,3"]
-|===
-| Fichier | Rôle
-
-| `FakeInstanceScanner.kt` | Fake scanner déterministe
-| `OllamaInstanceScannerTest.kt` | 6 JUnit5 + 1 test d'intégration conditionnel
-|===
-
-== Fichiers modifiés
+== Fichiers source modifiés
 
 [cols="2,3"]
 |===
 | Fichier | Changement
 
-| `LlmProviderResolver.kt` | Scan actif quand `OLLAMA_POOL_PORTS` absent + factory injectable
-| `LlmProviderResolverTest.kt` | + fake scanner + test fallback env var
-| `OllamaPoolTest.kt` | Alignement liste modèles autorisés (5 distincts)
+| `pool/OllamaLlmProvider.kt` | Remplace le bloc try/catch naïf par `adapter.callWithRotation`. Conservation du cache `OllamaChatModel` par `(baseUrl, model)`.
+|===
+
+== Fichiers test créés / modifiés
+
+[cols="2,3"]
+|===
+| Fichier | Changement
+
+| `pool/OllamaPoolKeyAdapterTest.kt` | 10 JUnit5 : skip inactif/quota, rotation quota/connexion, épuisement, propagation exception non liée, reset, délégation.
+| `pool/OllamaLlmProviderTest.kt` | + rotation sur quota dépassé (conditionnel), + épuisement avec ports invalides, renommage test rotation.
 |===
 
 == Tests
@@ -40,23 +35,17 @@
 |===
 | Scope | Résultat
 
-| `OllamaPoolTest` | ✅ PASS
-| `OllamaInstanceScannerTest` | ✅ 6/6 + 1 skipped si pas d'Ollama local
-| `LlmProviderResolverTest` | ✅ 7/7 PASS
+| `OllamaPoolKeyAdapterTest` | ✅ 10/10 PASS
+| `OllamaLlmProviderTest` | ✅ 7/7 + 1 skipped (Ollama local absent)
+| `OllamaPoolTest` | ✅ 9/9 PASS
 | `compileKotlin` | ✅
 | `compileTestKotlin` | ✅
-| `build -x test -x cucumberTest -x koverVerify -x validateDependencies` | ✅
 |===
 
-== Total session 136
+== Total session 137
 
-- JUnit5 : 14 nouveaux / modifiés PASS (7 resolver + 6 scanner + 1 pool)
+- JUnit5 : 17 nouveaux / modifiés PASS (10 adapter + 7 provider conditionnels)
 - Build : propre
-
-== Couverture Kover
-
-- `kover { verify { rule { minBound(79) } } }` inchangé.
-- Nouveaux fichiers domaine/scanner couverts par tests ciblés.
 
 '''
 

@@ -5,6 +5,7 @@ import contracts.llmpool.LlmInstance
 import contracts.llmpool.LlmInstancePool
 import dev.langchain4j.model.ollama.OllamaChatModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -37,12 +38,20 @@ class OllamaLlmProvider(
     /** Cache des ChatModels par (baseUrl, model) — thread-safe */
     private val modelCache = ConcurrentHashMap<String, OllamaChatModel>()
 
+    /** Wrapper résilient — rotation proactive sur quota / connexion refusée. */
+    private val adapter = OllamaPoolKeyAdapter(pool)
+
     override suspend fun call(prompt: String): String {
         if (pool.size() == 0) {
             throw IllegalStateException("Ollama pool is empty — no instances configured")
         }
 
-        val instance = pool.nextInstance()
+        return adapter.callWithRotation { instance ->
+            runBlocking { callOnInstance(instance, prompt) }
+        }
+    }
+
+    private suspend fun callOnInstance(instance: LlmInstance, prompt: String): String {
         log.info(
             "[OllamaLlmProvider] Selected instance: id={}, baseUrl={}, model={}",
             instance.id, instance.baseUrl, instance.model
@@ -50,27 +59,11 @@ class OllamaLlmProvider(
         val model = getOrCreateModel(instance)
         log.info("[OllamaLlmProvider] Calling Ollama: model={}, promptLength={}", instance.model, prompt.length)
 
-        return try {
-            val response = withContext(Dispatchers.IO) {
-                model.chat(prompt)
-            }
-            log.info("[OllamaLlmProvider] Ollama response received: length={}", response.length)
-            response
-        } catch (e: Exception) {
-            val message = e.message ?: "unknown"
-            log.warn("[OllamaLlmProvider] Ollama call failed for instance {}: {}", instance.id, message)
-
-            // Si quota exceeded, le pool devrait déjà avoir comptabilisé l'appel
-            // On ne tente pas de retry ici — le pool gère la rotation
-            if (message.contains("quota", ignoreCase = true) ||
-                message.contains("rate limit", ignoreCase = true) ||
-                message.contains("exceeded", ignoreCase = true)
-            ) {
-                log.warn("[OllamaLlmProvider] Quota exceeded detected on instance {} — pool will rotate to next instance", instance.id)
-            }
-
-            throw e
+        val response = withContext(Dispatchers.IO) {
+            model.chat(prompt)
         }
+        log.info("[OllamaLlmProvider] Ollama response received: length={}", response.length)
+        return response
     }
 
     private fun getOrCreateModel(instance: LlmInstance): OllamaChatModel {

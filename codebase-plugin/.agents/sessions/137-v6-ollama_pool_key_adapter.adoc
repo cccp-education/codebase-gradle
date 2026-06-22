@@ -1,0 +1,78 @@
+= Session 137 — EPIC V-6 : OllamaPoolKeyAdapter + câblage OllamaLlmProvider
+:date: 2026-06-22
+:borough: Queens — codebase-gradle (N1)
+:epic: EPIC V-6 — Cablage Ollama Cloud Docker + ConnectionFactory R2DBC
+
+== Contexte
+
+- Session 136 avait livré `OllamaInstanceScanner` + ports DDD + câblage dans `LlmProviderResolver`.
+- EPIC V-6 restait partiel : `OllamaPoolKeyAdapter` non implémenté et retry naïf dans `OllamaLlmProvider.call()`.
+
+== Objectifs
+
+1. Implémenter `OllamaPoolKeyAdapter` : wrapper résilient autour du pool.
+2. Tests JUnit5 baby-step : quota, connexion refusée, épuisement du pool.
+3. Câbler l'adapter dans `OllamaLlmProvider` pour remplacer le retry naïf.
+4. Valider compilation + tests ciblés verts.
+
+== Actions réalisées
+
+=== Fichiers source créés
+
+|===
+| Fichier | Rôle
+
+| `src/main/kotlin/codebase/koog/llm/pool/OllamaPoolKeyAdapter.kt` | Wrapper `LlmInstancePool` avec rotation proactive, marquage inactif, exception d'épuisement explicite.
+|===
+
+=== Fichiers source modifiés
+
+|===
+| Fichier | Changement
+
+| `src/main/kotlin/codebase/koog/llm/pool/OllamaLlmProvider.kt` | Remplace le bloc try/catch naïf par `adapter.callWithRotation { ... }`. Conservation du cache `OllamaChatModel` par `(baseUrl, model)`.
+|===
+
+=== Fichiers test créés / modifiés
+
+|===
+| Fichier | Changement
+
+| `src/test/kotlin/codebase/koog/llm/pool/OllamaPoolKeyAdapterTest.kt` | 10 JUnit5 : skip inactif, skip quota, épuisement, rotation quota, rotation connexion refusée, propagation exception non liée, reset inactif, succès direct, délégation size/instances.
+| `src/test/kotlin/codebase/koog/llm/pool/OllamaLlmProviderTest.kt` | + rotation sur quota dépassé (intégration conditionnelle), + épuisement avec ports invalides, renommage test rotation `ModelNotFoundException`.
+|===
+
+== Commandes
+
+[source,bash]
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.llm.pool.OllamaPoolKeyAdapterTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.llm.pool.OllamaLlmProviderTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.llm.pool.OllamaPoolKeyAdapterTest" --tests "codebase.koog.llm.pool.OllamaLlmProviderTest" --tests "codebase.koog.llm.pool.OllamaPoolTest"
+----
+
+== Résultats
+
+|===
+| Scope | Résultat
+
+| `OllamaPoolKeyAdapterTest` | ✅ 10/10 PASS
+| `OllamaLlmProviderTest` | ✅ 7/7 + 1 skipped (Ollama local absent)
+| `OllamaPoolTest` | ✅ 9/9 PASS
+| `compileKotlin` | ✅
+| `compileTestKotlin` | ✅
+|===
+
+== Leçons
+
+- Ne jamais supposer qu'Ollama n'est pas accessible en local sur les ports de la plage autorisée — les tests d'intégration conditionnels (`assumeTrue`) restent pertinents.
+- Le `runBlocking` dans `callWithRotation` est nécessaire car `callOnInstance` est `suspend` mais le bloc de l'adapter est une lambda non-suspend.
+- Découper le retry du provider (métier) du pool (domaine) respecte le DDD : l'adapter est un policy de résilience, pas une logique LLM.
+
+== Suite proposée
+
+Session 138 :
+- Pattern Docker SSH key article 0120 (dual-abonnement Ollama Pro) : génération d'instances avec volumes SSH.
+- Test Cucumber "LLM calls Ollama cloud and handles quota exceeded".
+- Si Ollama Pro absent localement, rester en fake/fake scanner.

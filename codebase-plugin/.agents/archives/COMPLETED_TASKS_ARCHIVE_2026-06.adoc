@@ -1,3 +1,16 @@
+== Session 137 — EPIC V-6 OllamaPoolKeyAdapter + câblage OllamaLlmProvider
+
+- `pool/OllamaPoolKeyAdapter.kt` — wrapper résilient autour de `LlmInstancePool`
+- Rotation proactive sur quota exceeded / rate limit / 429
+- Marquage inactif sur connexion refusée / timeout / unreachable
+- Exception explicite `IllegalStateException` quand le pool est épuisé
+- `pool/OllamaLlmProvider.kt` — remplacement du retry naïf par `adapter.callWithRotation`
+- `pool/OllamaPoolKeyAdapterTest.kt` — 10 JUnit5 PASS
+- `pool/OllamaLlmProviderTest.kt` — + rotation quota + épuisement ports invalides
+- **26/27 tests ciblés PASS** (1 skipped si Ollama local absent) — build propre
+
+'''
+
 == Session 136 — EPIC V-6 OllamaInstanceScanner actif
 
 - Ports DDD : `port/InstanceScanner.kt` + `port/EnvironmentReader.kt`
