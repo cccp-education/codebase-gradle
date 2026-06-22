@@ -4,6 +4,8 @@
 |===
 | Session | Date | EPIC | Résultat
 
+| 139 | 2026-06-22 | EPIC V-6 | LlmProviderResolver factory déterministe + Cucumber @epic_v6_resolver — 9 JUnit5 + 3 Cucumber PASS ✅
+| 138 | 2026-06-22 | EPIC V-6 | OllamaInstanceFactory + contrat N0 volumeTag + feature @epic_v6_ollama_cloud — 2 scénarios PASS ✅
 | 137 | 2026-06-22 | EPIC V-6 | OllamaPoolKeyAdapter + câblage OllamaLlmProvider — 26/27 tests PASS ✅
 | 136 | 2026-06-22 | EPIC V-6 | OllamaInstanceScanner actif + ports DDD + câblage resolver — 22 tests PASS ✅
 | 135 | 2026-06-22 | EPIC PUB | N0 migration + codebase-plugin 0.0.3 publié Central (propagation en cours) ✅

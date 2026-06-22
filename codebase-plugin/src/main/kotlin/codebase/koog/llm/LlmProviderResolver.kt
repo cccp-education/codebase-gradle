@@ -1,8 +1,10 @@
 package codebase.koog.llm
 
+import codebase.koog.llm.pool.OllamaInstanceFactory
 import codebase.koog.llm.pool.OllamaInstanceScanner
 import codebase.koog.llm.pool.OllamaLlmProvider
 import codebase.koog.llm.pool.OllamaPool
+import codebase.koog.llm.pool.port.EnvironmentReader
 import codebase.rag.GeminiConfig
 import contracts.llmpool.LlmInstance
 import contracts.llmpool.RotationStrategy
@@ -31,19 +33,21 @@ object LlmProviderResolver {
     /** Modèle par défaut pour le pool Gemma4 — aligné sur OllamaPoolTest */
     private const val DEFAULT_MODEL = "gpt-oss:120b-cloud"
 
-    /** Gemma4 Cloud pool — shared across all vibecoding sessions */
-    private val gemma4Pool: OllamaPool by lazy {
-        val instances = resolveOllamaInstances()
-        OllamaPool(instances, rotationStrategy = RotationStrategy.ROUND_ROBIN)
-    }
-
     /** Factory injectable pour les tests — ne jamais utiliser en production. */
     internal var scannerFactory: () -> OllamaInstanceScanner = { OllamaInstanceScanner() }
+
+    /** Environment reader injectable pour les tests. */
+    internal var environmentReader: () -> EnvironmentReader = { EnvironmentReader { System.getenv(it) } }
 
     fun resolve(model: String): LlmProvider {
         return when (model.lowercase().trim()) {
             "gemini" -> GeminiLlmProvider(GeminiConfig())
-            "ollama", "deepseek" -> OllamaLlmProvider(gemma4Pool)
+            "ollama", "deepseek", "" -> OllamaLlmProvider(
+                OllamaPool(
+                    resolveOllamaInstances(),
+                    rotationStrategy = RotationStrategy.ROUND_ROBIN
+                )
+            )
             else -> {
                 val port = parsePorts(
                     System.getenv("OLLAMA_BASE_URL")
@@ -61,11 +65,14 @@ object LlmProviderResolver {
     }
 
     /**
-     * Déclaratif si `OLLAMA_POOL_PORTS` est défini, scan actif sinon.
+     * Détermine la source des instances Ollama par ordre de priorité :
+     * 1. `OLLAMA_SCAN_PORTS=true` ou `OLLAMA_POOL_PORTS` défini -> scan actif via [scannerFactory].
+     * 2. Sinon -> factory déterministe [OllamaInstanceFactory] (zéro appel réseau).
+     *
      * Le scan reste synchrone car [resolve] est appelé depuis du code synchrone.
      */
     private fun resolveOllamaInstances(): List<LlmInstance> {
-        val explicitPorts = System.getenv("OLLAMA_POOL_PORTS")
+        val explicitPorts = environmentReader().get("OLLAMA_POOL_PORTS")
         return if (!explicitPorts.isNullOrBlank()) {
             parsePorts(explicitPorts).map { port ->
                 LlmInstance(
@@ -74,10 +81,15 @@ object LlmProviderResolver {
                     model = DEFAULT_MODEL
                 )
             }
-        } else {
+        } else if (useScanner()) {
             runBlocking { scannerFactory().scan() }
+        } else {
+            OllamaInstanceFactory.create()
         }
     }
+
+    private fun useScanner(): Boolean =
+        environmentReader().get("OLLAMA_SCAN_PORTS")?.equals("true", ignoreCase = true) == true
 
     private fun parsePorts(raw: String): List<Int> =
         raw.split(",").map { it.trim().toInt() }

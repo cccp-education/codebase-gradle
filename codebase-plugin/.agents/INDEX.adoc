@@ -1,7 +1,7 @@
 = INDEX.adoc — Codebase Gradle (Queens N1)
-:date: 2026-06-16
-:session_en_cours: 138
-:session_precedente: 137 — EPIC V-6 OllamaPoolKeyAdapter + câblage OllamaLlmProvider — 26/27 tests PASS ✅
+:date: 2026-06-22
+:session_en_cours: 140
+:session_precedente: 139 — EPIC V-6 Resolver→Factory déterministe — 9 JUnit5 + 3 Cucumber PASS ✅
 
 == Roadmap EPICs
 
@@ -42,8 +42,8 @@
 | 127
 
 | EPIC V-6 Ollama Cloud
-| EN COURS (9/10 — OllamaPoolKeyAdapter + câblage provider livré session 137)
-| 136-137
+| ✅ TERMINÉ (10/10 — resolver→factory déterministe + scanner fallback livré session 139)
+| 136-139
 
 | EPIC 9 Opencode Augmenté
 | ✅ TERMINE
@@ -109,6 +109,8 @@
 == Sessions Récentes
 
 | Session | Date | EPIC | Résultat
+| 139 | 2026-06-22 | EPIC V-6 | LlmProviderResolver factory déterministe + Cucumber @epic_v6_resolver — 9 JUnit5 + 3 Cucumber PASS ✅
+| 138 | 2026-06-22 | EPIC V-6 | OllamaInstanceFactory + contrat N0 volumeTag + feature @epic_v6_ollama_cloud — 2 scénarios PASS ✅
 | 137 | 2026-06-22 | EPIC V-6 | OllamaPoolKeyAdapter + câblage OllamaLlmProvider — 26/27 tests PASS ✅
 | 136 | 2026-06-22 | EPIC V-6 | OllamaInstanceScanner actif + ports DDD + câblage resolver — 22 tests PASS ✅
 | 135 | 2026-06-22 | EPIC PUB | N0 migration + codebase-plugin 0.0.3 publié Central (propagation en cours) ✅

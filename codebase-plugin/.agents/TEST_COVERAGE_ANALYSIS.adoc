@@ -1,3 +1,57 @@
+= TEST_COVERAGE_ANALYSIS — Session 139
+:date: 2026-06-22
+:epic: EPIC V-6 — LlmProviderResolver → OllamaInstanceFactory déterministe
+
+== Nouveaux fichiers source
+
+[cols="2,3"]
+|===
+| Fichier | Rôle
+
+| `sessions/139-epic_v6_resolver_factory.adoc` | Archive session 139 (gouvernance)
+| `test/features/epic_v6_resolver.feature` | Feature Cucumber @epic_v6_resolver (3 scénarios)
+| `test/kotlin/scenarios/EpicV6ResolverCucumberRunner.kt` | Runner Cucumber dédié
+|===
+
+== Fichiers source modifiés
+
+[cols="2,3"]
+|===
+| Fichier | Changement
+
+| `koog/llm/LlmProviderResolver.kt` | Ajout `environmentReader` injectable ; priorité OLLAMA_POOL_PORTS > OLLAMA_SCAN_PORTS > factory déterministe ; mapping `"ollama","deepseek",""` → OllamaLlmProvider ; pool créé frais à chaque resolve.
+|===
+
+== Fichiers test créés / modifiés
+
+[cols="2,3"]
+|===
+| Fichier | Changement
+
+| `test/kotlin/koog/llm/LlmProviderResolverTest.kt` | 9 JUnit5 : gemini/GEMINI, factory ollama/deepseek/blank, unknown model, OLLAMA_POOL_PORTS, scanner fallback true/case-insensitive.
+| `test/kotlin/scenarios/OllamaCloudSteps.kt` | Steps réutilisés pour resolver (env var, fake scanner, resolve, assertions pool).
+| `test/kotlin/scenarios/OllamaCloudWorld.kt` | Ajout `lastResolvedProvider` pour les scénarios resolver.
+|===
+
+== Tests
+
+|===
+| Scope | Résultat
+
+| `LlmProviderResolverTest` | ✅ 9/9 PASS
+| `EpicV6ResolverCucumberRunner` | ✅ 3/3 PASS
+| `compileKotlin` | ✅
+| `compileTestKotlin` | ✅
+|===
+
+== Total session 139
+
+- JUnit5 : 9 nouveaux / modifiés PASS
+- Cucumber : 3 scénarios PASS
+- Build : propre
+
+'''
+
 = TEST_COVERAGE_ANALYSIS — Session 137
 :date: 2026-06-22
 :epic: EPIC V-6 — OllamaPoolKeyAdapter + câblage OllamaLlmProvider

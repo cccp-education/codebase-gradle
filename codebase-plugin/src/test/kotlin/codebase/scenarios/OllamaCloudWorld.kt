@@ -1,5 +1,6 @@
 package codebase.scenarios
 
+import codebase.koog.llm.LlmProvider
 import codebase.koog.llm.pool.OllamaPool
 import codebase.koog.llm.pool.OllamaPoolKeyAdapter
 import contracts.llmpool.LlmInstance
@@ -8,7 +9,7 @@ import contracts.llmpool.ResetPolicy
 import contracts.llmpool.RotationStrategy
 
 /**
- * World Object pour les scénarios @epic_v6_ollama_cloud.
+ * World Object pour les scénarios @epic_v6_ollama_cloud et @epic_v6_resolver.
  *
  * Maintient un pool de 2 instances Ollama cloud factices et un adaptateur
  * résilient. Le "fake LLM call" est simulé par un bloc Kotlin qui lève une
@@ -21,6 +22,9 @@ class OllamaCloudWorld {
 
     /** Dernière exception capturée. */
     var lastException: Throwable? = null
+
+    /** Dernier provider résolu par le resolver (EPIC V-6 resolver). */
+    var lastResolvedProvider: LlmProvider? = null
 
     /** IDs d'instances sur lesquelles le fake appel lève "quota exceeded". */
     val failingInstanceIds = mutableSetOf<String>()

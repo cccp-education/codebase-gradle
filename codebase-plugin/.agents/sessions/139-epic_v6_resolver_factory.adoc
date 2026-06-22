@@ -1,0 +1,47 @@
+= Session 139 — EPIC V-6 Resolver → Deterministic Factory
+:date: 2026-06-22
+:epic: EPIC V-6 Ollama Cloud Docker + ConnectionFactory R2DBC
+
+== Contexte
+
+Session 138 avait livré `OllamaInstanceFactory` (29 ports déterministes, modèles cyclés, `volumeTag`) et une feature Cucumber `@epic_v6_ollama_cloud` sur quota exceeded.
+
+== Objectif
+
+Câbler `LlmProviderResolver` pour utiliser `OllamaInstanceFactory` quand aucune env de scan n'est présente ; conserver `OllamaInstanceScanner` comme fallback explicite.
+
+== Actions
+
+- `LlmProviderResolver.kt` :
+  * Ajout de `environmentReader` injectable pour tests (évite mutation `System.getenv` sous JVM 24)
+  * Ordre de priorité : `OLLAMA_POOL_PORTS` → `OLLAMA_SCAN_PORTS=true` → factory déterministe
+  * Suppression du pool lazy singleton partagé (création fraîche à chaque `resolve`)
+  * Mapping `"ollama", "deepseek", ""` → `OllamaLlmProvider`
+- `LlmProviderResolverTest.kt` :
+  * 9 JUnit5 (gemini, GEMINI, ollama factory, deepseek factory, blank factory, unknown model, OLLAMA_POOL_PORTS, OLLAMA_SCAN_PORTS=true, case-insensitive)
+  * Réflexion pool via `OllamaPoolKeyAdapter` (champ privé dans `OllamaLlmProvider`)
+- `epic_v6_resolver.feature` + `EpicV6ResolverCucumberRunner.kt` :
+  * 3 scénarios BDD factory / explicit ports / scanner fallback
+- `OllamaCloudSteps.kt` + `OllamaCloudWorld.kt` :
+  * Steps réutilisés pour resolver, world étendu avec `lastResolvedProvider`
+
+== Commandes
+
+[source,bash]
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.llm.LlmProviderResolverTest"
+./gradlew :codebase-plugin:test --tests "codebase.scenarios.EpicV6ResolverCucumberRunner"
+----
+
+== Résultats
+
+- `compileKotlin` ✅
+- `LlmProviderResolverTest` ✅ 9/9 PASS
+- `EpicV6ResolverCucumberRunner` ✅ 3/3 PASS
+- EPIC V-6 **TERMINÉ** (10/10 items codés + câblage resolver→factory)
+
+== Leçons
+
+- JVM 24 modularisée interdit la réflexion sur `ProcessEnvironment.theEnvironment` : utiliser des ports injectables plutôt que muter `System.getenv`.
+- Réflexion via l'adaptateur interne nécessaire car `pool` dans `OllamaLlmProvider` est privé et typé `LlmInstancePool`.

@@ -1,3 +1,25 @@
+== Session 139 — EPIC V-6 Resolver → Deterministic Factory
+
+- `koog/llm/LlmProviderResolver.kt` — câblage `OllamaInstanceFactory` par défaut
+- `environmentReader` injectable pour tests (évite mutation `System.getenv` JVM 24)
+- Priorité : `OLLAMA_POOL_PORTS` → `OLLAMA_SCAN_PORTS=true` → factory déterministe (29 instances, zéro réseau)
+- Mapping `"ollama"`, `"deepseek"`, `""` → `OllamaLlmProvider`
+- `test/kotlin/koog/llm/LlmProviderResolverTest.kt` — 9 JUnit5 PASS
+- `test/features/epic_v6_resolver.feature` + `EpicV6ResolverCucumberRunner.kt` — 3 scénarios Cucumber PASS
+- `test/kotlin/scenarios/OllamaCloudSteps.kt` + `OllamaCloudWorld.kt` — steps réutilisés pour resolver
+- **EPIC V-6 TERMINÉ** (10/10) — build propre
+
+'''
+
+== Session 138 — EPIC V-6 OllamaInstanceFactory + contrat N0 volumeTag
+
+- `pool/OllamaInstanceFactory.kt` — génération déterministe 29 instances Ollama Cloud
+- 5 modèles autorisés cyclés sur ports 11437→11465
+- `volumeTag` ajouté au contrat N0 `LlmInstance`
+- `epic_v6_ollama_cloud.feature` — 2 scénarios quota exceeded (zéro réseau)
+
+'''
+
 == Session 137 — EPIC V-6 OllamaPoolKeyAdapter + câblage OllamaLlmProvider
 
 - `pool/OllamaPoolKeyAdapter.kt` — wrapper résilient autour de `LlmInstancePool`
