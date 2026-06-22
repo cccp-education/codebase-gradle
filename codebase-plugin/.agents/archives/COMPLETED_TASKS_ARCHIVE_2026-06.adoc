@@ -1,3 +1,19 @@
+== Session 144 — EPIC V-9.8 Governance Ingestion Report
+
+- `IngestionReport` enrichi de `sectionsAdded: Map<GovernanceSection, Int>` et `sectionsTotal: Map<GovernanceSection, Int>` (rétrocompatibilité par défaut vides)
+- `AgenticIngestor` : injection optionnelle de `GovernanceOntologizer`; calcul des sections sur chunks ajoutés/modifiés/skippés
+- `IngestGovernanceTask` : classifieur injecté, log sections, JSON de sortie enrichi `sectionsAdded`/`sectionsTotal`
+- `build.gradle.kts` : enregistrement des tâches Cucumber `cucumberTestEpicV93/V95/V97/V98`
+- `test/kotlin/koog/agentic/AgenticIngestorTest.kt` — +2 JUnit5 (sections présentes/absentes)
+- `test/kotlin/koog/agentic/IngestGovernanceTaskTest.kt` — +2 JUnit5 (sections report + JSON sections)
+- `test/features/epic_v_9_8_governance_ingest.feature` — 3 scénarios Cucumber @epic_v_9_8
+- `test/kotlin/scenarios/IngestGovernanceWorld.kt` + `IngestGovernanceSteps.kt` + `EpicV98CucumberRunner.kt` — glue Cucumber
+- Régressions V-9.3 (6), V-9.5 (5), V-9.7 (7) vertes
+- **Under-EPIC 2 avance** : V-9.7 ✅ + V-9.8 ✅
+- Build propre, zéro réseau, zéro Testcontainers
+
+'''
+
 == Session 143 — EPIC V-9.7 GovernanceOntologizer
 
 - Anti-duplication V-9.6 : `AgenticOntologizer.kt` déjà livré par EPIC Y-2 (20/20 PASS) → V-9.6 marqué "déjà livré"

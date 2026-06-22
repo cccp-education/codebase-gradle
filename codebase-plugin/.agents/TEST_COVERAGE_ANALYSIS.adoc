@@ -1,12 +1,12 @@
-= TEST_COVERAGE_ANALYSIS — Session 143
-:date: 2026-06-22
-:epic: EPIC V-9 — V-9.7 GovernanceOntologizer (baby-step DDD/TDD/BDD)
+= TEST_COVERAGE_ANALYSIS — Session 144
+:date: 2026-06-23
+:epic: EPIC V-9 — V-9.8 Governance Ingestion Report (baby-step DDD/TDD/BDD)
 
 == Contexte
 
-PROMPT_REPRISE 143 demandait d'attaquer V-9.6 AgenticOntologizer. Anti-duplication
-confirmée : `AgenticOntologizer.kt` + `OntologizedChunk` déjà livrés par EPIC Y-2
-(session 089, 20/20 PASS). V-9.6 marqué "déjà livré". Passage à V-9.7.
+PROMPT_REPRISE 144 demandait d'intégrer `GovernanceOntologizer` dans le pipeline
+d'ingestion (`AgenticIngestor` et/ou `IngestGovernanceTask`) pour enrichir
+`IngestionReport` avec le décompte par `GovernanceSection`.
 
 == Nouveaux fichiers source
 
@@ -14,26 +14,25 @@ confirmée : `AgenticOntologizer.kt` + `OntologizedChunk` déjà livrés par EPI
 |===
 | Fichier | Rôle
 
-| `koog/agentic/GovernanceSection.kt` | Enum DDD 7 sections métier : RULES_ABSOLUES, ETAT_EPICS, BACKLOG_ITEMS, HISTORIQUE, COVERAGE, MISSION, UNKNOWN
-| `koog/agentic/GovernanceOntologizer.kt` | Classifieur par nom de fichier source (`AGENT.adoc` → RULES_ABSOLUES, `INDEX.adoc` → ETAT_EPICS, etc.)
-| `sessions/143-epic_v9_7_governance_ontologizer.adoc` | Archive session 143 (gouvernance)
+| `test/kotlin/scenarios/IngestGovernanceWorld.kt` | World Cucumber V-9.8 : ProjectBuilder, fichiers temporaires, exécution tâche, assertions sections
+| `test/kotlin/scenarios/IngestGovernanceSteps.kt` | Steps Cucumber V-9.8 (Given DataTable/DocString, When task, Then sections/JSON)
+| `test/kotlin/scenarios/EpicV98CucumberRunner.kt` | Runner Cucumber @epic_v_9_8
+| `test/features/epic_v_9_8_governance_ingest.feature` | Feature 3 scénarios : sections AGENT+INDEX, JSON output, UNKNOWN
+| `sessions/144-epic_v9_8_governance_ingest.adoc` | Archive session 144 (gouvernance)
 |===
 
 == Fichiers source modifiés
-
-Aucun fichier source existant modifié (ajouts uniquement).
-
-== Fichiers test créés / modifiés
 
 [cols="2,3"]
 |===
 | Fichier | Changement
 
-| `test/kotlin/koog/agentic/GovernanceOntologizerTest.kt` | 8 JUnit5 : AGENT, INDEX, BACKLOG, SESSIONS_HISTORY, TEST_COVERAGE_ANALYSIS, PROMPT_REPRISE, unknown, subproject AGENT.
-| `test/features/epic_v_9_7_governance_ontologizer.feature` | Feature Cucumber @epic_v_9_7 (7 scénarios, un par section métier).
-| `test/kotlin/scenarios/GovernanceOntologizerWorld.kt` | World Cucumber (factory de chunk, reset).
-| `test/kotlin/scenarios/GovernanceOntologizerSteps.kt` | Steps Given/When/Then pour les 7 scénarios. `@Before("@epic_v_9_7")` reset.
-| `test/kotlin/scenarios/EpicV97CucumberRunner.kt` | Runner Cucumber dédié (GLUE=codebase.scenarios, FILTER_TAGS=@epic_v_9_7).
+| `koog/agentic/IngestionReport.kt` (data class dans AgenticIngestor.kt) | Ajout `sectionsAdded: Map<GovernanceSection, Int>` et `sectionsTotal: Map<GovernanceSection, Int>` avec valeurs par défaut vides
+| `koog/agentic/AgenticIngestor.kt` | Injection optionnelle `GovernanceOntologizer`; calcul sections pour ajout/modification/skip
+| `koog/agentic/IngestGovernanceTask.kt` | Instanciation `GovernanceOntologizer`, log sections, JSON enrichi `sectionsAdded`/`sectionsTotal`
+| `build.gradle.kts` | Enregistrement tâches Cucumber V-9.3, V-9.5, V-9.7, V-9.8
+| `test/kotlin/koog/agentic/AgenticIngestorTest.kt` | +2 JUnit5 (sections présentes avec governance ontologizer, absentes sans)
+| `test/kotlin/koog/agentic/IngestGovernanceTaskTest.kt` | +2 JUnit5 (sections report + JSON sections)
 |===
 
 == Tests
@@ -41,283 +40,25 @@ Aucun fichier source existant modifié (ajouts uniquement).
 |===
 | Scope | Résultat
 
-| `GovernanceOntologizerTest` (8 JUnit5 unitaires) | ✅ 8/8 PASS
-| `EpicV97CucumberRunner` (7 scénarios @epic_v_9_7) | ✅ 7/7 PASS
-| `EpicV93CucumberRunner` (6 scénarios @epic_v_9_3) | ✅ 6/6 PASS (régression)
+| `AgenticIngestorTest` (modifié, 2 nouveaux) | ✅ 8/8 PASS (6 existants + 2 nouveaux)
+| `IngestGovernanceTaskTest` (modifié, 2 nouveaux) | ✅ 7/7 PASS (5 existants + 2 nouveaux)
+| `GovernanceOntologizerTest` | ✅ 8/8 PASS
+| `EpicV98CucumberRunner` (3 scénarios @epic_v_9_8) | ✅ 3/3 PASS
+| `EpicV97CucumberRunner` (7 scénarios @epic_v_9_7) | ✅ 7/7 PASS (régression)
 | `EpicV95CucumberRunner` (5 scénarios @epic_v_9_5) | ✅ 5/5 PASS (régression)
+| `EpicV93CucumberRunner` (6 scénarios @epic_v_9_3) | ✅ 6/6 PASS (régression)
+| `test --tests "codebase.koog.agentic.*"` | ✅ (package agentic complet, ~1m)
 | `compileKotlin` | ✅
 | `compileTestKotlin` | ✅
+| `build -x test -x cucumberTest -x koverVerify` | ✅
 | Régression tests préexistants | 0
 |===
 
-== Total session 143
+== Total session 144
 
-- JUnit5 : 8 nouveaux PASS
-- Cucumber : 7 scénarios PASS
-- Build : propre
-- Zéro réseau, zéro Testcontainers
-- V-9.6 déjà livré par EPIC Y-2
-
-'''
-
-= TEST_COVERAGE_ANALYSIS — Session 141
-:date: 2026-06-22
-:epic: EPIC V-9 — V-9.5 ChunkValidator (baby-step TDD/BDD)
-
-== Nouveaux fichiers source
-
-[cols="2,3"]
-|===
-| Fichier | Rôle
-
-| `koog/agentic/ChunkValidator.kt` | Validateur AgenticChunk + ValidationResult (id/sourceFile/content/sourceLines/checksum non vides, checksum sha256 cohérent, weight 0.0..1.0)
-| `sessions/141-epic_v9_5_chunk_validator.adoc` | Archive session 141 (gouvernance)
-|===
-
-== Fichiers source modifiés
-
-Aucun fichier main existant modifié (nouveaux fichiers uniquement).
-
-== Fichiers test créés / modifiés
-
-[cols="2,3"]
-|===
-| Fichier | Changement
-
-| `test/kotlin/koog/agentic/ChunkValidatorTest.kt` | 10 JUnit5 : chunk bien formé valide, blank id/sourceFile/content/sourceLines/checksum, checksum mismatch, weight négatif / >1.0 / bornes 0.0 et 1.0.
-| `test/features/epic_v_9_5_chunk_validator.feature` | Feature Cucumber @epic_v_9_5 (5 scénarios : valid extrait par AgenticChunker, blank id, checksum mismatch, weight > 1.0, weight négatif).
-| `test/kotlin/scenarios/ChunkValidatorWorld.kt` | World Cucumber (extractAndValidate, validate, buildChunk, sha256, reset).
-| `test/kotlin/scenarios/ChunkValidatorSteps.kt` | Steps Given/When/Then pour les 5 scénarios. `@Before("@epic_v_9_5")` reset.
-| `test/kotlin/scenarios/EpicV95CucumberRunner.kt` | Runner Cucumber dédié (GLUE=codebase.scenarios, FILTER_TAGS=@epic_v_9_5).
-|===
-
-== Tests
-
-|===
-| Scope | Résultat
-
-| `ChunkValidatorTest` (10 JUnit5 unitaires) | ✅ 10/10 PASS
-| `EpicV95CucumberRunner` (5 scénarios @epic_v_9_5) | ✅ 5/5 PASS
-| `compileKotlin` | ✅
-| `compileTestKotlin` | ✅
-| Régression tests préexistants | 0 (nouveaux fichiers uniquement)
-|===
-
-== Total session 141
-
-- JUnit5 : 10 nouveaux PASS
-- Cucumber : 5 scénarios PASS
+- JUnit5 : 4 nouveaux PASS (2 AgenticIngestor + 2 IngestGovernanceTask)
+- Cucumber : 3 scénarios / 11 steps PASS (@epic_v_9_8)
 - Build : propre
 - Zéro réseau, zéro Testcontainers
 
 '''
-
-= TEST_COVERAGE_ANALYSIS — Session 139
-:date: 2026-06-22
-:epic: EPIC V-6 — LlmProviderResolver → OllamaInstanceFactory déterministe
-
-== Nouveaux fichiers source
-
-[cols="2,3"]
-|===
-| Fichier | Rôle
-
-| `sessions/139-epic_v6_resolver_factory.adoc` | Archive session 139 (gouvernance)
-| `test/features/epic_v6_resolver.feature` | Feature Cucumber @epic_v6_resolver (3 scénarios)
-| `test/kotlin/scenarios/EpicV6ResolverCucumberRunner.kt` | Runner Cucumber dédié
-|===
-
-== Fichiers source modifiés
-
-[cols="2,3"]
-|===
-| Fichier | Changement
-
-| `koog/llm/LlmProviderResolver.kt` | Ajout `environmentReader` injectable ; priorité OLLAMA_POOL_PORTS > OLLAMA_SCAN_PORTS > factory déterministe ; mapping `"ollama","deepseek",""` → OllamaLlmProvider ; pool créé frais à chaque resolve.
-|===
-
-== Fichiers test créés / modifiés
-
-[cols="2,3"]
-|===
-| Fichier | Changement
-
-| `test/kotlin/koog/llm/LlmProviderResolverTest.kt` | 9 JUnit5 : gemini/GEMINI, factory ollama/deepseek/blank, unknown model, OLLAMA_POOL_PORTS, scanner fallback true/case-insensitive.
-| `test/kotlin/scenarios/OllamaCloudSteps.kt` | Steps réutilisés pour resolver (env var, fake scanner, resolve, assertions pool).
-| `test/kotlin/scenarios/OllamaCloudWorld.kt` | Ajout `lastResolvedProvider` pour les scénarios resolver.
-|===
-
-== Tests
-
-|===
-| Scope | Résultat
-
-| `LlmProviderResolverTest` | ✅ 9/9 PASS
-| `EpicV6ResolverCucumberRunner` | ✅ 3/3 PASS
-| `compileKotlin` | ✅
-| `compileTestKotlin` | ✅
-|===
-
-== Total session 139
-
-- JUnit5 : 9 nouveaux / modifiés PASS
-- Cucumber : 3 scénarios PASS
-- Build : propre
-
-'''
-
-= TEST_COVERAGE_ANALYSIS — Session 137
-:date: 2026-06-22
-:epic: EPIC V-6 — OllamaPoolKeyAdapter + câblage OllamaLlmProvider
-
-== Nouveaux fichiers source
-
-[cols="2,3"]
-|===
-| Fichier | Rôle
-
-| `pool/OllamaPoolKeyAdapter.kt` | Wrapper résilient autour de `LlmInstancePool` : rotation proactive, marquage inactif, exception explicite à l'épuisement.
-|===
-
-== Fichiers source modifiés
-
-[cols="2,3"]
-|===
-| Fichier | Changement
-
-| `pool/OllamaLlmProvider.kt` | Remplace le bloc try/catch naïf par `adapter.callWithRotation`. Conservation du cache `OllamaChatModel` par `(baseUrl, model)`.
-|===
-
-== Fichiers test créés / modifiés
-
-[cols="2,3"]
-|===
-| Fichier | Changement
-
-| `pool/OllamaPoolKeyAdapterTest.kt` | 10 JUnit5 : skip inactif/quota, rotation quota/connexion, épuisement, propagation exception non liée, reset, délégation.
-| `pool/OllamaLlmProviderTest.kt` | + rotation sur quota dépassé (conditionnel), + épuisement avec ports invalides, renommage test rotation.
-|===
-
-== Tests
-
-|===
-| Scope | Résultat
-
-| `OllamaPoolKeyAdapterTest` | ✅ 10/10 PASS
-| `OllamaLlmProviderTest` | ✅ 7/7 + 1 skipped (Ollama local absent)
-| `OllamaPoolTest` | ✅ 9/9 PASS
-| `compileKotlin` | ✅
-| `compileTestKotlin` | ✅
-|===
-
-== Total session 137
-
-- JUnit5 : 17 nouveaux / modifiés PASS (10 adapter + 7 provider conditionnels)
-- Build : propre
-
-'''
-
-= TEST_COVERAGE_ANALYSIS — Session 135
-:date: 2026-06-22
-:epic: EPIC PUB — Suppression duplications N0 + migration vers JARs Central
-
-== Fichiers source supprimés (duplications N0)
-
-[cols="2,3"]
-|===
-| Fichier | Remplacement
-
-| `contracts/i18n/TranslationService.kt` | `education.cccp:i18n-contracts:0.0.1`
-| `codebase/koog/session/AgentContext.kt` | `education.cccp:opencode-session-contracts:0.0.1`
-| `codebase/koog/session/SessionProtocolContracts.kt` | `education.cccp:opencode-session-contracts:0.0.1`
-|===
-
-== Fichiers source modifiés (migration imports)
-
-[cols="2,2"]
-|===
-| Fichier | Changement
-
-| `codebase/koog/LiveContextInjector.kt` | `codebase.koog.session.AgentContext` → `contracts.session.AgentContext`
-| `codebase/koog/governance/GovernanceContextLoader.kt` | idem
-| `codebase/koog/SessionProtocolServer.kt` | `SessionPrompt/Response/Status/TokenUsage/ToolCallRecord` → `contracts.session.*` + adaptation `context`
-| `codebase/koog/SessionProtocolTask.kt` | idem + `ToolCallRecord(args = emptyMap())`
-| `codebase/koog/VibecodingGraph.kt` | `AgentContext` → `contracts.session.AgentContext`
-| `codebase/koog/LiveContextInjectorTest.kt` | import `AgentContext` N0
-| `codebase/scenarios/GovernanceFallbackWorld.kt` | import `AgentContext` N0
-|===
-
-== Fichiers build modifiés
-
-[cols="2,3"]
-|===
-| Fichier | Changement
-
-| `settings.gradle.kts` | Migration nmcp `com.gradleup.nmcp.settings` 1.5.0
-| `build.gradle.kts` | version `0.0.2` → `0.0.3`
-| `gradle/libs.versions.toml` | `codebase-plugin` version `0.0.3`
-|===
-
-== Tests
-
-- `compileKotlin` ✅
-- `compileTestKotlin` ✅
-- `publishAggregationToCentralPortal` ✅ (deployment `adc37d1c-...`)
-
-== Couverture
-
-- Pas de nouveaux tests, mais suppression de code local déjà couvert par tests existants.
-- Kover inchangé (`minBound(79)`).
-
-:date: 2026-06-22
-:epic: EPIC TRAD — TranslationService N1 (contrat N0 + impl + tests)
-
-== Nouveaux tests ajoutés (Session 133)
-
-[cols="3,2,2"]
-|===
-| Classe | Type | Count
-
-| TranslationService | Contrat N0 (src/main) | 1 interface + 2 data classes
-| LlmTranslator | Impl N1 (src/main) | 1 classe
-| FakeLlmTranslator | Fake (src/test) | 1 classe
-| LlmTranslatorTest | JUnit5 | 6
-| FakeLlmTranslatorTest | JUnit5 | 2
-| TranslationWorld | Cucumber World | 1
-| TranslationSteps | Cucumber Steps | 1
-| EpicTranslationCucumberRunner | Cucumber Runner | 1
-| epic_translation.feature | Cucumber Feature | 6 scénarios
-|===
-
-== Tests modifiés
-
-* Aucun test existant modifié — nouvel EPIC isolé
-
-== Total session 133
-
-- JUnit5 : 8/8 PASS (6 LlmTranslator + 2 FakeLlmTranslator)
-- Cucumber @epic_translation : 6 scénarios / 24 steps PASS
-- **Total session : 14 PASS**
-
-== Historique cumulé
-
-[cols="2,2,2]
-|===
-| Session | JUnit5 | Cucumber
-
-| 127 | 16 | 5 (EPIC 8)
-| 132 | 5 (IngestGovernance) | 23 steps / 5 scénarios (V-LOCAL)
-| 133 | 8 (i18n) | 24 steps / 6 scénarios (TRAD)
-| 140 | 10 (8 ExpertManifestReader + 2 RoundTrip) | 6 scénarios / 34 steps (EPIC 8 clôturé 4/4)
-|===
-
-== Total projet (estimé)
-
-- Après session 133 : ~559 + 14 = ~573 PASS
-- Après session 140 : ~573 + 10 JUnit5 + 1 scénario Cucumber = ~583 PASS
-
-== Couverture Kover
-
-- `kover { verify { rule { minBound(79) } } }` (build.gradle.kts)
-- Session 133 ajoute `LlmTranslator` (main) + `TranslationService` (main, contracts) —
-  couverture likely neutre (impl légère, tests ciblés). À vérifier au prochain `koverVerify`.

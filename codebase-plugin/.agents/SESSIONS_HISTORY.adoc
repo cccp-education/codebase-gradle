@@ -4,6 +4,7 @@
 |===
 | Session | Date | EPIC | Résultat
 
+| 144 | 2026-06-23 | EPIC V-9 | V-9.8 Governance ingestion report — `GovernanceOntologizer` intégré dans `AgenticIngestor`/`IngestGovernanceTask`, `IngestionReport` enrichi de `sectionsAdded`/`sectionsTotal`, JSON enrichi, tâches Cucumber V-9.3/9.5/9.7/9.8 enregistrées. 10 JUnit5 + 3 Cucumber @epic_v_9_8 PASS ✅
 | 143 | 2026-06-22 | EPIC V-9 | V-9.7 GovernanceOntologizer — enum `GovernanceSection` + classifieur par nom de fichier + 8 JUnit5 + 7 Cucumber @epic_v_9_7 PASS ✅ (V-9.6 déjà livré par EPIC Y-2). Under-EPIC 2 démarré.
 | 142 | 2026-06-22 | EPIC V-9 | V-9.3 ScanAgent — `ScanAgent` scanner récursif `.agents/` + `ScannedFile` value object + 8 JUnit5 + 6 Cucumber @epic_v_9_3 PASS ✅ + refactor `IngestGovernanceTask.collectGovernanceFiles` (liste hardcoded supprimée). Under-EPIC 1 complet 5/5.
 | 141 | 2026-06-22 | EPIC V-9 | V-9.5 ChunkValidator — 10 JUnit5 + 5 Cucumber @epic_v_9_5 PASS ✅ (anti-duplication V-9.1/V-9.2/V-9.4 vérifiée)

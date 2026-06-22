@@ -1,7 +1,7 @@
 = INDEX.adoc — Codebase Gradle (Queens N1)
-:date: 2026-06-22
-:session_en_cours: 143
-:session_precedente: 142 — EPIC V-9.3 ScanAgent livré (8 JUnit5 + 6 Cucumber @epic_v_9_3 PASS, IngestGovernanceTask refactoré)
+:date: 2026-06-23
+:session_en_cours: 144
+:session_precedente: 143 — EPIC V-9.7 GovernanceOntologizer livré (8 JUnit5 + 7 Cucumber @epic_v_9_7 PASS)
 
 == Roadmap EPICs
 
@@ -46,8 +46,8 @@
 | 136-139
 
 | EPIC V-9 Gouvernance Agentique
-| EN COURS (2/35 — Under-EPIC 1 complet V-9.1→V-9.5 ; V-9.6 déjà livré par EPIC Y-2 ; V-9.7 GovernanceOntologizer livré session 143)
-| 141-143
+| EN COURS (3/35 — Under-EPIC 1 complet V-9.1→V-9.5 ; V-9.6 déjà livré par EPIC Y-2 ; V-9.7 GovernanceOntologizer livré session 143 ; V-9.8 Governance ingestion report livré session 144)
+| 141-144
 
 | EPIC 9 Opencode Augmenté
 | ✅ TERMINE
@@ -113,6 +113,7 @@
 == Sessions Récentes
 
 | Session | Date | EPIC | Résultat
+| 144 | 2026-06-23 | EPIC V-9 | V-9.8 Governance ingestion report — `GovernanceOntologizer` intégré dans `AgenticIngestor`/`IngestGovernanceTask`, `IngestionReport` enrichi `sectionsAdded`/`sectionsTotal`, JSON enrichi, tâches Cucumber V-9.3/9.5/9.7/9.8 enregistrées. 10 JUnit5 + 3 Cucumber @epic_v_9_8 PASS ✅
 | 143 | 2026-06-22 | EPIC V-9 | V-9.7 GovernanceOntologizer — 8 JUnit5 + 7 Cucumber @epic_v_9_7 PASS ✅ (V-9.6 déjà livré par EPIC Y-2)
 | 142 | 2026-06-22 | EPIC V-9 | V-9.3 ScanAgent — 8 JUnit5 + 6 Cucumber @epic_v_9_3 PASS ✅ + refactor IngestGovernanceTask
 | 141 | 2026-06-22 | EPIC V-9 | V-9.5 ChunkValidator — 10 JUnit5 + 5 Cucumber @epic_v_9_5 PASS ✅ (anti-duplication V-9.1/V-9.2/V-9.4 vérifiée)

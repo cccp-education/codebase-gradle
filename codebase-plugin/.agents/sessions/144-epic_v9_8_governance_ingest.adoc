@@ -1,0 +1,47 @@
+= Session 144 — EPIC V-9.8 Governance Ingestion Report
+:date: 2026-06-23
+:borough: Queens — codebase-gradle (N1)
+:epic: EPIC V-9 — Vibecoding Gouvernance Agentique
+
+== Contexte
+
+Session 143 avait livré V-9.7 `GovernanceOntologizer` (8 JUnit5 + 7 Cucumber PASS).
+Mission 144 : intégrer ce classifieur dans le pipeline d'ingestion (`AgenticIngestor` + `IngestGovernanceTask`) pour enrichir `IngestionReport` avec un décompte par `GovernanceSection`.
+
+== Actions
+
+. Step 1 — `IngestionReport` : ajout de `sectionsAdded: Map<GovernanceSection, Int>` et `sectionsTotal: Map<GovernanceSection, Int>` avec valeurs par défaut vides (rétrocompatibilité).
+. Step 2 — `AgenticIngestor` : injection optionnelle d'un `GovernanceOntologizer`; calcul des sections pour chaque chunk ajouté/modifié/skippé.
+. Step 3 — `IngestGovernanceTask` : instanciation systématique du classifieur; log sections; sortie JSON enrichie de `sectionsAdded`/`sectionsTotal`.
+. Step 4 — `build.gradle.kts` : enregistrement des tâches Cucumber manquantes V-9.3, V-9.5, V-9.7, V-9.8.
+. Tests JUnit5 : `AgenticIngestorTest` +2, `IngestGovernanceTaskTest` +2.
+. Tests Cucumber : feature `@epic_v_9_8` (3 scénarios), `IngestGovernanceWorld`, `IngestGovernanceSteps`, `EpicV98CucumberRunner`.
+
+== Commandes
+
+----
+./gradlew :codebase-plugin:compileKotlin                           # OK
+./gradlew :codebase-plugin:compileTestKotlin                       # OK
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.AgenticIngestorTest" \
+                                   --tests "codebase.koog.agentic.IngestGovernanceTaskTest" \
+                                   --tests "codebase.koog.agentic.GovernanceOntologizerTest"  # OK
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.*"    # OK (1m 1s)
+./gradlew :codebase-plugin:cucumberTestEpicV93 \
+           :codebase-plugin:cucumberTestEpicV95 \
+           :codebase-plugin:cucumberTestEpicV97 \
+           :codebase-plugin:cucumberTestEpicV98                    # OK
+./gradlew :codebase-plugin:build -x test -x cucumberTest -x koverVerify  # OK
+----
+
+== Résultats
+
+- 10 JUnit5 ajoutés/modifiés PASS (2 AgenticIngestor + 2 IngestGovernanceTask + 6 existants réexécutés)
+- 3 scénarios Cucumber `@epic_v_9_8` PASS
+- 0 régression sur V-9.3 (6), V-9.5 (5), V-9.7 (7)
+- Under-EPIC 2 V-9 avance : V-9.7 ✅, V-9.8 ✅
+
+== Leçons
+
+- Rétrocompatibilité par défaut : `GovernanceOntologizer` optionnel dans `AgenticIngestor` évite de casser les tests existants.
+- Un fichier modifié à la fois + compilation entre chaque étape = pas de debugging chaos.
+- Les runners Cucumber doivent être enregistrés dans `build.gradle.kts` pour être invoquables par tâche Gradle.

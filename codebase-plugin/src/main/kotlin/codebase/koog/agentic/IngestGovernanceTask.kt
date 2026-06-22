@@ -42,7 +42,10 @@ abstract class IngestGovernanceTask : DefaultTask() {
         log.info("[IngestGovernance] Collected {} governance files from {}", files.size, root.absolutePath)
 
         val repository = InMemoryAgenticChunkRepository()
-        val ingestor = AgenticIngestor(repository = repository)
+        val ingestor = AgenticIngestor(
+            repository = repository,
+            governanceOntologizer = GovernanceOntologizer()
+        )
 
         val report = runBlocking { ingestor.ingest(files) }
         lastIngestionReport = report
@@ -52,6 +55,12 @@ abstract class IngestGovernanceTask : DefaultTask() {
             report.filesScanned, report.chunksAdded, report.chunksSkipped,
             report.chunksModified, report.artifactsCompiled
         )
+        if (report.sectionsAdded.isNotEmpty()) {
+            log.info("[IngestGovernance] Sections added: {}", report.sectionsAdded)
+        }
+        if (report.sectionsTotal.isNotEmpty()) {
+            log.info("[IngestGovernance] Sections total: {}", report.sectionsTotal)
+        }
 
         if (outputFile.isPresent) {
             val out = outputFile.get().asFile
@@ -72,7 +81,19 @@ abstract class IngestGovernanceTask : DefaultTask() {
         appendLine("  \"chunksAdded\": ${report.chunksAdded},")
         appendLine("  \"chunksSkipped\": ${report.chunksSkipped},")
         appendLine("  \"chunksModified\": ${report.chunksModified},")
-        appendLine("  \"artifactsCompiled\": ${report.artifactsCompiled}")
+        appendLine("  \"artifactsCompiled\": ${report.artifactsCompiled},")
+        appendLine("  \"sectionsAdded\": ${mapToJson(report.sectionsAdded)},")
+        appendLine("  \"sectionsTotal\": ${mapToJson(report.sectionsTotal)}")
         appendLine("}")
+    }
+
+    private fun mapToJson(map: Map<GovernanceSection, Int>): String = buildString {
+        append("{")
+        val entries = map.entries.toList()
+        for ((index, entry) in entries.withIndex()) {
+            append("\"${entry.key.name}\": ${entry.value}")
+            if (index < entries.size - 1) append(", ")
+        }
+        append("}")
     }
 }

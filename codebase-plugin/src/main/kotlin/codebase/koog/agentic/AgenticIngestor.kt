@@ -5,14 +5,17 @@ data class IngestionReport(
     val chunksAdded: Int,
     val chunksSkipped: Int,
     val chunksModified: Int,
-    val artifactsCompiled: Int
+    val artifactsCompiled: Int,
+    val sectionsAdded: Map<GovernanceSection, Int> = emptyMap(),
+    val sectionsTotal: Map<GovernanceSection, Int> = emptyMap()
 )
 
 class AgenticIngestor(
     private val chunker: AgenticChunker = AgenticChunker(),
     private val ontologizer: AgenticOntologizer = AgenticOntologizer(),
     private val repository: AgenticChunkRepository,
-    private val compiler: AgenticCompiler = AgenticCompiler()
+    private val compiler: AgenticCompiler = AgenticCompiler(),
+    private val governanceOntologizer: GovernanceOntologizer? = null
 ) {
 
     suspend fun ingest(files: List<Pair<String, String>>): IngestionReport {
@@ -22,6 +25,8 @@ class AgenticIngestor(
         var chunksSkipped = 0
         var chunksModified = 0
         var artifactsCompiled = 0
+        val sectionsAdded = mutableMapOf<GovernanceSection, Int>()
+        val sectionsTotal = mutableMapOf<GovernanceSection, Int>()
 
         for ((sourceFile, content) in files) {
             if (content.isBlank()) continue
@@ -34,18 +39,21 @@ class AgenticIngestor(
                 .filter { it.chunk.sourceFile == sourceFile }
 
             for (chunk in ontologized) {
+                val section = governanceOntologizer?.classify(chunk.chunk)
                 val existing = existingChunks.firstOrNull {
                     it.chunk.sourceLines == chunk.chunk.sourceLines
                 }
                 if (existing != null) {
                     if (existing.chunk.checksum == chunk.chunk.checksum) {
                         chunksSkipped++
+                        section?.let { sectionsTotal.merge(it, 1, Int::plus) }
                         continue
                     } else {
                         chunksModified++
                     }
                 } else {
                     chunksAdded++
+                    section?.let { sectionsAdded.merge(it, 1, Int::plus) }
                 }
                 repository.insertChunk(chunk)
 
@@ -53,6 +61,7 @@ class AgenticIngestor(
                 if (artifact != null) {
                     artifactsCompiled++
                 }
+                section?.let { sectionsTotal.merge(it, 1, Int::plus) }
             }
         }
 
@@ -61,7 +70,9 @@ class AgenticIngestor(
             chunksAdded = chunksAdded,
             chunksSkipped = chunksSkipped,
             chunksModified = chunksModified,
-            artifactsCompiled = artifactsCompiled
+            artifactsCompiled = artifactsCompiled,
+            sectionsAdded = sectionsAdded,
+            sectionsTotal = sectionsTotal
         )
     }
 }

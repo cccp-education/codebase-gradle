@@ -145,4 +145,44 @@ class AgenticIngestorTest {
         assertTrue(report.chunksAdded >= report.artifactsCompiled,
             "Artifacts compiled should not exceed chunks added")
     }
+
+    @Test
+    fun `should report governance sections when ingestor has governance ontologizer`() = runBlocking {
+        val ingestorWithGovernance = AgenticIngestor(
+            chunker,
+            ontologizer,
+            repo,
+            compiler,
+            GovernanceOntologizer()
+        )
+
+        val content = """
+            = AGENT.adoc
+
+            **INTERDICTION FORMELLE** de commit sans permission.
+        """.trimIndent()
+
+        val report = ingestorWithGovernance.ingest(listOf("AGENT.adoc" to content))
+
+        assertTrue(report.sectionsAdded.containsKey(GovernanceSection.RULES_ABSOLUES),
+            "Should report RULES_ABSOLUES section added")
+        assertTrue((report.sectionsAdded[GovernanceSection.RULES_ABSOLUES] ?: 0) > 0,
+            "Should add at least one chunk to RULES_ABSOLUES")
+        assertTrue(report.sectionsTotal.containsKey(GovernanceSection.RULES_ABSOLUES),
+            "Should report RULES_ABSOLUES total")
+    }
+
+    @Test
+    fun `should not report governance sections when governance ontologizer is absent`() = runBlocking {
+        val content = """
+            = AGENT.adoc
+
+            **INTERDICTION FORMELLE** de commit sans permission.
+        """.trimIndent()
+
+        val report = ingestor.ingest(listOf("AGENT.adoc" to content))
+
+        assertEquals(emptyMap<GovernanceSection, Int>(), report.sectionsAdded)
+        assertEquals(emptyMap<GovernanceSection, Int>(), report.sectionsTotal)
+    }
 }

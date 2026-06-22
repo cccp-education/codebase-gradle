@@ -93,4 +93,47 @@ class IngestGovernanceTaskTest {
         assertTrue(content.contains("filesScanned"))
         assertTrue(content.contains("chunksAdded"))
     }
+
+    @Test
+    fun `task report includes governance sections for recognized files`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+        File(tempDir, "INDEX.adoc").writeText("= Index\n\n== EPIC Y\nEn cours.\n")
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+
+        task.executeIngest()
+
+        val report = task.lastIngestionReport!!
+        assertTrue(report.sectionsAdded.containsKey(GovernanceSection.RULES_ABSOLUES),
+            "Should add chunks to RULES_ABSOLUES")
+        assertTrue(report.sectionsAdded.containsKey(GovernanceSection.ETAT_EPICS),
+            "Should add chunks to ETAT_EPICS")
+        assertTrue(report.sectionsTotal[GovernanceSection.RULES_ABSOLUES] ?: 0 > 0,
+            "Should report total for RULES_ABSOLUES")
+        assertTrue(report.sectionsTotal[GovernanceSection.ETAT_EPICS] ?: 0 > 0,
+            "Should report total for ETAT_EPICS")
+    }
+
+    @Test
+    fun `task report json includes sectionsAdded and sectionsTotal`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val outputFile = File(tempDir, "ingestion-report.json")
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+            it.outputFile.set(outputFile)
+        }.get()
+
+        task.executeIngest()
+
+        assertTrue(outputFile.exists(), "Report file should be written")
+        val content = outputFile.readText()
+        assertTrue(content.contains("RULES_ABSOLUES"), "JSON should contain RULES_ABSOLUES")
+        assertTrue(content.contains("sectionsAdded"), "JSON should contain sectionsAdded")
+        assertTrue(content.contains("sectionsTotal"), "JSON should contain sectionsTotal")
+    }
 }

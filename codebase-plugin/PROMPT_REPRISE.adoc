@@ -1,22 +1,21 @@
-= PROMPT REPRISE — Codebase (Queens N1) — Session 144
-:session: 144
+= PROMPT REPRISE — Codebase (Queens N1) — Session 145
+:session: 145
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 143 — EPIC V-9.7 GovernanceOntologizer livré (8 JUnit5 + 7 Cucumber @epic_v_9_7 PASS). V-9.6 marqué déjà livré par EPIC Y-2.
+:session_precedente: 144 — EPIC V-9.8 Governance ingestion report livré (IngestionReport enrichi sectionsAdded/sectionsTotal, IngestGovernanceTask JSON enrichi, 10 JUnit5 + 3 Cucumber @epic_v_9_8 PASS)
 
 == Contexte Hérité
 
-- Session 143 a confirmé que V-9.6 AgenticOntologizer était déjà livré par EPIC Y-2 (`AgenticOntologizer.kt` + 20 tests JUnit5 PASS).
-- Session 143 a livré V-9.7 `GovernanceOntologizer` : enum `GovernanceSection` (7 sections métier) + classifieur par nom de fichier source (AGENT.adoc → RULES_ABSOLUES, INDEX.adoc → ETAT_EPICS, BACKLOG.adoc → BACKLOG_ITEMS, SESSIONS_HISTORY.adoc → HISTORIQUE, TEST_COVERAGE_ANALYSIS.adoc → COVERAGE, PROMPT_REPRISE.adoc → MISSION). 8 JUnit5 + 7 Cucumber @epic_v_9_7 PASS.
-- Under-EPIC 1 (V-9.1→V-9.5) est COMPLET. Under-EPIC 2 démarré avec V-9.7.
+- Under-EPIC 2 EPIC V-9 avance : V-9.7 GovernanceOntologizer ✅ et V-9.8 ingestion report ✅.
+- Under-EPIC 1 (V-9.1→V-9.5) est COMPLET.
 - EPIC V-FLYWAY reste en BACKLOG (seuil déclencheur : 5+ migrations de schéma).
+- EPIC V-9 backlog contient encore ~32 points / items à traiter (Under-EPIC 3 et suivants).
 
-== Mission Session 144
+== Mission Session 145
 
-1. Continuer Under-EPIC 2 EPIC V-9 : attaquer V-9.8 — intégrer `GovernanceOntologizer` dans le pipeline d'ingestion (`AgenticIngestor` et/ou `IngestGovernanceTask`) pour enrichir `IngestionReport` avec le décompte par `GovernanceSection`.
-2. Baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber.
-3. Un fichier modifié à la fois, compilation entre chaque étape.
-4. Préserver les tests V-9.3, V-9.5, V-9.7 et `IngestGovernanceTaskTest` (zéro régression).
-5. `./gradlew :codebase-plugin:compileKotlin` doit rester vert.
+1. Identifier le prochain sous-item de l'Under-EPIC 2 ou passer à l'Under-EPIC 3 d'EPIC V-9 dans `BACKLOG.adoc`.
+2. Coder en baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber.
+3. Préserver V-9.3, V-9.5, V-9.7, V-9.8 et `IngestGovernanceTaskTest` (zéro régression).
+4. `./gradlew :codebase-plugin:compileKotlin` doit rester vert entre chaque fichier modifié.
 
 == Méthodologie
 
