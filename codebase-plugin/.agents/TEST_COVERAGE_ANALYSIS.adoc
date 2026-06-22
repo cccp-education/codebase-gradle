@@ -1,6 +1,12 @@
-= TEST_COVERAGE_ANALYSIS — Session 142
+= TEST_COVERAGE_ANALYSIS — Session 143
 :date: 2026-06-22
-:epic: EPIC V-9 — V-9.3 ScanAgent (baby-step DDD/TDD/BDD)
+:epic: EPIC V-9 — V-9.7 GovernanceOntologizer (baby-step DDD/TDD/BDD)
+
+== Contexte
+
+PROMPT_REPRISE 143 demandait d'attaquer V-9.6 AgenticOntologizer. Anti-duplication
+confirmée : `AgenticOntologizer.kt` + `OntologizedChunk` déjà livrés par EPIC Y-2
+(session 089, 20/20 PASS). V-9.6 marqué "déjà livré". Passage à V-9.7.
 
 == Nouveaux fichiers source
 
@@ -8,19 +14,14 @@
 |===
 | Fichier | Rôle
 
-| `koog/agentic/ScanAgent.kt` | Scanner récursif du dossier `.agents/` découvrant tous les `.adoc` (ignore `build`/`.git`/`.gradle`/`node_modules`, path relatif cross-plateforme)
-| `koog/agentic/ScannedFile.kt` | Value object DDD (`relativePath` + `content`)
-| `sessions/142-epic_v9_3_scan_agent.adoc` | Archive session 142 (gouvernance)
+| `koog/agentic/GovernanceSection.kt` | Enum DDD 7 sections métier : RULES_ABSOLUES, ETAT_EPICS, BACKLOG_ITEMS, HISTORIQUE, COVERAGE, MISSION, UNKNOWN
+| `koog/agentic/GovernanceOntologizer.kt` | Classifieur par nom de fichier source (`AGENT.adoc` → RULES_ABSOLUES, `INDEX.adoc` → ETAT_EPICS, etc.)
+| `sessions/143-epic_v9_7_governance_ontologizer.adoc` | Archive session 143 (gouvernance)
 |===
 
 == Fichiers source modifiés
 
-[cols="2,3"]
-|===
-| Fichier | Changement
-
-| `koog/agentic/IngestGovernanceTask.kt` | Refactor `collectGovernanceFiles` : liste hardcoded 7 paths supprimée, délègue à `ScanAgent.scan(root).map { it.relativePath to it.content }` (26→3 lignes)
-|===
+Aucun fichier source existant modifié (ajouts uniquement).
 
 == Fichiers test créés / modifiés
 
@@ -28,11 +29,11 @@
 |===
 | Fichier | Changement
 
-| `test/kotlin/koog/agentic/ScanAgentTest.kt` | 8 JUnit5 : empty dir, root files, recursive `.agents/`, subproject, ignored dirs, content read, non-adoc ignored, nested archives.
-| `test/features/epic_v_9_3_scan_agent.feature` | Feature Cucumber @epic_v_9_3 (6 scénarios : empty, root files, recursive, subproject, ignored dirs, ingest integration).
-| `test/kotlin/scenarios/ScanAgentWorld.kt` | World Cucumber (workspaceDir temp, scan/ingest/reset).
-| `test/kotlin/scenarios/ScanAgentSteps.kt` | Steps Given/When/Then pour les 6 scénarios. `@Before("@epic_v_9_3")` reset.
-| `test/kotlin/scenarios/EpicV93CucumberRunner.kt` | Runner Cucumber dédié (GLUE=codebase.scenarios, FILTER_TAGS=@epic_v_9_3).
+| `test/kotlin/koog/agentic/GovernanceOntologizerTest.kt` | 8 JUnit5 : AGENT, INDEX, BACKLOG, SESSIONS_HISTORY, TEST_COVERAGE_ANALYSIS, PROMPT_REPRISE, unknown, subproject AGENT.
+| `test/features/epic_v_9_7_governance_ontologizer.feature` | Feature Cucumber @epic_v_9_7 (7 scénarios, un par section métier).
+| `test/kotlin/scenarios/GovernanceOntologizerWorld.kt` | World Cucumber (factory de chunk, reset).
+| `test/kotlin/scenarios/GovernanceOntologizerSteps.kt` | Steps Given/When/Then pour les 7 scénarios. `@Before("@epic_v_9_7")` reset.
+| `test/kotlin/scenarios/EpicV97CucumberRunner.kt` | Runner Cucumber dédié (GLUE=codebase.scenarios, FILTER_TAGS=@epic_v_9_7).
 |===
 
 == Tests
@@ -40,20 +41,22 @@
 |===
 | Scope | Résultat
 
-| `ScanAgentTest` (8 JUnit5 unitaires) | ✅ 8/8 PASS
-| `EpicV93CucumberRunner` (6 scénarios @epic_v_9_3) | ✅ 6/6 PASS
-| `IngestGovernanceTaskTest` (5 tests régression) | ✅ 5/5 PASS
+| `GovernanceOntologizerTest` (8 JUnit5 unitaires) | ✅ 8/8 PASS
+| `EpicV97CucumberRunner` (7 scénarios @epic_v_9_7) | ✅ 7/7 PASS
+| `EpicV93CucumberRunner` (6 scénarios @epic_v_9_3) | ✅ 6/6 PASS (régression)
+| `EpicV95CucumberRunner` (5 scénarios @epic_v_9_5) | ✅ 5/5 PASS (régression)
 | `compileKotlin` | ✅
 | `compileTestKotlin` | ✅
-| Régression tests préexistants | 0 (refactor préservant le contrat public)
+| Régression tests préexistants | 0
 |===
 
-== Total session 142
+== Total session 143
 
-- JUnit5 : 8 nouveaux PASS + 5 régression PASS
-- Cucumber : 6 scénarios PASS
+- JUnit5 : 8 nouveaux PASS
+- Cucumber : 7 scénarios PASS
 - Build : propre
 - Zéro réseau, zéro Testcontainers
+- V-9.6 déjà livré par EPIC Y-2
 
 '''
 

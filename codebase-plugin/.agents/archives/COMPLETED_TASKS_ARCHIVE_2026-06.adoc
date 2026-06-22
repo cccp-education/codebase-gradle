@@ -1,3 +1,17 @@
+== Session 143 — EPIC V-9.7 GovernanceOntologizer
+
+- Anti-duplication V-9.6 : `AgenticOntologizer.kt` déjà livré par EPIC Y-2 (20/20 PASS) → V-9.6 marqué "déjà livré"
+- `koog/agentic/GovernanceSection.kt` — enum DDD 7 sections métier
+- `koog/agentic/GovernanceOntologizer.kt` — classifieur par nom de fichier source (AGENT/INDEX/BACKLOG/SESSIONS_HISTORY/TEST_COVERAGE_ANALYSIS/PROMPT_REPRISE)
+- `test/kotlin/koog/agentic/GovernanceOntologizerTest.kt` — 8 JUnit5 PASS
+- `test/features/epic_v_9_7_governance_ontologizer.feature` + `EpicV97CucumberRunner.kt` — 7 scénarios Cucumber PASS
+- `test/kotlin/scenarios/GovernanceOntologizerWorld.kt` + `GovernanceOntologizerSteps.kt` — glue Cucumber
+- Régressions V-9.3 + V-9.5 vertes
+- **Under-EPIC 2 démarré** avec V-9.7
+- Build propre, zéro réseau, zéro Testcontainers
+
+'''
+
 == Session 142 — EPIC V-9.3 ScanAgent
 
 - `koog/agentic/ScanAgent.kt` — scanner récursif `.agents/` (ignore build/.git/.gradle/node_modules)

@@ -4,6 +4,7 @@
 |===
 | Session | Date | EPIC | Résultat
 
+| 143 | 2026-06-22 | EPIC V-9 | V-9.7 GovernanceOntologizer — enum `GovernanceSection` + classifieur par nom de fichier + 8 JUnit5 + 7 Cucumber @epic_v_9_7 PASS ✅ (V-9.6 déjà livré par EPIC Y-2). Under-EPIC 2 démarré.
 | 142 | 2026-06-22 | EPIC V-9 | V-9.3 ScanAgent — `ScanAgent` scanner récursif `.agents/` + `ScannedFile` value object + 8 JUnit5 + 6 Cucumber @epic_v_9_3 PASS ✅ + refactor `IngestGovernanceTask.collectGovernanceFiles` (liste hardcoded supprimée). Under-EPIC 1 complet 5/5.
 | 141 | 2026-06-22 | EPIC V-9 | V-9.5 ChunkValidator — 10 JUnit5 + 5 Cucumber @epic_v_9_5 PASS ✅ (anti-duplication V-9.1/V-9.2/V-9.4 vérifiée)
 | 140 | 2026-06-22 | EPIC 8 | ExpertManifestReader + round-trip + Cucumber cross-borough — 8 JUnit5 + 2 round-trip + 6/6 @epic8 PASS ✅ (EPIC 8 clôturé 4/4)

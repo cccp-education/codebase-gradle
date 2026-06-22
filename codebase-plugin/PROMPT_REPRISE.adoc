@@ -1,20 +1,21 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 143
-:session: 143
+= PROMPT REPRISE — Codebase (Queens N1) — Session 144
+:session: 144
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 142 — EPIC V-9.3 ScanAgent livré (8 JUnit5 + 6 Cucumber @epic_v_9_3 PASS, IngestGovernanceTask refactoré)
+:session_precedente: 143 — EPIC V-9.7 GovernanceOntologizer livré (8 JUnit5 + 7 Cucumber @epic_v_9_7 PASS). V-9.6 marqué déjà livré par EPIC Y-2.
 
 == Contexte Hérité
 
-- Session 142 a livré V-9.3 ScanAgent : `ScanAgent.kt` (scanner récursif `.agents/`, ignore `build`/`.git`/`.gradle`/`node_modules`) + `ScannedFile.kt` (value object DDD) + 8 JUnit5 + 6 scénarios Cucumber `@epic_v_9_3` PASS. `IngestGovernanceTask.collectGovernanceFiles` refactoré (liste hardcoded 7 paths supprimée, délègue à `ScanAgent`). 5 tests `IngestGovernanceTaskTest` préservés (zéro régression).
-- Under-EPIC 1 (V-9.1 AgenticChunker + V-9.2 ChunkType + V-9.3 ScanAgent + V-9.4 ChunkExtractor + V-9.5 ChunkValidator) est **COMPLET** (5/5).
+- Session 143 a confirmé que V-9.6 AgenticOntologizer était déjà livré par EPIC Y-2 (`AgenticOntologizer.kt` + 20 tests JUnit5 PASS).
+- Session 143 a livré V-9.7 `GovernanceOntologizer` : enum `GovernanceSection` (7 sections métier) + classifieur par nom de fichier source (AGENT.adoc → RULES_ABSOLUES, INDEX.adoc → ETAT_EPICS, BACKLOG.adoc → BACKLOG_ITEMS, SESSIONS_HISTORY.adoc → HISTORIQUE, TEST_COVERAGE_ANALYSIS.adoc → COVERAGE, PROMPT_REPRISE.adoc → MISSION). 8 JUnit5 + 7 Cucumber @epic_v_9_7 PASS.
+- Under-EPIC 1 (V-9.1→V-9.5) est COMPLET. Under-EPIC 2 démarré avec V-9.7.
 - EPIC V-FLYWAY reste en BACKLOG (seuil déclencheur : 5+ migrations de schéma).
 
-== Mission Session 143
+== Mission Session 144
 
-1. Attaquer Under-EPIC 2 V-9.6 AgenticOntologizer — vérifier anti-duplication avec EPIC Y-2 (AgenticOntologizer.kt déjà livré, 20/20 PASS session 089).
-2. Si V-9.6 déjà couvert par EPIC Y-2, marquer "déjà livré" et passer à V-9.7.
-3. Identifier le premier item réellement nouveau de Under-EPIC 2/3 et le coder en baby-step DDD/TDD/BDD.
-4. Un fichier modifié à la fois, compilation entre chaque étape.
+1. Continuer Under-EPIC 2 EPIC V-9 : attaquer V-9.8 — intégrer `GovernanceOntologizer` dans le pipeline d'ingestion (`AgenticIngestor` et/ou `IngestGovernanceTask`) pour enrichir `IngestionReport` avec le décompte par `GovernanceSection`.
+2. Baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber.
+3. Un fichier modifié à la fois, compilation entre chaque étape.
+4. Préserver les tests V-9.3, V-9.5, V-9.7 et `IngestGovernanceTaskTest` (zéro régression).
 5. `./gradlew :codebase-plugin:compileKotlin` doit rester vert.
 
 == Méthodologie

@@ -1,0 +1,71 @@
+= Session 143 — EPIC V-9.7 GovernanceOntologizer (baby-step DDD/TDD/BDD)
+:session: 143
+:borough: Queens — codebase-gradle (N1)
+:date: 2026-06-22
+:epic: EPIC V-9 — Vibecoding Gouvernance Agentique (Under-EPIC 2)
+
+== Contexte
+
+PROMPT_REPRISE 143 demandait d'attaquer Under-EPIC 2 V-9.6 AgenticOntologizer.
+Après anti-duplication : `AgenticOntologizer.kt` et `OntologizedChunk` existent
+déjà (EPIC Y-2, session 089, 20/20 PASS). V-9.6 est donc déjà livré.
+
+Décision : marquer V-9.6 "déjà livré par EPIC Y-2" et passer à V-9.7.
+V-9.7 = classifieur spécifique des fichiers de gouvernance du projet courant
+(AGENT.adoc, INDEX.adoc, BACKLOG.adoc, SESSIONS_HISTORY.adoc,
+TEST_COVERAGE_ANALYSIS.adoc, PROMPT_REPRISE.adoc) vers des sections métier
+propres (`GovernanceSection`).
+
+== Actions
+
+=== Anti-duplication V-9.6
+
+- Vérifié `AgenticOntologizer.kt` (107 lignes) + `AgenticOntologizerTest.kt` (322 lignes, 20 tests).
+- Tests verts : `./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.AgenticOntologizerTest"`.
+- Conclusion : V-9.6 ne nécessite pas de nouveau code.
+
+=== Baby-step V-9.7 GovernanceOntologizer
+
+1. **Contrat DDD (rouge)** : créé `GovernanceOntologizerTest.kt` (8 tests JUnit5).
+   Compilation échoue (`GovernanceOntologizer` / `GovernanceSection` inexistants).
+2. **Implémentation domaine** : créé `GovernanceSection.kt` (enum 7 valeurs) +
+   `GovernanceOntologizer.kt` (classify par filename).
+3. **Tests unitaires verts** : 8/8 PASS.
+4. **BDD Cucumber** : créé `epic_v_9_7_governance_ontologizer.feature` (7 scénarios)
+   + `GovernanceOntologizerWorld.kt` + `GovernanceOntologizerSteps.kt` +
+   `EpicV97CucumberRunner.kt`.
+5. **Cucumber vert** : 7/7 scénarios @epic_v_9_7 PASS.
+6. **Régression** : V-9.3 (ScanAgent 8 JUnit5 + 6 Cucumber) + V-9.5 (ChunkValidator 10 JUnit5 + 5 Cucumber)
+   toujours verts.
+
+== Commandes
+
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:compileTestKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.GovernanceOntologizerTest"
+./gradlew :codebase-plugin:test --tests "codebase.scenarios.EpicV97CucumberRunner" --rerun-tasks
+./gradlew :codebase-plugin:test --tests "codebase.scenarios.EpicV93CucumberRunner" --tests "codebase.scenarios.EpicV95CucumberRunner" --tests "codebase.koog.agentic.ScanAgentTest" --tests "codebase.koog.agentic.ChunkValidatorTest" --tests "codebase.koog.agentic.GovernanceOntologizerTest" --rerun-tasks
+----
+
+== Résultats
+
+- `GovernanceSection.kt` — enum DDD 7 sections métier
+- `GovernanceOntologizer.kt` — classifieur par nom de fichier source
+- `GovernanceOntologizerTest.kt` — 8 JUnit5 PASS
+- `epic_v_9_7_governance_ontologizer.feature` — 7 scénarios Cucumber PASS
+- Glue Cucumber `GovernanceOntologizerWorld.kt` + `GovernanceOntologizerSteps.kt` + `EpicV97CucumberRunner.kt`
+- Zéro fichier existant modifié (que des ajouts)
+- Total V-9.7 : 8 JUnit5 + 7 Cucumber = 15/15 PASS
+
+== Leçons
+
+- L'anti-duplication systématique évite le travail mort : V-9.6 était déjà
+  couvert par EPIC Y-2.
+- Quand un item est un doublon, il vaut mieux le documenter explicitement et
+  passer au suivant plutôt que de réécrire.
+- `GovernanceOntologizer` est un bon baby-step : contrat trivial, implémentation
+  < 20 lignes, tests déterministes, zéro dépendance externe.
+- Under-EPIC 2 démarré : V-9.7 ✅ livré. Prochain V-9.8 probable = intégrer
+  `GovernanceOntologizer` dans `AgenticIngestor` / `IngestGovernanceTask` pour
+  enrichir le rapport d'ingestion avec les sections de gouvernance.
