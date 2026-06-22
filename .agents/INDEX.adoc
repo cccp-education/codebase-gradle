@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-06-22
-*Version* : 1.1.7 (Session 138 — EPIC V-6 OllamaInstanceFactory + Cucumber Ollama cloud quota)
+*Version* : 1.1.8 (Session 140 — EPIC 8 Expert Exposure clôturé 4/4 : ExpertManifestReader + round-trip + Cucumber cross-borough)
 
 == Regles Absolues
 
@@ -29,6 +29,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 136 — `OllamaInstanceScanner` actif + ports DDD + câblage `LlmProviderResolver`
 | ✅ | Session 137 — `OllamaPoolKeyAdapter` + câblage `OllamaLlmProvider`, rotation proactive quota/connexion
 | ✅ | Session 138 — `OllamaInstanceFactory` + contrat N0 `volumeTag` + feature Cucumber `@epic_v6_ollama_cloud` (2 scénarios, zéro réseau)
+| ✅ | Session 140 — EPIC 8 Expert Exposure clôturé 4/4 : `ExpertManifestReader` (read/readOrEmpty/findByDomain) + 8 JUnit5 + 2 round-trip JUnit5 + 1 scénario Cucumber cross-borough (6/6 @epic8 PASS)
 
 === EPICs & Projects
 
@@ -51,5 +52,6 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | EPIC Y | Agentic Literature Compiler (gouvernance augmentée) | N1 | ✅ TERMINÉ — pont vers ingest local à câbler | 088-097
 | EPIC CR | Code Review Deep Analysis | N1 | ✅ TERMINÉ | 119-125
 | EPICsession-proTOCOL | opencode↔Gradle Thin Client | N1 | ✅ TERMINE (fallback governance ajouté session 131) | 112-114, 131
+| EPIC 8 | Expert Exposure via Ollama (manifest + reader cross-borough) | N1 | ✅ TERMINÉ (4/4 — ExpertManifestReader + round-trip + Cucumber cross-borough) | 127, 140
 | EPIC TRAD | TranslationService cross-borough (contrat N0 + impl N1) | N1 | ✅ TERMINÉ (baby-step, débloque bakery US-4) | 133
 |===

@@ -194,6 +194,25 @@
 **Statut** : CADRÉ — 14 items identifiés
 **Priorite** : P3
 
+=== EPIC V-9 — Vibecoding Gouvernance Agentique
+
+**Statut** : EN COURS (1/35 — V-9.5 livré session 141)
+**Priorite** : P0
+**Origine** : Session 000 (2026-06-16) — gap vibecoding incomplet
+**Cadrage** : `codebase-plugin/.agents/CADRAGE_METHODE_EPIC_V9.adoc` (7 ateliers, 35 items)
+
+==== Under-EPIC 1 : Analyse et Extract (4/5 — V-9.3 reste)
+
+* [x] V-9.1 : AgenticChunker — *déjà livré par EPIC Y-1* (AgenticChunker.kt 439 lignes + 16 JUnit5 PASS)
+* [x] V-9.2 : AgenticChunkType — *déjà livré par EPIC Y* (ChunkType enum 5 types dans AgenticChunk.kt)
+* [ ] V-9.3 : ScanAgent — scanner récursif du dossier `.agents/` (remplacer collectGovernanceFiles hardcoded 7 paths). 12 JUnit5.
+* [x] V-9.4 : ChunkExtractor — *couvert par AgenticChunker* (extraction + sha256 id + checksum déjà présents)
+* [x] V-9.5 : ChunkValidator — ✅ TERMINÉ session 141 (10 JUnit5 + 5 Cucumber @epic_v_9_5 PASS)
+
+==== Under-EPICs 2-7
+
+V-9.6→V-9.35 restent à coder. Voir `CADRAGE_METHODE_EPIC_V9.adoc` pour le détail.
+
 == Backlog stale
 
 * [ ] **EPIC 3** : Architecture Multi-Canal Convergent — Formalisation (TERMINE, session 046)
@@ -202,7 +221,7 @@
 * [ ] **EPIC 6** : Integration ONNX — boucle qualite (TERMINE, session 056)
 * [ ] **EPIC 7** : Wiring LangChain4j + pgvector experts (TERMI
 NE, session 126)
-* [ ] **EPIC 8** : Exposer experts via Ollama (EN COURS, 3/4 — session 127)
+* [ ] **EPIC 8** : Exposer experts via Ollama (✅ TERMINÉ — session 140)
 * [ ] **EPIC 9** : Opencode Augmenté — Réalité Augmentée Développeur (TERMINE, sessions 001-021)
 * [ ] **EPIC 10** : Instrumentation Gradle du Pattern STIMULUS (TERMINE, sessions 022 + 025)
 * [ ] **EPIC 12** : Dilution Article de Blog (TERMI

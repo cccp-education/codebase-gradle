@@ -1,0 +1,96 @@
+= Session 141 — EPIC V-9.5 ChunkValidator (baby-step TDD/BDD)
+:session: 141
+:borough: Queens — codebase-gradle (N1)
+:date: 2026-06-22
+:epic: EPIC V-9 — Vibecoding Gouvernance Agentique (Under-EPIC 1)
+
+== Contexte
+
+Session 140 a clôturé EPIC 8 (ExpertManifestReader + Cucumber cross-borough).
+PROMPT_REPRISE 141 demandait de démarrer EPIC V-9 Under-EPIC 1 (V-9.1
+AgenticChunker + V-9.2 ChunkType enum).
+
+Constat anti-duplication après vérification du paquet `koog/agentic/` :
+- V-9.1 AgenticChunker — *déjà livré* par EPIC Y (Y-1 ✅ 18/18 PASS).
+  Fichier `AgenticChunker.kt` (439 lignes) + 16 tests JUnit5 dans
+  `AgenticChunkerTest.kt` (289 lignes).
+- V-9.2 ChunkType enum 5 types (RULE/CONCEPT/PROCEDURE/METADATA/CONSTRAINT)
+  — *déjà livré* dans `AgenticChunk.kt:5-11`.
+- V-9.3 ScanAgent — PARTIEL : `IngestGovernanceTask.collectGovernanceFiles`
+  hardcode 7 paths, pas un scanner récursif du dossier `.agents/`.
+- V-9.4 ChunkExtractor — QUASI-DOUBLON avec `AgenticChunker` (extraction +
+  sha256 id + checksum déjà présents).
+- V-9.5 ChunkValidator — VIDE. Périmètre nouveau, zéro duplication.
+
+Décision : attaquer V-9.5 ChunkValidator en baby-step DDD/TDD/BDD pur.
+V-9.1/V-9.2 marqués "déjà livrés". V-9.4 marqué "couvert par AgenticChunker".
+V-9.3 reste à coder (prochaine session).
+
+== Actions
+
+=== Baby step 1 (unit) — contrat ChunkValidator + ValidationResult
+
+- Nouveau fichier `src/main/kotlin/codebase/koog/agentic/ChunkValidator.kt` :
+  data class `ValidationResult(valid, errors)` + class `ChunkValidator`
+  avec `validate(chunk): ValidationResult`.
+- Nouveau fichier test `src/test/kotlin/codebase/koog/agentic/ChunkValidatorTest.kt`.
+- Premier test : "should validate a well-formed chunk as valid" — rouge
+  (ChunkValidator n'existe pas), puis vert après création minimale.
+
+=== Baby step 2 (unit) — 9 tests échec ajoutés d'un coup
+
+- Tests : blank id, blank sourceFile, blank content, blank sourceLines,
+  blank checksum, checksum mismatch (sha256 du content vs champ checksum),
+  weight négatif, weight > 1.0, weight aux bornes 0.0 et 1.0.
+- Run : 8 failed / 2 passed — rouge attendu (logique de validation absente).
+
+=== Baby step 3 (unit) — implémentation complète ChunkValidator
+
+- Validation champs non vides (id, sourceFile, content, sourceLines,
+  checksum).
+- Cohérence checksum : `sha256(content)` doit égaler `chunk.checksum`.
+- Bornes weight : `0.0 <= weight <= 1.0`.
+- Retourne `ValidationResult(valid = errors.isEmpty(), errors)`.
+- Run : 10/10 PASS ✅.
+
+=== Baby step 4 (BDD) — feature Cucumber @epic_v_9_5
+
+- Nouveau feature `src/test/features/epic_v_9_5_chunk_validator.feature` :
+  5 scénarios (valid extrait par AgenticChunker, blank id, checksum
+  mismatch, weight > 1.0, weight négatif).
+- Nouveau world `ChunkValidatorWorld.kt` : extractAndValidate, validate,
+  buildChunk (factory), sha256, reset.
+- Nouveau steps `ChunkValidatorSteps.kt` : Given/When/Then pour les 5
+  scénarios. `@Before("@epic_v_9_5")` reset.
+- Nouveau runner `EpicV95CucumberRunner.kt` : Suite Cucumber avec
+  GLUE=codebase.scenarios, FEATURES=epic_v_9_5_chunk_validator.feature,
+  FILTER_TAGS=@epic_v_9_5.
+- Run : 5/5 scénarios @epic_v_9_5 PASS ✅ (zéro réseau, zéro Testcontainers).
+
+== Commandes
+
+- `./gradlew :codebase-plugin:compileKotlin` — baseline verte
+- `./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.ChunkValidatorTest"` — 10/10 PASS
+- `./gradlew :codebase-plugin:test --tests "codebase.scenarios.EpicV95CucumberRunner"` — 5/5 PASS
+
+== Résultats
+
+- 10 JUnit5 unitaires PASS (ChunkValidatorTest)
+- 5 scénarios Cucumber @epic_v_9_5 PASS
+- 0 fichier main existant modifié (nouveaux fichiers uniquement)
+- 0 régression (compile verte, tests préexistants non touchés)
+- Build propre
+
+== Leçons
+
+- L'anti-duplication systématique avant de coder un item backlog évite
+  du travail mort : V-9.1/V-9.2/V-9.4 étaient déjà couverts par EPIC Y.
+- ChunkValidator est un bon exemple de baby-step TDD pur : contrat
+  trivial, 10 tests, implémentation < 25 lignes, 0 dépendance (pas de
+  DB, pas de réseau, pas de Spring).
+- Le pattern Cucumber "1 runner par EPIC + 1 world + 1 steps" se
+  duplique proprement sans toucher aux runners existants.
+- Pour V-9.3 ScanAgent, attention à ne pas dupliquer
+  `IngestGovernanceTask.collectGovernanceFiles` (hardcoded 7 paths) :
+  remplacer par un scanner récursif du dossier `.agents/` sans casser
+  les tests `IngestGovernanceTaskTest` (5 tests PASS existants).

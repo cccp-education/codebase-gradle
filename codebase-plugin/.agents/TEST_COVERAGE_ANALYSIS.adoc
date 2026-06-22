@@ -1,3 +1,55 @@
+= TEST_COVERAGE_ANALYSIS — Session 141
+:date: 2026-06-22
+:epic: EPIC V-9 — V-9.5 ChunkValidator (baby-step TDD/BDD)
+
+== Nouveaux fichiers source
+
+[cols="2,3"]
+|===
+| Fichier | Rôle
+
+| `koog/agentic/ChunkValidator.kt` | Validateur AgenticChunk + ValidationResult (id/sourceFile/content/sourceLines/checksum non vides, checksum sha256 cohérent, weight 0.0..1.0)
+| `sessions/141-epic_v9_5_chunk_validator.adoc` | Archive session 141 (gouvernance)
+|===
+
+== Fichiers source modifiés
+
+Aucun fichier main existant modifié (nouveaux fichiers uniquement).
+
+== Fichiers test créés / modifiés
+
+[cols="2,3"]
+|===
+| Fichier | Changement
+
+| `test/kotlin/koog/agentic/ChunkValidatorTest.kt` | 10 JUnit5 : chunk bien formé valide, blank id/sourceFile/content/sourceLines/checksum, checksum mismatch, weight négatif / >1.0 / bornes 0.0 et 1.0.
+| `test/features/epic_v_9_5_chunk_validator.feature` | Feature Cucumber @epic_v_9_5 (5 scénarios : valid extrait par AgenticChunker, blank id, checksum mismatch, weight > 1.0, weight négatif).
+| `test/kotlin/scenarios/ChunkValidatorWorld.kt` | World Cucumber (extractAndValidate, validate, buildChunk, sha256, reset).
+| `test/kotlin/scenarios/ChunkValidatorSteps.kt` | Steps Given/When/Then pour les 5 scénarios. `@Before("@epic_v_9_5")` reset.
+| `test/kotlin/scenarios/EpicV95CucumberRunner.kt` | Runner Cucumber dédié (GLUE=codebase.scenarios, FILTER_TAGS=@epic_v_9_5).
+|===
+
+== Tests
+
+|===
+| Scope | Résultat
+
+| `ChunkValidatorTest` (10 JUnit5 unitaires) | ✅ 10/10 PASS
+| `EpicV95CucumberRunner` (5 scénarios @epic_v_9_5) | ✅ 5/5 PASS
+| `compileKotlin` | ✅
+| `compileTestKotlin` | ✅
+| Régression tests préexistants | 0 (nouveaux fichiers uniquement)
+|===
+
+== Total session 141
+
+- JUnit5 : 10 nouveaux PASS
+- Cucumber : 5 scénarios PASS
+- Build : propre
+- Zéro réseau, zéro Testcontainers
+
+'''
+
 = TEST_COVERAGE_ANALYSIS — Session 139
 :date: 2026-06-22
 :epic: EPIC V-6 — LlmProviderResolver → OllamaInstanceFactory déterministe
@@ -194,11 +246,13 @@
 | 127 | 16 | 5 (EPIC 8)
 | 132 | 5 (IngestGovernance) | 23 steps / 5 scénarios (V-LOCAL)
 | 133 | 8 (i18n) | 24 steps / 6 scénarios (TRAD)
+| 140 | 10 (8 ExpertManifestReader + 2 RoundTrip) | 6 scénarios / 34 steps (EPIC 8 clôturé 4/4)
 |===
 
 == Total projet (estimé)
 
 - Après session 133 : ~559 + 14 = ~573 PASS
+- Après session 140 : ~573 + 10 JUnit5 + 1 scénario Cucumber = ~583 PASS
 
 == Couverture Kover
 

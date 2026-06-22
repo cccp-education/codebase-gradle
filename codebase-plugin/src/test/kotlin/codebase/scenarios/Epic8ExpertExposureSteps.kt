@@ -3,7 +3,9 @@ package codebase.scenarios
 import codebase.CodebasePlugin
 import codebase.koog.expert.ExpertDomain
 import codebase.koog.expert.ExpertExposureTask
+import codebase.koog.expert.ExpertManifestReader
 import codebase.koog.expert.ExpertRegistration
+import codebase.koog.expert.findByDomain
 import io.cucumber.java.After
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
@@ -12,6 +14,7 @@ import org.gradle.testfixtures.ProjectBuilder
 import java.nio.file.Files
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class Epic8ExpertExposureSteps(private val world: Epic8ExpertExposureWorld) {
@@ -151,6 +154,48 @@ class Epic8ExpertExposureSteps(private val world: Epic8ExpertExposureWorld) {
     fun `manifest does not contain domain`(domain: String) {
         assertTrue(!world.manifestContent!!.contains("\"domain\": \"$domain\""),
             "Manifest should NOT contain domain '$domain'. Got: ${world.manifestContent}")
+    }
+
+    @When("a borough N2 reads the manifest file")
+    fun `borough n2 reads manifest`() {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(world.projectDir!!)
+            .withName("epic8-consume")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("exposeExperts", ExpertExposureTask::class.java).get()
+        task.expertRegistry = world.registry
+        task.outputFile.set(project.layout.buildDirectory.file("experts/exposure-manifest.json"))
+        task.anonymizeEndpoints.set(false)
+
+        task.executeExposure()
+
+        val manifestFile = project.layout.buildDirectory
+            .file("experts/exposure-manifest.json").get().asFile
+        world.parsedManifest = ExpertManifestReader.read(manifestFile)
+    }
+
+    @When("it resolves the {string} expert endpoint")
+    fun `resolves expert endpoint`(domain: String) {
+        val entry = world.parsedManifest?.findByDomain(domain)
+        world.resolvedModel = entry?.modelName
+        world.resolvedBaseUrl = entry?.baseUrl
+    }
+
+    @Then("the resolved model is {string}")
+    fun `resolved model is`(model: String) {
+        assertEquals(model, world.resolvedModel, "Resolved model mismatch")
+    }
+
+    @Then("the resolved base url is {string}")
+    fun `resolved base url is`(baseUrl: String) {
+        assertEquals(baseUrl, world.resolvedBaseUrl, "Resolved baseUrl mismatch")
+    }
+
+    @Then("the parsed manifest has {int} experts")
+    fun `parsed manifest has experts`(count: Int) {
+        assertEquals(count, world.parsedManifest?.experts?.size, "Parsed experts count mismatch")
     }
 
     @After

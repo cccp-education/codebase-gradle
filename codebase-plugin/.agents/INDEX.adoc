@@ -1,7 +1,7 @@
 = INDEX.adoc — Codebase Gradle (Queens N1)
 :date: 2026-06-22
-:session_en_cours: 140
-:session_precedente: 139 — EPIC V-6 Resolver→Factory déterministe — 9 JUnit5 + 3 Cucumber PASS ✅
+:session_en_cours: 142
+:session_precedente: 141 — EPIC V-9.5 ChunkValidator livré (10 JUnit5 + 5 Cucumber @epic_v_9_5 PASS)
 
 == Roadmap EPICs
 
@@ -38,12 +38,16 @@
 | 126
 
 | EPIC 8 Exposer experts
-| EN COURS (3/4)
-| 127
+| ✅ TERMINÉ (4/4 — ExpertManifestReader + round-trip + Cucumber cross-borough, session 140)
+| 127, 140
 
 | EPIC V-6 Ollama Cloud
 | ✅ TERMINÉ (10/10 — resolver→factory déterministe + scanner fallback livré session 139)
 | 136-139
+
+| EPIC V-9 Gouvernance Agentique
+| EN COURS (1/35 — V-9.5 ChunkValidator livré session 141 ; V-9.1/V-9.2 déjà couverts par EPIC Y ; V-9.4 couvert par AgenticChunker ; V-9.3 ScanAgent reste)
+| 141
 
 | EPIC 9 Opencode Augmenté
 | ✅ TERMINE
@@ -109,6 +113,8 @@
 == Sessions Récentes
 
 | Session | Date | EPIC | Résultat
+| 141 | 2026-06-22 | EPIC V-9 | V-9.5 ChunkValidator — 10 JUnit5 + 5 Cucumber @epic_v_9_5 PASS ✅ (anti-duplication V-9.1/V-9.2/V-9.4 vérifiée)
+| 140 | 2026-06-22 | EPIC 8 | ExpertManifestReader + RoundTrip + Cucumber cross-borough — 8 JUnit5 + 2 round-trip + 6/6 Cucumber @epic8 PASS ✅ (EPIC 8 clôturé 4/4)
 | 139 | 2026-06-22 | EPIC V-6 | LlmProviderResolver factory déterministe + Cucumber @epic_v6_resolver — 9 JUnit5 + 3 Cucumber PASS ✅
 | 138 | 2026-06-22 | EPIC V-6 | OllamaInstanceFactory + contrat N0 volumeTag + feature @epic_v6_ollama_cloud — 2 scénarios PASS ✅
 | 137 | 2026-06-22 | EPIC V-6 | OllamaPoolKeyAdapter + câblage OllamaLlmProvider — 26/27 tests PASS ✅

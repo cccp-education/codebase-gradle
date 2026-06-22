@@ -1,21 +1,24 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 140
-:session: 140
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 142
+:session: 142
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 139 — EPIC V-6 Resolver→Factory déterministe — 9 JUnit5 + 3 Cucumber PASS ✅
+:session_precedente: 141 — EPIC V-9.5 ChunkValidator livré (10 JUnit5 + 5 Cucumber @epic_v_9_5 PASS)
 
 == Contexte Hérité
 
-- Session 139 a clôturé EPIC V-6 : `LlmProviderResolver` utilise `OllamaInstanceFactory` par défaut (mode déterministe, 29 instances, zéro réseau) ; `OllamaInstanceScanner` reste disponible comme fallback explicite via `OLLAMA_SCAN_PORTS=true` ou `OLLAMA_POOL_PORTS`.
-- Les 9 tests JUnit5 `LlmProviderResolverTest` et les 3 scénarios Cucumber `@epic_v6_resolver` passent. Build propre.
-- EPIC 8 (Expert Exposure via Ollama) reste partiellement ouvert : session 127 a livré contrats, tâche Gradle `exposeExperts` et 5 scénarios Cucumber, mais l'INDEX indique "EN COURS (3/4)" — le dernier item (consommation/exposition réelle par un borough N2 ou wiring final) reste à boucler.
+- Session 141 a livré V-9.5 ChunkValidator : `ChunkValidator.kt` (validate id/sourceFile/content/sourceLines/checksum + checksum sha256 cohérent + weight 0.0..1.0) + `ValidationResult` + 10 JUnit5 + 5 scénarios Cucumber `@epic_v_9_5` PASS. Zéro réseau, zéro Testcontainers.
+- V-9.1 AgenticChunker + V-9.2 ChunkType enum déjà livrés par EPIC Y (anti-duplication vérifiée session 141).
+- V-9.4 ChunkExtractor déjà couvert par AgenticChunker (sha256 id + checksum).
+- V-9.3 ScanAgent reste à coder : `IngestGovernanceTask.collectGovernanceFiles` hardcode 7 paths EAGER — remplacer par scanner récursif du dossier `.agents/` sans casser les 5 tests `IngestGovernanceTaskTest` PASS.
+- EPIC V-FLYWAY reste en BACKLOG (seuil déclencheur : 5+ migrations de schéma).
 
-== Mission Session 140
+== Mission Session 142
 
-1. Identifier l'item ouvert 4/4 de l'EPIC 8 Expert Exposure (consommation du manifeste JSON par un borough N2, wiring final, ou test cross-borough).
-2. Implémenter le dernier baby step en TDD : un fichier modifié à la fois, compilation entre chaque étape.
-3. Ajouter/ajuster les tests JUnit5 fonctionnels et les scénarios Cucumber `@epic8` pour couvrir le point manquant.
-4. S'assurer que `./gradlew :codebase-plugin:compileKotlin` et les tests ciblés EPIC 8 restent verts.
-5. Si EPIC 8 est véritablement terminé, mettre à jour `BACKLOG.adoc` et `.agents/INDEX.adoc` (statut ✅ TERMINE).
+1. Démarrer EPIC V-9 Under-EPIC 1 item restant : V-9.3 ScanAgent — scanner récursif du dossier `.agents/` découvrant tous les `.adoc` (pas une liste hardcoded).
+2. Baby-step DDD/TDD/BDD : contrat `ScanAgent` + `ScannedFile` d'abord (unit JUnit5), puis extraction fonctionnelle, puis scénario Cucumber `@epic_v_9_3`.
+3. Un fichier modifié à la fois, compilation entre chaque étape.
+4. `./gradlew :codebase-plugin:compileKotlin` doit rester vert.
+5. Ne PAS casser `IngestGovernanceTaskTest` (5 tests PASS existants) — si refactor de `collectGovernanceFiles`, préserver son comportement public.
+6. Si V-9.3 terminé, Under-EPIC 1 est complet (5/5) → attaquer Under-EPIC 2 V-9.6 AgenticOntologizer (déjà partiellement livré par EPIC Y-2, vérifier anti-duplication).
 
 == Méthodologie
 

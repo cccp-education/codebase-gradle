@@ -137,13 +137,13 @@ Package `codebase.koog.expert/` : 7 fichiers src (ExpertContracts, ExpertRegistr
 Domaines generiques (ExpertDomain data class) — les domaines metier CDA/FPA sont dans training-gradle (N2).
 
 == EPIC 8 : Exposer experts via Ollama (consommation par plugins)
-**Statut** : EN COURS (3/4 — Session 127)
+**Statut** : ✅ TERMINÉ (4/4 — Session 140)
 **Priorite** : P2
 
 * [x] Manifest JSON d'exposition — ExpertExposureTask génère un manifest JSON (version, generatedAt, experts[]) depuis ExpertRegistry. Filtrage par domaines, anonymisation endpoints. 7 JUnit5 + 5 Cucumber PASS.
 * [x] Extension DSL — CodebaseExpertExtension (domains, anonymizeEndpoints, outputFile). Tâche `exposeExperts` enregistrée dans CodebasePlugin (groupe "generate"). CLI override via -P.
 * [x] Documentation consommation — Cucumber scénarios "Manifest is consumable by slider/plantuml/bakery" (version, generatedAt, experts, modelName, timeoutSeconds). Feature epic_8_expert_exposure.feature.
-* [ ] Packaging ONNX → Ollama + Modèles pré-chargés dans Magic Stick — dépend du pipeline fine-tuning (EPIC 5 migré vers training-gradle TRN-8). Codebase fournit le socle d'exposition, training fournit les modèles.
+* [x] Consommation cross-borough (Session 140) — `ExpertManifestReader` lit le manifest JSON produit par `ExpertExposureTask` et expose `findByDomain(name)` pour qu'un borough N2 (slider/plantuml/bakery) résolve modèle + endpoint sans hardcoder. 8 JUnit5 `ExpertManifestReaderTest` + 2 JUnit5 `ExpertExposureRoundTripTest` (task→read round-trip, anonymized round-trip) + 1 Cucumber `A borough N2 reads the generated manifest and resolves an expert endpoint` (6/6 scénarios @epic8 PASS). Le packaging ONNX/Ollama reste la responsabilité de training-gradle TRN-8 (modèles pré-chargés Magic Stick) ; codebase fournit le socle d'exposition + la porte de consommation.
 
 == EPIC 9 : Opencode Augmenté — Réalité Augmentée Développeur
 **Statut** : TERMINE (15/15 US DONE — sessions 001-021)

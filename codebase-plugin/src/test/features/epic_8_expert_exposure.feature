@@ -41,3 +41,10 @@ Feature: EPIC 8 - Exposer experts via Ollama
     And the manifest contains "experts"
     And the manifest contains "modelName"
     And the manifest contains "timeoutSeconds"
+
+  Scenario: A borough N2 reads the generated manifest and resolves an expert endpoint
+    When a borough N2 reads the manifest file
+    Then the parsed manifest has 2 experts
+    When it resolves the "kotlin" expert endpoint
+    Then the resolved model is "gpt-oss:120b-cloud"
+    And the resolved base url is "http://localhost:11437"

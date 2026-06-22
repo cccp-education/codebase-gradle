@@ -1,3 +1,16 @@
+== Session 141 — EPIC V-9.5 ChunkValidator
+
+- `koog/agentic/ChunkValidator.kt` — validateur AgenticChunk + ValidationResult
+- Validation : id/sourceFile/content/sourceLines/checksum non vides, checksum sha256 cohérent, weight 0.0..1.0
+- `test/kotlin/koog/agentic/ChunkValidatorTest.kt` — 10 JUnit5 PASS
+- `test/features/epic_v_9_5_chunk_validator.feature` + `EpicV95CucumberRunner.kt` — 5 scénarios Cucumber PASS
+- `test/kotlin/scenarios/ChunkValidatorWorld.kt` + `ChunkValidatorSteps.kt` — glue Cucumber
+- Anti-duplication V-9.1/V-9.2 (déjà EPIC Y) + V-9.4 (couvert par AgenticChunker) vérifiée
+- V-9.3 ScanAgent reste (prochaine session) — `IngestGovernanceTask.collectGovernanceFiles` hardcoded 7 paths à remplacer par scanner récursif `.agents/`
+- Build propre, zéro régression
+
+'''
+
 == Session 139 — EPIC V-6 Resolver → Deterministic Factory
 
 - `koog/llm/LlmProviderResolver.kt` — câblage `OllamaInstanceFactory` par défaut

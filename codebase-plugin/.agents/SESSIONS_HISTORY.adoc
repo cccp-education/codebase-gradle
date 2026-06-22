@@ -4,6 +4,8 @@
 |===
 | Session | Date | EPIC | Résultat
 
+| 141 | 2026-06-22 | EPIC V-9 | V-9.5 ChunkValidator — 10 JUnit5 + 5 Cucumber @epic_v_9_5 PASS ✅ (anti-duplication V-9.1/V-9.2/V-9.4 vérifiée)
+| 140 | 2026-06-22 | EPIC 8 | ExpertManifestReader + round-trip + Cucumber cross-borough — 8 JUnit5 + 2 round-trip + 6/6 @epic8 PASS ✅ (EPIC 8 clôturé 4/4)
 | 139 | 2026-06-22 | EPIC V-6 | LlmProviderResolver factory déterministe + Cucumber @epic_v6_resolver — 9 JUnit5 + 3 Cucumber PASS ✅
 | 138 | 2026-06-22 | EPIC V-6 | OllamaInstanceFactory + contrat N0 volumeTag + feature @epic_v6_ollama_cloud — 2 scénarios PASS ✅
 | 137 | 2026-06-22 | EPIC V-6 | OllamaPoolKeyAdapter + câblage OllamaLlmProvider — 26/27 tests PASS ✅

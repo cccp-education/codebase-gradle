@@ -1,0 +1,123 @@
+= Session 140 — EPIC 8 Expert Exposure clôturé (4/4)
+:session: 140
+:borough: Queens — codebase-gradle (N1)
+:date: 2026-06-22
+:epic: EPIC 8 — Exposer experts via Ollama (consommation par plugins)
+
+== Contexte
+
+Session 139 a clôturé EPIC V-6 (resolver→factory déterministe). EPIC 8
+restait "EN COURS 3/4" : manifest JSON, extension DSL et scénarios
+consommation documentés, mais l'item 4/4 (consommation cross-borough par
+un borough N2) n'était pas matérialisé côté codebase. Le backlog
+original mentionnait "Packaging ONNX → Ollama + Modèles pré-chargés Magic
+Stick" mais cette partie dépend de training-gradle TRN-8 et n'est pas
+actionnable dans codebase.
+
+Reframe session 140 : livrer la *porte de consommation* côté codebase —
+un lecteur de manifest JSON qu'un borough N2 peut appeler pour résoudre
+modèle + endpoint d'un domaine sans hardcoder les URLs.
+
+== Actions
+
+=== Baby step 1 (unit) — ExpertManifestReader TDD
+
+- Nouveau fichier `src/main/kotlin/codebase/koog/expert/ExpertManifestReader.kt` :
+  `ExpertManifestReader.read(file)`, `readOrEmpty(file)`, extension
+  `ExpertExposureManifest.findByDomain(name)`, exception dédiée
+  `ExpertManifestException` (IO + JSON malformé). Types privés
+  `ReaderManifestJson` / `ReaderExpertJson` pour éviter la collision avec
+  ceux déjà privés dans `ExpertExposureTask.kt`.
+- Nouveau test `src/test/kotlin/codebase/koog/expert/ExpertManifestReaderTest.kt` :
+  8 JUnit5 (read normal, empty experts, anonymized baseUrl, findByDomain
+  match, findByDomain miss, malformed JSON, missing file, readOrEmpty).
+- Correction initiale : collision de noms `ManifestJson`/`ExpertJson` avec
+  les types privés du fichier `ExpertExposureTask.kt` → renommés en
+  `ReaderManifestJson`/`ReaderExpertJson`.
+- `./gradlew :codebase-plugin:compileKotlin` OK. 8/8 JUnit5 PASS.
+
+=== Baby step 2 (fonctionnel) — Round-trip task→reader
+
+- Nouveau test `src/test/kotlin/codebase/koog/expert/ExpertExposureRoundTripTest.kt` :
+  2 JUnit5. Le premier enchaîne `ExpertExposureTask.executeExposure()` →
+  `ExpertManifestReader.read(manifestFile)` et vérifie version, size,
+  modèle, baseUrl, timeoutSeconds. Le second vérifie le round-trip avec
+  `anonymizeEndpoints=true` (baseUrl masqué côté task, conservé tel quel
+  côté reader).
+- `./gradlew :codebase-plugin:test --tests "*.ExpertExposureRoundTripTest"` OK. 2/2 PASS.
+
+=== Baby step 3 (Cucumber) — scénario cross-borough consumption
+
+- `Epic8ExpertExposureWorld.kt` : ajout champs `parsedManifest`,
+  `resolvedModel`, `resolvedBaseUrl`.
+- `Epic8ExpertExposureSteps.kt` : 5 nouvelles steps
+  (`a borough N2 reads the manifest file`, `it resolves the {string}
+  expert endpoint`, `the resolved model is {string}`, `the resolved base
+  url is {string}`, `the parsed manifest has {int} experts`) + import
+  `ExpertManifestReader` et `findByDomain`.
+- `src/test/features/epic_8_expert_exposure.feature` : nouveau scénario
+  `A borough N2 reads the generated manifest and resolves an expert endpoint`
+  (Background réutilisé : registry kotlin/docs). La step "When it resolves"
+  a nécessité un ajustement de pattern (`it resolves the {string} expert
+  endpoint` au lieu de `resolves the {string} expert endpoint`).
+- `./gradlew :codebase-plugin:cucumberTestEpic8` OK. 6/6 scénarios
+  @epic8 PASS (5 existants + 1 nouveau).
+
+=== Vérification globale
+
+- `./gradlew :codebase-plugin:assemble` BUILD SUCCESSFUL.
+- `./gradlew :codebase-plugin:test --tests "codebase.koog.expert.*"
+  :codebase-plugin:cucumberTestEpic8` BUILD SUCCESSFUL.
+- Baseline initiale (5 scénarios + 16 JUnit5) est restée verte tout au
+  long de la session.
+
+== Commandes exécutées
+
+----
+cd foundry/public/codebase-gradle
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.expert.ExpertExposureTaskTest" --tests "codebase.koog.expert.ExpertExposureContractsTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.expert.ExpertManifestReaderTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.expert.ExpertExposureRoundTripTest"
+./gradlew :codebase-plugin:cucumberTestEpic8
+./gradlew :codebase-plugin:assemble
+----
+
+== Résultats
+
+- EPIC 8 : 3/4 → 4/4. Statut ✅ TERMINÉ.
+- 10 nouveaux tests (8 JUnit5 unit + 2 JUnit5 round-trip) + 1 scénario
+  Cucumber (6/6 @epic8 PASS).
+- `ExpertManifestReader` est la porte de consommation cross-borough :
+  slider/plantuml/bakery peuvent appeler `read(file).findByDomain(name)`
+  pour résoudre modèle + endpoint sans hardcoder.
+- Packaging ONNX/Ollama + modèles pré-chargés Magic Stick reste la
+  responsabilité de training-gradle TRN-8 (modèles). Codebase fournit le
+  socle d'exposition + la porte de consommation.
+
+== Leçons
+
+- Les types privés `@Serializable` dans deux fichiers du même package
+  Kotlin ne doivent pas porter le même nom (`ManifestJson`/`ExpertJson`
+  dans `ExpertExposureTask.kt` + `ExpertManifestReader.kt`). Renommage en
+  `Reader*Json` évite la collision sans polluer l'API publique.
+- La step Cucumber `When it resolves the "kotlin" expert endpoint` doit
+  matcher exactement l'annotation `@When("it resolves the {string}
+  expert endpoint")` — le pronom "it" ne peut pas être implicite.
+- Reframe du backlog : un item dépendant d'un autre borough
+  (training-gradle TRN-8) ne doit pas bloquer la clôture côté codebase.
+  Le baby step réalisable a été de fournir la porte de consommation
+  (reader), pas d'attendre les modèles.
+
+== Fichiers modifiés/créés
+
+- `src/main/kotlin/codebase/koog/expert/ExpertManifestReader.kt` (NOUVEAU)
+- `src/test/kotlin/codebase/koog/expert/ExpertManifestReaderTest.kt` (NOUVEAU)
+- `src/test/kotlin/codebase/koog/expert/ExpertExposureRoundTripTest.kt` (NOUVEAU)
+- `src/test/kotlin/codebase/scenarios/Epic8ExpertExposureWorld.kt` (MODIFIÉ)
+- `src/test/kotlin/codebase/scenarios/Epic8ExpertExposureSteps.kt` (MODIFIÉ)
+- `src/test/features/epic_8_expert_exposure.feature` (MODIFIÉ)
+- `codebase-plugin/BACKLOG.adoc` (MODIFIÉ — EPIC 8 statut)
+- `codebase-plugin/.agents/INDEX.adoc` (MODIFIÉ)
+- `.agents/BACKLOG.adoc` (MODIFIÉ)
+- `.agents/INDEX.adoc` (MODIFIÉ)
