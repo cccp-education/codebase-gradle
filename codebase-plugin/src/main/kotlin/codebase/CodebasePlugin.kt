@@ -3,6 +3,7 @@ package codebase
 import codebase.blog.EndSessionBlogTask
 import codebase.koog.SessionProtocolDaemonTask
 import codebase.koog.VibecodingTask
+import codebase.koog.agentic.IngestGovernanceTask
 import codebase.koog.expert.CodebaseExpertExtension
 import codebase.koog.expert.ExpertExposureTask
 import codebase.koog.tracking.DashboardTask
@@ -85,6 +86,15 @@ class CodebasePlugin : Plugin<Project> {
         ) {
             it.group = "generate"
             it.description = "Session protocol daemon — stdin JSON-lines SessionPrompt, stdout SessionResponse, reuses Gradle daemon"
+        }
+
+        project.tasks.register(
+            "ingestGovernance",
+            IngestGovernanceTask::class.java
+        ) {
+            it.group = "generate"
+            it.description = "Ingest governance EAGER files (AGENT.adoc, INDEX.adoc, BACKLOG.adoc) into AgenticIngestor (in-memory stub, EPIC V-LOCAL pont Y)"
+            it.workspaceRoot.set(project.rootDir)
         }
 
         project.tasks.register(

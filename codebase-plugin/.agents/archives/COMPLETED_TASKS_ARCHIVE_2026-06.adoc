@@ -1,5 +1,46 @@
 = COMPLETED_TASKS_ARCHIVE — Juin 2026
-:date: 2026-06-16
+:date: 2026-06-22
+
+== Session 133 — EPIC TRAD TranslationService (baby-step cross-borough)
+
+- Dépendance `education.cccp:i18n-contracts:0.0.1` ajoutée au catalogue root + build.gradle.kts
+- `contracts/i18n/TranslationService.kt` (src/main) — contrat N0 : interface + TranslationRequest + TranslationResult (Success/Failure)
+- `codebase/i18n/LlmTranslator.kt` (src/main) — impl N1 production, wrap LlmProvider, sanitize, exception→Failure
+- `codebase/i18n/FakeLlmTranslator.kt` (src/test) — fake déterministe FIFO, capture requêtes
+- `LlmTranslatorTest.kt` — 6 JUnit5 (success, blank, exception, prompt content, same-lang, blank source)
+- `FakeLlmTranslatorTest.kt` — 2 JUnit5 (default stub, FIFO)
+- `epic_translation.feature` — 6 scénarios Cucumber @epic_translation (fake stub, FIFO, failure, LlmTranslator sanitize, blank, same-lang reject)
+- `TranslationWorld.kt` + `TranslationSteps.kt` + `EpicTranslationCucumberRunner.kt`
+- Tâche Gradle `cucumberTestEpicTranslation` enregistrée dans build.gradle.kts
+- **8 JUnit5 + 6 scénarios Cucumber = 14 PASS** — débloque bakery BKY-I18N-MIG US-4
+
+== Session 132 — EPIC V-LOCAL finalisation (V-LOCAL-4/5/6)
+
+- `epic_v_local_governance_fallback.feature` — 5 scénarios Cucumber @epic_v_local (AGENT.adoc auto-load, INDEX.adoc, BACKLOG items, workspace vide, multi-module)
+- `GovernanceFallbackWorld.kt` + `GovernanceFallbackSteps.kt` + `EpicVLocalCucumberRunner.kt`
+- `InMemoryAgenticChunkRepository.kt` — port de FakeAgenticChunkRepository (test) vers main
+- `IngestGovernanceTask.kt` — tâche Gradle `ingestGovernance` (scan EAGER → AgenticIngestor → rapport JSON)
+- `IngestGovernanceTaskTest.kt` — 5 JUnit5
+- `CodebasePlugin.kt` — tâche `ingestGovernance` enregistrée (group "generate")
+- `LOCAL_VIBECODING_LOOP.adoc` v1.1 — section auto-chargement governance
+- `BACKLOG.adoc` — coché V-LOCAL-2/3 (stale, déjà livrés session 131) + V-LOCAL-4/5/6
+- **23 Cucumber steps + 5 JUnit5 = 28 PASS** — EPIC V-LOCAL COMPLET
+
+== Session 131 — GovernanceContextLoader fallback + ports/models compliance
+
+- `GovernanceContextLoader` câblé dans `SessionProtocolTask` et `SessionProtocolServer`
+- Fallback auto activé ; champs `lastAgentContext` exposés pour tests
+- Tests unitaires/fonctionnels ciblés PASS
+- Compliance ports 11437-11465 et modèle `gpt-oss:120b-cloud` appliquée
+
+== Session 130 — Koog 1.0.0 replacement forwardTo
+
+- Replacement forwardTo (5 fichiers, build OK)
+
+== Session 129 — Pivot gouvernance locale : GovernanceContextLoader
+
+- GovernanceContextLoader + tests + docs
+- V-LOCAL-0 et V-LOCAL-1 livrés
 
 == Session 127 — EPIC 8 Expert Exposure via Ollama
 

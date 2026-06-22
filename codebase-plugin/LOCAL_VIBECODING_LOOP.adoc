@@ -1,7 +1,7 @@
 = Local Vibecoding Loop avec Codebase, ses tâches et Opencode
 :toc:
-:date: 2026-06-16
-:version: 1.0
+:date: 2026-06-22
+:version: 1.1
 
 == 🎯 Objectif
 
@@ -19,6 +19,7 @@ Cette documentation explique comment configurer et utiliser la boucle de vibecod
 * ✅ Contrats N0 : `SessionPrompt`, `SessionResponse`, `AgentContext`
 * ✅ `ToolEventStream` - Streaming temps réel des événements
 * ✅ `LiveContextInjector` - Injection de contexte dynamique
+* ✅ `GovernanceContextLoader` - Auto-chargement EAGER (AGENT.adoc, INDEX.adoc, PROMPT_REPRISE.adoc, SESSIONS_HISTORY, TEST_COVERAGE_ANALYSIS, BACKLOG.adoc) quand aucun `--contextFile` n'est fourni (EPIC V-LOCAL)
 
 === Architecture Cible
 
@@ -236,13 +237,70 @@ Le `LiveContextInjector` permet d'injecter du contexte pendant l'exécution :
 - Format : AsciiDoc structuré
 - Mise à jour automatique dans la conversation
 
+== 🔄 Auto-chargement du Contexte Gouvernance (EPIC V-LOCAL)
+
+Quand `SessionProtocolTask` ou `SessionProtocolServer` est invoqué **sans** `--contextFile`,
+le `GovernanceContextLoader` (`codebase.koog.governance`) charge automatiquement les fichiers
+EAGER du projet courant et construit un `AgentContext` injecté dans la boucle vibecoding.
+
+=== Fichiers chargés (par ordre de priorité)
+
+[cols="2,3"]
+|===
+| Fichier | Rôle
+| `AGENT.adoc` | Règles absolues, interdictions, méthodologie
+| `.agents/INDEX.adoc` | Dashboard EAGER, statut EPICs, portefeuille
+| `PROMPT_REPRISE.adoc` | Mission de la session en cours
+| `.agents/SESSIONS_HISTORY.adoc` | Trajectoire historique
+| `.agents/TEST_COVERAGE_ANALYSIS.adoc` | Couverture de tests
+| `BACKLOG.adoc` | Items de backlog (checkboxes extraits)
+|===
+
+=== Résolution multi-module
+
+Le loader cherche chaque fichier à la racine du projet, puis dans les sous-répertoires
+directs (utile pour les multi-modules Gradle où `AGENT.adoc`/`INDEX.adoc` vivent dans le
+sous-projet plugin, ex: `codebase-plugin/AGENT.adoc`).
+
+=== Comportement de fallback
+
+. Fichiers présents → `AgentContext` rempli (eagerRules + backlogItems)
+. Aucun fichier → `AgentContext` vide (`eagerRules = ""`, `backlogItems = []`) — la session
+  continue sans erreur, le LLM reçoit juste moins de contexte
+. Erreur de lecture → log warn + fallback sur `AgentContext` vide
+
+=== Exemple d'exécution sans contextFile
+
+[source,bash]
+----
+./gradlew :codebase-plugin:sessionProtocol \
+  --prompt="Continue le travail sur EPIC V-LOCAL" \
+  --maxActions=3
+# → GovernanceContextLoader charge AGENT.adoc + INDEX.adoc + PROMPT_REPRISE.adoc
+# → AgentContext injecté dans VibecodingGraph.staticContext
+# → SessionResponse écrit dans build/session-protocol/session-response.json
+----
+
+=== Tests
+
+* JUnit5 : `GovernanceContextLoaderTest` (5 tests), `SessionProtocolTaskTest` (2 tests fallback)
+* Cucumber : `epic_v_local_governance_fallback.feature` (5 scénarios @epic_v_local)
+
+[source,bash]
+----
+./gradlew :codebase-plugin:test --tests "codebase.koog.governance.GovernanceContextLoaderTest"
+./gradlew :codebase-plugin:cucumberTestEpicVLocal
+----
+
 == 📚 Références
 
 * EPIC SESSION-PROTOCOL (BACKLOG.adoc, lignes 743-836)
+* EPIC V-LOCAL — Governance fallback auto-loading (BACKLOG.adoc, lignes 737-755)
 * Session 114 — Finalisation EPIC SP (7/7)
 * Architecture Thin Client (Session 103)
 * ToolEventStream (Session 113)
 * LiveContextInjector (Session 114)
+* GovernanceContextLoader (Session 129 — création, Session 131 — câblage fallback)
 
 == 🆕 Mises à Jour
 
@@ -251,4 +309,5 @@ Le `LiveContextInjector` permet d'injecter du contexte pendant l'exécution :
 | Date | Version | Changements
 
 | 2026-06-16 | 1.0 | Première version - Documentation complète
+| 2026-06-22 | 1.1 | Section auto-chargement governance (EPIC V-LOCAL) — GovernanceContextLoader, fallback multi-module, tests Cucumber @epic_v_local
 |===

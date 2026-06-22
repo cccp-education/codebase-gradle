@@ -1,0 +1,64 @@
+= Session 133 — EPIC TRAD TranslationService (baby-step cross-borough)
+:date: 2026-06-22
+:epic: EPIC TRAD — TranslationService N1 (contrat N0 + impl + tests)
+
+== Contexte
+
+US-I18N-MIG-4 de bakery-gradle (BKY-I18N-MIG, 13/16 pts) est bloquée sur
+l'absence d'un service de traduction transverse dans codebase-gradle N1.
+PROMPT_REPRISE session 133 prévoyait du nettoyage post-V-LOCAL ; la mission
+a été redéfinie en cours de session pour débloquer bakery US-4 plus tard.
+
+== Actions
+
+1. Ajout dépendance `education.cccp:i18n-contracts:0.0.1` (présent dans
+   mavenLocal) au catalogue root `gradle/libs.versions.toml` + build.gradle.kts
+   du codebase-plugin.
+2. Création du contrat N0 `TranslationService` dans
+   `src/main/kotlin/contracts/i18n/TranslationService.kt` :
+   - interface `TranslationService.translate(TranslationRequest): TranslationResult`
+   - data class `TranslationRequest` (sourceText, sourceLanguage, targetLanguage)
+     avec invariants (non-blank, src != tgt)
+   - sealed class `TranslationResult` (Success / Failure)
+3. Implémentation N1 production `LlmTranslator` dans
+   `src/main/kotlin/codebase/i18n/LlmTranslator.kt` :
+   - wrap `codebase.koog.llm.LlmProvider` (Gemini/Ollama en prod, FakeLlm en test)
+   - prompt minimal "Translate from <src> to <tgt>:<text>"
+   - sanitize quotes/guillemets, gestion exception → Failure
+4. Fake `FakeLlmTranslator` dans `src/test/kotlin/codebase/i18n/` :
+   - déterministe sans réseau, file FIFO de résultats, capture requêtes
+5. Tests JUnit5 :
+   - `LlmTranslatorTest` — 6 tests (success, blank→Failure, exception→Failure,
+     prompt content, same-lang rejected, blank source rejected)
+   - `FakeLlmTranslatorTest` — 2 tests (default stub, FIFO enqueued)
+6. Feature Cucumber `epic_translation.feature` — 6 scénarios @epic_translation :
+   - Fake stub, FIFO enqueued success, enqueued failure, LlmTranslator sanitize
+     quotes, LlmTranslator blank→Failure, same-lang IllegalArgumentException
+   - `TranslationWorld`, `TranslationSteps`, `EpicTranslationCucumberRunner`
+   - Tâche Gradle `cucumberTestEpicTranslation` enregistrée dans build.gradle.kts
+
+== Commandes
+
+- `./gradlew :codebase-plugin:compileKotlin` — OK
+- `./gradlew :codebase-plugin:compileTestKotlin` — OK
+- `./gradlew :codebase-plugin:test --tests "codebase.i18n.*"` — 8/8 PASS
+- `./gradlew :codebase-plugin:cucumberTestEpicTranslation` — 6 scénarios PASS
+- `./gradlew :codebase-plugin:build -x test` — OK (jar produit)
+
+== Résultats
+
+- 8 JUnit5 + 6 scénarios Cucumber = 14 PASS
+- Build compile, zéro warning critique
+- `education.cccp:i18n-contracts:0.0.1` résolu via mavenLocal
+- Zéro fuite secret (grep vérifié)
+
+== Leçons
+
+- Le catalogue `libs.versions.toml` actif est à la racine `gradle/`, pas dans
+  `codebase-plugin/gradle/` (sous-projet). Le sous-catalogue semble historique
+  et non référencé — à nettoyer dans une prochaine session.
+- Baby-step : un contrat minimal (1 chaîne → 1 chaîne) suffit à débloquer
+  bakery US-4. Pas de batch, pas de glossaire. Le contrat grossira si un
+  borough en a besoin.
+- `FakeLlmTranslator` en src/test (pas src/main) pour rester avec les autres
+  fakes — bakery utilisera `LlmTranslator` injecté avec son propre LlmProvider.

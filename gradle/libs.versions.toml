@@ -33,6 +33,7 @@ agent-contracts = { module = "education.cccp:agent-contracts", version = "0.0.1"
 vibecoding-contracts = { module = "education.cccp:vibecoding-contracts", version = "0.0.1" }
 llm-pool-contracts = { module = "education.cccp:llm-pool-contracts", version = "0.0.1" }
 opencode-session-contracts = { module = "education.cccp:opencode-session-contracts", version = "0.0.1" }
+i18n-contracts = { module = "education.cccp:i18n-contracts", version = "0.0.1" }
 assertj-core = { module = "org.assertj:assertj-core", version = "3.25.3" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.14.3" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = "1.10.2" }

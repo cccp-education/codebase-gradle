@@ -4,6 +4,11 @@
 |===
 | Session | Date | EPIC | Résultat
 
+| 133 | 2026-06-22 | EPIC TRAD | TranslationService N1 (contrat N0 + LlmTranslator + Fake + 8 JUnit5 + 6 Cucumber) ✅
+| 132 | 2026-06-22 | EPIC V-LOCAL | V-LOCAL-4/5/6 terminés — 5 scénarios Cucumber + IngestGovernanceTask stub ✅
+| 131 | 2026-06-22 | EPIC V-LOCAL | GovernanceContextLoader fallback + compliance ports ✅
+| 130 | 2026-06-22 | EPIC L | Koog 1.0.0 replacement forwardTo ✅
+| 129 | 2026-06-22 | EPIC V-LOCAL | GovernanceContextLoader + tests + docs ✅
 | 128 | 2026-06-16 | Documentation Locale Vibecoding | LOCAL_VIBECODING_LOOP.adoc terminé
 | 127 | 2026-06-16 | EPIC 8 Expert Exposure | 21/21 PASS ✅
 | 126 | 2026-06-16 | EPIC 7 Expert Dispatcher | 60/60 PASS ✅

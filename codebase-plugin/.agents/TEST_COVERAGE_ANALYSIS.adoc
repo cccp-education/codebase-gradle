@@ -1,25 +1,51 @@
-= TEST_COVERAGE_ANALYSIS — Session 127
-:date: 2026-06-16
-:epic: EPIC 8 — Expert Exposure via Ollama
+= TEST_COVERAGE_ANALYSIS — Session 133
+:date: 2026-06-22
+:epic: EPIC TRAD — TranslationService N1 (contrat N0 + impl + tests)
 
-== Nouveaux tests ajoutés
+== Nouveaux tests ajoutés (Session 133)
 
 [cols="3,2,2"]
 |===
 | Classe | Type | Count
 
-| ExpertExposureContractsTest | JUnit5 | 9
-| ExpertExposureTaskTest | JUnit5 | 7
-| Epic8CucumberRunner | Cucumber | 5
+| TranslationService | Contrat N0 (src/main) | 1 interface + 2 data classes
+| LlmTranslator | Impl N1 (src/main) | 1 classe
+| FakeLlmTranslator | Fake (src/test) | 1 classe
+| LlmTranslatorTest | JUnit5 | 6
+| FakeLlmTranslatorTest | JUnit5 | 2
+| TranslationWorld | Cucumber World | 1
+| TranslationSteps | Cucumber Steps | 1
+| EpicTranslationCucumberRunner | Cucumber Runner | 1
+| epic_translation.feature | Cucumber Feature | 6 scénarios
 |===
 
-== Total session
+== Tests modifiés
 
-- JUnit5 : 16
-- Cucumber : 5
-- **Total : 21 PASS**
+* Aucun test existant modifié — nouvel EPIC isolé
+
+== Total session 133
+
+- JUnit5 : 8/8 PASS (6 LlmTranslator + 2 FakeLlmTranslator)
+- Cucumber @epic_translation : 6 scénarios / 24 steps PASS
+- **Total session : 14 PASS**
+
+== Historique cumulé
+
+[cols="2,2,2]
+|===
+| Session | JUnit5 | Cucumber
+
+| 127 | 16 | 5 (EPIC 8)
+| 132 | 5 (IngestGovernance) | 23 steps / 5 scénarios (V-LOCAL)
+| 133 | 8 (i18n) | 24 steps / 6 scénarios (TRAD)
+|===
 
 == Total projet (estimé)
 
-- Avant session 127 : ~510 PASS
-- Après session 127 : ~531 PASS
+- Après session 133 : ~559 + 14 = ~573 PASS
+
+== Couverture Kover
+
+- `kover { verify { rule { minBound(79) } } }` (build.gradle.kts)
+- Session 133 ajoute `LlmTranslator` (main) + `TranslationService` (main, contracts) —
+  couverture likely neutre (impl légère, tests ciblés). À vérifier au prochain `koverVerify`.

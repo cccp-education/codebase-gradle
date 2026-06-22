@@ -697,6 +697,35 @@ En attendant : `publishToMavenLocal` suffit pour conso inter-boroughs N1→N2.
 
 '''
 
+== EPIC TRAD — TranslationService Cross-Borough (N1)
+
+**Statut** : ✅ TERMINÉ (session 133 — baby-step 5 pts, 1 session)
+**Priorité** : P1 — débloque bakery-gradle BKY-I18N-MIG US-4 (13/16 pts → 16/16)
+**Dépend de** : `education.cccp:i18n-contracts:0.0.1` (MEMPHIS N0, mavenLocal)
+**Consommé par** : bakery-gradle (US-I18N-MIG-4), document-gradle, slider-gradle
+
+_Pourquoi_ : La traduction LLM est une capacité transverse. Bakery US-4
+("Traductions LLM 9 langues non-fr") est bloquée depuis la session 117
+sur l'absence d'un service partagé. Décision architecturale 2026-06-16 :
+implémenter dans codebase-gradle (N1) comme `TranslationService`.
+
+=== Sous-tâches
+
+* [x] TRAD-0 : Contrat N0 `TranslationService` + `TranslationRequest` + `TranslationResult` (Success/Failure) — package `contracts.i18n`
+* [x] TRAD-1 : Impl N1 `LlmTranslator` — wrap `LlmProvider`, prompt minimal, sanitize, exception→Failure
+* [x] TRAD-2 : Fake `FakeLlmTranslator` (src/test) — déterministe FIFO, capture requêtes
+* [x] TRAD-3 : Tests JUnit5 — 8/8 PASS (6 LlmTranslator + 2 FakeLlmTranslator)
+* [x] TRAD-4 : Cucumber `epic_translation.feature` — 6 scénarios @epic_translation + World + Steps + Runner + tâche Gradle
+
+=== Bénéfice
+
+Bakery US-4 peut maintenant câbler `I18nTranslationApplier` sur
+`LlmTranslator(provider)` pour remplir `messages_{lang}.properties`
+automatiquement. Le contrat grossira (batch, glossaire, few-shot) si
+un borough en exprime le besoin.
+
+'''
+
 == EPIC PUB — Publication Maven Central + Plugin Portal
 
 _Source : configuration/EPIC_PUB.adoc (Session 096)_
@@ -736,7 +765,7 @@ cd foundry/public/codebase-gradle && ./gradlew :codebase-plugin:publishToMavenLo
 
 == EPIC V-LOCAL — Boucle Vibecoding Locale Auto-Alimentée par Gouvernance Textuelle
 
-**Statut** : 🔄 EN COURS (session 129-130)
+**Statut** : ✅ TERMINÉ (7/7 — V-LOCAL-0→6, sessions 129-132)
 **Priorité** : P0
 **Dépend de** : EPIC SP (SessionProtocol), EPIC Y (AgenticIngestor pour le pont)
 
@@ -745,12 +774,12 @@ _Pourquoi_ : La boucle vibecoding locale actuelle nécessite un `--contextFile` 
 === Sous-tâches
 
 * [x] V-LOCAL-0 : Créer `GovernanceContextLoader` dans `codebase.koog.governance` (session 129)
-* [x] V-LOCAL-1 : Tests JUnit5 — chargement racine, sous-projet, backlog items, contexte vide, chargement réel
-* [ ] V-LOCAL-2 : Câbler `GovernanceContextLoader` dans `SessionProtocolServer` et `SessionProtocolTask` (fallback auto)
-* [ ] V-LOCAL-3 : Test fonctionnel `SessionProtocolTask` sans `--contextFile`
-* [ ] V-LOCAL-4 : Test Cucumber "opencode prompt → daemon avec contexte EAGER"
-* [ ] V-LOCAL-5 : Mettre à jour `LOCAL_VIBECODING_LOOP.adoc`
-* [ ] V-LOCAL-6 : Pont EPIC Y — stuber `IngestGovernanceTask` (AgenticIngestor sur les fichiers agents)
+* [x] V-LOCAL-1 : Tests JUnit5 — chargement racine, sous-projet, backlog items, contexte vide, chargement réel (session 129)
+* [x] V-LOCAL-2 : Câbler `GovernanceContextLoader` dans `SessionProtocolServer` et `SessionProtocolTask` (fallback auto) (session 131 — `SessionProtocolTask.kt:183-187,293-302`)
+* [x] V-LOCAL-3 : Test fonctionnel `SessionProtocolTask` sans `--contextFile` — 2 tests JUnit5 (governance fallback + no governance) (session 131 — `SessionProtocolTaskTest.kt:189-247`)
+* [x] V-LOCAL-4 : Test Cucumber "opencode prompt → daemon avec contexte EAGER" — `epic_v_local_governance_fallback.feature` (5 scénarios @epic_v_local, 23/23 PASS) (session 132)
+* [x] V-LOCAL-5 : Mettre à jour `LOCAL_VIBECODING_LOOP.adoc` (session 132 — section auto-chargement governance + références + historique v1.1)
+* [x] V-LOCAL-6 : Pont EPIC Y — stuber `IngestGovernanceTask` (AgenticIngestor sur fichiers agents) (session 132 — `IngestGovernanceTask.kt` + `InMemoryAgenticChunkRepository.kt` + 5 JUnit5 PASS + tâche Gradle `ingestGovernance` enregistrée dans `CodebasePlugin`)
 
 '''
 

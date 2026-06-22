@@ -36,6 +36,8 @@ dependencies {
     implementation(libs.llm.pool.contracts)
     // N0 opencode-session contracts — AgentContext, SessionStatus (SessionProtocol, LiveContextInjector)
     implementation(libs.opencode.session.contracts)
+    // N0 i18n contracts — SupportedLanguage, LanguageCatalog, I18nConfig (TranslationService)
+    implementation(libs.i18n.contracts)
     implementation(libs.bundles.arrow)
     implementation(libs.koog.agents) {
         exclude(group = "org.jetbrains", module = "annotations")
@@ -134,6 +136,8 @@ val cucumberTaskSpecs = listOf(
     CucumberTaskSpec("cucumberTestEpicSp6", "Runs Cucumber BDD tests — EPIC SP-6 (LiveContextInjector) only", "codebase.scenarios.EpicSp6CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpic7", "Runs Cucumber BDD tests — EPIC 7 (Expert Dispatcher) only", "codebase.scenarios.Epic7CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpic8", "Runs Cucumber BDD tests — EPIC 8 (Expert Exposure via Ollama) only", "codebase.scenarios.Epic8CucumberRunner"),
+    CucumberTaskSpec("cucumberTestEpicVLocal", "Runs Cucumber BDD tests — EPIC V-LOCAL (Governance fallback auto-loading) only", "codebase.scenarios.EpicVLocalCucumberRunner"),
+    CucumberTaskSpec("cucumberTestEpicTranslation", "Runs Cucumber BDD tests — EPIC TRAD (TranslationService cross-borough) only", "codebase.scenarios.EpicTranslationCucumberRunner"),
 )
 
 val cucumberTasks = cucumberTaskSpecs.map { registerCucumberTask(it) }

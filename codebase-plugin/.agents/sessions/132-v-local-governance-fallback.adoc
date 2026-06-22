@@ -1,0 +1,130 @@
+= Session 132 — EPIC V-LOCAL Finalisation (V-LOCAL-4/5/6)
+
+:session: 132
+:borough: Queens — codebase-gradle (N1)
+:date: 2026-06-22
+:epic: V-LOCAL
+:predecessor: 131 — GovernanceContextLoader fallback + ports/models compliance
+
+== Contexte
+
+Reprise codebase-gradle après session 131. EPIC V-LOCAL (boucle vibecoding locale
+auto-alimentée par gouvernance textuelle) restait à finaliser sur 4 sous-tâches :
+V-LOCAL-2 (backlog stale), V-LOCAL-4 (Cucumber), V-LOCAL-5 (doc), V-LOCAL-6 (pont EPIC Y).
+
+Audit initial : V-LOCAL-2 et V-LOCAL-3 déjà livrés session 131 (câblage fallback
+dans `SessionProtocolTask.kt:183-187,293-302` + 2 tests JUnit5 fallback). Backlog
+marquait les items `[ ]` alors que le code était en place — correction du backlog.
+
+== Actions
+
+=== V-LOCAL-2 + V-LOCAL-3 (audit backlog stale)
+
+* Lecture `SessionProtocolTask.kt` — `loadGovernanceContext()` câblé session 131.
+* Lecture `SessionProtocolTaskTest.kt` — 2 tests fallback (lignes 189-247) présents.
+* Correction `BACKLOG.adoc` : coché V-LOCAL-2 et V-LOCAL-3 avec références lignes précises.
+
+=== V-LOCAL-4 — Test Cucumber « opencode prompt → daemon avec contexte EAGER »
+
+BDD d'abord (feature), puis World, Steps, Runner, build.gradle.kts.
+
+* `src/test/features/epic_v_local_governance_fallback.feature` — 5 scénarios @epic_v_local :
+  ** AGENT.adoc auto-loaded dans eagerRules
+  ** .agents/INDEX.adoc auto-loaded (wording sans regex meta pour éviter Cucumber undefined)
+  ** BACKLOG.adoc items extraits dans backlogItems
+  ** Workspace vide → AgentContext vide mais session OK
+  ** Multi-module : AGENT.adoc dans sous-projet auto-chargé
+* `GovernanceFallbackWorld.kt` — workspace temp + `lastAgentContext` exposé
+* `GovernanceFallbackSteps.kt` — steps Given/When/Then uniques (préfix "governance")
+* `EpicVLocalCucumberRunner.kt` — runner suite filtré @epic_v_local
+* `build.gradle.kts` — `cucumberTestEpicVLocal` enregistré
+
+Problèmes rencontrés :
+* Conflit glue Cucumber : step "a SessionProtocolTask is configured with FakeLlmProvider"
+  déjà défini dans `SessionProtocolSteps.kt` → renommé en "a governance fallback task
+  configured with FakeLlmProvider".
+* Conflit "the response status is COMPLETED" → "the governance response status is COMPLETED".
+* Step undefined pour `.agents/INDEX.adoc` (regex `.`/`/` méta) → wording changé en
+  "a governance INDEX file containing".
+
+Résultat : 23/23 PASS (5 scénarios).
+
+=== V-LOCAL-5 — Mise à jour LOCAL_VIBECODING_LOOP.adoc
+
+* Section "Auto-chargement du Contexte Gouvernance (EPIC V-LOCAL)" ajoutée :
+  fichiers EAGER, résolution multi-module, comportement fallback, exemple CLI, commandes tests.
+* Composant `GovernanceContextLoader` ajouté à la liste des composants noyau.
+* Références EPIC V-LOCAL + session 129/131 ajoutées.
+* Historique v1.1 (2026-06-22) ajouté.
+
+=== V-LOCAL-6 — Pont EPIC Y : stuber IngestGovernanceTask
+
+TDD : test d'abord, puis implémentation.
+
+* `src/main/kotlin/codebase/koog/agentic/InMemoryAgenticChunkRepository.kt` —
+  port de `FakeAgenticChunkRepository` (test) vers main, in-memory, sans pgvector.
+* `src/main/kotlin/codebase/koog/agentic/IngestGovernanceTask.kt` — tâche Gradle
+  qui scanne les fichiers EAGER (AGENT.adoc, .agents/INDEX.adoc, PROMPT_REPRISE.adoc,
+  SESSIONS_HISTORY, TEST_COVERAGE_ANALYSIS, BACKLOG.adoc) et les ingère via
+  `AgenticIngestor` + `InMemoryAgenticChunkRepository`. Rapport JSON optionnel.
+* `src/test/kotlin/codebase/koog/agentic/IngestGovernanceTaskTest.kt` — 5 tests JUnit5 :
+  registration group, ingests AGENT.adoc, ingests subproject, empty workspace, writes report.
+* `CodebasePlugin.kt` — tâche `ingestGovernance` enregistrée (group "generate").
+
+Résultat : 5/5 JUnit5 PASS.
+
+== Commandes exécutées
+
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:compileTestKotlin
+./gradlew :codebase-plugin:cucumberTestEpicVLocal
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.IngestGovernanceTaskTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.SessionProtocolTaskTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.governance.GovernanceContextLoaderTest"
+./gradlew :codebase-plugin:assemble -x test
+----
+
+== Résultats
+
+* V-LOCAL-4 : 5 scénarios Cucumber @epic_v_local — 23/23 PASS
+* V-LOCAL-6 : 5 tests JUnit5 IngestGovernanceTaskTest — 5/5 PASS
+* V-LOCAL-2/V-LOCAL-3 : backlog corrigé (déjà livrés session 131)
+* Build assemble OK (signing non exécuté pour éviter timeout GPG)
+* Zéro secret introduit (scan RG, faux-positif "leak de secrets" dans un test)
+
+== Fichiers modifiés/créés
+
+. Créés :
+* `src/test/features/epic_v_local_governance_fallback.feature`
+* `src/test/kotlin/codebase/scenarios/GovernanceFallbackWorld.kt`
+* `src/test/kotlin/codebase/scenarios/GovernanceFallbackSteps.kt`
+* `src/test/kotlin/codebase/scenarios/EpicVLocalCucumberRunner.kt`
+* `src/main/kotlin/codebase/koog/agentic/InMemoryAgenticChunkRepository.kt`
+* `src/main/kotlin/codebase/koog/agentic/IngestGovernanceTask.kt`
+* `src/test/kotlin/codebase/koog/agentic/IngestGovernanceTaskTest.kt`
+* `.agents/sessions/132-v-local-governance-fallback.adoc` (ce fichier)
+
+. Modifiés :
+* `BACKLOG.adoc` — coché V-LOCAL-2/3/4/5/6
+* `build.gradle.kts` — `cucumberTestEpicVLocal` ajouté
+* `LOCAL_VIBECODING_LOOP.adoc` — section auto-chargement + références + v1.1
+* `CodebasePlugin.kt` — import + tâche `ingestGovernance`
+
+== Leçons
+
+* Cucumber glue est global au classpath : tout step def avec le même wording
+  provoque `DuplicateStepDefinitionException` même entre runners tagués différemment.
+  Préfixer les steps par EPIC pour isoler.
+* Les caractères regex méta (`.` `/`) dans les wording de step def Cucumber peuvent
+  causer des "undefined" subtils — préférer des wording simples sans chemin de fichier.
+* `FakeXxx` dans `src/test` n'est pas accessible depuis `src/main` — porter vers
+  `InMemoryXxx` dans main quand une tâche Gradle de production en a besoin.
+
+== Prochaines étapes (session 133)
+
+* EPIC V-LOCAL complet : tous les items V-LOCAL-0→6 sont terminés.
+* Vérifier l'état du `PROMPT_REPRISE.adoc` racine (configuration/.agents/) vs local.
+* Considérer la publication Maven Central (EPIC PUB) maintenant que V-LOCAL est stable.
+* Nettoyer le `FakeAgenticChunkRepository` (test) — désormais doublon avec `InMemoryAgenticChunkRepository` (main).
+* Voir BACKLOG.adoc pour les EPICs restants.

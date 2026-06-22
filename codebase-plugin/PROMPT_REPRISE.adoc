@@ -1,23 +1,33 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 132
-:session: 132
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 134
+:session: 134
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 131 — GovernanceContextLoader fallback + ports/models compliance ✅
+:session_precedente: 133 — EPIC TRAD TranslationService N1 ✅
 
 == Contexte Hérité
 
-- `GovernanceContextLoader` câblé dans `SessionProtocolTask` et `SessionProtocolServer`.
-- Fallback auto activé ; champs `lastAgentContext` exposés pour tests.
-- Tests unitaires/fonctionnels ciblés PASS.
-- Compliance ports 11437-11465 et modèle `gpt-oss:120b-cloud` appliquée.
-- Cucumber non finalisé (timeout lifecycle sans pgvector).
+- EPIC TRAD COMPLET : `TranslationService` (contrat N0) + `LlmTranslator` (impl N1)
+  + `FakeLlmTranslator` + 8 JUnit5 + 6 Cucumber = 14 PASS. Débloque bakery
+  BKY-I18N-MIG US-4.
+- EPIC V-LOCAL COMPLET (sessions 129-132).
+- `GovernanceContextLoader` câblé + `IngestGovernanceTask` stubbé.
+- Build assemble OK. Pas de publication Maven Central (EPIC PUB différé).
+- Catalogue `codebase-plugin/gradle/libs.versions.toml` semble historique
+  (non référencé) — à nettoyer.
 
-== Mission Session 132
+== Mission Session 134
 
-Finaliser la boucle vibecoding local auto-alimentée :
-1. Ajouter une tâche Gradle `vibecodingGovernance` qui exécute `GovernanceContextLoader` + `SessionProtocolTask` avec le contexte auto-chargé.
-2. Vérifier l'intégration bout-en-bout via un test fonctionnel (task Gradle dans un projet test).
-3. Relancer les tests Cucumber si pgvector disponible, ou documenter le skip.
+Nettoyage post-V-LOCAL/TRAD + décision EPIC PUB :
+1. Nettoyer le doublon `FakeAgenticChunkRepository` (src/test) vs
+   `InMemoryAgenticChunkRepository` (src/main) — migrer les tests vers la
+   version main et supprimer le doublon test (reporté de session 133).
+2. Supprimer le catalogue stale `codebase-plugin/gradle/libs.versions.toml`
+   si confirmé non-référencé.
+3. Vérifier l'état EPIC PUB — si V-LOCAL + TRAD stables, considérer lancer
+   `publishAggregationToCentralPortal` (publication Maven Central).
+4. Si EPIC PUB toujours différé, attaquer un EPIC du BACKLOG restant
+   (ex: EPIC OCR-1/OCR-2 items PARTIEL, ou EPIC CR-1 backlog stale).
 
 == Méthodologie
 
 Baby-step DDD/TDD/BDD : un fichier modifié à la fois, compilation + tests entre chaque étape.
+SEQUENTIEL PUR — pas de subagent, pas de parallelisation.
