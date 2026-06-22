@@ -729,7 +729,7 @@ un borough en exprime le besoin.
 == EPIC PUB — Publication Maven Central + Plugin Portal
 
 _Source : configuration/EPIC_PUB.adoc (Session 096)_
-**Statut** : ⏸️ DIFFÉRÉ (session 129) — build, validateDependencies, validatePlugins, publishToMavenLocal passent. Publication Central reportée après consolidation de la boucle vibecoding locale et du pont gouvernance augmentée.
+**Statut** : ✅ TERMINÉ (session 135) — `codebase-plugin:0.0.3` HTTP 200 sur Maven Central. `publishAggregationToCentralPortal` via nmcp validé.
 
 === PUB-2.2 — Mettre a jour le commentaire relocation ✅
 

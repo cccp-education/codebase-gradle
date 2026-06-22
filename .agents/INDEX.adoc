@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-06-22
-*Version* : 1.1.5 (Session 134 — Doublon + catalogue stale + N0 Central)
+*Version* : 1.1.6 (Session 135 — EPIC PUB TERMINÉ + alignement nmcp)
 
 == Regles Absolues
 
@@ -25,6 +25,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 132 — EPIC V-LOCAL finalisé (V-LOCAL-4 Cucumber 5 scénarios + V-LOCAL-5 doc + V-LOCAL-6 IngestGovernanceTask stub)
 | ✅ | Session 133 — EPIC TRAD TranslationService N1 (contrat N0 + LlmTranslator + Fake + 8 JUnit5 + 6 Cucumber) — débloque bakery BKY-I18N-MIG US-4
 | ✅ | Session 134 — Doublon FakeAgenticChunkRepository supprimé (14/14 PASS) + catalogue stale supprimé + `opencode-session-contracts:0.0.1` + `i18n-contracts:0.0.1` restaurés et publiés sur Maven Central via nmcp
+| ✅ | Session 135 — `codebase-plugin:0.0.3` HTTP 200 sur Maven Central, EPIC PUB clôturé, publication alignée nmcp
 
 === EPICs & Projects
 
@@ -42,7 +43,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | EPIC Y | Agentic Literature Compiler | N1 | ✅ TERMINE | 088-097
 | EPIC Z | Autofocus | N1 | ✅ TERMINE | 106-108
 | EPIC OCR | OCR Assisté IA (Gemini Vision) | N1 | 4/4 pts | 117-120
-| EPIC PUB | Publication Maven Central | NX | 🔄 EN COURS — N0 restaurés + publiés (session 134), codebase-plugin 0.0.3 à publier (session 135) | 129, 134
+| EPIC PUB | Publication Maven Central | NX | ✅ TERMINÉ — N0 restaurés + publiés (session 134), codebase-plugin 0.0.3 HTTP 200 Central (session 135) | 129, 134, 135
 | EPIC V-LOCAL | Vibecoding local auto-alimenté par gouvernance textuelle | N1 | ✅ TERMINÉ (V-LOCAL-0→6 tous livrés) | 129-132
 | EPIC Y | Agentic Literature Compiler (gouvernance augmentée) | N1 | ✅ TERMINÉ — pont vers ingest local à câbler | 088-097
 | EPIC CR | Code Review Deep Analysis | N1 | ✅ TERMINÉ | 119-125

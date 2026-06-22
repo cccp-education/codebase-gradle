@@ -1,27 +1,29 @@
 = PROMPT_REPRISE — Codebase (Queens N1) — Session 136
 :session: 136
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 135 — EPIC PUB N0 migration + codebase-plugin 0.0.3 publié Central ✅
+:session_precedente: 135 — EPIC PUB ✅ TERMINÉ, reprise EPIC V-6
 
 == Contexte Hérité
 
-- Session 135 a migré les duplications N0 locales vers les JARs Central
-  (`i18n-contracts:0.0.1`, `opencode-session-contracts:0.0.1`),
-  bumpé la version `0.0.3`, et exécuté `publishAggregationToCentralPortal`
-  (deployment `adc37d1c-...` en validation/publishing sur Central).
-- La propagation Central est en cours ; la méthode de publication reste à
-  aligner sur la méthode préférée de l'utilisateur (déjà validée ailleurs).
+- Session 135 a vérifié `codebase-plugin:0.0.3` HTTP 200 sur Maven Central,
+  clôturé EPIC PUB, validé la config nmcp, et analysé EPIC V-6 pour le
+  prochain baby-step.
+- Article 0120 = pattern canonique dual-abonnement Ollama Pro via Docker
+  (isolation port + volume SSH).
 
 == Mission Session 136
 
-1. Vérifier `codebase-plugin:0.0.3` HTTP 200 sur Maven Central
-   (`https://repo1.maven.org/maven2/education/cccp/codebase-plugin/0.0.3/`).
-2. Si 200 confirmé : passer EPIC PUB à ✅ TERMINÉ.
-3. Adapter la configuration de publication selon la méthode éprouvée
-   de l'utilisateur (remplacer nmcp si nécessaire).
-4. Corriger la session checklist racine vs `codebase-plugin/.agents/`
-   (split-brain gouvernance détecté).
-5. `./gradlew build -x test` propre.
+1. Implémenter `OllamaInstanceScanner.kt` : scanner actif des ports
+   `11437→11465` via `GET /api/tags`, retourner `List<LlmInstance>`
+   pour les instances vivantes.
+2. Tests JUnit5 baby-step :
+   - scanner avec fake HTTP client (ports up/down mixtes)
+   - fallback env var `OLLAMA_POOL_PORTS` prioritaire sur le scan
+   - test d'intégration conditionnel (`isOllamaReady`) optionnel
+3. Câbler `LlmProviderResolver` : utiliser le scanner quand
+   `OLLAMA_POOL_PORTS` n'est pas défini.
+4. `./gradlew build -x test -x cucumberTest -x koverVerify -x validateDependencies`
+   propre.
 
 == Méthodologie
 

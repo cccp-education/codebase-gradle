@@ -72,3 +72,10 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** Ajout `TranslationService.kt` dans i18n-contracts (depuis code local session 133).
 ** Publication Maven Central via nmcp : `opencode-session-contracts:0.0.1` (deployment 97aceef0, HTTP 200 ✅) + `i18n-contracts:0.0.1` (deployment 01a0198a, propagation en cours).
 ** EPIC PUB codebase-plugin lui-même : reporté à session 135 (retrait duplications locales + migration nmcp settings + bump 0.0.3).
+* Session 135 — EPIC PUB clôturé + reprise EPIC V-6
+** `codebase-plugin:0.0.3` HTTP 200 sur Maven Central ✅
+** EPIC PUB passé à ✅ TERMINÉ dans `.agents/INDEX.adoc` et `codebase-plugin/BACKLOG.adoc`
+** Config publication validée (nmcp 1.5.0) — aucun remplacement nécessaire
+** Build propre (`./gradlew build -x test -x cucumberTest -x koverVerify -x validateDependencies --no-daemon`)
+** Analyse EPIC V-6 (OllamaPool, OllamaLlmProvider, LlmProviderResolver, article 0120)
+** Prochain baby-step défini : `OllamaInstanceScanner.kt` + tests JUnit5

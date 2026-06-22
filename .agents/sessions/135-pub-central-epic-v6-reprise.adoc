@@ -1,0 +1,40 @@
+= Session 135 — EPIC PUB clôturé + reprise EPIC V-6
+:date: 2026-06-22
+:borough: Queens — codebase-gradle (N1)
+:epics: EPIC PUB, EPIC V-6
+
+== Contexte
+
+* Mission héritée session 134 : publier `codebase-plugin:0.0.3` sur Maven Central, vérifier HTTP 200, clôturer EPIC PUB, aligner config publication, puis reprendre le backlog (EPIC V-6 priorisé).
+* L'utilisateur a rappelé la méthodologie baby-step DDD/TDD/BDD / software craftsmanship.
+
+== Actions réalisées
+
+. Vérification Maven Central : `curl` sur `https://repo1.maven.org/maven2/education/cccp/codebase-plugin/0.0.3/` → HTTP 200 ✅
+. Vérification N0 contracts Central : `i18n-contracts:0.0.1`, `opencode-session-contracts:0.0.1`, `codebase-contracts:0.0.1` → HTTP 200 ✅
+. Clôture EPIC PUB dans `.agents/INDEX.adoc` (statut ✅ TERMINÉ, session 135 ajoutée, version 1.1.6)
+. Clôture EPIC PUB dans `codebase-plugin/BACKLOG.adoc` (statut ✅ TERMINÉ, mention nmcp)
+. Confirmé que la configuration `nmcp` actuelle (`com.gradleup.nmcp.settings:1.5.0` + `signing { useGpgCmd() }` + POM complet) est déjà la méthode éprouvée — aucun remplacement nécessaire
+. Compilation propre : `./gradlew build -x test -x cucumberTest -x koverVerify -x validateDependencies --no-daemon` → BUILD SUCCESSFUL
+. Analyse EPIC V-6 : lecture de `OllamaPool.kt`, `OllamaLlmProvider.kt`, `LlmProviderResolver.kt`, `LlmInstance.kt`, `LlmInstancePool.kt`, `QuotaConfig.kt`, article 0120 (dual-abonnement Docker)
+. Définition du prochain baby-step EPIC V-6 : `OllamaInstanceScanner.kt` + tests JUnit5 pour construire le pool dynamiquement depuis les ports vivants
+
+== Commandes exécutées
+
+* `curl -s -o /dev/null -I -L -w "%{http_code}" "https://repo1.maven.org/maven2/education/cccp/codebase-plugin/0.0.3/"` → 200
+* `./gradlew build -x test -x cucumberTest -x koverVerify -x validateDependencies --no-daemon` → BUILD SUCCESSFUL
+
+== Résultats obtenus
+
+* EPIC PUB officiellement TERMINÉ pour codebase-gradle.
+* Configuration publication validée et alignée (nmcp 1.5.0).
+* Prochain baby-step EPIC V-6 prêt : scanner dynamique des instances Ollama sur `localhost:11437-11465`.
+
+== Leçons apprises
+
+* La méthode nmcp est déjà la bonne ; ne pas chercher à remplacer ce qui fonctionne.
+* Article 0120 = pattern canonique pour EPIC V-6 (Docker multi-instances + isolation SSH/volume).
+
+== Next steps
+
+* Session 136 : implémenter `OllamaInstanceScanner.kt` + tests JUnit5, puis câbler `LlmProviderResolver` pour fallback scan quand `OLLAMA_POOL_PORTS` n'est pas défini.
