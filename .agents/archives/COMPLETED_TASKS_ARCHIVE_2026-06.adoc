@@ -77,9 +77,31 @@
 ** `./gradlew build -x test -x cucumberTest -x koverVerify -x validateDependencies --no-daemon` → BUILD SUCCESSFUL
 * **Statut** : ✅ Terminé (prochaine session : implémentation `OllamaInstanceScanner`)
 
+== Session 138 — EPIC V-6 OllamaInstanceFactory + Cucumber Ollama cloud quota
+
+* **Type** : Feature DDD/TDD/BDD
+* **Boroughs** : Queens (codebase-gradle N1), MEMPHIS (workspace-bom N0)
+* **Livrables** :
+** Article 0120 lu et pattern canonique dual-abonnement Ollama Pro Docker extrait (port + volume SSH).
+** Contrat N0 `contracts.llmpool.LlmInstance` : ajout champ optionnel `volumeTag: String?` (backward-compatible).
+** `llm-pool-contracts:0.0.1` rebuild + `publishToMavenLocal`.
+** `OllamaInstanceFactory` (singleton DDD) générant 29 instances Ollama Cloud sur ports 11437→11465, modèles cyclés, `volumeTag` métier.
+** `OllamaInstanceFactoryTest` : 7 JUnit5 PASS.
+** Feature Cucumber `epic_v6_ollama_cloud.feature` (2 scénarios) + `OllamaCloudWorld` + `OllamaCloudSteps` + `EpicV6OllamaCloudCucumberRunner` : zéro appel réseau, 2 scénarios PASS.
+** Mise à jour gouvernance : archive 138, INDEX, PROMPT_REPRISE, SESSIONS_HISTORY, TEST_COVERAGE_ANALYSIS.
+* **Commandes clés** :
+** `./gradlew :llm-pool-contracts:build -x test --no-daemon && ./gradlew :llm-pool-contracts:publishToMavenLocal --no-daemon` (workspace-bom)
+** `./gradlew :codebase-plugin:compileKotlin :codebase-plugin:compileTestKotlin --no-daemon`
+** `./gradlew :codebase-plugin:test --tests "codebase.koog.llm.pool.OllamaInstanceFactoryTest" --no-daemon`
+** `./gradlew :codebase-plugin:test --tests "codebase.scenarios.EpicV6OllamaCloudCucumberRunner" --no-daemon`
+** `./gradlew :codebase-plugin:test --tests "codebase.koog.llm.pool.*" --no-daemon`
+** `./gradlew build -x test -x cucumberTest -x koverVerify --no-daemon`
+* **Statut** : ✅ Terminé
+
 == Notes de période
 
 * `.agents/` non versionné jusqu'à la session 129 ; historique des sessions 085-128 présent dans le code source et `BACKLOG.adoc` mais pas archivé dans `.agents/sessions/`.
 * EPIC PUB passe de ✅ AUDITE à 🔄 PREFLIGHT OK, puis ⏸️ DIFFÉRÉ, puis 🔄 EN COURS (session 134 : N0 restaurés et publiés, codebase-plugin à publier en session 135), puis ✅ TERMINÉ (session 135 : HTTP 200 Central).
 * Pivot stratégique : priorité donnée à la boucle vibecoding locale auto-alimentée (EPIC V-LOCAL) et au pont vers la gouvernance augmentée (EPIC Y).
 * Session 134 : anti-pattern détecté — un artefact N0 supprimé de workspace-bom peut encore être référencé via MavenLocal par d'autres boroughs. Le build compile mais la publication Central casse.
+* Session 138 : évolution backward-compatible d'un contrat N0 publié (`LlmInstance.volumeTag`) via champ nullable + `mavenLocal`, sans publication Central immédiate.

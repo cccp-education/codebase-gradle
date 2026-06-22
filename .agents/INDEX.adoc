@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-06-22
-*Version* : 1.1.6 (Session 135 — EPIC PUB TERMINÉ + alignement nmcp)
+*Version* : 1.1.7 (Session 138 — EPIC V-6 OllamaInstanceFactory + Cucumber Ollama cloud quota)
 
 == Regles Absolues
 
@@ -26,6 +26,9 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 133 — EPIC TRAD TranslationService N1 (contrat N0 + LlmTranslator + Fake + 8 JUnit5 + 6 Cucumber) — débloque bakery BKY-I18N-MIG US-4
 | ✅ | Session 134 — Doublon FakeAgenticChunkRepository supprimé (14/14 PASS) + catalogue stale supprimé + `opencode-session-contracts:0.0.1` + `i18n-contracts:0.0.1` restaurés et publiés sur Maven Central via nmcp
 | ✅ | Session 135 — `codebase-plugin:0.0.3` HTTP 200 sur Maven Central, EPIC PUB clôturé, publication alignée nmcp
+| ✅ | Session 136 — `OllamaInstanceScanner` actif + ports DDD + câblage `LlmProviderResolver`
+| ✅ | Session 137 — `OllamaPoolKeyAdapter` + câblage `OllamaLlmProvider`, rotation proactive quota/connexion
+| ✅ | Session 138 — `OllamaInstanceFactory` + contrat N0 `volumeTag` + feature Cucumber `@epic_v6_ollama_cloud` (2 scénarios, zéro réseau)
 
 === EPICs & Projects
 

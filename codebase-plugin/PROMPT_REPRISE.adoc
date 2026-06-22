@@ -1,31 +1,23 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 138
-:session: 138
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 139
+:session: 139
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 137 — OllamaPoolKeyAdapter ✅ + câblage OllamaLlmProvider ✅
+:session_precedente: 138 — OllamaInstanceFactory ✅ + Cucumber Ollama cloud quota ✅
 
 == Contexte Hérité
 
-- Session 137 a livré `OllamaPoolKeyAdapter` : rotation proactive quota/connexion refusée,
-  marquage inactif, exception explicite à l'épuisement.
-- `OllamaLlmProvider.call()` est maintenant branché sur `adapter.callWithRotation`.
-- 27 tests ciblés PASS (10 adapter + 7/8 provider + 9 pool), build propre.
-- EPIC V-6 reste partiel : pattern Docker SSH key article 0120 et test Cucumber
-  "LLM calls Ollama cloud and handles quota exceeded" non implémentés.
+- Session 138 a livré `OllamaInstanceFactory` : génération déterministe d'instances Ollama Cloud sur ports 11437→11465, modèles cyclés, et `volumeTag` métier dans le contrat N0 `LlmInstance`.
+- La feature Cucumber `@epic_v6_ollama_cloud` couvre la rotation sur quota exceeded avec fake provider (zéro réseau).
+- EPIC V-6 reste ouvert : `LlmProviderResolver` utilise encore `OllamaInstanceScanner` (probe HTTP) par défaut ; il faut lui permettre de basculer vers la factory déterministe.
+- Build propre, tests ciblés verts.
 
-== Mission Session 138
+== Mission Session 139
 
-1. Lire l'article 0120 `/office/sites/cheroliv.com/jbake/content/blog/2026/0120_cumuler_deux_abonnements_ollama_pro_docker_post.adoc`.
-2. Extraire le pattern canonique dual-abonnement Ollama Pro (isolation port + volume SSH).
-3. Implémenter une factory `OllamaInstanceFactory` qui génère des `LlmInstance` avec
-   `baseUrl` sur les ports 11437→11465 et une référence au volume SSH (champ métier,
-   pas de secret en clair).
-4. Tests JUnit5 baby-step : 1 instance, 2 instances ports distincts, volume SSH tagué,
-   modèle cyclé parmi les 5 autorisés.
-5. Test Cucumber `@epic_v6_ollama_cloud` : "LLM calls Ollama cloud and handles quota exceeded"
-   avec `FakeVisionProvider` ou `FakeLlmProvider` (zéro appel réseau).
-6. `./gradlew :codebase-plugin:compileKotlin` puis tests ciblés verts.
+1. Modifier `LlmProviderResolver` pour utiliser `OllamaInstanceFactory` quand `OLLAMA_POOL_PORTS` est absent (mode déterministe, sans probe HTTP).
+2. Conserver `OllamaInstanceScanner` comme fallback explicite si `OLLAMA_SCAN_PORTS=true` ou `OLLAMA_POOL_PORTS` est défini.
+3. Tests JUnit5 baby-step : resolver retourne provider avec 29 instances en mode factory, resolver honore `OLLAMA_POOL_PORTS`, scanner fallback activable.
+4. Test Cucumber `@epic_v6_resolver` : "Resolver builds Ollama cloud provider from deterministic factory".
+5. `./gradlew :codebase-plugin:compileKotlin` puis tests ciblés verts.
 
 == Méthodologie
 
-Baby-step DDD/TDD/BDD : un fichier modifié à la fois, compilation entre
-chaque étape. Pas de subagent, pas de parallélisation.
+Baby-step DDD/TDD/BDD : un fichier modifié à la fois, compilation entre chaque étape. Pas de subagent, pas de parallélisation.

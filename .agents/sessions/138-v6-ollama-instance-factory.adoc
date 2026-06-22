@@ -1,0 +1,54 @@
+= Session 138 — EPIC V-6 OllamaInstanceFactory + Cucumber Ollama Cloud Quota
+
+== Contexte
+
+Session 137 a livré `OllamaPoolKeyAdapter` et branché `OllamaLlmProvider` sur l'adaptateur. L'EPIC V-6 restait partiel : le pattern Docker SSH key de l'article 0120 et un test Cucumber dédié au quota exceeded sur Ollama cloud n'étaient pas implémentés.
+
+== Actions réalisées
+
+. Lecture de l'article 0120 `/office/sites/cheroliv.com/jbake/content/blog/2026/0120_cumuler_deux_abonnements_ollama_pro_docker_post.adoc`.
+. Extraction du pattern canonique : isolation par conteneur Docker (port réseau distinct + volume SSH distinct pour la device key Ollama Pro).
+. Mise à jour du contrat N0 `contracts.llmpool.LlmInstance` (workspace-bom) : ajout du champ optionnel `volumeTag: String?` identifiant le volume Docker associé, sans secret.
+. Build + `publishToMavenLocal` de `llm-pool-contracts`.
+. Création de `codebase.koog.llm.pool.OllamaInstanceFactory` (singleton DDD) générant des instances Ollama Cloud sur ports 11437→11465 avec modèles cyclés et volumeTag.
+. Création de `OllamaInstanceFactoryTest` (7 JUnit5 baby-step) : 1 instance, 2 ports distincts, volumeTag == id, 5 modèles cyclés, wrap modèle, 29 ports par défaut.
+. Création de la feature Cucumber `epic_v6_ollama_cloud.feature` avec 2 scénarios @epic_v6_ollama_cloud.
+. Création de `OllamaCloudWorld` + `OllamaCloudSteps` (zéro appel réseau) testant `OllamaPoolKeyAdapter.callWithRotation` avec fake LLM call.
+. Création de `EpicV6OllamaCloudCucumberRunner`.
+. Compilation et tests ciblés verts.
+
+== Commandes exécutées
+
+[source,bash]
+----
+cd /home/cheroliv/workspace/foundry/public/workspace-bom/llm-pool-contracts
+./gradlew build -x test --no-daemon
+./gradlew publishToMavenLocal --no-daemon
+
+cd /home/cheroliv/workspace/foundry/public/codebase-gradle
+./gradlew :codebase-plugin:compileKotlin :codebase-plugin:compileTestKotlin --no-daemon
+./gradlew :codebase-plugin:test --tests "codebase.koog.llm.pool.OllamaInstanceFactoryTest" --no-daemon
+./gradlew :codebase-plugin:test --tests "codebase.scenarios.EpicV6OllamaCloudCucumberRunner" --no-daemon
+./gradlew :codebase-plugin:test --tests "codebase.koog.llm.pool.*" --no-daemon
+./gradlew build -x test -x cucumberTest -x koverVerify --no-daemon
+----
+
+== Résultats obtenus
+
+* ✅ Contrat N0 mis à jour avec `volumeTag` backward-compatible.
+* ✅ `OllamaInstanceFactory` + 7 tests JUnit5 PASS.
+* ✅ Feature Cucumber `epic_v6_ollama_cloud.feature` + runner + steps + 2 scénarios PASS.
+* ✅ Build codebase-gradle `build -x test -x cucumberTest -x koverVerify` SUCCESSFUL.
+* ✅ Aucun secret en clair : le `volumeTag` est un identifiant métier, pas un chemin SSH ni une clé.
+
+== Leçons apprises
+
+* Pour modéliser le pattern Docker Ollama Pro, il suffit d'un tag métier de volume dans `LlmInstance` ; l'auth SSH reste côté conteneur.
+* Un contrat N0 publié peut évoluer de façon backward-compatible avec un champ nullable ; pas besoin de publier immédiatement, `mavenLocal` suffit pour le développement intra-workspace.
+* Les scénarios BDD sur Ollama cloud doivent rester sans réseau en test : le comportement de rotation est dans l'adaptateur de pool, pas dans l'appel HTTP.
+
+== next steps
+
+* Câbler `LlmProviderResolver` pour utiliser `OllamaInstanceFactory` quand `OLLAMA_POOL_PORTS` est absent (au lieu du scanner HTTP actif), ou offrir les deux modes.
+* Finaliser EPIC V-6 dans le backlog (cocher pattern Docker SSH key et test Cucumber Ollama cloud).
+* Publier `llm-pool-contracts:0.0.2` sur Maven Central si d'autres boroughs consomment le nouveau champ `volumeTag`.

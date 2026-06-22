@@ -79,3 +79,17 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** Build propre (`./gradlew build -x test -x cucumberTest -x koverVerify -x validateDependencies --no-daemon`)
 ** Analyse EPIC V-6 (OllamaPool, OllamaLlmProvider, LlmProviderResolver, article 0120)
 ** Prochain baby-step défini : `OllamaInstanceScanner.kt` + tests JUnit5
+* Session 136 — EPIC V-6 `OllamaInstanceScanner` actif + ports DDD + câblage `LlmProviderResolver`
+** Scanner HTTP `GET /api/tags` sur ports 11437-11465, fallback `OLLAMA_POOL_PORTS`
+** `InstanceScanner` + `EnvironmentReader` ports injectables
+** 13+ tests JUnit5 PASS (`OllamaInstanceScannerTest`, `LlmProviderResolverTest`)
+* Session 137 — EPIC V-6 `OllamaPoolKeyAdapter` + câblage `OllamaLlmProvider`
+** Wrapper résilient rotation proactive quota / connexion refusée
+** `OllamaLlmProvider.call()` branché sur `adapter.callWithRotation`
+** 27 tests ciblés PASS
+* Session 138 — EPIC V-6 pattern Docker SSH key + Cucumber Ollama cloud
+** Article 0120 lu, pattern canonique extrait (port + volume SSH)
+** Contrat N0 `LlmInstance.volumeTag` ajouté (backward-compatible), publié mavenLocal
+** `OllamaInstanceFactory` génère 29 instances sur ports 11437-11465, modèles cyclés, volumeTag
+** 7 JUnit5 `OllamaInstanceFactoryTest` + 2 scénarios Cucumber `@epic_v6_ollama_cloud` PASS (zéro réseau)
+** Build codebase-gradle SUCCESSFUL
