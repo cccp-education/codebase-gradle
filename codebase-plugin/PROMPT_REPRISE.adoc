@@ -1,29 +1,31 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 136
-:session: 136
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 137
+:session: 137
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 135 — EPIC PUB ✅ TERMINÉ, reprise EPIC V-6
+:session_precedente: 136 — EPIC V-6 scanner actif ✅, reprise V-6 cablage OllamaPoolKeyAdapter
 
 == Contexte Hérité
 
-- Session 135 a vérifié `codebase-plugin:0.0.3` HTTP 200 sur Maven Central,
-  clôturé EPIC PUB, validé la config nmcp, et analysé EPIC V-6 pour le
-  prochain baby-step.
+- Session 136 a livré `OllamaInstanceScanner` + ports DDD + câblage dans
+  `LlmProviderResolver`. 22 tests ciblés PASS, build propre.
+- EPIC V-6 reste partiel : `OllamaPoolKeyAdapter` (wrapper resilient
+  quota/quota dépassé + rotation instances) et pattern SSH key article 0120
+  ne sont pas encore implémentés.
 - Article 0120 = pattern canonique dual-abonnement Ollama Pro via Docker
   (isolation port + volume SSH).
 
-== Mission Session 136
+== Mission Session 137
 
-1. Implémenter `OllamaInstanceScanner.kt` : scanner actif des ports
-   `11437→11465` via `GET /api/tags`, retourner `List<LlmInstance>`
-   pour les instances vivantes.
+1. Implémenter `OllamaPoolKeyAdapter` : wrapper autour du pool qui gère
+   la rotation proactive quand une instance renvoie une erreur de quota
+   ou de connexion, sans propager l'exception au premier échec.
 2. Tests JUnit5 baby-step :
-   - scanner avec fake HTTP client (ports up/down mixtes)
-   - fallback env var `OLLAMA_POOL_PORTS` prioritaire sur le scan
-   - test d'intégration conditionnel (`isOllamaReady`) optionnel
-3. Câbler `LlmProviderResolver` : utiliser le scanner quand
-   `OLLAMA_POOL_PORTS` n'est pas défini.
-4. `./gradlew build -x test -x cucumberTest -x koverVerify -x validateDependencies`
-   propre.
+   - quota exceeded déclenche rotation vers instance suivante
+   - connexion refusée déclenche rotation et marque l'instance inactive
+   - épuisement du pool lève `IllegalStateException` explicite
+3. Câbler `OllamaPoolKeyAdapter` dans `OllamaLlmProvider.call()` pour
+   remplacer le retry naïf actuel.
+4. `./gradlew :codebase-plugin:compileKotlin` puis tests ciblés
+   `OllamaPoolKeyAdapterTest` + `OllamaLlmProviderTest` verts.
 
 == Méthodologie
 

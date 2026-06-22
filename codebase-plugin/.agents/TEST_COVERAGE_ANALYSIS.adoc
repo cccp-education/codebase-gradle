@@ -1,3 +1,65 @@
+= TEST_COVERAGE_ANALYSIS — Session 136
+:date: 2026-06-22
+:epic: EPIC V-6 — OllamaInstanceScanner actif + câblage resolver
+
+== Nouveaux fichiers source
+
+[cols="2,3"]
+|===
+| Fichier | Rôle
+
+| `port/InstanceScanner.kt` | Port secondaire probe HTTP
+| `port/EnvironmentReader.kt` | Port secondaire lecture env var
+| `HttpInstanceScanner.kt` | Implémentation HTTP `GET /api/tags`
+| `OllamaInstanceScanner.kt` | Domaine scan plage + fallback env var + cycle modèles
+|===
+
+== Nouveaux fichiers test
+
+[cols="2,3"]
+|===
+| Fichier | Rôle
+
+| `FakeInstanceScanner.kt` | Fake scanner déterministe
+| `OllamaInstanceScannerTest.kt` | 6 JUnit5 + 1 test d'intégration conditionnel
+|===
+
+== Fichiers modifiés
+
+[cols="2,3"]
+|===
+| Fichier | Changement
+
+| `LlmProviderResolver.kt` | Scan actif quand `OLLAMA_POOL_PORTS` absent + factory injectable
+| `LlmProviderResolverTest.kt` | + fake scanner + test fallback env var
+| `OllamaPoolTest.kt` | Alignement liste modèles autorisés (5 distincts)
+|===
+
+== Tests
+
+|===
+| Scope | Résultat
+
+| `OllamaPoolTest` | ✅ PASS
+| `OllamaInstanceScannerTest` | ✅ 6/6 + 1 skipped si pas d'Ollama local
+| `LlmProviderResolverTest` | ✅ 7/7 PASS
+| `compileKotlin` | ✅
+| `compileTestKotlin` | ✅
+| `build -x test -x cucumberTest -x koverVerify -x validateDependencies` | ✅
+|===
+
+== Total session 136
+
+- JUnit5 : 14 nouveaux / modifiés PASS (7 resolver + 6 scanner + 1 pool)
+- Build : propre
+
+== Couverture Kover
+
+- `kover { verify { rule { minBound(79) } } }` inchangé.
+- Nouveaux fichiers domaine/scanner couverts par tests ciblés.
+
+'''
+
 = TEST_COVERAGE_ANALYSIS — Session 135
 :date: 2026-06-22
 :epic: EPIC PUB — Suppression duplications N0 + migration vers JARs Central

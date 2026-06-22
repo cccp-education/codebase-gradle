@@ -46,7 +46,7 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 * [x] Refactoring: consolidate LlmProviderResolver pool integration (LlmProviderResolver.kt:25-67 gemma4Pool lazy singleton)
 
 == EPIC V-6 — Cablage Ollama Cloud Docker + ConnectionFactory R2DBC (Session 065)
-**Statut** : EN COURS (6/10 — audité 2026-06-14)
+**Statut** : EN COURS (8/10 — scanner actif livré session 136)
 **Priorite** : P0
 
 === P0 — ConnectionFactory + Persistance R2DBC
@@ -58,9 +58,10 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 
 === P0 — OllamaLlmProvider cloud dockerise
 
-* [ ] Scanner ports 11434→11465 sur l'hote (`curl http://localhost:{port}/api/tags`) — PARTIEL : OLLAMA_POOL_PORTS env var declaratif, pas de scan actif curl
+* [x] Scanner ports 11437→11465 sur l'hote (`GET http://localhost:{port}/api/tags`) — OllamaInstanceScanner.kt + HttpInstanceScanner.kt + ports DDD
 * [x] `OllamaLlmProvider` via `OllamaChatModel.builder().baseUrl()` (OllamaLlmProvider.kt:80-85)
 * [x] Utiliser `gpt-oss:120b-cloud` comme modele principal (LlmProviderResolver.kt:30 DEFAULT_MODEL)
+* [x] Cabler `LlmProviderResolver` pour scanner quand `OLLAMA_POOL_PORTS` absent
 * [ ] OllamaPoolKeyAdapter : wrapper resilient quota/quota depasse + rotation instances — PENDING : pas de classe dediee, quota gere directement dans OllamaPool
 * [ ] Pattern docker SSH key : article 0120 (dual-abonnement Ollama docker) — PENDING : pas de code SSH, HTTP localhost direct
 * [ ] Test Cucumber : "LLM calls Ollama cloud and handles quota exceeded" — PARTIEL : EpicV6CucumberRunner existe mais scenarios = error recovery/retry, pas specifiquement Ollama cloud

@@ -1,10 +1,12 @@
 package codebase.koog.llm
 
+import codebase.koog.llm.pool.OllamaInstanceScanner
 import codebase.koog.llm.pool.OllamaLlmProvider
 import codebase.koog.llm.pool.OllamaPool
 import codebase.rag.GeminiConfig
 import contracts.llmpool.LlmInstance
 import contracts.llmpool.RotationStrategy
+import kotlinx.coroutines.runBlocking
 
 /**
  * Resolves an [LlmProvider] from a model name.
@@ -15,8 +17,8 @@ import contracts.llmpool.RotationStrategy
  * Mapping:
  * - "gemini" → [GeminiLlmProvider]
  * - "ollama", "deepseek" → [OllamaLlmProvider] backed by Gemma4 Cloud pool
- *   (ROUND_ROBIN rotation across ports from `OLLAMA_POOL_PORTS` env var,
- *   default single port 11437, model `gpt-oss:120b-cloud`)
+ *   (ROUND_ROBIN rotation across live ports discovered by [OllamaInstanceScanner]
+ *   when `OLLAMA_POOL_PORTS` is absent, or from `OLLAMA_POOL_PORTS` when set)
  * - any other string → [OllamaLlmProvider] single-instance with that model name
  *
  * NOTE: blank model is handled by the caller (VibecodingTask) — no provider
@@ -31,16 +33,12 @@ object LlmProviderResolver {
 
     /** Gemma4 Cloud pool — shared across all vibecoding sessions */
     private val gemma4Pool: OllamaPool by lazy {
-        val ports = parsePorts(System.getenv("OLLAMA_POOL_PORTS") ?: DEFAULT_PORT.toString())
-        val instances = ports.map { port ->
-            LlmInstance(
-                id = "gemma4-$port",
-                baseUrl = DEFAULT_HOST.format(port),
-                model = DEFAULT_MODEL
-            )
-        }
+        val instances = resolveOllamaInstances()
         OllamaPool(instances, rotationStrategy = RotationStrategy.ROUND_ROBIN)
     }
+
+    /** Factory injectable pour les tests — ne jamais utiliser en production. */
+    internal var scannerFactory: () -> OllamaInstanceScanner = { OllamaInstanceScanner() }
 
     fun resolve(model: String): LlmProvider {
         return when (model.lowercase().trim()) {
@@ -59,6 +57,25 @@ object LlmProviderResolver {
                 )
                 OllamaLlmProvider(OllamaPool(listOf(instance)))
             }
+        }
+    }
+
+    /**
+     * Déclaratif si `OLLAMA_POOL_PORTS` est défini, scan actif sinon.
+     * Le scan reste synchrone car [resolve] est appelé depuis du code synchrone.
+     */
+    private fun resolveOllamaInstances(): List<LlmInstance> {
+        val explicitPorts = System.getenv("OLLAMA_POOL_PORTS")
+        return if (!explicitPorts.isNullOrBlank()) {
+            parsePorts(explicitPorts).map { port ->
+                LlmInstance(
+                    id = "gemma4-$port",
+                    baseUrl = DEFAULT_HOST.format(port),
+                    model = DEFAULT_MODEL
+                )
+            }
+        } else {
+            runBlocking { scannerFactory().scan() }
         }
     }
 

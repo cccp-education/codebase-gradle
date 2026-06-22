@@ -4,6 +4,7 @@
 |===
 | Session | Date | EPIC | Résultat
 
+| 136 | 2026-06-22 | EPIC V-6 | OllamaInstanceScanner actif + ports DDD + câblage resolver — 22 tests PASS ✅
 | 135 | 2026-06-22 | EPIC PUB | N0 migration + codebase-plugin 0.0.3 publié Central (propagation en cours) ✅
 | 134 | 2026-06-22 | EPIC PUB | Doublon + catalogue stale + N0 Central publiés ✅
 

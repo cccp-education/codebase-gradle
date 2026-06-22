@@ -1,3 +1,16 @@
+== Session 136 — EPIC V-6 OllamaInstanceScanner actif
+
+- Ports DDD : `port/InstanceScanner.kt` + `port/EnvironmentReader.kt`
+- `HttpInstanceScanner.kt` — probe HTTP `GET /api/tags` via `java.net.http.HttpClient`
+- `OllamaInstanceScanner.kt` — scan actif `11437→11465`, fallback `OLLAMA_POOL_PORTS` prioritaire, cycle 5 modèles autorisés
+- `FakeInstanceScanner.kt` + `OllamaInstanceScannerTest.kt` — 6 JUnit5 + 1 test d'intégration conditionnel
+- `LlmProviderResolver.kt` — câblage scan + factory injectable pour tests
+- `LlmProviderResolverTest.kt` — enrichi fake scanner + fallback env var
+- `OllamaPoolTest.kt` — alignement 5 modèles autorisés distincts
+- **22 tests ciblés PASS** — build propre
+
+'''
+
 = COMPLETED_TASKS_ARCHIVE — Juin 2026
 :date: 2026-06-22
 

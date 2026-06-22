@@ -1,7 +1,7 @@
 = INDEX.adoc — Codebase Gradle (Queens N1)
 :date: 2026-06-16
-:session_en_cours: 135
-:session_precedente: 134 — Doublon + catalogue stale + N0 Central ✅
+:session_en_cours: 137
+:session_precedente: 136 — EPIC V-6 OllamaInstanceScanner actif + ports DDD + 22 tests PASS ✅
 
 == Roadmap EPICs
 
@@ -40,6 +40,10 @@
 | EPIC 8 Exposer experts
 | EN COURS (3/4)
 | 127
+
+| EPIC V-6 Ollama Cloud
+| EN COURS (8/10 — scanner actif livré session 136)
+| 136
 
 | EPIC 9 Opencode Augmenté
 | ✅ TERMINE
@@ -98,13 +102,14 @@
 | 108
 
 | EPIC PUB Publication
-| 🔄 EN COURS — codebase-plugin 0.0.3 publié (deployment Central OK), propagation en attente
+| ✅ TERMINÉ — codebase-plugin 0.0.3 publié Central, propagation terminée
 | 135
 |===
 
 == Sessions Récentes
 
 | Session | Date | EPIC | Résultat
+| 136 | 2026-06-22 | EPIC V-6 | OllamaInstanceScanner actif + ports DDD + câblage resolver — 22 tests PASS ✅
 | 135 | 2026-06-22 | EPIC PUB | N0 migration + codebase-plugin 0.0.3 publié Central (propagation en cours) ✅
 | 134 | 2026-06-22 | EPIC PUB | Doublon + catalogue stale + N0 Central publiés ✅
 | 133 | 2026-06-22 | EPIC TRAD | TranslationService N1 (contrat N0 + LlmTranslator + Fake + 8 JUnit5 + 6 Cucumber) ✅

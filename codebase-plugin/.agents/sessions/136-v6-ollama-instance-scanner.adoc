@@ -1,0 +1,51 @@
+= Session 136 — EPIC V-6 : OllamaInstanceScanner actif
+
+== Contexte
+
+Session 135 avait clôturé EPIC PUB. La mission 136 reprend EPIC V-6
+(Ollama cloud dockerisé) pour remplacer le mode déclaratif `OLLAMA_POOL_PORTS`
+par un scan actif des ports Ollama.
+
+== Objectifs
+
+. Implémenter [OllamaInstanceScanner] : scan actif `11437→11465` via `GET /api/tags`.
+. Tests JUnit5 baby-step : fake scanner, fallback env var prioritaire, test d'intégration conditionnel.
+. Câbler [LlmProviderResolver] pour utiliser le scanner quand `OLLAMA_POOL_PORTS` est absent.
+. Maintenir la compilation et les tests existants.
+
+== Actions Réalisées
+
+|===
+| Fichier | Action
+
+| `port/InstanceScanner.kt` | Création port secondaire (probe HTTP)
+| `port/EnvironmentReader.kt` | Création port secondaire (lecture env var)
+| `HttpInstanceScanner.kt` | Implémentation HTTP réelle avec `java.net.http.HttpClient`
+| `OllamaInstanceScanner.kt` | Domaine : scan plage, fallback env var, cycle 5 modèles
+| `FakeInstanceScanner.kt` | Fake déterministe pour les tests
+| `OllamaInstanceScannerTest.kt` | 6 tests JUnit5 + 1 test d'intégration conditionnel
+| `LlmProviderResolver.kt` | Câblage scan + factory injectable pour tests
+| `LlmProviderResolverTest.kt` | Enrichi avec fake scanner + test fallback env var
+| `OllamaPoolTest.kt` | Alignement modèles autorisés (5 modèles distincts)
+|===
+
+== Commandes
+
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:compileTestKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.llm.pool.OllamaPoolTest" --tests "codebase.koog.llm.pool.OllamaInstanceScannerTest" --tests "codebase.koog.llm.LlmProviderResolverTest" -x cucumberTest -x koverVerify -x validateDependencies
+./gradlew :codebase-plugin:build -x test -x cucumberTest -x koverVerify -x validateDependencies
+----
+
+== Résultats
+
+- 22 tests ciblés PASS
+- Build compile propre
+- Aucun secret ajouté
+
+== Leçons
+
+- DDD/TDD : ports `InstanceScanner` + `EnvironmentReader` permettent de tester sans muter `System.getenv` ni faire de vrais appels HTTP.
+- Baby step validé : un fichier modifié à la fois, compilation entre chaque étape.
+- Le test existant `OllamaPoolTest` révélait une incohérence de liste de modèles (doublon `gpt-oss:120b-cloud`) — corrigé en alignant sur 5 modèles distincts.
