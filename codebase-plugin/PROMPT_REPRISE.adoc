@@ -1,23 +1,22 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 139
-:session: 139
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 140
+:session: 140
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 138 — OllamaInstanceFactory ✅ + Cucumber Ollama cloud quota ✅
+:session_precedente: 139 — EPIC V-6 Resolver→Factory déterministe — 9 JUnit5 + 3 Cucumber PASS ✅
 
 == Contexte Hérité
 
-- Session 138 a livré `OllamaInstanceFactory` : génération déterministe d'instances Ollama Cloud sur ports 11437→11465, modèles cyclés, et `volumeTag` métier dans le contrat N0 `LlmInstance`.
-- La feature Cucumber `@epic_v6_ollama_cloud` couvre la rotation sur quota exceeded avec fake provider (zéro réseau).
-- EPIC V-6 reste ouvert : `LlmProviderResolver` utilise encore `OllamaInstanceScanner` (probe HTTP) par défaut ; il faut lui permettre de basculer vers la factory déterministe.
-- Build propre, tests ciblés verts.
+- Session 139 a clôturé EPIC V-6 : `LlmProviderResolver` utilise `OllamaInstanceFactory` par défaut (mode déterministe, 29 instances, zéro réseau) ; `OllamaInstanceScanner` reste disponible comme fallback explicite via `OLLAMA_SCAN_PORTS=true` ou `OLLAMA_POOL_PORTS`.
+- Les 9 tests JUnit5 `LlmProviderResolverTest` et les 3 scénarios Cucumber `@epic_v6_resolver` passent. Build propre.
+- EPIC 8 (Expert Exposure via Ollama) reste partiellement ouvert : session 127 a livré contrats, tâche Gradle `exposeExperts` et 5 scénarios Cucumber, mais l'INDEX indique "EN COURS (3/4)" — le dernier item (consommation/exposition réelle par un borough N2 ou wiring final) reste à boucler.
 
-== Mission Session 139
+== Mission Session 140
 
-1. Modifier `LlmProviderResolver` pour utiliser `OllamaInstanceFactory` quand `OLLAMA_POOL_PORTS` est absent (mode déterministe, sans probe HTTP).
-2. Conserver `OllamaInstanceScanner` comme fallback explicite si `OLLAMA_SCAN_PORTS=true` ou `OLLAMA_POOL_PORTS` est défini.
-3. Tests JUnit5 baby-step : resolver retourne provider avec 29 instances en mode factory, resolver honore `OLLAMA_POOL_PORTS`, scanner fallback activable.
-4. Test Cucumber `@epic_v6_resolver` : "Resolver builds Ollama cloud provider from deterministic factory".
-5. `./gradlew :codebase-plugin:compileKotlin` puis tests ciblés verts.
+1. Identifier l'item ouvert 4/4 de l'EPIC 8 Expert Exposure (consommation du manifeste JSON par un borough N2, wiring final, ou test cross-borough).
+2. Implémenter le dernier baby step en TDD : un fichier modifié à la fois, compilation entre chaque étape.
+3. Ajouter/ajuster les tests JUnit5 fonctionnels et les scénarios Cucumber `@epic8` pour couvrir le point manquant.
+4. S'assurer que `./gradlew :codebase-plugin:compileKotlin` et les tests ciblés EPIC 8 restent verts.
+5. Si EPIC 8 est véritablement terminé, mettre à jour `BACKLOG.adoc` et `.agents/INDEX.adoc` (statut ✅ TERMINE).
 
 == Méthodologie
 
-Baby-step DDD/TDD/BDD : un fichier modifié à la fois, compilation entre chaque étape. Pas de subagent, pas de parallélisation.
+Baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber. Un fichier modifié à la fois, compilation entre chaque étape. Pas de subagent, pas de parallélisation.
