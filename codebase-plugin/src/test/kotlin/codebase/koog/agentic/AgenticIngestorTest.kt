@@ -173,16 +173,82 @@ class AgenticIngestorTest {
     }
 
     @Test
-    fun `should not report governance sections when governance ontologizer is absent`() = runBlocking {
+    fun `should reject invalid chunks and report chunksInvalid`() = runBlocking {
+        val fakeValidator = object : ChunkValidator() {
+            override fun validate(chunk: AgenticChunk): ValidationResult {
+                return if (chunk.content.contains("INVALID")) {
+                    ValidationResult(valid = false, errors = listOf("content contains INVALID marker"))
+                } else {
+                    super.validate(chunk)
+                }
+            }
+        }
+        val ingestorWithValidation = AgenticIngestor(
+            chunker, ontologizer, repo, compiler,
+            governanceOntologizer = null,
+            chunkValidator = fakeValidator
+        )
+
         val content = """
             = AGENT.adoc
+            **INTERDICTION FORMELLE** de commit sans permission.
+            == Section INVALID
+            This line contains INVALID marker.
+        """.trimIndent()
 
+        val report = ingestorWithValidation.ingest(listOf("AGENT.adoc" to content))
+
+        assertTrue(report.chunksInvalid > 0, "Should report invalid chunks")
+        assertTrue(report.validationErrors.any { it.message.contains("INVALID marker") },
+            "Should report validation error message")
+    }
+
+    @Test
+    fun `should not insert invalid chunks into repository`() = runBlocking {
+        val fakeValidator = object : ChunkValidator() {
+            override fun validate(chunk: AgenticChunk): ValidationResult {
+                return if (chunk.content.contains("INVALID")) {
+                    ValidationResult(valid = false, errors = listOf("invalid"))
+                } else {
+                    super.validate(chunk)
+                }
+            }
+        }
+        val ingestorWithValidation = AgenticIngestor(
+            chunker, ontologizer, repo, compiler,
+            governanceOntologizer = null,
+            chunkValidator = fakeValidator
+        )
+
+        val content = """
+            = AGENT.adoc
+            == Valid rule
+            **INTERDICTION FORMELLE** de commit sans permission.
+            == Invalid section
+            This line contains INVALID marker.
+        """.trimIndent()
+
+        val beforeCount = repo.countChunks()
+        val report = ingestorWithValidation.ingest(listOf("AGENT.adoc" to content))
+
+        assertTrue(report.chunksInvalid > 0, "Should detect invalid chunks")
+        assertTrue(report.chunksAdded > 0, "Should still add valid chunks")
+        assertEquals(beforeCount + report.chunksAdded, repo.countChunks(),
+            "Repo should only contain valid chunks")
+        assertTrue(repo.listChunks(Int.MAX_VALUE).none { it.chunk.content.contains("INVALID marker") },
+            "Repository should not contain invalid chunk content")
+    }
+
+    @Test
+    fun `should report zero invalid chunks when all chunks are valid`() = runBlocking {
+        val content = """
+            = AGENT.adoc
             **INTERDICTION FORMELLE** de commit sans permission.
         """.trimIndent()
 
         val report = ingestor.ingest(listOf("AGENT.adoc" to content))
 
-        assertEquals(emptyMap<GovernanceSection, Int>(), report.sectionsAdded)
-        assertEquals(emptyMap<GovernanceSection, Int>(), report.sectionsTotal)
+        assertEquals(0, report.chunksInvalid, "All chunks should be valid")
+        assertTrue(report.validationErrors.isEmpty(), "Validation errors should be empty")
     }
 }

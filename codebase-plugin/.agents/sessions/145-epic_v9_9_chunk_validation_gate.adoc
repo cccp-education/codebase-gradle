@@ -1,0 +1,73 @@
+= Session 145 — EPIC V-9.9 ChunkValidationGate
+:date: 2026-06-23
+:epic: EPIC V-9 — Vibecoding Gouvernance Agentique (Under-EPIC 3)
+:status: ✅ TERMINÉ
+
+== Contexte
+
+Session 144 avait livré V-9.8 Governance ingestion report (`IngestionReport` enrichi de `sectionsAdded`/`sectionsTotal`).
+PROMPT_REPRISE 145 demandait d'identifier le prochain sous-item d'EPIC V-9 dans `BACKLOG.adoc`.
+
+L'archive de la session 084 (cadrage initial des 35 items) n'étant pas disponible localement,
+EPIC V-9 a été **reconstruit depuis l'état du code** :
+
+- Under-EPIC 1 (V-9.1→V-9.5) ✅ complet
+- Under-EPIC 2 (V-9.6→V-9.8) ✅ complet
+- Under-EPIC 3 démarré avec V-9.9
+
+== Découverte clé
+
+`ChunkValidator.kt` existait depuis la session 141 (V-9.5) mais **n'était pas câblé** dans `AgenticIngestor`.
+C'était la faille évidente et le baby-step naturel suivant : introduire une **validation gate**
+avant le stockage des chunks.
+
+== Actions
+
+. `BACKLOG.adoc` : reconstruction synchronisée de la section EPIC V-9 avec Under-EPIC 1/2/3 et items futurs.
+. `AgenticIngestor.kt` :
+   * Ajout `chunksInvalid: Int` et `validationErrors: List<ChunkValidationError>` dans `IngestionReport`
+   * Injection de `ChunkValidator` (défaut `ChunkValidator()`)
+   * Rejet des chunks invalides avant `repository.insertChunk()` / `compiler.compile()`
+. `ChunkValidator.kt` : rendu `open class` avec `open fun validate(...)` pour permettre les fakes de tests.
+. `IngestGovernanceTask.kt` : JSON enrichi de `chunksInvalid` et `validationErrors`.
+. Tests JUnit5 : 3 nouveaux dans `AgenticIngestorTest.kt` (invalid report, repo sanity, zero invalid).
+. Tests Cucumber : nouvelle feature `epic_v_9_9_governance_validation_gate.feature` + runner `EpicV99CucumberRunner` + 2 scénarios.
+. `build.gradle.kts` : enregistrement `cucumberTestEpicV99`.
+. `IngestGovernanceSteps.kt` : 2 nouveaux steps (`chunks invalid equal to`, `validation errors count equal to`).
+
+== Commandes
+
+[source,bash]
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.AgenticIngestorTest"
+./gradlew :codebase-plugin:cucumberTestEpicV99
+./gradlew :codebase-plugin:cucumberTestEpicV93 :codebase-plugin:cucumberTestEpicV95 :codebase-plugin:cucumberTestEpicV97 :codebase-plugin:cucumberTestEpicV98 :codebase-plugin:test --tests "codebase.koog.agentic.IngestGovernanceTaskTest"
+----
+
+== Résultats
+
+- `AgenticIngestorTest` : 10/10 PASS (7 existants + 3 nouveaux)
+- `EpicV99CucumberRunner` : 2/2 scénarios PASS
+- Régressions V-9.3 (6), V-9.5 (5), V-9.7 (7), V-9.8 (3) : toutes vertes
+- `IngestGovernanceTaskTest` (7 tests) : verts
+- Build propre, zéro réseau, zéro Testcontainers
+
+== Fichiers modifiés / créés
+
+- `BACKLOG.adoc`
+- `src/main/kotlin/codebase/koog/agentic/AgenticIngestor.kt`
+- `src/main/kotlin/codebase/koog/agentic/ChunkValidator.kt`
+- `src/main/kotlin/codebase/koog/agentic/IngestGovernanceTask.kt`
+- `src/test/kotlin/codebase/koog/agentic/AgenticIngestorTest.kt`
+- `src/test/kotlin/codebase/scenarios/IngestGovernanceSteps.kt`
+- `src/test/kotlin/codebase/scenarios/EpicV99CucumberRunner.kt` (créé)
+- `src/test/features/epic_v_9_9_governance_validation_gate.feature` (créé)
+- `build.gradle.kts`
+
+== Leçons
+
+- **Anti-duplication** : V-9.1/V-9.2/V-9.4/V-9.6 déjà couverts par EPIC Y ; pas de code mort recréé.
+- **Baby-step DDD/TDD/BDD** : unit → fonctionnel → Cucumber, un fichier modifié à la fois, compilation entre chaque étape.
+- **Read-only sur le passé** : quand l'archive source manque, on reconstruit depuis le code et on documente la reconstruction.
+- **Under-EPIC 3 ouvert** : V-9.10 (rapport d'erreurs détaillé), V-9.11 (quarantaine), V-9.12 (mode strict) sont les prochains baby-steps logiques.

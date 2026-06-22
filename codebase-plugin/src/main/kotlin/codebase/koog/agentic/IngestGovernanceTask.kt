@@ -81,11 +81,29 @@ abstract class IngestGovernanceTask : DefaultTask() {
         appendLine("  \"chunksAdded\": ${report.chunksAdded},")
         appendLine("  \"chunksSkipped\": ${report.chunksSkipped},")
         appendLine("  \"chunksModified\": ${report.chunksModified},")
+        appendLine("  \"chunksInvalid\": ${report.chunksInvalid},")
         appendLine("  \"artifactsCompiled\": ${report.artifactsCompiled},")
         appendLine("  \"sectionsAdded\": ${mapToJson(report.sectionsAdded)},")
-        appendLine("  \"sectionsTotal\": ${mapToJson(report.sectionsTotal)}")
+        appendLine("  \"sectionsTotal\": ${mapToJson(report.sectionsTotal)},")
+        appendLine("  \"validationErrors\": ${validationErrorsToJson(report.validationErrors)}")
         appendLine("}")
     }
+
+    private fun validationErrorsToJson(errors: List<ChunkValidationError>): String = buildString {
+        append("[")
+        errors.withIndex().forEach { (index, error) ->
+            append("{\"sourceFile\": \"${escapeJson(error.sourceFile)}\", \"sourceLines\": \"${escapeJson(error.sourceLines)}\", \"message\": \"${escapeJson(error.message)}\"}")
+            if (index < errors.size - 1) append(", ")
+        }
+        append("]")
+    }
+
+    private fun escapeJson(value: String): String = value
+        .replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+        .replace("\t", "\\t")
 
     private fun mapToJson(map: Map<GovernanceSection, Int>): String = buildString {
         append("{")

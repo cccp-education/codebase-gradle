@@ -7,7 +7,15 @@ data class IngestionReport(
     val chunksModified: Int,
     val artifactsCompiled: Int,
     val sectionsAdded: Map<GovernanceSection, Int> = emptyMap(),
-    val sectionsTotal: Map<GovernanceSection, Int> = emptyMap()
+    val sectionsTotal: Map<GovernanceSection, Int> = emptyMap(),
+    val chunksInvalid: Int = 0,
+    val validationErrors: List<ChunkValidationError> = emptyList()
+)
+
+data class ChunkValidationError(
+    val sourceFile: String,
+    val sourceLines: String,
+    val message: String
 )
 
 class AgenticIngestor(
@@ -15,7 +23,8 @@ class AgenticIngestor(
     private val ontologizer: AgenticOntologizer = AgenticOntologizer(),
     private val repository: AgenticChunkRepository,
     private val compiler: AgenticCompiler = AgenticCompiler(),
-    private val governanceOntologizer: GovernanceOntologizer? = null
+    private val governanceOntologizer: GovernanceOntologizer? = null,
+    private val chunkValidator: ChunkValidator = ChunkValidator()
 ) {
 
     suspend fun ingest(files: List<Pair<String, String>>): IngestionReport {
@@ -25,8 +34,10 @@ class AgenticIngestor(
         var chunksSkipped = 0
         var chunksModified = 0
         var artifactsCompiled = 0
+        var chunksInvalid = 0
         val sectionsAdded = mutableMapOf<GovernanceSection, Int>()
         val sectionsTotal = mutableMapOf<GovernanceSection, Int>()
+        val validationErrors = mutableListOf<ChunkValidationError>()
 
         for ((sourceFile, content) in files) {
             if (content.isBlank()) continue
@@ -39,6 +50,21 @@ class AgenticIngestor(
                 .filter { it.chunk.sourceFile == sourceFile }
 
             for (chunk in ontologized) {
+                val validation = chunkValidator.validate(chunk.chunk)
+                if (!validation.valid) {
+                    chunksInvalid++
+                    validation.errors.forEach { error ->
+                        validationErrors.add(
+                            ChunkValidationError(
+                                sourceFile = chunk.chunk.sourceFile,
+                                sourceLines = chunk.chunk.sourceLines,
+                                message = error
+                            )
+                        )
+                    }
+                    continue
+                }
+
                 val section = governanceOntologizer?.classify(chunk.chunk)
                 val existing = existingChunks.firstOrNull {
                     it.chunk.sourceLines == chunk.chunk.sourceLines
@@ -72,7 +98,9 @@ class AgenticIngestor(
             chunksModified = chunksModified,
             artifactsCompiled = artifactsCompiled,
             sectionsAdded = sectionsAdded,
-            sectionsTotal = sectionsTotal
+            sectionsTotal = sectionsTotal,
+            chunksInvalid = chunksInvalid,
+            validationErrors = validationErrors
         )
     }
 }

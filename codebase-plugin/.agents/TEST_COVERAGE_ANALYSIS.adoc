@@ -1,12 +1,12 @@
-= TEST_COVERAGE_ANALYSIS — Session 144
+= TEST_COVERAGE_ANALYSIS — Session 145
 :date: 2026-06-23
-:epic: EPIC V-9 — V-9.8 Governance Ingestion Report (baby-step DDD/TDD/BDD)
+:epic: EPIC V-9 — V-9.9 ChunkValidationGate (baby-step DDD/TDD/BDD)
 
 == Contexte
 
-PROMPT_REPRISE 144 demandait d'intégrer `GovernanceOntologizer` dans le pipeline
-d'ingestion (`AgenticIngestor` et/ou `IngestGovernanceTask`) pour enrichir
-`IngestionReport` avec le décompte par `GovernanceSection`.
+PROMPT_REPRISE 145 demandait d'identifier le prochain sous-item d'EPIC V-9.
+L'archive de cadrage session 084 n'étant pas disponible, l'Under-EPIC 3 a été déduit
+de l'état du code : `ChunkValidator.kt` existait mais n'était pas câblé dans `AgenticIngestor`.
 
 == Nouveaux fichiers source
 
@@ -14,11 +14,9 @@ d'ingestion (`AgenticIngestor` et/ou `IngestGovernanceTask`) pour enrichir
 |===
 | Fichier | Rôle
 
-| `test/kotlin/scenarios/IngestGovernanceWorld.kt` | World Cucumber V-9.8 : ProjectBuilder, fichiers temporaires, exécution tâche, assertions sections
-| `test/kotlin/scenarios/IngestGovernanceSteps.kt` | Steps Cucumber V-9.8 (Given DataTable/DocString, When task, Then sections/JSON)
-| `test/kotlin/scenarios/EpicV98CucumberRunner.kt` | Runner Cucumber @epic_v_9_8
-| `test/features/epic_v_9_8_governance_ingest.feature` | Feature 3 scénarios : sections AGENT+INDEX, JSON output, UNKNOWN
-| `sessions/144-epic_v9_8_governance_ingest.adoc` | Archive session 144 (gouvernance)
+| `test/kotlin/scenarios/EpicV99CucumberRunner.kt` | Runner Cucumber @epic_v_9_9
+| `test/features/epic_v_9_9_governance_validation_gate.feature` | Feature 2 scénarios : 0 invalides sur fichiers valides, JSON counters
+| `sessions/145-epic_v9_9_chunk_validation_gate.adoc` | Archive session 145
 |===
 
 == Fichiers source modifiés
@@ -27,12 +25,13 @@ d'ingestion (`AgenticIngestor` et/ou `IngestGovernanceTask`) pour enrichir
 |===
 | Fichier | Changement
 
-| `koog/agentic/IngestionReport.kt` (data class dans AgenticIngestor.kt) | Ajout `sectionsAdded: Map<GovernanceSection, Int>` et `sectionsTotal: Map<GovernanceSection, Int>` avec valeurs par défaut vides
-| `koog/agentic/AgenticIngestor.kt` | Injection optionnelle `GovernanceOntologizer`; calcul sections pour ajout/modification/skip
-| `koog/agentic/IngestGovernanceTask.kt` | Instanciation `GovernanceOntologizer`, log sections, JSON enrichi `sectionsAdded`/`sectionsTotal`
-| `build.gradle.kts` | Enregistrement tâches Cucumber V-9.3, V-9.5, V-9.7, V-9.8
-| `test/kotlin/koog/agentic/AgenticIngestorTest.kt` | +2 JUnit5 (sections présentes avec governance ontologizer, absentes sans)
-| `test/kotlin/koog/agentic/IngestGovernanceTaskTest.kt` | +2 JUnit5 (sections report + JSON sections)
+| `BACKLOG.adoc` | Section EPIC V-9 reconstruite et synchronisée avec l'état du code (Under-EPIC 1/2/3)
+| `koog/agentic/AgenticIngestor.kt` | `IngestionReport` : ajout `chunksInvalid` + `validationErrors`; `ChunkValidator` injecté; rejet avant stockage
+| `koog/agentic/ChunkValidator.kt` | `class` → `open class` et `fun validate` → `open fun validate` (testability)
+| `koog/agentic/IngestGovernanceTask.kt` | JSON de sortie enrichi `chunksInvalid` + `validationErrors`
+| `test/kotlin/koog/agentic/AgenticIngestorTest.kt` | +3 JUnit5 (invalid chunks, repo sanity, zero invalid)
+| `test/kotlin/scenarios/IngestGovernanceSteps.kt` | +2 steps Cucumber (chunks invalid, validation errors count)
+| `build.gradle.kts` | Enregistrement `cucumberTestEpicV99`
 |===
 
 == Tests
@@ -40,25 +39,25 @@ d'ingestion (`AgenticIngestor` et/ou `IngestGovernanceTask`) pour enrichir
 |===
 | Scope | Résultat
 
-| `AgenticIngestorTest` (modifié, 2 nouveaux) | ✅ 8/8 PASS (6 existants + 2 nouveaux)
-| `IngestGovernanceTaskTest` (modifié, 2 nouveaux) | ✅ 7/7 PASS (5 existants + 2 nouveaux)
-| `GovernanceOntologizerTest` | ✅ 8/8 PASS
-| `EpicV98CucumberRunner` (3 scénarios @epic_v_9_8) | ✅ 3/3 PASS
+| `AgenticIngestorTest` | ✅ 10/10 PASS (7 existants + 3 nouveaux)
+| `IngestGovernanceTaskTest` | ✅ 7/7 PASS (zéro régression)
+| `GovernanceOntologizerTest` | ✅ 8/8 PASS (zéro régression)
+| `EpicV99CucumberRunner` (2 scénarios @epic_v_9_9) | ✅ 2/2 PASS
+| `EpicV98CucumberRunner` (3 scénarios @epic_v_9_8) | ✅ 3/3 PASS (régression)
 | `EpicV97CucumberRunner` (7 scénarios @epic_v_9_7) | ✅ 7/7 PASS (régression)
 | `EpicV95CucumberRunner` (5 scénarios @epic_v_9_5) | ✅ 5/5 PASS (régression)
 | `EpicV93CucumberRunner` (6 scénarios @epic_v_9_3) | ✅ 6/6 PASS (régression)
-| `test --tests "codebase.koog.agentic.*"` | ✅ (package agentic complet, ~1m)
 | `compileKotlin` | ✅
 | `compileTestKotlin` | ✅
-| `build -x test -x cucumberTest -x koverVerify` | ✅
 | Régression tests préexistants | 0
 |===
 
-== Total session 144
+== Total session 145
 
-- JUnit5 : 4 nouveaux PASS (2 AgenticIngestor + 2 IngestGovernanceTask)
-- Cucumber : 3 scénarios / 11 steps PASS (@epic_v_9_8)
+- JUnit5 : 3 nouveaux PASS
+- Cucumber : 2 scénarios / 7 steps PASS (@epic_v_9_9)
 - Build : propre
 - Zéro réseau, zéro Testcontainers
+- BACKLOG synchronisé
 
 '''

@@ -7,9 +7,9 @@ data class ValidationResult(
     val errors: List<String>
 )
 
-class ChunkValidator {
+open class ChunkValidator {
 
-    fun validate(chunk: AgenticChunk): ValidationResult {
+    open fun validate(chunk: AgenticChunk): ValidationResult {
         val errors = mutableListOf<String>()
 
         if (chunk.id.isBlank()) errors.add("id must not be blank")

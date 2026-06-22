@@ -6,6 +6,7 @@ import io.cucumber.java.Before
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class IngestGovernanceSteps(private val world: IngestGovernanceWorld) {
@@ -37,6 +38,20 @@ class IngestGovernanceSteps(private val world: IngestGovernanceWorld) {
     @When("I run the ingestGovernance task with output file {string}")
     fun `run ingestGovernance task with output`(outputPath: String) {
         world.runTask(outputPath)
+    }
+
+    @Then("the ingestion report has chunks invalid equal to {int}")
+    fun `ingestion report has chunks invalid equal to`(expected: Int) {
+        val report = world.lastReport ?: error("No ingestion report")
+        assertEquals(expected, report.chunksInvalid,
+            "Expected chunksInvalid=$expected, got ${report.chunksInvalid}")
+    }
+
+    @Then("the ingestion report has validation errors count equal to {int}")
+    fun `ingestion report has validation errors count equal to`(expected: Int) {
+        val report = world.lastReport ?: error("No ingestion report")
+        assertEquals(expected, report.validationErrors.size,
+            "Expected validationErrors count=$expected, got ${report.validationErrors.size}")
     }
 
     @Then("the ingestion report has sections added")

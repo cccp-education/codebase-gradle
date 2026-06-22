@@ -1,3 +1,18 @@
+== Session 145 — EPIC V-9.9 ChunkValidationGate
+
+- `BACKLOG.adoc` : reconstruction synchronisée d'EPIC V-9 depuis l'état du code (Under-EPIC 1/2/3)
+- `koog/agentic/AgenticIngestor.kt` : `IngestionReport` enrichi de `chunksInvalid` + `validationErrors`; `ChunkValidator` injecté et câblé avant stockage
+- `koog/agentic/ChunkValidator.kt` : rendu `open` pour testability (fake validator)
+- `koog/agentic/IngestGovernanceTask.kt` : JSON de sortie enrichi `chunksInvalid` + `validationErrors`
+- `test/kotlin/koog/agentic/AgenticIngestorTest.kt` : +3 JUnit5 (invalid report, repo sanity, zero invalid)
+- `test/features/epic_v_9_9_governance_validation_gate.feature` + `EpicV99CucumberRunner.kt` : 2 scénarios Cucumber @epic_v_9_9
+- `test/kotlin/scenarios/IngestGovernanceSteps.kt` : +2 steps
+- `build.gradle.kts` : enregistrement `cucumberTestEpicV99`
+- Régressions V-9.3 (6), V-9.5 (5), V-9.7 (7), V-9.8 (3) vertes
+- Build propre, zéro réseau, zéro Testcontainers
+
+'''
+
 == Session 144 — EPIC V-9.8 Governance Ingestion Report
 
 - `IngestionReport` enrichi de `sectionsAdded: Map<GovernanceSection, Int>` et `sectionsTotal: Map<GovernanceSection, Int>` (rétrocompatibilité par défaut vides)

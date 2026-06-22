@@ -1,20 +1,20 @@
-= PROMPT REPRISE — Codebase (Queens N1) — Session 145
-:session: 145
+= PROMPT REPRISE — Codebase (Queens N1) — Session 146
+:session: 146
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 144 — EPIC V-9.8 Governance ingestion report livré (IngestionReport enrichi sectionsAdded/sectionsTotal, IngestGovernanceTask JSON enrichi, 10 JUnit5 + 3 Cucumber @epic_v_9_8 PASS)
+:session_precedente: 145 — EPIC V-9.9 ChunkValidationGate livré (`ChunkValidator` câblé dans `AgenticIngestor`, `IngestionReport` enrichi `chunksInvalid`/`validationErrors`, 3 JUnit5 + 2 Cucumber @epic_v_9_9 PASS, régressions V-9.3/9.5/9.7/9.8 vertes, BACKLOG synchronisé)
 
 == Contexte Hérité
 
-- Under-EPIC 2 EPIC V-9 avance : V-9.7 GovernanceOntologizer ✅ et V-9.8 ingestion report ✅.
-- Under-EPIC 1 (V-9.1→V-9.5) est COMPLET.
-- EPIC V-FLYWAY reste en BACKLOG (seuil déclencheur : 5+ migrations de schéma).
-- EPIC V-9 backlog contient encore ~32 points / items à traiter (Under-EPIC 3 et suivants).
+- Under-EPIC 1 EPIC V-9 (V-9.1→V-9.5) ✅ complet.
+- Under-EPIC 2 EPIC V-9 (V-9.6→V-9.8) ✅ complet.
+- Under-EPIC 3 EPIC V-9 démarré : V-9.9 ChunkValidationGate ✅ livré.
+- `BACKLOG.adoc` section EPIC V-9 synchronisée avec l'état du code.
 
-== Mission Session 145
+== Mission Session 146
 
-1. Identifier le prochain sous-item de l'Under-EPIC 2 ou passer à l'Under-EPIC 3 d'EPIC V-9 dans `BACKLOG.adoc`.
+1. Attaquer V-9.10 ChunkValidationReport : enrichir `IngestionReport`/`IngestGovernanceTask` pour exposer les erreurs de validation de manière exploitable (par fichier, par ligne, par type d'erreur).
 2. Coder en baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber.
-3. Préserver V-9.3, V-9.5, V-9.7, V-9.8 et `IngestGovernanceTaskTest` (zéro régression).
+3. Préserver V-9.3, V-9.5, V-9.7, V-9.8, V-9.9 et `IngestGovernanceTaskTest` (zéro régression).
 4. `./gradlew :codebase-plugin:compileKotlin` doit rester vert entre chaque fichier modifié.
 
 == Méthodologie

@@ -939,6 +939,42 @@ C'est la différence entre un script qui associe et un ingénieur qui comprend.
 - CADRAGE_AUTOFOCUS.adoc (.agents/) — cadrage agile 7 ateliers
 - Session 073 (2026-05-27) — découverte du gap autofocus
 
+== EPIC V-9 — Vibecoding Gouvernance Agentique : Texte → Chunks → Ontologie → SQL → Tasks
+
+**Statut** : EN COURS (8/35 items — Under-EPIC 1 ✅, Under-EPIC 2 ✅, Under-EPIC 3 en cours)
+**Priorité** : P0
+**Source** : Reconstruction depuis l'état du code + pattern EPIC Y (Agentic Literature Compiler)
+
+_Pourquoi_ : Transformer la littérature agentique (AGENT.adoc, INDEX.adoc, BACKLOG.adoc, etc.) en artefacts exécutables par le système de contexte augmenté. Chaque borough doit pouvoir ingérer sa propre gouvernance et la transformer en tâches Gradle / contraintes / procédures.
+
+=== Under-EPIC 1 — Acquisition & Chunking ✅
+
+* [x] V-9.1 AgenticChunker — segmentation sémantique en chunks (RULE/CONCEPT/PROCEDURE/METADATA/CONSTRAINT). Déjà livré par EPIC Y-1 (`AgenticChunker.kt`).
+* [x] V-9.2 ChunkType enum — 5 types de chunks. Déjà livré par EPIC Y-1 (`AgenticChunk.kt`).
+* [x] V-9.3 ScanAgent — scanner récursif `.agents/` (ignore build/.git/.gradle/node_modules) + `ScannedFile` value object. 8 JUnit5 + 6 Cucumber @epic_v_9_3 PASS (session 142).
+* [x] V-9.4 ChunkExtractor — extraction des chunks depuis un fichier. Couvert par `AgenticChunker` (anti-duplication session 141).
+* [x] V-9.5 ChunkValidator — validation structurelle des chunks (id/sourceFile/content/sourceLines/checksum/weight). 10 JUnit5 + 5 Cucumber @epic_v_9_5 PASS (session 141). `ChunkValidator.kt` existant, **non encore câblé dans le pipeline d'ingestion**.
+
+=== Under-EPIC 2 — Ontologisation & Rapport ✅
+
+* [x] V-9.6 AgenticOntologizer — mapping chunks → TAXONOMIE_WORKSPACE (verbe/domaine/DAG/cercle/poids). Déjà livré par EPIC Y-2 (`AgenticOntologizer.kt`).
+* [x] V-9.7 GovernanceOntologizer — classifieur spécifique des fichiers de gouvernance du projet courant (`GovernanceSection` enum : RULES_ABSOLUES, ETAT_EPICS, BACKLOG_ITEMS, HISTORIQUE, COVERAGE, MISSION, UNKNOWN). 8 JUnit5 + 7 Cucumber @epic_v_9_7 PASS (session 143).
+* [x] V-9.8 Governance ingestion report — `IngestionReport` enrichi de `sectionsAdded`/`sectionsTotal`, JSON enrichi, intégration `GovernanceOntologizer` dans `AgenticIngestor` + `IngestGovernanceTask`. 10 JUnit5 + 3 Cucumber @epic_v_9_8 PASS (session 144).
+
+=== Under-EPIC 3 — Validation Gate & Qualité (en cours session 145)
+
+* [ ] V-9.9 ChunkValidationGate — câbler `ChunkValidator` dans `AgenticIngestor` pour rejeter les chunks invalides avant stockage, compteur `chunksInvalid` dans `IngestionReport`, tests JUnit5 + Cucumber.
+* [ ] V-9.10 ChunkValidationReport — reporter les erreurs de validation détaillées (fichier, ligne, message) dans le JSON d'ingestion.
+* [ ] V-9.11 InvalidChunkQuarantine — stocker les chunks invalides dans une table/liste séparée pour diagnostic.
+* [ ] V-9.12 StrictValidationMode — option Gradle `strictValidation=true` pour faire échouer la tâche si des chunks invalides sont détectés.
+
+=== Under-EPIC 4+ (backlog future)
+
+* V-9.13+ Compilation → Gradle tasks (pont AgenticCompiler → tâches concrètes)
+* V-9.14+ Enforcement hooks dans ToolRegistry
+* V-9.15+ Auto-détection de nouveaux fichiers de gouvernance
+* V-9.16+ Diff/incrémental entre sessions
+
 == EPIC CR — Code Review Deep Analysis (CODE_REVIEW_DEEP_ANALYSIS.adoc, 1535 lignes)
 
 **Statut** : CADRÉ — 14 items identifiés
