@@ -22,9 +22,9 @@ class DispatcherAgentTest {
     fun setUp() {
         registry = ExpertRegistry()
         registry.registerAll(listOf(
-            ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud"),
-            ExpertRegistration(docsDomain, "gpt-oss:20b-cloud"),
-            ExpertRegistration(generalDomain, "deepseek-v4-pro")
+            ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11449", 120),
+            ExpertRegistration(docsDomain, "gpt-oss:120b-cloud", "http://localhost:11450", 90),
+            ExpertRegistration(generalDomain, "gpt-oss:120b-cloud", "http://localhost:11451", 60)
         ))
 
         fakeKotlinAgent = FakeExpertAgent(kotlinDomain, "Kotlin expert output for {domain}")

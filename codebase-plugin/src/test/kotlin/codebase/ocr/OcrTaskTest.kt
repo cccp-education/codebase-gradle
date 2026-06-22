@@ -353,7 +353,7 @@ class OcrTaskTest {
         assertTrue(outputFile.exists(), "Output file should be created: ${outputFile.absolutePath}")
         val content = outputFile.readText()
         assertTrue(content.contains("FakeOllamaOcrProvider"))
-        assertTrue(content.contains("qwen3-vl:235b-cloud"))
+        assertTrue(content.contains("gpt-oss:120b-cloud"))
     }
 
     @Test
@@ -423,7 +423,7 @@ class OcrTaskTest {
         task.inputFile.set(project.layout.projectDirectory.file("scan.png"))
         task.ocrProvider.set("ollama")
         task.ollamaBaseUrl.set("http://localhost:11437")
-        task.ollamaModel.set("qwen3-vl:235b-cloud")
+        task.ollamaModel.set("gpt-oss:120b-cloud")
         task.ollamaOcrProvider = codebase.koog.llm.FakeOllamaOcrProvider()
 
         task.executeOcr()
@@ -1044,7 +1044,7 @@ class OcrTaskTest {
         assertEquals(1, task.metricsCollector.size)
         val m = task.metricsCollector[0]
         assertEquals("ollama", m.provider)
-        assertEquals("qwen3-vl:235b-cloud", m.model)
+        assertEquals("gpt-oss:120b-cloud", m.model)
         assertEquals(0.0, m.estimatedCostUsd)
     }
 

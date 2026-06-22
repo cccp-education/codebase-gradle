@@ -12,7 +12,7 @@ class LlmConfigTest {
             ai:
               ollama:
                 baseUrl: "http://localhost:11437"
-                model: "deepseek-v4-pro:cloud"
+                model: "gpt-oss:120b-cloud"
               gemini:
                 envVar: "GEMINI_API_KEY"
                 model: "gemini-1.5-flash"
@@ -25,7 +25,7 @@ class LlmConfigTest {
 
         // Ollama
         assertEquals("http://localhost:11437", config.ai.ollama.baseUrl)
-        assertEquals("deepseek-v4-pro:cloud", config.ai.ollama.model)
+        assertEquals("gpt-oss:120b-cloud", config.ai.ollama.model)
         assertEquals(null, config.ai.ollama.envVar)
 
         // Gemini
@@ -62,11 +62,11 @@ class LlmConfigTest {
             ai:
               ollama:
                 baseUrl: "http://localhost:11437"
-                model: "deepseek-v4-pro:cloud"
+                model: "gpt-oss:120b-cloud"
         """.trimIndent())
 
         assertEquals("http://localhost:11437", config.ai.ollama.resolveBaseUrl())
-        assertEquals("deepseek-v4-pro:cloud", config.ai.ollama.resolveModel())
+        assertEquals("gpt-oss:120b-cloud", config.ai.ollama.resolveModel())
     }
 
     @Test

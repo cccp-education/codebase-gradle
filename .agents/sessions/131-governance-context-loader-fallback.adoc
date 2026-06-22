@@ -1,0 +1,40 @@
+= Session 131 — GovernanceContextLoader fallback + ports/models compliance
+
+*Date* : 2026-06-22
+*Borough* : Queens — codebase-gradle (N1)
+*EPICs* : EPIC V-LOCAL (vibecoding local auto-alimenté), EPIC SP (Session Protocol), EPIC OCR (port/model compliance)
+
+== Contexte
+
+Session 130 avait livré koog 1.0.0 (replacement `forwardTo`) et créé `GovernanceContextLoader`. La mission 131 était de câbler ce loader en fallback auto dans `SessionProtocolTask` et `SessionProtocolServer` quand aucun `--contextFile` / `context` n'est fourni.
+
+Au cours des tests, l'utilisateur a signalé que les tests utilisaient des ports Ollama interdits (11434) et des modèles non autorisés (`qwen3-vl:235b-cloud`, `deepseek-v4-pro:cloud`, `gpt-oss:20b-cloud`). Directive stricte : ports 11437-11465 uniquement, modèle `gpt-oss:120b-cloud`.
+
+== Actions
+
+1. **Câblage `SessionProtocolTask`** : fallback auto via `GovernanceContextLoader().load(workspaceRoot)` si `contextFile` absent. Ajout d'un champ `lastAgentContext` exposé pour les tests.
+2. **Câblage `SessionProtocolServer`** : fallback auto si `sessionPrompt.context` absent. Ajout d'un champ `lastAgentContext`.
+3. **Tests unitaires** : 2 tests dans `SessionProtocolTaskTest`, 1 test dans `SessionProtocolServerTest`.
+4. **Compliance ports/modèles** : correction de toutes les occurrences de `11434`, `qwen3-vl:235b-cloud`, `deepseek-v4-pro:cloud`, `gpt-oss:20b-cloud` dans `src/main` et `src/test`. Distribution des ports dans les tests multi-instances (11437-11465).
+
+== Commandes
+
+----
+./gradlew :codebase-plugin:compileKotlin :codebase-plugin:compileTestKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.SessionProtocolTaskTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.SessionProtocolServerTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.SessionProtocolTaskTest" --tests "codebase.koog.SessionProtocolServerTest" --tests "codebase.koog.governance.GovernanceContextLoaderTest" --tests "codebase.ocr.OcrTaskTest" --tests "codebase.koog.expert.*" --tests "codebase.koog.llm.pool.OllamaLlmProviderTest"
+----
+
+== Résultats
+
+* Build compile : OK
+* Tests ciblés unitaires/fonctionnels : PASS (SessionProtocolTaskTest 21/21, SessionProtocolServerTest 6/6, modules OCR/expert/pool touchés)
+* Cucumber : non terminé (timeout 10 min sur scénarios lifecycle sans pgvector)
+* Aucun secret exposé
+
+== Leçons
+
+* Le contexte statique n'était pas injecté dans le prompt LLM directement observable ; exposer `lastAgentContext` est le moyen le plus propre de tester le fallback.
+* La distribution des ports dans les tests multi-instances est nécessaire pour respecter la règle 11437-11465.
+* Les tests d'intégration Ollama et les scénarios pgvector restent conditionnels (`assumeTrue` / skip) ; ils ne bloquent pas la session.

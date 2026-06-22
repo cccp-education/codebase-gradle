@@ -17,6 +17,30 @@
 
 * **Statut** : ✅ Terminé
 
+== Session 130 — Koog 1.0.0 forwardTo
+
+* **Type** : Maintenance EPIC L
+* **Livrables** :
+** Retrait import `forwardTo` dans 5 fichiers (koog 1.0.0)
+** Build compile et tests compilent OK
+* **Statut** : ✅ Terminé
+
+== Session 131 — GovernanceContextLoader fallback + ports/models compliance
+
+* **Type** : Feature + compliance
+* **Livrables** :
+** Câblage `GovernanceContextLoader` dans `SessionProtocolTask` et `SessionProtocolServer`
+** Fallback auto quand aucun contexte n'est fourni
+** Tests unitaires/fonctionnels ciblés PASS
+** Correction ports Ollama 11434 → 11437-11465
+** Correction modèles → `gpt-oss:120b-cloud`
+** Mise à jour gouvernance : archive 131, INDEX, PROMPT_REPRISE, SESSIONS_HISTORY, TEST_COVERAGE_ANALYSIS
+* **Commandes clés** :
+** `./gradlew :codebase-plugin:compileKotlin :codebase-plugin:compileTestKotlin`
+** `./gradlew :codebase-plugin:test --tests "codebase.koog.SessionProtocolTaskTest"`
+** `./gradlew :codebase-plugin:test --tests "codebase.koog.SessionProtocolServerTest"`
+* **Statut** : ✅ Terminé (Cucumber non finalisé — timeout lifecycle sans pgvector)
+
 == Notes de période
 
 * `.agents/` non versionné jusqu'à la session 129 ; historique des sessions 085-128 présent dans le code source et `BACKLOG.adoc` mais pas archivé dans `.agents/sessions/`.

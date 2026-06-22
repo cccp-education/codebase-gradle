@@ -24,8 +24,8 @@ class ExpertExposureTaskTest {
 
         val registry = ExpertRegistry()
         registry.registerAll(listOf(
-            ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11437", 120),
-            ExpertRegistration(docsDomain, "gpt-oss:20b-cloud", "http://localhost:11438", 90)
+            ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11440", 120),
+            ExpertRegistration(docsDomain, "gpt-oss:120b-cloud", "http://localhost:11441", 90)
         ))
 
         val task = project.tasks.register("exposeExperts", ExpertExposureTask::class.java).get()
@@ -39,7 +39,7 @@ class ExpertExposureTaskTest {
         assertTrue(outputFile.exists(), "Output file should exist: ${outputFile.absolutePath}")
         val content = outputFile.readText()
         assertTrue(content.contains("gpt-oss:120b-cloud"))
-        assertTrue(content.contains("http://localhost:11437"))
+        assertTrue(content.contains("http://localhost:11440"))
         assertTrue(content.contains("kotlin"))
         assertTrue(content.contains("docs"))
     }
@@ -53,7 +53,7 @@ class ExpertExposureTaskTest {
         project.pluginManager.apply("java-base")
 
         val registry = ExpertRegistry()
-        registry.register(ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11437", 120))
+        registry.register(ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11443", 120))
 
         val task = project.tasks.register("exposeExperts", ExpertExposureTask::class.java).get()
         task.expertRegistry = registry
@@ -79,9 +79,9 @@ class ExpertExposureTaskTest {
 
         val registry = ExpertRegistry()
         registry.registerAll(listOf(
-            ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11437", 120),
-            ExpertRegistration(docsDomain, "gpt-oss:20b-cloud", "http://localhost:11438", 90),
-            ExpertRegistration(generalDomain, "deepseek-v4-pro", "http://localhost:11439", 60)
+            ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11444", 120),
+            ExpertRegistration(docsDomain, "gpt-oss:120b-cloud", "http://localhost:11445", 90),
+            ExpertRegistration(generalDomain, "gpt-oss:120b-cloud", "http://localhost:11446", 60)
         ))
 
         val task = project.tasks.register("exposeExperts", ExpertExposureTask::class.java).get()
@@ -131,7 +131,7 @@ class ExpertExposureTaskTest {
         project.pluginManager.apply("java-base")
 
         val registry = ExpertRegistry()
-        registry.register(ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11437", 120))
+        registry.register(ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11447", 120))
 
         val task = project.tasks.register("exposeExperts", ExpertExposureTask::class.java).get()
         task.expertRegistry = registry

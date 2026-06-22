@@ -11,13 +11,13 @@ class ExpertExposureContractsTest {
             ExpertExposureEntry(
                 domain = ExpertDomain("kotlin", "Kotlin, Gradle, JVM ecosystem"),
                 modelName = "gpt-oss:120b-cloud",
-                baseUrl = "http://localhost:11437",
+                baseUrl = "http://localhost:11454",
                 timeoutSeconds = 120
             ),
             ExpertExposureEntry(
                 domain = ExpertDomain("docs", "Documentation, AsciiDoc, technical writing"),
-                modelName = "gpt-oss:20b-cloud",
-                baseUrl = "http://localhost:11438",
+                modelName = "gpt-oss:120b-cloud",
+                baseUrl = "http://localhost:11455",
                 timeoutSeconds = 90
             )
         )
@@ -31,7 +31,7 @@ class ExpertExposureContractsTest {
         assertEquals(2, manifest.experts.size)
         assertEquals("kotlin", manifest.experts[0].domain.name)
         assertEquals("gpt-oss:120b-cloud", manifest.experts[0].modelName)
-        assertEquals("http://localhost:11437", manifest.experts[0].baseUrl)
+        assertEquals("http://localhost:11454", manifest.experts[0].baseUrl)
         assertEquals(120, manifest.experts[0].timeoutSeconds)
     }
 
@@ -52,19 +52,19 @@ class ExpertExposureContractsTest {
         val a = ExpertExposureEntry(
             domain = ExpertDomain("kotlin", "Kotlin"),
             modelName = "gpt-oss:120b-cloud",
-            baseUrl = "http://localhost:11437",
+            baseUrl = "http://localhost:11456",
             timeoutSeconds = 120
         )
         val b = ExpertExposureEntry(
             domain = ExpertDomain("kotlin", "Kotlin"),
             modelName = "gpt-oss:120b-cloud",
-            baseUrl = "http://localhost:11437",
+            baseUrl = "http://localhost:11456",
             timeoutSeconds = 120
         )
         val c = ExpertExposureEntry(
             domain = ExpertDomain("docs", "Docs"),
-            modelName = "gpt-oss:20b-cloud",
-            baseUrl = "http://localhost:11438",
+            modelName = "gpt-oss:120b-cloud",
+            baseUrl = "http://localhost:11457",
             timeoutSeconds = 90
         )
 
@@ -117,7 +117,7 @@ class ExpertExposureContractsTest {
         val reg = ExpertRegistration(
             domain = ExpertDomain("kotlin", "Kotlin, Gradle, JVM ecosystem"),
             modelName = "gpt-oss:120b-cloud",
-            baseUrl = "http://localhost:11437",
+            baseUrl = "http://localhost:11458",
             timeoutSeconds = 120
         )
 
@@ -134,7 +134,7 @@ class ExpertExposureContractsTest {
         val entry = ExpertExposureEntry(
             domain = ExpertDomain("kotlin", "Kotlin"),
             modelName = "gpt-oss:120b-cloud",
-            baseUrl = "http://localhost:11437",
+            baseUrl = "http://localhost:11459",
             timeoutSeconds = 120
         )
 
@@ -152,12 +152,12 @@ class ExpertExposureContractsTest {
             ExpertExposureEntry(
                 domain = ExpertDomain("kotlin", "Kotlin"),
                 modelName = "gpt-oss:120b-cloud",
-                baseUrl = "http://localhost:11437",
+                baseUrl = "http://localhost:11460",
                 timeoutSeconds = 120
             ),
             ExpertExposureEntry(
                 domain = ExpertDomain("docs", "Docs"),
-                modelName = "gpt-oss:20b-cloud",
+                modelName = "gpt-oss:120b-cloud",
                 baseUrl = "http://192.168.1.100:11438",
                 timeoutSeconds = 90
             )

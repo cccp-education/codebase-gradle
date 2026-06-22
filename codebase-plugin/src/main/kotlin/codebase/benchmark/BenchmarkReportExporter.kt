@@ -67,7 +67,7 @@ object BenchmarkReportExporter {
         sb.appendLine(":icons: font")
         sb.appendLine(":sectnums:")
         sb.appendLine(":report-date: ${Instant.now()}")
-        sb.appendLine(":model: deepseek-v4-pro:cloud")
+        sb.appendLine(":model: gpt-oss:120b-cloud")
         sb.appendLine()
         sb.appendLine("[abstract]")
         sb.appendLine("--")

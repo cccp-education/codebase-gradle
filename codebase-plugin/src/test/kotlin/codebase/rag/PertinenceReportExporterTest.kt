@@ -10,7 +10,7 @@ class PertinenceReportExporterTest {
     fun `exportJson produces valid JSON with report metadata`() {
         val report = PertinenceBenchmarkReport(
             executionTimestamp = "2026-05-18T19:00:00Z",
-            modelName = "deepseek-v4-pro:cloud",
+            modelName = "gpt-oss:120b-cloud",
             totalQuestions = 2,
             improvedCount = 2,
             degradedCount = 0,
@@ -66,7 +66,7 @@ class PertinenceReportExporterTest {
         val json = PertinenceReportExporter.exportJson(report)
 
         assertTrue(json.contains("\"executionTimestamp\": \"2026-05-18T19:00:00Z\""))
-        assertTrue(json.contains("\"modelName\": \"deepseek-v4-pro:cloud\""))
+        assertTrue(json.contains("\"modelName\": \"gpt-oss:120b-cloud\""))
         assertTrue(json.contains("\"totalQuestions\": 2"))
         assertTrue(json.contains("\"improvedCount\": 2"))
         assertTrue(json.contains("\"improvementRate\": 1.0"))
@@ -80,7 +80,7 @@ class PertinenceReportExporterTest {
     fun `exportAsciiDoc produces valid AsciiDoc with synthesis table`() {
         val report = PertinenceBenchmarkReport(
             executionTimestamp = "2026-05-18T19:00:00Z",
-            modelName = "deepseek-v4-pro:cloud",
+            modelName = "gpt-oss:120b-cloud",
             totalQuestions = 1,
             improvedCount = 1,
             degradedCount = 0,
@@ -117,9 +117,9 @@ class PertinenceReportExporterTest {
         assertTrue(adoc.contains("= EPIC 9 (US-9.13) — Pertinence Benchmark (gate MVP0)"))
         assertTrue(adoc.contains(":toc: left"))
         assertTrue(adoc.contains(":report-date: 2026-05-18T19:00:00"))
-        assertTrue(adoc.contains(":model: deepseek-v4-pro:cloud"))
+        assertTrue(adoc.contains(":model: gpt-oss:120b-cloud"))
         assertTrue(adoc.contains("== Synthese Globale"))
-        assertTrue(adoc.contains("| Modele | deepseek-v4-pro:cloud"))
+        assertTrue(adoc.contains("| Modele | gpt-oss:120b-cloud"))
         assertTrue(adoc.contains("| Ameliorees (avec contexte) | 1 / 1"))
         assertTrue(adoc.contains("Taux d'amelioration"))
         assertTrue(adoc.contains("100"))
@@ -133,7 +133,7 @@ class PertinenceReportExporterTest {
     fun `exportAsciiDoc shows non-validated warning when improvement below threshold`() {
         val report = PertinenceBenchmarkReport(
             executionTimestamp = "2026-05-18T19:00:00Z",
-            modelName = "deepseek-v4-pro:cloud",
+            modelName = "gpt-oss:120b-cloud",
             totalQuestions = 1,
             improvedCount = 0,
             degradedCount = 1,

@@ -22,7 +22,7 @@ class OllamaOcrProviderTest {
     fun `should accept custom baseUrl and model`() {
         val provider = OllamaOcrProvider(
             baseUrl = "http://localhost:11437",
-            model = "qwen3-vl:235b-cloud",
+            model = "gpt-oss:120b-cloud",
             timeoutSeconds = 60
         )
         assertThat(provider).isNotNull()

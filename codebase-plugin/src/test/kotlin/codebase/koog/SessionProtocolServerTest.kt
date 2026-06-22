@@ -7,6 +7,7 @@ import contracts.vibecoding.registry.ToolRegistry
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -145,5 +146,27 @@ class SessionProtocolServerTest {
 
         val output = stdout.toString(StandardCharsets.UTF_8).trim()
         assertTrue(output.isEmpty() || output.isBlank())
+    }
+
+    @Test
+    fun `auto-loads governance context when no context provided`(@TempDir tempDir: Path) {
+        val agentFile = tempDir.resolve("AGENT.adoc").toFile()
+        agentFile.writeText("= Server Agent Rules\n\nRule 99: server governance loaded\n")
+
+        val promptJson = """{"sessionId":"550e8400-e29b-41d4-a716-446655440000","prompt":"Server governance test","maxActions":1}"""
+        val stdin = ByteArrayInputStream("$promptJson\n\n".toByteArray(StandardCharsets.UTF_8))
+        val stdout = ByteArrayOutputStream()
+
+        val server = SessionProtocolServer(
+            workspaceRoot = tempDir.toString(),
+            toolRegistry = ToolRegistry(),
+            llmProvider = FakeLlmProvider()
+        )
+        server.run(stdin, stdout)
+
+        val ctx = server.lastAgentContext
+        assertNotNull(ctx, "Server should auto-load governance context")
+        assertTrue(ctx!!.eagerRules.contains("Rule 99: server governance loaded"),
+            "Governance context should contain AGENT.adoc rules")
     }
 }

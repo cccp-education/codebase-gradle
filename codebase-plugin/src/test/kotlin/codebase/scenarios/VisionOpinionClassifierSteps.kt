@@ -68,7 +68,7 @@ class VisionOpinionClassifierSteps {
     fun `classifier instantiated`() {
         val classifier = VisionOpinionClassifier(
             baseUrl = "http://localhost:11437",
-            modelName = "deepseek-v4-pro:cloud"
+            modelName = "gpt-oss:120b-cloud"
         )
         assertNotNull(classifier, "VisionOpinionClassifier should be instantiable")
         log.info("VisionOpinionClassifier instantiated")
@@ -77,8 +77,8 @@ class VisionOpinionClassifierSteps {
     @And("the classifier has the correct system prompt with classification criteria")
     fun `system prompt valid`() {
         val classifier = VisionOpinionClassifier(
-            baseUrl = "http://localhost:11437",
-            modelName = "deepseek-v4-pro:cloud"
+            baseUrl = "http://localhost:11438",
+            modelName = "gpt-oss:120b-cloud"
         )
 
         val field = VisionOpinionClassifier::class.java.getDeclaredField("systemPrompt")

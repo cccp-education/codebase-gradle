@@ -38,7 +38,7 @@ class OllamaLlmProviderTest {
 
     @Test
     fun `OllamaLlmProvider should build OllamaChatModel lazily on first call`() {
-        val instance = LlmInstance("a", "http://localhost:11437", "gpt-oss:20b-cloud", quota = defaultQuota)
+        val instance = LlmInstance("a", "http://localhost:11437", "gpt-oss:120b-cloud", quota = defaultQuota)
         val pool = OllamaPool(listOf(instance))
 
         assumeTrue(isOllamaReady(11437), "Ollama not ready on port 11437 — skipping integration test")
@@ -107,15 +107,15 @@ class OllamaLlmProviderTest {
     }
 
     @Test
-    fun `should create separate cache entries for different models`() {
+    fun `should create separate cache entries for different baseUrls`() {
         val instA = LlmInstance("a", "http://localhost:11437", "gpt-oss:120b-cloud", quota = defaultQuota)
-        val instB = LlmInstance("b", "http://localhost:11437", "gpt-oss:20b-cloud", quota = defaultQuota)
+        val instB = LlmInstance("b", "http://localhost:11438", "gpt-oss:120b-cloud", quota = defaultQuota)
         val pool = OllamaPool(listOf(instA, instB))
         val provider = OllamaLlmProvider(pool)
 
         val modelA = provider.getCachedModel(instA)
         val modelB = provider.getCachedModel(instB)
 
-        assertNotSame(modelA, modelB, "Different models should have separate cache entries")
+        assertNotSame(modelA, modelB, "Different baseUrls should have separate cache entries")
     }
 }

@@ -14,8 +14,8 @@ import java.time.format.DateTimeFormatter
 import java.util.Base64
 
 class OllamaOcrProvider(
-    private val baseUrl: String = "http://localhost:11434",
-    private val model: String = "qwen3-vl:235b-cloud",
+    private val baseUrl: String = "http://localhost:11437",
+    private val model: String = "gpt-oss:120b-cloud",
     private val timeoutSeconds: Long = 120
 ) : VisionProvider {
 

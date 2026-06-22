@@ -24,8 +24,8 @@ class ExpertCallPipelineTest {
     fun setUp() {
         registry = ExpertRegistry()
         registry.registerAll(listOf(
-            ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud"),
-            ExpertRegistration(docsDomain, "gpt-oss:20b-cloud")
+            ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11452", 120),
+            ExpertRegistration(docsDomain, "gpt-oss:120b-cloud", "http://localhost:11453", 90)
         ))
 
         fakeKotlinAgent = FakeExpertAgent(kotlinDomain, "Kotlin expert output for {domain}")

@@ -186,6 +186,67 @@ class SessionProtocolTaskTest {
     }
 
     @Test
+    fun `executeProtocol without contextFile auto-loads governance context`(@TempDir tempDir: Path) {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-governance-fallback")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        File(tempDir.toFile(), "AGENT.adoc").writeText("= Test Agent Rules\n\nRule 42: governance loaded\n")
+
+        val task = project.tasks.register("sessionProtocol", SessionProtocolTask::class.java) {
+            it.prompt.set("Governance fallback test")
+            it.maxActions.set(2)
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+
+        task.llmProvider = FakeLlmProvider()
+        task.toolRegistry = ToolRegistry()
+
+        task.executeProtocol()
+
+        val agentContext = task.lastAgentContext
+        assertNotNull(agentContext, "AgentContext should be auto-loaded")
+        assertTrue(agentContext!!.eagerRules.contains("Rule 42: governance loaded"),
+            "Governance context should contain AGENT.adoc rules")
+
+        val outputDir = project.layout.buildDirectory.dir("session-protocol").get().asFile
+        val responseFile = outputDir.resolve("session-response.json")
+        assertTrue(responseFile.exists())
+    }
+
+    @Test
+    fun `executeProtocol without contextFile and without governance files continues`(@TempDir tempDir: Path) {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-no-governance")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        val task = project.tasks.register("sessionProtocol", SessionProtocolTask::class.java) {
+            it.prompt.set("No governance test")
+            it.maxActions.set(2)
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+
+        task.llmProvider = FakeLlmProvider()
+        task.toolRegistry = ToolRegistry()
+
+        task.executeProtocol()
+
+        val agentContext = task.lastAgentContext
+        assertNotNull(agentContext, "AgentContext should be set even when empty")
+        assertEquals("", agentContext!!.eagerRules)
+        assertEquals(emptyList<String>(), agentContext.backlogItems)
+
+        val outputDir = project.layout.buildDirectory.dir("session-protocol").get().asFile
+        val responseFile = outputDir.resolve("session-response.json")
+        assertTrue(responseFile.exists())
+        assertTrue(responseFile.readText().contains("COMPLETED"))
+    }
+
+    @Test
     fun `executeProtocol with contextFile parses AgentContext`(@TempDir tempDir: Path) {
         val project = ProjectBuilder.builder()
             .withProjectDir(tempDir.toFile())

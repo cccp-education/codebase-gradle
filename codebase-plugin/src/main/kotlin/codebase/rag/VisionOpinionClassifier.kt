@@ -91,7 +91,7 @@ object TestSections {
 
 class VisionOpinionClassifier(
     private val baseUrl: String = "http://localhost:11437",
-    private val modelName: String = "deepseek-v4-pro:cloud",
+    private val modelName: String = "gpt-oss:120b-cloud",
     private val timeoutSeconds: Long = 120
 ) {
     private val log = LoggerFactory.getLogger(VisionOpinionClassifier::class.java)

@@ -1,19 +1,22 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 131
-:session: 131
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 132
+:session: 132
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 130 — Koog 1.0.0 API : replacement forwardTo ✅
+:session_precedente: 131 — GovernanceContextLoader fallback + ports/models compliance ✅
 
 == Contexte Hérité
 
-- koog-agents 1.0.0 déployé, imports `forwardTo` corrigés dans 5 fichiers.
-- Build compile et tests compilent (0 erreur).
-- `GovernanceContextLoader` créé session 129.
-- Boucle vibecoding locale + pont EPIC Y en attente.
+- `GovernanceContextLoader` câblé dans `SessionProtocolTask` et `SessionProtocolServer`.
+- Fallback auto activé ; champs `lastAgentContext` exposés pour tests.
+- Tests unitaires/fonctionnels ciblés PASS.
+- Compliance ports 11437-11465 et modèle `gpt-oss:120b-cloud` appliquée.
+- Cucumber non finalisé (timeout lifecycle sans pgvector).
 
-== Mission Session 131
+== Mission Session 132
 
-Câbler `GovernanceContextLoader` dans `SessionProtocolServer` et `SessionProtocolTask` :
-fallback auto quand aucun `--contextFile` n'est fourni.
+Finaliser la boucle vibecoding local auto-alimentée :
+1. Ajouter une tâche Gradle `vibecodingGovernance` qui exécute `GovernanceContextLoader` + `SessionProtocolTask` avec le contexte auto-chargé.
+2. Vérifier l'intégration bout-en-bout via un test fonctionnel (task Gradle dans un projet test).
+3. Relancer les tests Cucumber si pgvector disponible, ou documenter le skip.
 
 == Méthodologie
 

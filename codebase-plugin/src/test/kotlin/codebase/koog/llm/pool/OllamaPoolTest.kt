@@ -15,7 +15,7 @@ class OllamaPoolTest {
         /** 5 modèles autorisés, cyclés sur les 29 ports */
         val AUTHORIZED_MODELS = listOf(
             "gpt-oss:120b-cloud",
-            "gpt-oss:20b-cloud",
+            "gpt-oss:120b-cloud",
             "qwen3-coder-next:cloud",
             "qwen3-next:80b-cloud",
             "qwen3-coder:480b-cloud"

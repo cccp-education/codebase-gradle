@@ -57,3 +57,9 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 * Session 130 — Koog 1.0.0 : replacement forwardTo (EPIC L maintenance)
 ** Retrait import `forwardTo` dans 5 fichiers (koog 1.0.0 : membre vs top-level)
 ** BUILD SUCCESSFUL — compileKotlin + compileTestKotlin OK
+
+* Session 131 — GovernanceContextLoader fallback + ports/models compliance
+** Câblage fallback auto dans `SessionProtocolTask` et `SessionProtocolServer`
+** Tests unitaires/fonctionnels ciblés PASS
+** Correction ports 11434 → 11437-11465 et modèles → `gpt-oss:120b-cloud`
+** Cucumber non finalisé (timeout lifecycle sans pgvector)

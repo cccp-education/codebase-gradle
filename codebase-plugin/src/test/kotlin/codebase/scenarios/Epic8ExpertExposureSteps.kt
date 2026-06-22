@@ -21,7 +21,7 @@ class Epic8ExpertExposureSteps(private val world: Epic8ExpertExposureWorld) {
         world.projectDir = Files.createTempDirectory("epic8-cucumber").toFile()
         world.registry.registerAll(listOf(
             ExpertRegistration(ExpertDomain(domain1, "$domain1 domain"), "gpt-oss:120b-cloud", "http://localhost:11437", 120),
-            ExpertRegistration(ExpertDomain(domain2, "$domain2 domain"), "gpt-oss:20b-cloud", "http://localhost:11438", 90)
+            ExpertRegistration(ExpertDomain(domain2, "$domain2 domain"), "gpt-oss:120b-cloud", "http://localhost:11438", 90)
         ))
     }
 

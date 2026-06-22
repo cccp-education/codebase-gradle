@@ -9,7 +9,7 @@ import kotlin.test.assertIs
  *
  * Architecture TDD : ces tests définissent le comportement attendu.
  * - "gemini" → GeminiLlmProvider (lazy, sans appel .call())
- * - "ollama", "deepseek", "" → OllamaLlmProvider avec deepseek-v4-pro:cloud
+ * - "ollama", "deepseek", "" → OllamaLlmProvider avec gpt-oss:120b-cloud
  * - Autre chaîne → OllamaLlmProvider avec cette chaîne comme model name
  */
 class LlmProviderResolverTest {

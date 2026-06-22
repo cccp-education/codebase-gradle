@@ -35,7 +35,7 @@ class ExpertRegistryTest {
     fun `register multiple experts`() {
         registry.registerAll(listOf(
             ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud"),
-            ExpertRegistration(docsDomain, "gpt-oss:20b-cloud"),
+            ExpertRegistration(docsDomain, "gpt-oss:120b-cloud"),
             ExpertRegistration(generalDomain, "deepseek-v4-pro")
         ))
 
@@ -45,13 +45,13 @@ class ExpertRegistryTest {
 
     @Test
     fun `resolve returns correct registration`() {
-        val reg = ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11438", 90)
+        val reg = ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11448", 90)
         registry.register(reg)
 
         val resolved = registry.resolve(kotlinDomain)
         assertNotNull(resolved)
         assertEquals("gpt-oss:120b-cloud", resolved!!.modelName)
-        assertEquals("http://localhost:11438", resolved.baseUrl)
+        assertEquals("http://localhost:11448", resolved.baseUrl)
         assertEquals(90, resolved.timeoutSeconds)
     }
 
@@ -76,17 +76,17 @@ class ExpertRegistryTest {
     @Test
     fun `register overwrites existing domain`() {
         registry.register(ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud"))
-        registry.register(ExpertRegistration(kotlinDomain, "gpt-oss:20b-cloud"))
+        registry.register(ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud"))
 
         assertEquals(1, registry.size())
-        assertEquals("gpt-oss:20b-cloud", registry.resolve(kotlinDomain)!!.modelName)
+        assertEquals("gpt-oss:120b-cloud", registry.resolve(kotlinDomain)!!.modelName)
     }
 
     @Test
     fun `clear empties registry`() {
         registry.registerAll(listOf(
             ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud"),
-            ExpertRegistration(docsDomain, "gpt-oss:20b-cloud")
+            ExpertRegistration(docsDomain, "gpt-oss:120b-cloud")
         ))
         assertEquals(2, registry.size())
 
@@ -101,4 +101,6 @@ class ExpertRegistryTest {
         assertEquals("http://localhost:11437", reg.baseUrl)
         assertEquals(120, reg.timeoutSeconds)
     }
+
+
 }

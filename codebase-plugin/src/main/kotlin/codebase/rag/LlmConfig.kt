@@ -36,7 +36,7 @@ data class OllamaConfig(
     val baseUrl: String = "http://localhost:11437",
 
     @JsonProperty("model")
-    val model: String = "deepseek-v4-pro:cloud",
+    val model: String = "gpt-oss:120b-cloud",
 
     @JsonProperty("envVar")
     val envVar: String? = null  // OLLAMA_BASE_URL, OLLAMA_MODEL

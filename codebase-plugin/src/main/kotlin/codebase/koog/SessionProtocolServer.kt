@@ -8,8 +8,10 @@ import codebase.koog.session.SessionStatus
 import codebase.koog.session.TokenUsage
 import codebase.koog.session.ToolCallRecord
 import contracts.vibecoding.registry.ToolRegistry
+import codebase.koog.governance.GovernanceContextLoader
 import codebase.koog.state.VibecodingState
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import java.io.File
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.slf4j.LoggerFactory
 import java.io.InputStream
@@ -23,7 +25,8 @@ class SessionProtocolServer(
     private val toolRegistry: ToolRegistry = ToolRegistry(),
     private val llmProvider: LlmProvider? = null,
     private val eventStream: ToolEventStream? = null,
-    private val liveContextInjector: LiveContextInjector? = null
+    private val liveContextInjector: LiveContextInjector? = null,
+    var lastAgentContext: codebase.koog.session.AgentContext? = null
 ) {
     private val log = LoggerFactory.getLogger(SessionProtocolServer::class.java)
     private val mapper = jacksonObjectMapper()
@@ -84,7 +87,7 @@ class SessionProtocolServer(
             eventStream = eventStream,
             liveContextInjector = liveContextInjector
         )
-        graph.staticContext = sessionPrompt.context?.let { codebase.koog.session.AgentContext(eagerRules = it) }
+        graph.staticContext = resolveAgentContext(sessionPrompt)
 
         val state = VibecodingState(
             intention = sessionPrompt.prompt,
@@ -121,6 +124,21 @@ class SessionProtocolServer(
             ),
             status = status
         )
+    }
+
+    private fun resolveAgentContext(sessionPrompt: SessionPrompt): codebase.koog.session.AgentContext {
+        if (!sessionPrompt.context.isNullOrBlank()) {
+            return codebase.koog.session.AgentContext(eagerRules = sessionPrompt.context)
+        }
+        return try {
+            log.info("[SessionProtocolServer] No context provided — auto-loading governance from {}", workspaceRoot)
+            val ctx = GovernanceContextLoader().load(File(workspaceRoot))
+            lastAgentContext = ctx
+            ctx
+        } catch (e: Exception) {
+            log.warn("[SessionProtocolServer] Failed to auto-load governance context: {} — continuing without context", e.message)
+            codebase.koog.session.AgentContext()
+        }
     }
 
     private fun buildOutput(state: VibecodingState): String = buildString {

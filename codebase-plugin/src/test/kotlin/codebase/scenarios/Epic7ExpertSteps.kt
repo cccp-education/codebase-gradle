@@ -25,7 +25,7 @@ class Epic7ExpertSteps(private val world: Epic7ExpertWorld) {
     fun `expert registry with domains`(domain1: String, domain2: String) {
         world.registry.registerAll(listOf(
             ExpertRegistration(ExpertDomain(domain1, "$domain1 domain"), "gpt-oss:120b-cloud"),
-            ExpertRegistration(ExpertDomain(domain2, "$domain2 domain"), "gpt-oss:20b-cloud")
+            ExpertRegistration(ExpertDomain(domain2, "$domain2 domain"), "gpt-oss:120b-cloud")
         ))
     }
 

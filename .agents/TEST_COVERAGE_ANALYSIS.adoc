@@ -22,6 +22,9 @@
 | SessionRepositoryTest | 10 | pgvector + R2DBC | EN COURS |
 | DashboardTaskTest | 5 | Dashboard CLI | EN COURS |
 | AgenticChunkEnforcementTest | 10 | 10 unit + 7 Cucumber = 17/17 PASS | TERMINÉ |
+| GovernanceContextLoaderTest | 5 | Chargement AGENT/INDEX/PROMPT_REPRISE/BACKLOG | TERMINÉ |
+| SessionProtocolTaskTest | 21 | Fallback governance + lifecycle + contextFile | TERMINÉ |
+| SessionProtocolServerTest | 6 | JSON-lines daemon + governance fallback | TERMINÉ |
 | TokenTrackerTest | 8 | mesure tokens LLM | EN COURS |
 | LlmProviderResolverTest | 5 | mapping model→provider | EN COURS |
 | GeminiKeyPoolTest | 8 | rotation + quota | EN COURS |
@@ -37,6 +40,8 @@
 | epic_ocr_2b.feature | 8 | OCR ollama provider + gemini+ollama fallback | TERMINÉ |
 | epic_ocr_4_ingest.feature | 5 | OCR ingest (anonymize→chunk→embed→pgvector) | TERMINÉ |
 | epic_ocr_4_5_metrics.feature | 5 | OCR metrics (time, quality, cost) | TERMINÉ |
+| epic_sp_1_session_protocol.feature | 9 | Session protocol basic (context JSON file) | TERMINÉ |
+| epic_sp_3_lifecycle.feature | 6 | Session lifecycle create/resume/close/list | EN COURS (timeout sans pgvector) |
 | pool.feature | 8 | Ollama/Gemini key pool rotation | EN COURS |
 
 == Tests de regression

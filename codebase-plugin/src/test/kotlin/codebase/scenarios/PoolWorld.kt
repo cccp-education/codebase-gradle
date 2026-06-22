@@ -22,7 +22,7 @@ class PoolWorld {
         val AUTHORIZED_PORTS = (11437..11465).toList()
         val AUTHORIZED_MODELS = listOf(
             "gpt-oss:120b-cloud",
-            "gpt-oss:20b-cloud",
+            "gpt-oss:120b-cloud",
             "qwen3-coder-next:cloud",
             "qwen3-next:80b-cloud",
             "qwen3-coder:480b-cloud"
@@ -42,17 +42,19 @@ class PoolWorld {
     var thrownException: Throwable? = null
 
     /**
-     * Crée un pool avec N instances, même port 11437, même modèle gpt-oss:120b-cloud.
+     * Crée un pool avec N instances sur des ports distincts 11437+,
+     * même modèle gpt-oss:120b-cloud.
      * @param count nombre d'instances
      * @param limit quota limit (default 10)
      * @param threshold pourcentage seuil (default 50)
      */
     fun setupPool(count: Int, limit: Long = 10, threshold: Int = 50) {
         val ids = ('a'..'z').take(count).map { it.toString() }
-        poolInstances = ids.map { id ->
+        poolInstances = ids.mapIndexed { index, id ->
+            val port = AUTHORIZED_PORTS[index % AUTHORIZED_PORTS.size]
             LlmInstance(
                 id = id,
-                baseUrl = "http://localhost:11437",
+                baseUrl = "http://localhost:$port",
                 model = "gpt-oss:120b-cloud",
                 quota = QuotaConfig(limitValue = limit, thresholdPercent = threshold, resetPolicy = ResetPolicy.NEVER)
             )

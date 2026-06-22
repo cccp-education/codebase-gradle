@@ -57,8 +57,8 @@ class PertinenceBenchmarkSteps {
     @Then("the pertinence benchmark runner can be instantiated")
     fun `benchmark runner instantiated`() {
         val runner = codebase.rag.PertinenceBenchmarkRunner(
-            baseUrl = "http://localhost:11437",
-            modelName = "deepseek-v4-pro:cloud"
+            baseUrl = "http://localhost:11439",
+            modelName = "gpt-oss:120b-cloud"
         )
         assertNotNull(runner, "PertinenceBenchmarkRunner should be instantiable")
         log.info("PertinenceBenchmarkRunner instantiated")
@@ -68,7 +68,7 @@ class PertinenceBenchmarkSteps {
     fun `json export format valid`() {
         val report = codebase.rag.PertinenceBenchmarkReport(
             executionTimestamp = java.time.Instant.now().toString(),
-            modelName = "deepseek-v4-pro:cloud",
+            modelName = "gpt-oss:120b-cloud",
             totalQuestions = 10,
             improvedCount = 7,
             degradedCount = 2,
@@ -90,7 +90,7 @@ class PertinenceBenchmarkSteps {
     fun `adoc export format valid`() {
         val report = codebase.rag.PertinenceBenchmarkReport(
             executionTimestamp = java.time.Instant.now().toString(),
-            modelName = "deepseek-v4-pro:cloud",
+            modelName = "gpt-oss:120b-cloud",
             totalQuestions = 10,
             improvedCount = 8,
             degradedCount = 1,

@@ -8,6 +8,7 @@ import codebase.koog.session.SessionStatus
 import codebase.koog.session.TokenUsage
 import codebase.koog.session.ToolCallRecord
 import contracts.vibecoding.registry.ToolRegistry
+import codebase.koog.governance.GovernanceContextLoader
 import codebase.koog.state.VibecodingState
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
@@ -45,6 +46,9 @@ abstract class SessionProtocolTask : DefaultTask() {
 
     @get:Internal
     var liveContextInjector: LiveContextInjector? = null
+
+    @get:Internal
+    var lastAgentContext: AgentContext? = null
 
     @get:Input
     @get:Optional
@@ -178,7 +182,10 @@ abstract class SessionProtocolTask : DefaultTask() {
     private fun executeVibecoding(promptText: String, sid: UUID): SessionResponse {
         val agentContext = if (contextFile.isPresent) {
             parseContextFile(contextFile.get().asFile)
-        } else null
+        } else {
+            loadGovernanceContext()
+        }
+        lastAgentContext = agentContext
 
         log.info("[SessionProtocol] Executing session {} — prompt={}", sid, promptText)
 
@@ -281,6 +288,17 @@ abstract class SessionProtocolTask : DefaultTask() {
             appendLine("Plan: ${state.planJson}")
         }
         appendLine("Executed tasks: ${state.executedTasks.joinToString(", ")}")
+    }
+
+    private fun loadGovernanceContext(): AgentContext {
+        val root = workspaceRoot.asFile.getOrNull() ?: return AgentContext()
+        return try {
+            log.info("[SessionProtocol] No contextFile provided — loading governance context from {}", root.absolutePath)
+            GovernanceContextLoader().load(root)
+        } catch (e: Exception) {
+            log.warn("[SessionProtocol] Failed to auto-load governance context: {} — continuing without context", e.message)
+            AgentContext()
+        }
     }
 
     private fun parseContextFile(file: File): AgentContext {

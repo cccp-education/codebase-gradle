@@ -121,7 +121,7 @@ data class PertinenceBenchmarkReport(
 
 class PertinenceBenchmarkRunner(
     private val baseUrl: String = "http://localhost:11437",
-    private val modelName: String = "deepseek-v4-pro:cloud",
+    private val modelName: String = "gpt-oss:120b-cloud",
     private val timeoutSeconds: Long = 300,
     private val contextFilePath: String = "/tmp/opencode-context.txt"
 ) {

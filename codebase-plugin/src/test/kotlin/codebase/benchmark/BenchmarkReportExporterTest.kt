@@ -221,7 +221,7 @@ class BenchmarkReportExporterTest {
     fun `exportAsciiDoc contains model name in metadata`() {
         val result = BenchmarkReportExporter.exportAsciiDoc(sampleJson, "id")
 
-        assertTrue(result.contains("deepseek-v4-pro:cloud"))
+        assertTrue(result.contains("gpt-oss:120b-cloud"))
     }
 
     @Test

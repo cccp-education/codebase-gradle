@@ -81,12 +81,12 @@ abstract class OcrTask : DefaultTask() {
 
     @get:Input
     @get:Optional
-    @get:Option(option = "ollamaBaseUrl", description = "URL de base Ollama (défaut : http://localhost:11434)")
+    @get:Option(option = "ollamaBaseUrl", description = "URL de base Ollama (défaut : http://localhost:11437)")
     abstract val ollamaBaseUrl: Property<String>
 
     @get:Input
     @get:Optional
-    @get:Option(option = "ollamaModel", description = "Modèle Ollama vision (défaut : qwen3-vl:235b-cloud)")
+    @get:Option(option = "ollamaModel", description = "Modèle Ollama vision (défaut : gpt-oss:120b-cloud)")
     abstract val ollamaModel: Property<String>
 
     @get:InputFile
@@ -137,8 +137,8 @@ abstract class OcrTask : DefaultTask() {
         ocrProvider.convention("gemini")
         ocrLanguage.convention("fr")
         geminiModel.convention("gemini-2.5-flash")
-        ollamaBaseUrl.convention("http://localhost:11434")
-        ollamaModel.convention("qwen3-vl:235b-cloud")
+        ollamaBaseUrl.convention("http://localhost:11437")
+        ollamaModel.convention("gpt-oss:120b-cloud")
         maxTokens.convention(8192)
         outputFormat.convention("asciidoc")
         anonymizeOutput.convention(false)
@@ -159,8 +159,8 @@ abstract class OcrTask : DefaultTask() {
             ?: "gemini-2.5-flash"
         val tokens = maxTokens.orNull ?: 8192
         val format = outputFormat.orNull ?: "asciidoc"
-        val ollamaUrl = ollamaBaseUrl.orNull ?: "http://localhost:11434"
-        val ollamaVisionModel = ollamaModel.orNull ?: "qwen3-vl:235b-cloud"
+        val ollamaUrl = ollamaBaseUrl.orNull ?: "http://localhost:11437"
+        val ollamaVisionModel = ollamaModel.orNull ?: "gpt-oss:120b-cloud"
 
         val files = resolveInputFiles()
         if (files.isEmpty()) {

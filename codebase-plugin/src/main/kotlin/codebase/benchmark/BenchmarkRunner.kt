@@ -279,7 +279,7 @@ object ContextFiller {
  */
 class BenchmarkRunner(
     private val baseUrl: String = "http://localhost:11437",
-    private val modelName: String = "gpt-oss:20b-cloud",
+    private val modelName: String = "gpt-oss:120b-cloud",
     private val timeoutSeconds: Long = 300,
     private val pgJdbcUrl: String? = null,
     private val pgUser: String? = null,

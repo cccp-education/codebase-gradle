@@ -8,7 +8,7 @@ import java.time.Duration
 
 data class ExpertConfig(
     val baseUrl: String = "http://localhost:11437",
-    val modelName: String = "gpt-oss:20b-cloud",
+    val modelName: String = "gpt-oss:120b-cloud",
     val timeoutSeconds: Long = 120
 )
 

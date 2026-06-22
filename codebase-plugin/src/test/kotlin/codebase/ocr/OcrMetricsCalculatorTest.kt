@@ -57,7 +57,7 @@ class OcrMetricsCalculatorTest {
     @Test
     fun `estimateCostUsd for ollama returns zero`() {
         val cost = OcrMetricsCalculator.estimateCostUsd(
-            model = "qwen3-vl:235b-cloud",
+            model = "gpt-oss:120b-cloud",
             inputTokens = 1000,
             outputTokens = 500
         )
@@ -128,7 +128,7 @@ class OcrMetricsCalculatorTest {
             fileSizeBytes = 1024 * 100,
             isImage = true,
             provider = "ollama",
-            model = "qwen3-vl:235b-cloud",
+            model = "gpt-oss:120b-cloud",
             language = "fr",
             ocrDurationMs = 3000,
             outputLengthChars = 2000,
