@@ -1,24 +1,21 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 142
-:session: 142
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 143
+:session: 143
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 141 — EPIC V-9.5 ChunkValidator livré (10 JUnit5 + 5 Cucumber @epic_v_9_5 PASS)
+:session_precedente: 142 — EPIC V-9.3 ScanAgent livré (8 JUnit5 + 6 Cucumber @epic_v_9_3 PASS, IngestGovernanceTask refactoré)
 
 == Contexte Hérité
 
-- Session 141 a livré V-9.5 ChunkValidator : `ChunkValidator.kt` (validate id/sourceFile/content/sourceLines/checksum + checksum sha256 cohérent + weight 0.0..1.0) + `ValidationResult` + 10 JUnit5 + 5 scénarios Cucumber `@epic_v_9_5` PASS. Zéro réseau, zéro Testcontainers.
-- V-9.1 AgenticChunker + V-9.2 ChunkType enum déjà livrés par EPIC Y (anti-duplication vérifiée session 141).
-- V-9.4 ChunkExtractor déjà couvert par AgenticChunker (sha256 id + checksum).
-- V-9.3 ScanAgent reste à coder : `IngestGovernanceTask.collectGovernanceFiles` hardcode 7 paths EAGER — remplacer par scanner récursif du dossier `.agents/` sans casser les 5 tests `IngestGovernanceTaskTest` PASS.
+- Session 142 a livré V-9.3 ScanAgent : `ScanAgent.kt` (scanner récursif `.agents/`, ignore `build`/`.git`/`.gradle`/`node_modules`) + `ScannedFile.kt` (value object DDD) + 8 JUnit5 + 6 scénarios Cucumber `@epic_v_9_3` PASS. `IngestGovernanceTask.collectGovernanceFiles` refactoré (liste hardcoded 7 paths supprimée, délègue à `ScanAgent`). 5 tests `IngestGovernanceTaskTest` préservés (zéro régression).
+- Under-EPIC 1 (V-9.1 AgenticChunker + V-9.2 ChunkType + V-9.3 ScanAgent + V-9.4 ChunkExtractor + V-9.5 ChunkValidator) est **COMPLET** (5/5).
 - EPIC V-FLYWAY reste en BACKLOG (seuil déclencheur : 5+ migrations de schéma).
 
-== Mission Session 142
+== Mission Session 143
 
-1. Démarrer EPIC V-9 Under-EPIC 1 item restant : V-9.3 ScanAgent — scanner récursif du dossier `.agents/` découvrant tous les `.adoc` (pas une liste hardcoded).
-2. Baby-step DDD/TDD/BDD : contrat `ScanAgent` + `ScannedFile` d'abord (unit JUnit5), puis extraction fonctionnelle, puis scénario Cucumber `@epic_v_9_3`.
-3. Un fichier modifié à la fois, compilation entre chaque étape.
-4. `./gradlew :codebase-plugin:compileKotlin` doit rester vert.
-5. Ne PAS casser `IngestGovernanceTaskTest` (5 tests PASS existants) — si refactor de `collectGovernanceFiles`, préserver son comportement public.
-6. Si V-9.3 terminé, Under-EPIC 1 est complet (5/5) → attaquer Under-EPIC 2 V-9.6 AgenticOntologizer (déjà partiellement livré par EPIC Y-2, vérifier anti-duplication).
+1. Attaquer Under-EPIC 2 V-9.6 AgenticOntologizer — vérifier anti-duplication avec EPIC Y-2 (AgenticOntologizer.kt déjà livré, 20/20 PASS session 089).
+2. Si V-9.6 déjà couvert par EPIC Y-2, marquer "déjà livré" et passer à V-9.7.
+3. Identifier le premier item réellement nouveau de Under-EPIC 2/3 et le coder en baby-step DDD/TDD/BDD.
+4. Un fichier modifié à la fois, compilation entre chaque étape.
+5. `./gradlew :codebase-plugin:compileKotlin` doit rester vert.
 
 == Méthodologie
 

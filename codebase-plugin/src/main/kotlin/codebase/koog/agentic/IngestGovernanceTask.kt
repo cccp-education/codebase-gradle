@@ -62,31 +62,8 @@ abstract class IngestGovernanceTask : DefaultTask() {
     }
 
     private fun collectGovernanceFiles(projectDir: File): List<Pair<String, String>> {
-        val eagerRelativePaths = listOf(
-            "AGENT.adoc",
-            ".agents/INDEX.adoc",
-            "PROMPT_REPRISE.adoc",
-            ".agents/SESSIONS_HISTORY.adoc",
-            ".agents/TEST_COVERAGE_ANALYSIS.adoc",
-            "BACKLOG.adoc",
-            ".agents/BACKLOG.adoc"
-        )
-
-        val result = mutableListOf<Pair<String, String>>()
-        for (relativePath in eagerRelativePaths) {
-            val rootCandidate = File(projectDir, relativePath)
-            if (rootCandidate.exists() && rootCandidate.isFile) {
-                result.add(relativePath to rootCandidate.readText(Charsets.UTF_8))
-                continue
-            }
-            projectDir.listFiles()?.filter { it.isDirectory }?.forEach { subDir ->
-                val subCandidate = File(subDir, relativePath)
-                if (subCandidate.exists() && subCandidate.isFile) {
-                    result.add("$subDir.name/$relativePath" to subCandidate.readText(Charsets.UTF_8))
-                }
-            }
-        }
-        return result
+        val scanAgent = ScanAgent()
+        return scanAgent.scan(projectDir).map { it.relativePath to it.content }
     }
 
     private fun buildReportJson(report: IngestionReport): String = buildString {

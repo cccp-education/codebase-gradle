@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-06-22
-*Version* : 1.1.8 (Session 140 — EPIC 8 Expert Exposure clôturé 4/4 : ExpertManifestReader + round-trip + Cucumber cross-borough)
+*Version* : 1.1.9 (Session 142 — EPIC V-9.3 ScanAgent livré 8 JUnit5 + 6 Cucumber @epic_v_9_3, IngestGovernanceTask refactoré, Under-EPIC 1 complet 5/5)
 
 == Regles Absolues
 
@@ -30,6 +30,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 137 — `OllamaPoolKeyAdapter` + câblage `OllamaLlmProvider`, rotation proactive quota/connexion
 | ✅ | Session 138 — `OllamaInstanceFactory` + contrat N0 `volumeTag` + feature Cucumber `@epic_v6_ollama_cloud` (2 scénarios, zéro réseau)
 | ✅ | Session 140 — EPIC 8 Expert Exposure clôturé 4/4 : `ExpertManifestReader` (read/readOrEmpty/findByDomain) + 8 JUnit5 + 2 round-trip JUnit5 + 1 scénario Cucumber cross-borough (6/6 @epic8 PASS)
+| ✅ | Session 142 — EPIC V-9.3 ScanAgent livré : `ScanAgent` scanner récursif `.agents/` (ignore build/.git/.gradle/node_modules) + `ScannedFile` value object DDD + 8 JUnit5 + 6 Cucumber @epic_v_9_3 PASS + refactor `IngestGovernanceTask.collectGovernanceFiles` (liste hardcoded supprimée, 5 tests préservés). Under-EPIC 1 complet 5/5.
 
 === EPICs & Projects
 

@@ -1,0 +1,84 @@
+= Session 142 — EPIC V-9.3 ScanAgent (baby-step DDD/TDD/BDD)
+:session: 142
+:borough: Queens — codebase-gradle (N1)
+:date: 2026-06-22
+:epic: EPIC V-9 — Vibecoding Gouvernance Agentique (Under-EPIC 1)
+
+== Contexte
+
+Session 141 a livré V-9.5 ChunkValidator (10 JUnit5 + 5 Cucumber @epic_v_9_5 PASS).
+PROMPT_REPRISE 142 demandait de coder V-9.3 ScanAgent — scanner récursif du dossier
+`.agents/` découvrant tous les `.adoc` (remplacer la liste hardcoded de 7 paths dans
+`IngestGovernanceTask.collectGovernanceFiles`).
+
+V-9.1 AgenticChunker + V-9.2 ChunkType enum + V-9.4 ChunkExtractor déjà livrés
+par EPIC Y (anti-duplication vérifiée session 141). V-9.3 était le dernier
+item restant de Under-EPIC 1.
+
+== Actions
+
+1. Lecture du contexte EAGER : SESSION_CHECKLIST, AGENT, INDEX, PROMPT_REPRISE, BACKLOG.
+2. Vérification du build avant de coder : `./gradlew :codebase-plugin:compileKotlin` vert.
+3. Lecture `IngestGovernanceTask.kt` (101 lignes) + `IngestGovernanceTaskTest.kt` (96 lignes, 5 tests PASS)
+   + `AgenticChunker.kt` + `AgenticIngestor.kt` + `ChunkValidator.kt` + `ChunkValidatorTest.kt`
+   + `epic_v_9_5_chunk_validator.feature` + `ChunkValidatorSteps.kt` + `ChunkValidatorWorld.kt`
+   + `EpicV95CucumberRunner.kt` pour aligner sur le pattern de la maison.
+4. Baby-step DDD/TDD/BDD :
+
+   a. **Contrat DDD** (rouge) : créé `ScanAgentTest.kt` (8 tests JUnit5 — empty, root files,
+      recursive `.agents/`, subproject, ignored dirs `build`/`.git`, content read, non-adoc
+      ignored, nested archives). Compilation échoue (ScanAgent n'existe pas).
+   b. **Value object** : créé `ScannedFile.kt` (data class `relativePath` + `content`).
+   c. **Domain service** (vert) : créé `ScanAgent.kt` — `scan(root: File): List<ScannedFile>`
+      récursif, ignore `build`/`.git`/`.gradle`/`node_modules`, filtre `.adoc`, path relatif
+      avec séparateur `/` (cross-plateforme). `./gradlew :codebase-plugin:compileTestKotlin` OK.
+   d. **Tests unitaires** : `./gradlew :codebase-plugin:test --tests ScanAgentTest` → 8/8 PASS.
+   e. **Refactor** `IngestGovernanceTask.collectGovernanceFiles` → délègue à `ScanAgent.scan(root)`
+      et mappe `ScannedFile.relativePath to content`. `import java.io.File` conservé (type param).
+   f. **Régression** : `IngestGovernanceTaskTest` 5/5 PASS — refactor sans casser le contrat public.
+   g. **Feature Cucumber** : créé `epic_v_9_3_scan_agent.feature` (6 scénarios @epic_v_9_3 —
+      empty directory, root files, recursive `.agents/`, subproject, ignored dirs, ingest integration).
+   h. **World + Steps + Runner** : créé `ScanAgentWorld.kt` (workspaceDir temp, scan/ingest/reset)
+      + `ScanAgentSteps.kt` (Given/When/Then, `@Before("@epic_v_9_3")` reset) + `EpicV93CucumberRunner.kt`.
+   i. **Correction @TempDir** : JUnit `@TempDir` ne fonctionne pas avec Cucumber (constructeur
+      injection). Remplacé par `Files.createTempDirectory` dans le World + reset nettoie le dossier.
+   j. **Correction scénario subproject** : count 3→2 (setup crée 2 fichiers : `my-plugin/AGENT.adoc`
+      + `my-plugin/.agents/INDEX.adoc`).
+   k. **Cucumber vert** : `./gradlew :codebase-plugin:test --tests EpicV93CucumberRunner --rerun-tasks`
+      → 6/6 scénarios PASS.
+   l. **Vérification globale** : `compileKotlin` + `compileTestKotlin` OK. Tests package agentic
+      tous verts. `EpicV95CucumberRunner` (régression) vert.
+
+== Commandes
+
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:compileTestKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.ScanAgentTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.IngestGovernanceTaskTest"
+./gradlew :codebase-plugin:test --tests "codebase.scenarios.EpicV93CucumberRunner" --rerun-tasks
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.*"
+./gradlew :codebase-plugin:test --tests "codebase.scenarios.EpicV93CucumberRunner" --tests "codebase.scenarios.EpicV95CucumberRunner"
+----
+
+== Résultats
+
+- **ScanAgent.kt** — 22 lignes, scanner récursif, ignore `build`/`.git`/`.gradle`/`node_modules`
+- **ScannedFile.kt** — 4 lignes, value object DDD
+- **ScanAgentTest.kt** — 8 JUnit5 PASS
+- **IngestGovernanceTask.kt** — refactor `collectGovernanceFiles` (26 lignes → 3 lignes), liste hardcoded supprimée
+- **IngestGovernanceTaskTest.kt** — 5/5 PASS (zéro régression)
+- **epic_v_9_3_scan_agent.feature** — 6 scénarios Cucumber @epic_v_9_3 PASS
+- **ScanAgentWorld.kt** + **ScanAgentSteps.kt** + **EpicV93CucumberRunner.kt** — glue Cucumber
+
+Total : **8 JUnit5 + 6 Cucumber = 14/14 PASS**. Build propre. Zéro réseau, zéro Testcontainers.
+
+== Leçons
+
+- `@TempDir` JUnit n'est pas compatible avec Cucumber (instantiation via constructeur).
+  Pattern maison : `Files.createTempDirectory` dans le World + reset par `deleteRecursively`.
+- `--rerun-tasks` nécessaire quand Gradle considère les resources de feature inchangées
+  mais que le test doit rejouer (cache inputs/outputs).
+- Baby-step DDD/TDD/BDD confirmé : contrat DDD (test rouge) → value object → domain service
+  (vert) → refactor integration → Cucumber BDD. Un fichier à la fois, compilation entre chaque.
+- Under-EPIC 1 complet : V-9.1 ✅ + V-9.2 ✅ + V-9.3 ✅ + V-9.4 ✅ + V-9.5 ✅ = 5/5.

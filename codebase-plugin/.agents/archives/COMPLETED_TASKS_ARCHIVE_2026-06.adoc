@@ -1,3 +1,17 @@
+== Session 142 — EPIC V-9.3 ScanAgent
+
+- `koog/agentic/ScanAgent.kt` — scanner récursif `.agents/` (ignore build/.git/.gradle/node_modules)
+- `koog/agentic/ScannedFile.kt` — value object DDD (relativePath + content)
+- `test/kotlin/koog/agentic/ScanAgentTest.kt` — 8 JUnit5 PASS
+- `test/features/epic_v_9_3_scan_agent.feature` + `EpicV93CucumberRunner.kt` — 6 scénarios Cucumber PASS
+- `test/kotlin/scenarios/ScanAgentWorld.kt` + `ScanAgentSteps.kt` — glue Cucumber
+- `IngestGovernanceTask.kt` refactoré : `collectGovernanceFiles` délègue à `ScanAgent` (liste hardcoded 7 paths supprimée)
+- 5 tests `IngestGovernanceTaskTest` préservés (zéro régression)
+- **Under-EPIC 1 complet** : V-9.1 ✅ + V-9.2 ✅ + V-9.3 ✅ + V-9.4 ✅ + V-9.5 ✅ = 5/5
+- Build propre, zéro réseau, zéro Testcontainers
+
+'''
+
 == Session 141 — EPIC V-9.5 ChunkValidator
 
 - `koog/agentic/ChunkValidator.kt` — validateur AgenticChunk + ValidationResult

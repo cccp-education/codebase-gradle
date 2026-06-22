@@ -1,3 +1,62 @@
+= TEST_COVERAGE_ANALYSIS — Session 142
+:date: 2026-06-22
+:epic: EPIC V-9 — V-9.3 ScanAgent (baby-step DDD/TDD/BDD)
+
+== Nouveaux fichiers source
+
+[cols="2,3"]
+|===
+| Fichier | Rôle
+
+| `koog/agentic/ScanAgent.kt` | Scanner récursif du dossier `.agents/` découvrant tous les `.adoc` (ignore `build`/`.git`/`.gradle`/`node_modules`, path relatif cross-plateforme)
+| `koog/agentic/ScannedFile.kt` | Value object DDD (`relativePath` + `content`)
+| `sessions/142-epic_v9_3_scan_agent.adoc` | Archive session 142 (gouvernance)
+|===
+
+== Fichiers source modifiés
+
+[cols="2,3"]
+|===
+| Fichier | Changement
+
+| `koog/agentic/IngestGovernanceTask.kt` | Refactor `collectGovernanceFiles` : liste hardcoded 7 paths supprimée, délègue à `ScanAgent.scan(root).map { it.relativePath to it.content }` (26→3 lignes)
+|===
+
+== Fichiers test créés / modifiés
+
+[cols="2,3"]
+|===
+| Fichier | Changement
+
+| `test/kotlin/koog/agentic/ScanAgentTest.kt` | 8 JUnit5 : empty dir, root files, recursive `.agents/`, subproject, ignored dirs, content read, non-adoc ignored, nested archives.
+| `test/features/epic_v_9_3_scan_agent.feature` | Feature Cucumber @epic_v_9_3 (6 scénarios : empty, root files, recursive, subproject, ignored dirs, ingest integration).
+| `test/kotlin/scenarios/ScanAgentWorld.kt` | World Cucumber (workspaceDir temp, scan/ingest/reset).
+| `test/kotlin/scenarios/ScanAgentSteps.kt` | Steps Given/When/Then pour les 6 scénarios. `@Before("@epic_v_9_3")` reset.
+| `test/kotlin/scenarios/EpicV93CucumberRunner.kt` | Runner Cucumber dédié (GLUE=codebase.scenarios, FILTER_TAGS=@epic_v_9_3).
+|===
+
+== Tests
+
+|===
+| Scope | Résultat
+
+| `ScanAgentTest` (8 JUnit5 unitaires) | ✅ 8/8 PASS
+| `EpicV93CucumberRunner` (6 scénarios @epic_v_9_3) | ✅ 6/6 PASS
+| `IngestGovernanceTaskTest` (5 tests régression) | ✅ 5/5 PASS
+| `compileKotlin` | ✅
+| `compileTestKotlin` | ✅
+| Régression tests préexistants | 0 (refactor préservant le contrat public)
+|===
+
+== Total session 142
+
+- JUnit5 : 8 nouveaux PASS + 5 régression PASS
+- Cucumber : 6 scénarios PASS
+- Build : propre
+- Zéro réseau, zéro Testcontainers
+
+'''
+
 = TEST_COVERAGE_ANALYSIS — Session 141
 :date: 2026-06-22
 :epic: EPIC V-9 — V-9.5 ChunkValidator (baby-step TDD/BDD)
