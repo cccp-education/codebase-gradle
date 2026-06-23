@@ -147,11 +147,7 @@ class AgenticChunker {
             if (blockLines.size > (if (sectionTitle.isNotBlank()) 1 else 0)) {
                 val lineRange = "${startLine + startIdx}-${startLine + startIdx + blockLines.size - 1}"
                 val chunkContent = blockLines.joinToString("\n").trim()
-                val verb = if (chunkContent.contains("verifier", ignoreCase = true) ||
-                    chunkContent.contains("check", ignoreCase = true) ||
-                    chunkContent.contains("compile", ignoreCase = true) ||
-                    chunkContent.contains("valider", ignoreCase = true)
-                ) TaxonomyVerb.VALIDER else null
+                val verb = extractVerbFromProcedure(chunkContent)
                 chunks.add(buildChunk(
                     content = chunkContent,
                     sourceFile = sourceFile,
@@ -163,6 +159,18 @@ class AgenticChunker {
             }
         }
         return chunks
+    }
+
+    private fun extractVerbFromProcedure(content: String): TaxonomyVerb? {
+        if (content.contains("verifier", ignoreCase = true) ||
+            content.contains("check", ignoreCase = true) ||
+            content.contains("compile", ignoreCase = true) ||
+            content.contains("valider", ignoreCase = true)
+        ) return TaxonomyVerb.VALIDER
+
+        return TaxonomyVerb.entries.firstOrNull { verb ->
+            content.contains(verb.name, ignoreCase = true)
+        }
     }
 
     private fun extractConstraints(content: String, sectionTitle: String, startLine: Int, sourceFile: String): List<AgenticChunk> {

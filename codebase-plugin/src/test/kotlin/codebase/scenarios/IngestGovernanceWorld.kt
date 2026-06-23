@@ -4,6 +4,7 @@ import codebase.koog.agentic.ChunkValidator
 import codebase.koog.agentic.GovernanceSection
 import codebase.koog.agentic.IngestGovernanceTask
 import codebase.koog.agentic.IngestionReport
+import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import java.io.File
 import java.nio.file.Files
@@ -16,6 +17,12 @@ class IngestGovernanceWorld {
         private set
 
     var lastOutputFile: File? = null
+        private set
+
+    var lastProject: Project? = null
+        private set
+
+    var lastRegisteredTaskNames: List<String> = emptyList()
         private set
 
     var chunkValidator: ChunkValidator = ChunkValidator()
@@ -41,6 +48,8 @@ class IngestGovernanceWorld {
         task.executeIngest()
         lastReport = task.lastIngestionReport
         lastOutputFile = outputFile
+        lastProject = project
+        lastRegisteredTaskNames = task.lastRegisteredTaskNames
     }
 
     fun outputJson(): String {
@@ -51,6 +60,8 @@ class IngestGovernanceWorld {
     fun reset() {
         lastReport = null
         lastOutputFile = null
+        lastProject = null
+        lastRegisteredTaskNames = emptyList()
         tempDir.deleteRecursively()
         tempDir.mkdirs()
     }

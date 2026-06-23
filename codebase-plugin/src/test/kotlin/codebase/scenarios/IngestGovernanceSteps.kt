@@ -1,6 +1,7 @@
 package codebase.scenarios
 
 import codebase.koog.agentic.AgenticChunk
+import codebase.koog.agentic.AgenticGradleTaskRegistrar
 import codebase.koog.agentic.ChunkValidationError
 import codebase.koog.agentic.ChunkValidationErrorType
 import codebase.koog.agentic.ChunkValidator

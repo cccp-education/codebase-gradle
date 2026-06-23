@@ -1,0 +1,54 @@
+= Session 154 — EPIC V-9.18 Compile Governance Chunks to Gradle Tasks
+:date: 2026-06-23
+:borough: Queens — codebase-gradle (N1)
+:session: 154
+
+== Contexte
+
+Mission issue du PROMPT_REPRISE 154 : transformer les artefacts compilés par `AgenticCompiler` (chunks PROCEDURE/GENERER, CONSTRAINT, VALIDATION) en tâches Gradle dynamiques enregistrées dans le projet courant.
+
+== Actions
+
+. Création du registrar DDD `AgenticGradleTaskRegistrar` :
+  * transforme `ExecutableArtifact` en tâches Gradle nommées `runProcedure_<id>`, `enforceRule_<id>`, `validate_<id>`
+  * tâche concrète `GovernanceExecutableTask` écrivant un marker file dans `build/governance-tasks/`
+  * skip des types non exécutables (METADATA, PRE_HOOK, CI_GATE, PROMPT_TEMPLATE)
+  * idempotence : pas de double registration
+. Enrichissement de `AgenticChunker.extractProcedures` pour détecter les verbes taxonomiques `GENERER`, `COLLECTER`, `TRANSFORMER`, `DEPLOYER`, `VALIDER`, `INTERDIRE` dans les blocs de procédure (précédemment seul `VALIDER` était détecté via mots-clés anglais/français).
+. Câblage dans `IngestGovernanceTask` :
+  * `registerCompiledTasks(executables)` appelée après ingestion
+  * `lastRegisteredTaskNames` exposé pour tests/consommation
+. Tests baby-step DDD/TDD/BDD :
+  * 7 JUnit5 `AgenticGradleTaskRegistrarTest` (GRADLE_TASK, CONSTRAINT_CHECK, VALIDATION, skip non registerable, duplicates, execution, multiples)
+  * 3 JUnit5 fonctionnels ajoutés dans `IngestGovernanceTaskTest` (GENERER → runProcedure, CONSTRAINT → enforceRule, exécution de la tâche enregistrée)
+  * 3 scénarios Cucumber `@epic_v_9_18` + runner `EpicV918CucumberRunner` + steps `EpicV918Steps`
+  * enrichissement de `IngestGovernanceWorld` avec `lastProject` et `lastRegisteredTaskNames`
+. Régressions : V-9.3, V-9.5, V-9.7, V-9.8, V-9.9, V-9.10, V-9.11, V-9.13, V-9.14, V-9.15, V-9.16, V-9.17 et tests `AgenticChunkerTest` verts.
+. Compilation : `compileKotlin` vert entre chaque fichier modifié.
+
+== Commandes
+
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.AgenticGradleTaskRegistrarTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.IngestGovernanceTaskTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.AgenticChunkerTest"
+./gradlew :codebase-plugin:test --tests "codebase.scenarios.EpicV918CucumberRunner"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.*" --tests "codebase.scenarios.EpicV9*"
+----
+
+== Résultats
+
+* `AgenticGradleTaskRegistrarTest` : 7/7 PASS
+* `IngestGovernanceTaskTest` : 23/23 PASS (dont 3 nouveaux V-9.18)
+* `AgenticChunkerTest` : 18/18 PASS (extension verbes taxonomiques)
+* `EpicV918CucumberRunner` : 3/3 PASS
+* Régressions V-9.x unitaires et Cucumber : vertes
+* `compileKotlin` + `compileTestKotlin` verts
+
+== Leçons
+
+* Séparer le registrar DDD (`AgenticGradleTaskRegistrar`) du plugin Gradle facilite les tests purs sans daemon.
+* L'enrichissement du chunker doit être minimal et rétrocompatible : ici on ajoute juste la reconnaissance des verbes taxonomiques en plus de la logique `VALIDER` existante.
+* Les tâches dynamiques Gradle doivent éviter les conflits de noms : tronquer l'id SHA-256 et suffixer par type suffit pour l'identité.
+* Le `Project` capturé dans le World Cucumber permet de tester l'existence réelle des tâches enregistrées après ingestion.

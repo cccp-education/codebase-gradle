@@ -405,4 +405,82 @@ class IngestGovernanceTaskTest {
         assertNotNull(report)
         assertTrue(report!!.invalidChunks.isEmpty(), "No invalid chunks expected")
     }
+
+    @Test
+    fun `V-9_18 registers Gradle tasks for GENERER procedure chunks`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText(
+            """
+            = Agent
+
+            == Generation Procedure
+            . GENERER le scenario pedagogique global
+            . Produire le document AsciiDoc
+            """.trimIndent()
+        )
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+
+        task.executeIngest()
+
+        val names = task.lastRegisteredTaskNames
+        assertTrue(names.isNotEmpty(), "Should register at least one governance task")
+        assertTrue(names.all { it.startsWith("runProcedure_") }, "All registered tasks should be runProcedure_*")
+        names.forEach { name ->
+            assertNotNull(project.tasks.findByName(name), "Task $name should exist")
+        }
+    }
+
+    @Test
+    fun `V-9_18 registered governance task is executable and writes marker`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText(
+            """
+            = Agent
+
+            == Check Procedure
+            . GENERER le rapport de synthese
+            """.trimIndent()
+        )
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+
+        task.executeIngest()
+
+        val names = task.lastRegisteredTaskNames
+        assertTrue(names.isNotEmpty())
+        val taskName = names.first()
+        val registered = project.tasks.getByName(taskName)
+        assertEquals("governance", registered.group)
+
+        project.gradle.projectsEvaluated {
+            project.tasks.getByName(taskName).actions.forEach { it.execute(registered) }
+        }
+    }
+
+    @Test
+    fun `V-9_18 registers enforceRule task for CONSTRAINT chunks`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText(
+            """
+            = Agent
+
+            == Limits
+            Maximum 50k tokens EAGER (~3000 lignes).
+            """.trimIndent()
+        )
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+
+        task.executeIngest()
+
+        val names = task.lastRegisteredTaskNames
+        assertTrue(names.any { it.startsWith("enforceRule_") }, "Should register enforceRule_*")
+    }
 }

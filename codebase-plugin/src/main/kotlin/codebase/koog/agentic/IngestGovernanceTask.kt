@@ -46,6 +46,10 @@ abstract class IngestGovernanceTask : DefaultTask() {
     var lastExecutor: AgenticExecutor? = null
         private set
 
+    @get:Internal
+    var lastRegisteredTaskNames: List<String> = emptyList()
+        private set
+
     /**
      * Hook de blocage utilisable par [contracts.vibecoding.registry.ToolRegistry].
      * Retourne `null` tant que l'ingestion n'a pas produit d'executables PRE_HOOK.
@@ -99,10 +103,26 @@ abstract class IngestGovernanceTask : DefaultTask() {
         executeIngest(root, config, output)
     }
 
+    /**
+     * Enregistre les artefacts compilés comme tâches Gradle dynamiques.
+     * Exposé pour tests et pour câblage dans [CodebasePlugin].
+     */
+    fun registerCompiledTasks(executables: List<ExecutableArtifact>): List<String> {
+        val registrar = AgenticGradleTaskRegistrar()
+        val names = registrar.register(project, executables)
+        lastRegisteredTaskNames = names
+        return names
+    }
+
     private fun executeIngest(root: File, config: GovernanceSummaryConfig, output: File?) {
         val result = GovernanceIngestor(chunkValidator).ingest(root)
         lastIngestionReport = result.report
         lastExecutor = result.executor
+
+        val taskNames = registerCompiledTasks(result.report.executables)
+        if (taskNames.isNotEmpty()) {
+            log.info("[IngestGovernance] Registered tasks: {}", taskNames)
+        }
 
         log.info(
             "[IngestGovernance] Report — scanned={}, added={}, skipped={}, modified={}, compiled={}",

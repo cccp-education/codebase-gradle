@@ -4,6 +4,7 @@
 |===
 | Session | Date | EPIC | Résultat
 
+| 154 | 2026-06-23 | EPIC V-9 | V-9.18 Compilation vers Gradle tasks — `AgenticGradleTaskRegistrar` enregistre GRADLE_TASK/CONSTRAINT_CHECK/VALIDATION comme tâches Gradle dynamiques, câblage `IngestGovernanceTask`, enrichissement `AgenticChunker` verbes taxonomiques, 7 JUnit5 + 3 fonctionnels + 3 Cucumber @epic_v_9_18 PASS, régressions V-9.3→V-9.17 vertes ✅
 | 153 | 2026-06-23 | EPIC V-9 | V-9.17 Ingestion Summary DSL — extension Gradle `codebaseGovernance { strictValidation.set(true) }` + propriété projet `codebase.governance.strictValidation`, `GovernanceSummaryConfig` DDD + `CodebaseGovernanceExtension`, câblage `IngestGovernanceTask.governanceConfig`, 3 JUnit5 + 4 fonctionnels + 3 Cucumber @epic_v_9_17 PASS, régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11/9.13/9.14/9.15/9.16 vertes ✅
 | 152 | 2026-06-23 | EPIC V-9 | V-9.16 StrictValidationMode — option Gradle `strictValidation` dans `IngestGovernanceTask`, levée de `GradleException` si chunks invalides en mode strict, 3 JUnit5 + 3 Cucumber @epic_v_9_16 PASS, régression V-9.4 batch TAXONOMIE_WORKSPACE corrigée, régressions V-9.x vertes ✅
 | 151 | 2026-06-23 | EPIC V-9 | V-9.15 Invalid Chunk Quarantine — port `InvalidChunkRepository` + implémentations in-memory/R2DBC (migration V4) + `InvalidChunkQuarantine` câblé dans `AgenticIngestor`, `IngestionReport.invalidChunks` + JSON, 12 JUnit5 + 2 Cucumber @epic_v_9_15 PASS, régressions V-9.x vertes ✅

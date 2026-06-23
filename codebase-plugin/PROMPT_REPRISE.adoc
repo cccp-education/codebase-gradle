@@ -1,13 +1,13 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 154
-:session: 154
+= Prompt de Reprise — Codebase (Queens N1) — Session 155
+:session: 155
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 153 — EPIC V-9.17 Ingestion Summary DSL livré (extension `codebaseGovernance { strictValidation.set(true) }` + propriété `codebase.governance.strictValidation`, 3 JUnit5 + 4 fonctionnels + 3 Cucumber @epic_v_9_17 PASS, régressions V-9.x vertes)
+:session_precedente: 154 — EPIC V-9.18 Compilation vers Gradle tasks livré (`AgenticGradleTaskRegistrar`, câblage `IngestGovernanceTask`, 7 JUnit5 + 3 fonctionnels + 3 Cucumber @epic_v_9_18 PASS, régressions V-9.3→V-9.17 vertes)
 
-== Mission Session 154
+== Mission Session 155
 
-1. Attaquer V-9.18 Compilation vers Gradle tasks — pont AgenticCompiler → tâches concrètes : quand un chunk PROCEDURE/GENERER ou CONSTRAINT est ingéré, produire une tâche Gradle enregistrée dynamiquement dans le projet (ex: `enforceRule<ruleId>` ou `runProcedure<chunkId>`).
+1. Attaquer V-9.19 Auto-détection de nouveaux fichiers de gouvernance — quand `ingestGovernance` a déjà tourné, surveiller/détecter les nouveaux fichiers `.adoc` dans `.agents/` et à la racine, puis re-déclencher le chunking/compilation/registering de tâches sans retraiter tout le projet.
 2. Coder en baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber.
-3. Préserver V-9.3, V-9.5, V-9.7, V-9.8, V-9.9, V-9.10, V-9.11, V-9.13, V-9.14, V-9.15, V-9.16, V-9.17 et tous les tests `ToolRegistry` existants (zéro régression).
+3. Préserver V-9.3, V-9.5, V-9.7, V-9.8, V-9.9, V-9.10, V-9.11, V-9.13, V-9.14, V-9.15, V-9.16, V-9.17, V-9.18 et tous les tests `ToolRegistry` existants (zéro régression).
 4. `./gradlew :codebase-plugin:compileKotlin` doit rester vert entre chaque fichier modifié.
 
 == Méthodologie

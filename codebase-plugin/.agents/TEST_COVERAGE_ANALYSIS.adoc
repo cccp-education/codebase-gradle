@@ -1,33 +1,31 @@
-:= TEST_COVERAGE_ANALYSIS — Session 153
+:= TEST_COVERAGE_ANALYSIS — Session 154
 :date: 2026-06-23
-:epic: EPIC V-9 — V-9.17 Ingestion Summary DSL : extension Gradle `codebaseGovernance` + propriété `codebase.governance.strictValidation`
+:epic: EPIC V-9 — V-9.18 Compile Governance Chunks to Gradle Tasks
 
 == Contexte
 
-PROMPT_REPRISE 153 demandait d'exposer les flags V-9.x (en particulier `strictValidation`) via une extension Gradle dédiée `codebaseGovernance { strictValidation = true }` et/ou une propriété projet `codebase.governance.strictValidation`.
+PROMPT_REPRISE 154 demandait de transformer les artefacts compilés par `AgenticCompiler` en tâches Gradle dynamiques quand un chunk PROCEDURE/GENERER ou CONSTRAINT est ingéré.
 
-== Fichiers source modifiés
+== Fichiers source modifiés / créés
 
 [cols="2,3"]
 |===
 | Fichier | Changement
 
-| `main/kotlin/codebase/koog/agentic/GovernanceSummaryConfig.kt` | Modèle DDD pur : `strictValidation`, `outputEnabled`, `reportFormat`, défauts rétrocompatibles
-| `main/kotlin/codebase/koog/agentic/CodebaseGovernanceExtension.kt` | Extension Gradle `codebaseGovernance` avec `toConfig()`
-| `main/kotlin/codebase/CodebasePlugin.kt` | Enregistrement de l'extension + résolution prioritaire propriété `codebase.governance.strictValidation`
-| `main/kotlin/codebase/koog/agentic/IngestGovernanceTask.kt` | `governanceConfig: Property<GovernanceSummaryConfig>`, point d'entrée DDD, rapport par défaut dans `build/reports/ingest-governance.json`
-| `test/kotlin/codebase/koog/agentic/GovernanceSummaryConfigTest.kt` | 3 tests JUnit5 (defaults, copy, output disabled)
-| `test/kotlin/codebase/koog/agentic/CodebaseGovernanceExtensionTest.kt` | 4 tests fonctionnels ProjectBuilder (DSL defaults, DSL strict, task wiring, CLI override)
-| `test/features/epic_v_9_17_ingestion_summary_dsl.feature` | 3 scénarios Cucumber @epic_v_9_17
-| `test/kotlin/codebase/scenarios/EpicV917CucumberRunner.kt` | Runner Cucumber @epic_v_9_17
-| `test/kotlin/codebase/scenarios/EpicV917Steps.kt` | Steps Cucumber V-9.17
-| `build.gradle.kts` | Enregistrement de `cucumberTestEpicV917` (rétroactivité `cucumberTestEpicV916`)
-| `codebase-plugin/PROMPT_REPRISE.adoc` | Mission N+1 (session 154)
-| `.agents/INDEX.adoc` | Session N+1 = 154, statut V-9.17 ✅
-| `.agents/SESSIONS_HISTORY.adoc` | Entrée session 153
-| `.agents/sessions/153-epic_v9_17_ingestion_summary_dsl.adoc` | Archive session 153
-| `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-06.adoc` | Mise à jour EPIC V-9
-| `BACKLOG.adoc` | V-9.17 marqué ✅
+| `main/kotlin/codebase/koog/agentic/AgenticGradleTaskRegistrar.kt` | NOUVEAU — registrar DDD qui transforme `ExecutableArtifact` en tâches Gradle nommées `runProcedure_*`, `enforceRule_*`, `validate_*`
+| `main/kotlin/codebase/koog/agentic/AgenticChunker.kt` | Enrichissement de `extractVerbFromProcedure` pour détecter les verbes taxonomiques `GENERER`, `COLLECTER`, `TRANSFORMER`, `DEPLOYER`, `VALIDER`, `INTERDIRE`
+| `main/kotlin/codebase/koog/agentic/IngestGovernanceTask.kt` | Câblage `registerCompiledTasks(report.executables)`, exposition `lastRegisteredTaskNames`
+| `test/kotlin/codebase/koog/agentic/AgenticGradleTaskRegistrarTest.kt` | NOUVEAU — 7 tests JUnit5
+| `test/kotlin/codebase/koog/agentic/IngestGovernanceTaskTest.kt` | 3 tests fonctionnels V-9.18 ajoutés
+| `test/resources/features/epic_v_9_18_compile_to_gradle_tasks.feature` | NOUVEAU — 3 scénarios Cucumber @epic_v_9_18
+| `test/kotlin/codebase/scenarios/EpicV918CucumberRunner.kt` | NOUVEAU — runner Cucumber
+| `test/kotlin/codebase/scenarios/EpicV918Steps.kt` | NOUVEAU — steps Cucumber
+| `test/kotlin/codebase/scenarios/IngestGovernanceWorld.kt` | Ajout `lastProject` et `lastRegisteredTaskNames`
+| `codebase-plugin/PROMPT_REPRISE.adoc` | Mission N+1 (session 155)
+| `.agents/INDEX.adoc` | Session N+1 = 155, statut V-9.18 ✅
+| `.agents/SESSIONS_HISTORY.adoc` | Entrée session 154
+| `.agents/sessions/154-epic_v9_18_compile_to_gradle_tasks.adoc` | Archive session 154
+| `BACKLOG.adoc` | V-9.18 marqué ✅
 |===
 
 == Tests
@@ -35,11 +33,11 @@ PROMPT_REPRISE 153 demandait d'exposer les flags V-9.x (en particulier `strictVa
 |===
 | Scope | Résultat
 
-| `GovernanceSummaryConfigTest` | ✅ 3/3 PASS
-| `CodebaseGovernanceExtensionTest` | ✅ 4/4 PASS
-| `EpicV917CucumberRunner` (3 scénarios @epic_v_9_17) | ✅ 3/3 PASS
-| `IngestGovernanceTaskTest` | ✅ 16/16 PASS (régression)
-| `ToolRegistryTest` | ✅ vert (régression)
+| `AgenticGradleTaskRegistrarTest` | ✅ 7/7 PASS
+| `IngestGovernanceTaskTest` (V-9.18 ajouts + régressions) | ✅ 23/23 PASS
+| `AgenticChunkerTest` | ✅ 18/18 PASS
+| `EpicV918CucumberRunner` (3 scénarios @epic_v_9_18) | ✅ 3/3 PASS
+| `EpicV917CucumberRunner` (3 scénarios @epic_v_9_17) | ✅ 3/3 PASS (régression)
 | `EpicV916CucumberRunner` (3 scénarios @epic_v_9_16) | ✅ 3/3 PASS (régression)
 | `EpicV915CucumberRunner` (2 scénarios @epic_v_9_15) | ✅ 2/2 PASS (régression)
 | `EpicV914CucumberRunner` (2 scénarios @epic_v_9_14) | ✅ 2/2 PASS (régression)
@@ -53,19 +51,20 @@ PROMPT_REPRISE 153 demandait d'exposer les flags V-9.x (en particulier `strictVa
 | `EpicV93CucumberRunner` (6 scénarios @epic_v_9_3) | ✅ 6/6 PASS (régression)
 | `compileKotlin` | ✅
 | `compileTestKotlin` | ✅
-| Régression tests préexistants | 0
+| Régression tests préexistants | 0 (hors `ExecGradleToolTest` instable par timeout daemon)
 |===
 
-== Total session 153
+== Total session 154
 
-- JUnit5 : 3 nouveaux PASS (`GovernanceSummaryConfigTest`) + 4 nouveaux PASS (`CodebaseGovernanceExtensionTest`)
-- Tests fonctionnels : 4 couverts par `ProjectBuilder`
-- Cucumber : 3 scénarios / 13 steps PASS (@epic_v_9_17)
+- JUnit5 : 7 nouveaux PASS (`AgenticGradleTaskRegistrarTest`) + 3 nouveaux fonctionnels (`IngestGovernanceTaskTest`)
+- Tests fonctionnels : 3 couverts par `ProjectBuilder`
+- Cucumber : 3 scénarios / 10 steps PASS (@epic_v_9_18)
 - Build : `compileKotlin` + `compileTestKotlin` verts
-- BACKLOG synchronisé (V-9.17 marqué ✅)
+- BACKLOG synchronisé (V-9.18 marqué ✅)
 
 == Leçons
 
-* Séparer modèle DDD (`GovernanceSummaryConfig`) de l'extension Gradle facilite les tests purs.
-* `project.providers.gradleProperty()` ne lit pas `extraProperties` de `ProjectBuilder` ; utiliser un vrai `gradle.properties` pour tester le CLI override.
-* Garder `strictValidation` en propriété task interne pendant la transition V-9.16→V-9.17 préserve la rétrocompatibilité, mais la prochaine étape doit unifier la source de vérité dans `GovernanceSummaryConfig`.
+* Séparer le registrar DDD de la tâche Gradle permet de tester l'enregistrement de tâches sans daemon.
+* L'enrichissement du chunker doit être rétrocompatible : on ajoute la reconnaissance des verbes taxonomiques sans supprimer la logique `VALIDER` existante.
+* Pour les tests Cucumber, capturer le `Project` Gradle dans le World permet de vérifier l'existence réelle des tâches dynamiques après ingestion.
+* Les tâches dynamiques doivent utiliser des noms stables (id tronqué + type) pour éviter les collisions tout en restant déterministes.

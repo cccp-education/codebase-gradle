@@ -1,3 +1,17 @@
+== Session 154 — EPIC V-9.18 Compile Governance Chunks to Gradle Tasks
+
+- `koog/agentic/AgenticGradleTaskRegistrar.kt` : NOUVEAU — registrar DDD transformant `ExecutableArtifact` en tâches Gradle dynamiques (`runProcedure_*`, `enforceRule_*`, `validate_*`)
+- `koog/agentic/AgenticChunker.kt` : enrichissement `extractVerbFromProcedure` pour détecter les verbes taxonomiques `GENERER`, `COLLECTER`, `TRANSFORMER`, `DEPLOYER`, `VALIDER`, `INTERDIRE`
+- `koog/agentic/IngestGovernanceTask.kt` : câblage `registerCompiledTasks(report.executables)` + exposition `lastRegisteredTaskNames`
+- `test/kotlin/codebase/koog/agentic/AgenticGradleTaskRegistrarTest.kt` : 7 JUnit5 PASS
+- `test/kotlin/codebase/koog/agentic/IngestGovernanceTaskTest.kt` : +3 tests fonctionnels V-9.18 PASS (23/23 total)
+- `test/resources/features/epic_v_9_18_compile_to_gradle_tasks.feature` + `EpicV918CucumberRunner.kt` + `EpicV918Steps.kt` : 3 scénarios Cucumber @epic_v_9_18 PASS
+- `test/kotlin/codebase/scenarios/IngestGovernanceWorld.kt` : ajout `lastProject` et `lastRegisteredTaskNames`
+- Régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11/9.13/9.14/9.15/9.16/9.17 vertes
+- `compileKotlin` + `compileTestKotlin` verts
+
+'''
+
 == Session 153 — EPIC V-9.17 Ingestion Summary DSL
 
 - `koog/agentic/GovernanceSummaryConfig.kt` : modèle DDD pur (strictValidation, outputEnabled, reportFormat)
