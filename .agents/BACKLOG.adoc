@@ -215,11 +215,11 @@
 * [x] V-9.7 : GovernanceOntologizer — ✅ TERMINÉ (classifie AGENT/INDEX/BACKLOG/SESSIONS_HISTORY/TEST_COVERAGE/PROMPT_REPRISE → sections)
 * [x] V-9.8 : IngestionReport sections — ✅ TERMINÉ session 142 (`sectionsAdded`/`sectionsTotal` par `GovernanceSection`)
 
-==== Under-EPIC 3 : Compilation et Enforcement (1/5 en cours)
+==== Under-EPIC 3 : Compilation et Enforcement (1/5 ✅ — V-9.11 terminé, V-9.12→V-9.15 à coder)
 
 * [x] V-9.9 : ChunkValidationGate — ✅ TERMINÉ session 145 (`ChunkValidator` câblé dans `AgenticIngestor`, `IngestionReport.chunksInvalid`/`validationErrors`)
 * [x] V-9.10 : ChunkValidationReport — ✅ TERMINÉ session 146 (`ChunkValidationErrorType`, `lineStart`/`lineEnd`, `validationErrorsByType` dans JSON)
-* [ ] V-9.11 : AgenticCompiler — Transforme chunk en artefact executable (27 JUnit5, session 094)
+* [x] V-9.11 : AgenticCompiler — ✅ TERMINÉ session 147 (`compile`/`compileExecutable`/`shouldCompile`, `PostHookPayload`, 30 JUnit5 + 6 Cucumber)
 
 ==== Under-EPICs 4-7
 
@@ -234,6 +234,7 @@ V-9.12→V-9.35 restent à coder. Voir `CADRAGE_METHODE_EPIC_V9.adoc` pour le d�
 * [ ] **EPIC 7** : Wiring LangChain4j + pgvector experts (TERMI
 NE, session 126)
 * [ ] **EPIC 8** : Exposer experts via Ollama (✅ TERMINÉ — session 140)
+* [x] **EPIC V-9.11** : AgenticCompiler (✅ TERMINÉ — session 147 : `compile`/`compileExecutable`/`shouldCompile`, `PostHookPayload`, 30 JUnit5 + 6 Cucumber)
 * [ ] **EPIC 9** : Opencode Augmenté — Réalité Augmentée Développeur (TERMINE, sessions 001-021)
 * [ ] **EPIC 10** : Instrumentation Gradle du Pattern STIMULUS (TERMINE, sessions 022 + 025)
 * [ ] **EPIC 12** : Dilution Article de Blog (TERMI

@@ -9,6 +9,12 @@ sealed class ArtifactPayload {
         val allowedPattern: String? = null
     ) : ArtifactPayload()
 
+    data class PostHookPayload(
+        override val toolName: String,
+        val forbiddenPatterns: List<String>,
+        val allowedPattern: String? = null
+    ) : ArtifactPayload()
+
     data class GradleTaskPayload(
         override val toolName: String? = "exec_gradle",
         val taskName: String,
@@ -53,7 +59,8 @@ data class ExecutableArtifact(
 ) {
     fun execute(toolName: String, arguments: Map<String, String>): ExecutionResult {
         return when (payload) {
-            is ArtifactPayload.PreHookPayload -> executePreHook(toolName, arguments, payload)
+            is ArtifactPayload.PreHookPayload,
+            is ArtifactPayload.PostHookPayload -> executePreHook(toolName, arguments, payload)
             is ArtifactPayload.ConstraintPayload,
             is ArtifactPayload.ValidationPayload -> executeValidation(toolName, arguments, payload)
             else -> ExecutionResult(allowed = true)
@@ -63,18 +70,25 @@ data class ExecutableArtifact(
     private fun executePreHook(
         toolName: String,
         arguments: Map<String, String>,
-        payload: ArtifactPayload.PreHookPayload
+        payload: ArtifactPayload
     ): ExecutionResult {
-        if (payload.toolName != toolName) return ExecutionResult(allowed = true)
+        val (toolNamePayload, forbiddenPatterns, allowedPattern) = when (payload) {
+            is ArtifactPayload.PreHookPayload ->
+                Triple(payload.toolName, payload.forbiddenPatterns, payload.allowedPattern)
+            is ArtifactPayload.PostHookPayload ->
+                Triple(payload.toolName, payload.forbiddenPatterns, payload.allowedPattern)
+            else -> return ExecutionResult(allowed = true)
+        }
+        if (toolNamePayload != toolName) return ExecutionResult(allowed = true)
 
         val taskArg = arguments["task"] ?: arguments["command"] ?: return ExecutionResult(allowed = true)
 
-        for (pattern in payload.forbiddenPatterns) {
+        for (pattern in forbiddenPatterns) {
             val forbiddenMatches = pattern.toRegex(RegexOption.IGNORE_CASE).containsMatchIn(taskArg)
             if (!forbiddenMatches) continue
 
-            if (payload.allowedPattern != null) {
-                val allowedMatches = payload.allowedPattern.toRegex(RegexOption.IGNORE_CASE).containsMatchIn(taskArg)
+            if (allowedPattern != null) {
+                val allowedMatches = allowedPattern.toRegex(RegexOption.IGNORE_CASE).containsMatchIn(taskArg)
                 if (allowedMatches) continue
             }
 

@@ -35,7 +35,7 @@ class AgenticExecutorTest {
             ontologyConfidence = 0.9,
             relatedChunkIds = emptyList()
         )
-        return compiler.compileExecutable(ontologized)!!
+        return compiler.compileExecutable(ontologized)
     }
 
     @BeforeEach

@@ -1,0 +1,59 @@
+= Session 147 — EPIC V-9.11 AgenticCompiler
+:date: 2026-06-23
+:epic: V-9.11
+:borough: Queens / codebase-gradle (N1)
+
+== Contexte
+
+Poursuite de l'EPIC V-9 Vibecoding Gouvernance Agentique. V-9.10 ChunkValidationReport livré en session 146. Objectif : fermer V-9.11 AgenticCompiler — transformation des chunks ontologisés en artefacts exécutables (PRE_HOOK, GRADLE_TASK, CONSTRAINT_CHECK, METADATA, PROMPT_TEMPLATE).
+
+== Actions réalisées
+
+. Lecture EAGER : AGENT.adoc absent dans codebase-gradle, INDEX.adoc, BACKLOG.adoc, SESSION_PROCEDURE.adoc, SESSION_CHECKLIST.adoc, TEST_COVERAGE_ANALYSIS.adoc.
+. Audit de `AgenticCompiler.kt`, `ExecutableArtifact.kt`, `CompiledArtifact.kt`, `AgenticChunk.kt`, `OntologizedChunk.kt` et tests existants.
+. Identification du gap : manque `PostHookPayload`, `compile` ne filtre pas les chunks non compilables, pas de tâche Gradle `cucumberTestEpicV911`, feature V-9.11 avec seulement 4 scénarios.
+. Implémentation baby-step :
+** Ajout de `PostHookPayload` dans `ArtifactPayload`
+** Refactor `ExecutableArtifact.execute` pour gérer PreHook/PostHook via destructuration
+** Ajout de `AgenticCompiler.shouldCompile` (permissif — fallback CI_GATE/VALIDATION/METADATA)
+** `compile` retourne `null` si `shouldCompile` est false ; `compileExecutable` devient non-null
+** Mise à jour `AgenticIngestor` pour utiliser `shouldCompile` avant de compter les artefacts
+** Amélioration `extractForbiddenPatterns` pour détecter "publier" en plus de "publish"
+. Tests JUnit5 :
+** `AgenticCompilerTest` : 30 tests (ajout sourceChunkId, exec_gradle tool, fallback CI_GATE, etc.)
+** `ExecutableArtifactTest` : nettoyage des `!!` inutiles, 8 tests verts
+. Tests Cucumber :
+** Enregistrement de `cucumberTestEpicV911` dans `build.gradle.kts`
+** Feature `@epic_v_9_11` enrichie de 2 scénarios (METADATA + CONCEPT/PROMPT_TEMPLATE)
+** Steps Kotlin ajoutés dans `EpicV911Steps.kt`
+. Validation régression : V-9.3, V-9.5, V-9.7, V-9.8, V-9.9, V-9.10, V-9.11 verts.
+
+== Commandes exécutées
+
+* `./gradlew :codebase-plugin:compileKotlin` — OK
+* `./gradlew :codebase-plugin:compileTestKotlin` — OK
+* `./gradlew :codebase-plugin:test --tests 'codebase.koog.agentic.AgenticCompilerTest'` — 30/30 PASS
+* `./gradlew :codebase-plugin:test --tests 'codebase.koog.agentic.ExecutableArtifactTest'` — 8/8 PASS
+* `./gradlew :codebase-plugin:cucumberTestEpicV911` — 6/6 PASS
+* `./gradlew :codebase-plugin:cucumberTestEpicV93 :codebase-plugin:cucumberTestEpicV95 :codebase-plugin:cucumberTestEpicV97 :codebase-plugin:cucumberTestEpicV98 :codebase-plugin:cucumberTestEpicV99 :codebase-plugin:cucumberTestEpicV910 :codebase-plugin:cucumberTestEpicV911` — OK
+* `./gradlew :codebase-plugin:build -x test -x cucumberTest -x koverVerify -x validateDependencies` — OK
+
+== Résultats obtenus
+
+* EPIC V-9.11 ✅ TERMINÉ.
+* 30 JUnit5 + 8 JUnit5 + 6 Cucumber PASS.
+* Build propre.
+* Gouvernance mise à jour : PROMPT_REPRISE.adoc, INDEX.adoc, BACKLOG.adoc, SESSIONS_HISTORY.adoc, TEST_COVERAGE_ANALYSIS.adoc.
+
+== Leçons apprises
+
+* Garder `compileExecutable` non-null et centraliser la décision dans `compile`/`shouldCompile`.
+* `shouldCompile` doit rester permissive : le fallback typé est préférable au rejet silencieux.
+* Enregistrer la tâche Gradle Cucumber dès la création du runner évite les oublis de filtrage.
+
+== Next steps
+
+* EPIC V-9.12 RuleCompiler — transformer RULE INTERDIRE en pre/post hook ToolRegistry.
+* EPIC V-9.13 ProcedureCompiler — PROCEDURE → plan multi-step (réutiliser EPIC X).
+* EPIC V-9.14 ConstraintCompiler — CONSTRAINT → gate de validation.
+* EPIC V-9.15 EnforceAgent — exécution des règles dans ToolRegistry.

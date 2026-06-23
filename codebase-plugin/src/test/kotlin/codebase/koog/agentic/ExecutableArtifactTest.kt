@@ -52,7 +52,7 @@ class ExecutableArtifactTest {
         val executable = compiler.compileExecutable(chunk)
 
         assertNotNull(executable)
-        assertEquals(ArtifactType.PRE_HOOK, executable!!.compiledArtifact.artifactType)
+        assertEquals(ArtifactType.PRE_HOOK, executable.compiledArtifact.artifactType)
         assertTrue(executable.payload is ArtifactPayload.PreHookPayload)
         val payload = executable.payload as ArtifactPayload.PreHookPayload
         assertEquals("exec_shell", payload.toolName)
@@ -67,7 +67,7 @@ class ExecutableArtifactTest {
             content = "INTERDICTION FORMELLE de git push sans permission."
         )
 
-        val executable = compiler.compileExecutable(chunk)!!
+        val executable = compiler.compileExecutable(chunk)
         val result = executable.execute("exec_shell", mapOf("command" to "git push origin main"))
 
         assertFalse(result.allowed)
@@ -83,7 +83,7 @@ class ExecutableArtifactTest {
             content = "INTERDICTION FORMELLE de git push sauf avec --dry-run."
         )
 
-        val executable = compiler.compileExecutable(chunk)!!
+        val executable = compiler.compileExecutable(chunk)
         val result = executable.execute("exec_shell", mapOf("command" to "git push --dry-run"))
 
         assertTrue(result.allowed)
@@ -97,7 +97,7 @@ class ExecutableArtifactTest {
             content = "INTERDICTION FORMELLE de git push sans permission."
         )
 
-        val executable = compiler.compileExecutable(chunk)!!
+        val executable = compiler.compileExecutable(chunk)
         val result = executable.execute("exec_gradle", mapOf("task" to "git push origin main"))
 
         assertTrue(result.allowed)
@@ -114,7 +114,7 @@ class ExecutableArtifactTest {
         val executable = compiler.compileExecutable(chunk)
 
         assertNotNull(executable)
-        assertTrue(executable!!.payload is ArtifactPayload.GradleTaskPayload)
+        assertTrue(executable.payload is ArtifactPayload.GradleTaskPayload)
         val payload = executable.payload as ArtifactPayload.GradleTaskPayload
         assertEquals("generateArtifact", payload.taskName)
     }
@@ -127,7 +127,7 @@ class ExecutableArtifactTest {
             content = "Maximum 50k tokens EAGER (~3000 lignes)"
         )
 
-        val executable = compiler.compileExecutable(chunk)!!
+        val executable = compiler.compileExecutable(chunk)
 
         assertTrue(executable.payload is ArtifactPayload.ConstraintPayload)
         val payload = executable.payload as ArtifactPayload.ConstraintPayload
@@ -143,7 +143,7 @@ class ExecutableArtifactTest {
             content = ":date: 2026-06-23\n:session: 147"
         )
 
-        val executable = compiler.compileExecutable(chunk)!!
+        val executable = compiler.compileExecutable(chunk)
 
         assertTrue(executable.payload is ArtifactPayload.MetadataPayload)
         val payload = executable.payload as ArtifactPayload.MetadataPayload

@@ -77,7 +77,7 @@ class AgenticIngestor(
                 repository.insertChunk(chunk)
 
                 val executable = compiler.compileExecutable(chunk)
-                if (executable != null) {
+                if (compiler.shouldCompile(chunk)) {
                     artifactsCompiled++
                     executables.add(executable)
                 }

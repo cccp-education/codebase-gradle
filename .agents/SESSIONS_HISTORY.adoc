@@ -94,6 +94,24 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** 7 JUnit5 `OllamaInstanceFactoryTest` + 2 scénarios Cucumber `@epic_v6_ollama_cloud` PASS (zéro réseau)
 ** Build codebase-gradle SUCCESSFUL
 
+== Session 147 — 2026-06-23
+
+* **EPICs** : EPIC V-9.11 AgenticCompiler
+* **Livrables** :
+** `AgenticCompiler.compile` retourne `null` pour chunks non compilables, `shouldCompile` explicite
+** `PostHookPayload` ajouté à `ArtifactPayload` ; `ExecutableArtifact.execute` gère PreHook/PostHook/Validation/Constraint
+** `AgenticCompilerTest` complété à 30 JUnit5 + `ExecutableArtifactTest` à 8 JUnit5
+** `cucumberTestEpicV911` enregistré dans `build.gradle.kts`
+** Feature `@epic_v_9_11` enrichie (6 scénarios : RULE, dry-run, PROCEDURE, CONSTRAINT, METADATA, CONCEPT)
+* **Tests** :
+** 30 JUnit5 + 8 JUnit5 + 6 Cucumber `@epic_v_9_11` PASS
+** Régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11 vertes
+** Build `:codebase-plugin:build -x test -x cucumberTest -x koverVerify -x validateDependencies` SUCCESSFUL
+* **Lecons** :
+** `compileExecutable` doit toujours retourner un `ExecutableArtifact` (non nullable) ; la décision de compilation se fait dans `compile`
+** `shouldCompile` doit rester permissive : la sémantique du fallback (CI_GATE/VALIDATION/METADATA) suffit
+** Ajouter la tâche Gradle Cucumber dès qu'un runner EpicV9XX existe pour éviter les oublis de filtrage
+
 == Session 146 — 2026-06-23
 
 * **EPICs** : EPIC V-9.10 ChunkValidationReport

@@ -44,3 +44,25 @@ Feature: AgenticCompiler — Executable artifacts from governance chunks
     When I compile it into an executable artifact
     Then the executable artifact type is "CONSTRAINT_CHECK"
     And the constraint payload has max tokens 50000 and max lines 3000
+
+  @metadata
+  Scenario: METADATA compiles into a metadata payload
+    Given a governance chunk of type "METADATA" with verb "null" and content
+      """
+      :session: 147
+      :date: 2026-06-23
+      """
+    When I compile it into an executable artifact
+    Then the executable artifact type is "METADATA"
+    And the metadata payload has key "session" and value "147"
+
+  @prompt_template
+  Scenario: CONCEPT INTERDIRE compiles into a prompt template payload
+    Given a governance chunk of type "CONCEPT" with verb "INTERDIRE" and content
+      """
+      == Regles Absolues
+      INTERDICTION FORMELLE de commit sans permission.
+      """
+    When I compile it into an executable artifact
+    Then the executable artifact type is "PROMPT_TEMPLATE"
+    And the prompt template payload contains "INTERDICTION"

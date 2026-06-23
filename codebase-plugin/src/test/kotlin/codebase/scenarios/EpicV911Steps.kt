@@ -1,5 +1,6 @@
 package codebase.scenarios
 
+import codebase.koog.agentic.AgenticCompiler
 import codebase.koog.agentic.ArtifactPayload
 import codebase.koog.agentic.ArtifactType
 import codebase.koog.agentic.ChunkType
@@ -82,5 +83,34 @@ class EpicV911Steps(private val world: EpicV911World) {
         assertTrue(executable.payload is ArtifactPayload.ConstraintPayload)
         assertEquals(expectedTokens, executable.payload.maxTokens)
         assertEquals(expectedLines, executable.payload.maxLines)
+    }
+
+    @Then("the metadata payload has key {string} and value {string}")
+    fun `metadata payload has key and value`(expectedKey: String, expectedValue: String) {
+        val executable = world.lastExecutable ?: error("No executable artifact")
+        assertTrue(executable.payload is ArtifactPayload.MetadataPayload)
+        val payload = executable.payload
+        assertEquals(expectedKey, payload.metadataKey)
+        assertEquals(expectedValue, payload.metadataValue)
+    }
+
+    @Then("the prompt template payload contains {string}")
+    fun `prompt template payload contains`(keyword: String) {
+        val executable = world.lastExecutable ?: error("No executable artifact")
+        assertTrue(executable.payload is ArtifactPayload.PromptTemplatePayload)
+        val payload = executable.payload
+        assertTrue(
+            payload.promptText.contains(keyword, ignoreCase = true),
+            "Prompt text should contain '$keyword', got: ${payload.promptText}"
+        )
+    }
+
+    @Then("the artifact is considered compilable")
+    fun `artifact is considered compilable`() {
+        val chunk = world.lastChunk ?: error("No chunk set")
+        assertTrue(
+            AgenticCompiler().shouldCompile(chunk),
+            "Chunk should be considered compilable"
+        )
     }
 }

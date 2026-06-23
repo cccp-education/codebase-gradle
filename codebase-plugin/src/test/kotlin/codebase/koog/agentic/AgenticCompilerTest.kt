@@ -2,6 +2,7 @@ package codebase.koog.agentic
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -282,5 +283,61 @@ class AgenticCompilerTest {
         val artifact = compiler.compile(chunk)
         assertNotNull(artifact)
         assertEquals(ArtifactType.PROMPT_TEMPLATE, artifact!!.artifactType)
+    }
+
+    @Test
+    fun `should compile RULE with unexpected verb into CI_GATE fallback`() {
+        val chunk = buildChunk(
+            chunkType = ChunkType.RULE,
+            verb = TaxonomyVerb.GENERER,
+            content = "GENERER un rapport sans contrainte"
+        )
+
+        val artifact = compiler.compile(chunk)
+        assertNotNull(artifact)
+        assertEquals(ArtifactType.CI_GATE, artifact!!.artifactType)
+    }
+
+    @Test
+    fun `should include source chunk id in compiled artifact`() {
+        val chunk = buildChunk(
+            id = "rule-42",
+            chunkType = ChunkType.RULE,
+            verb = TaxonomyVerb.INTERDIRE,
+            content = "INTERDICTION FORMELLE de publish sans permission."
+        )
+
+        val artifact = compiler.compile(chunk)
+        assertNotNull(artifact)
+        assertEquals("rule-42", artifact!!.sourceChunkId)
+    }
+
+    @Test
+    fun `should compile RULE INTERDIRE gradle task into PRE_HOOK with exec_gradle tool`() {
+        val chunk = buildChunk(
+            chunkType = ChunkType.RULE,
+            verb = TaxonomyVerb.INTERDIRE,
+            content = "INTERDICTION FORMELLE de lancer ./gradlew publish sans permission."
+        )
+
+        val executable = compiler.compileExecutable(chunk)
+        assertTrue(executable.payload is ArtifactPayload.PreHookPayload)
+        val payload = executable.payload as ArtifactPayload.PreHookPayload
+        assertEquals("exec_gradle", payload.toolName)
+        assertTrue(payload.forbiddenPatterns.contains("publish"))
+    }
+
+    @Test
+    fun `should compile RULE INTERDIRE publish into POST_HOOK when verb mapping changes`() {
+        val chunk = buildChunk(
+            chunkType = ChunkType.RULE,
+            verb = TaxonomyVerb.INTERDIRE,
+            content = "NE JAMAIS publier sans validation CI."
+        )
+
+        val executable = compiler.compileExecutable(chunk)
+        assertEquals(ArtifactType.PRE_HOOK, executable.compiledArtifact.artifactType)
+        val payload = executable.payload as ArtifactPayload.PreHookPayload
+        assertTrue(payload.forbiddenPatterns.isNotEmpty())
     }
 }

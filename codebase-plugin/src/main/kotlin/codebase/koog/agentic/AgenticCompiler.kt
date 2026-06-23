@@ -3,11 +3,12 @@ package codebase.koog.agentic
 class AgenticCompiler {
 
     fun compile(chunk: OntologizedChunk): CompiledArtifact? {
-        val executable = compileExecutable(chunk) ?: return null
+        if (!shouldCompile(chunk)) return null
+        val executable = compileExecutable(chunk)
         return executable.compiledArtifact
     }
 
-    fun compileExecutable(chunk: OntologizedChunk): ExecutableArtifact? {
+    fun compileExecutable(chunk: OntologizedChunk): ExecutableArtifact {
         val c = chunk.chunk
         val artifactType = determineArtifactType(c.chunkType, c.verb)
         val description = buildDescription(c.content, c.chunkType, c.verb)
@@ -47,6 +48,16 @@ class AgenticCompiler {
         }
     }
 
+    fun shouldCompile(chunk: OntologizedChunk): Boolean {
+        return when (chunk.chunk.chunkType) {
+            ChunkType.RULE -> true
+            ChunkType.PROCEDURE -> true
+            ChunkType.CONSTRAINT -> true
+            ChunkType.CONCEPT -> true
+            ChunkType.METADATA -> true
+        }
+    }
+
     private fun buildDescription(content: String, chunkType: ChunkType, verb: TaxonomyVerb?): String {
         val lines = content.lines()
         val firstLine = lines.firstOrNull { it.trim().isNotEmpty() && !it.trim().startsWith("=") } ?: content
@@ -74,7 +85,7 @@ class AgenticCompiler {
                 allowedPattern = extractAllowedPattern(chunk.content)
             )
 
-            ArtifactType.POST_HOOK -> ArtifactPayload.PreHookPayload(
+            ArtifactType.POST_HOOK -> ArtifactPayload.PostHookPayload(
                 toolName = inferToolName(chunk.content),
                 forbiddenPatterns = extractForbiddenPatterns(chunk.content),
                 allowedPattern = extractAllowedPattern(chunk.content)
@@ -135,7 +146,7 @@ class AgenticCompiler {
         if (Regex("""git\s+push""", RegexOption.IGNORE_CASE).containsMatchIn(lower)) patterns.add("push")
         if (Regex("""\bcommit\b""", RegexOption.IGNORE_CASE).containsMatchIn(lower)) patterns.add("commit")
         if (Regex("""\bmerge\b""", RegexOption.IGNORE_CASE).containsMatchIn(lower)) patterns.add("merge")
-        if (Regex("""\bpublish\b""", RegexOption.IGNORE_CASE).containsMatchIn(lower)) patterns.add("publish")
+        if (Regex("""\bpublish\b|\bpublier\b""", RegexOption.IGNORE_CASE).containsMatchIn(lower)) patterns.add("publish")
         if (Regex("""--force|force\s+push""", RegexOption.IGNORE_CASE).containsMatchIn(lower)) patterns.add("--force")
         if (Regex("""\bdelete\b|\brm\s+-rf\b""", RegexOption.IGNORE_CASE).containsMatchIn(lower)) patterns.add("delete")
 

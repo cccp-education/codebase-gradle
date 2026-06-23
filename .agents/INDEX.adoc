@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-06-22
-*Version* : 1.1.9 (Session 142 — EPIC V-9.3 ScanAgent livré 8 JUnit5 + 6 Cucumber @epic_v_9_3, IngestGovernanceTask refactoré, Under-EPIC 1 complet 5/5)
+*Version* : 1.2.0 (Session 147 — EPIC V-9.11 AgenticCompiler livré : 30 JUnit5 + 8 ExecutableArtifactTest + 6 Cucumber @epic_v_9_11, zéro régression V-9.x)
 
 == Regles Absolues
 
@@ -33,6 +33,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 142 — EPIC V-9.3 ScanAgent livré : `ScanAgent` scanner récursif `.agents/` (ignore build/.git/.gradle/node_modules) + `ScannedFile` value object DDD + 8 JUnit5 + 6 Cucumber @epic_v_9_3 PASS + refactor `IngestGovernanceTask.collectGovernanceFiles` (liste hardcoded supprimée, 5 tests préservés). Under-EPIC 1 complet 5/5.
 | ✅ | Session 145 — EPIC V-9.9 ChunkValidationGate livré (`ChunkValidator` câblé dans `AgenticIngestor`, `IngestionReport` enrichi `chunksInvalid`/`validationErrors`, 3 JUnit5 + 2 Cucumber @epic_v_9_9 PASS, régressions V-9.3/9.5/9.7/9.8 vertes)
 | ✅ | Session 146 — EPIC V-9.10 ChunkValidationReport livré (`ChunkValidationErrorType`, `lineStart`/`lineEnd`, `validationErrorsByType` JSON, 3 JUnit5 + 1 test fonctionnel + 3 Cucumber @epic_v_9_10 PASS, zéro régression V-9.x)
+| ✅ | Session 147 — EPIC V-9.11 AgenticCompiler livré (`compile` retourne `null` pour chunks non compilables, `shouldCompile` explicite, `PostHookPayload`, `ExecutableArtifact.execute` PreHook/PostHook, 30 JUnit5 + 8 `ExecutableArtifactTest` + 6 Cucumber @epic_v_9_11 PASS, build propre)
 
 === EPICs & Projects
 

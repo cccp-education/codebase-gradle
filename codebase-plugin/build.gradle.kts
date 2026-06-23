@@ -144,6 +144,7 @@ val cucumberTaskSpecs = listOf(
     CucumberTaskSpec("cucumberTestEpicV98", "Runs Cucumber BDD tests — EPIC V-9.8 (Governance ingestion report) only", "codebase.scenarios.EpicV98CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicV99", "Runs Cucumber BDD tests — EPIC V-9.9 (ChunkValidationGate) only", "codebase.scenarios.EpicV99CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicV910", "Runs Cucumber BDD tests — EPIC V-9.10 (ChunkValidationReport) only", "codebase.scenarios.EpicV910CucumberRunner"),
+    CucumberTaskSpec("cucumberTestEpicV911", "Runs Cucumber BDD tests — EPIC V-9.11 (AgenticCompiler) only", "codebase.scenarios.EpicV911CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicV913", "Runs Cucumber BDD tests — EPIC V-9.13 (ToolRegistry enforcement hook) only", "codebase.scenarios.EpicV913CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicV914", "Runs Cucumber BDD tests — EPIC V-9.14 (Auto-activation governance enforcement hook) only", "codebase.scenarios.EpicV914CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicV915", "Runs Cucumber BDD tests — EPIC V-9.15 (Invalid chunk quarantine) only", "codebase.scenarios.EpicV915CucumberRunner"),
