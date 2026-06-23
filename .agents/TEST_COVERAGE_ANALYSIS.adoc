@@ -7,9 +7,9 @@
 
 | Type | nb Tests | Coverage | Status |
 |------|----------|----------|--------|
-| JUnit5 | 150+ | ~62% | EN COURS |
-| Cucumber | 36+ | ~52% | EN COURS |
-| Total | 186+ | — | — |
+| JUnit5 | 190+ | ~62% | EN COURS |
+| Cucumber | 41+ | ~52% | EN COURS |
+| Total | 231+ | — | — |
 
 == Tests unitaires (JUnit5)
 
@@ -36,6 +36,11 @@
 | OllamaInstanceFactoryTest | 7 | Factory ports 11437→11465, modèles cyclés, volumeTag | TERMINÉ (session 138) |
 | OllamaPoolKeyAdapterTest | 10 | Rotation quota/connexion, reset inactive | TERMINÉ (session 137) |
 | OllamaInstanceScannerTest | 7 | Scan ports vivants, fallback OLLAMA_POOL_PORTS | TERMINÉ (session 136) |
+| ChunkSnapshotTest | 9 | ChunkSnapshot DDD (empty, ids, entryOf, checksumOf, fromChunks, ordre) | TERMINÉ (session 156 V-9.20) |
+| ChunkDiffTest | 7 | ChunkDiff DDD (hasChanges, chunksToIngest) | TERMINÉ (session 156 V-9.20) |
+| ChunkChangeDetectorTest | 8 | ChunkChangeDetector service (diff par id + checksum, mixed, empty) | TERMINÉ (session 156 V-9.20) |
+| ChunkStateStoreTest | 9 | JsonChunkStateStore persistance (round-trip, empty, invalid, clear, dash) | TERMINÉ (session 156 V-9.20) |
+| ChunkIncrementalReportTest | 7 | ChunkIncrementalReport DDD (hasChanges, counts, from(ChunkDiff)) | TERMINÉ (session 156 V-9.20) |
 
 == Tests fonctionnels (Cucumber)
 
@@ -54,6 +59,7 @@
 | epic_v6_ollama_cloud.feature | 2 | Ollama cloud quota exceeded rotation (zéro réseau) | TERMINÉ (session 138) |
 | epic_v_9_10_chunk_validation_report.feature | 3 | Rapport d'erreurs de validation typées (sourceFile, lineStart/End, validationErrorsByType) | TERMINÉ (session 146) |
 | epic_v_9_11_agentic_compiler.feature | 6 | Compilation artefacts exécutables depuis chunks gouvernance (RULE→PRE_HOOK, PROCEDURE→GRADLE_TASK, CONSTRAINT, METADATA, CONCEPT) | TERMINÉ (session 147) |
+| epic_v_9_20_chunk_diff.feature | 5 | Chunk diff incrémental entre sessions (first run, unchanged, appended content, JSON, file+chunk independent) | TERMINÉ (session 156 V-9.20) |
 
 == Tests de regression
 
@@ -61,7 +67,7 @@
 |------|----------|--------|
 | EPIC Y (Agentic Literature Compiler) | 120+ | TERMINÉ |
 | EPIC V (Vibecoding) | 35+ | TERMINÉ |
-| EPIC V-9 (Vibecoding Gouvernance) | 40+ | EN COURS (V-9.1→V-9.11 livrés, V-9.12→V-9.15 à coder) |
+| EPIC V-9 (Vibecoding Gouvernance) | 85+ | EN COURS (V-9.1→V-9.20 livrés, Under-EPIC 5 complet) |
 
 == Performance & Benchmarks
 

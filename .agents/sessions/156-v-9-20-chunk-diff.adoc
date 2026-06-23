@@ -1,0 +1,100 @@
+= Session 156 — EPIC V-9.20 Diff/incrémental entre sessions (niveau chunk)
+
+:session: 156
+:date: 2026-06-23
+:epic: V-9.20
+:borough: Queens — codebase-gradle (N1)
+
+== Contexte
+
+Reprise sur EPIC V-9.20 après V-9.19 (session 155 — mode incrémental fichier).
+Mission : comparer les chunks stockés entre deux runs `ingestGovernance` pour
+détecter les changements de contenu intra-fichier (pas seulement fichier).
+Persister l'état des chunks (checksums) et produire un rapport de diff
+chunk-level : chunksAdded/chunksModified/chunksRemoved/chunksUnchanged.
+
+== Actions
+
+Baby-step DDD/TDD/BDD strict — unit → fonctionnel → Cucumber, 1 fichier à la
+fois, compilation entre chaque étape, séquentiel pur, zéro subagent.
+
+. `ChunkSnapshot` + `ChunkSnapshotEntry` (value objects DDD) — `fromChunks`
+  factory depuis `AgenticChunk` (id/sourceFile/sourceLines/checksum). 9 JUnit5
+  PASS.
+. `ChunkDiff` (value object) — added/modified/removed/unchanged +
+  `chunksToIngest()` + `hasChanges()`. 7 JUnit5 PASS.
+. `ChunkChangeDetector` (service DDD) — diff entre deux `ChunkSnapshot` par id
+  + checksum. 8 JUnit5 PASS.
+. `JsonChunkStateStore` (persistance JSON) — interface `ChunkStateStore` +
+  impl `JsonChunkStateStore` (parser regex 4 champs :
+  id/sourceFile/sourceLines/checksum). Fichier `build/governance/chunk-state.json`.
+  9 JUnit5 PASS.
+. `ChunkIncrementalReport` (value object DDD) —
+  chunksAdded/Modified/Removed/Unchanged + counts + `from(ChunkDiff)`. 7 JUnit5
+  PASS.
+. Câblage `IngestGovernanceTask` : `lastChunkIncrementalReport` getter,
+  `JsonChunkStateStore` load/save, `ChunkChangeDetector` diff,
+  `mergeChunkSnapshots` (fusion previous + current selon file incremental),
+  JSON `chunkIncremental` section. `GovernanceSummaryConfig.chunkIncremental`
+  + `CodebaseGovernanceExtension.chunkIncremental` + `CodebasePlugin` CLI
+  `-Pcodebase.governance.chunkIncremental=true` (refactor propre des 3
+  propriétés CLI via `project.provider`). `GovernanceIngestor.IngestResult`
+  enrichi de `chunkSnapshot`. 5 tests fonctionnels PASS.
+. Cucumber `@epic_v_9_20` : feature `epic_v_9_20_chunk_diff.feature` (5
+  scénarios), `EpicV920Steps`, `EpicV920CucumberRunner`, tâche
+  `cucumberTestEpicV920` dans `build.gradle.kts`. 5/5 Cucumber PASS.
+  `IngestGovernanceWorld` étendu (`lastChunkIncrementalReport`,
+  `runTask(chunkIncremental=...)`).
+
+== Commandes
+
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.ChunkSnapshotTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.ChunkDiffTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.ChunkChangeDetectorTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.ChunkStateStoreTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.ChunkIncrementalReportTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.IngestGovernanceTaskTest"
+./gradlew :codebase-plugin:cucumberTestEpicV920
+./gradlew :codebase-plugin:cucumberTestEpicV919 :codebase-plugin:cucumberTestEpicV918 ... :codebase-plugin:cucumberTestEpicV915
+./gradlew :codebase-plugin:cucumberTestEpicV93 ... :codebase-plugin:cucumberTestEpicV914
+----
+
+== Résultats
+
+* 9 + 7 + 8 + 9 + 7 = 40 JUnit5 unitaires PASS
+* 5 tests fonctionnels (IngestGovernanceTaskTest V-9_20) PASS
+* 5/5 Cucumber @epic_v_9_20 PASS
+* Régressions V-9.3 → V-9.19 Cucumber vertes
+* `compileKotlin` vert, `jar` vert
+
+== Leçons
+
+* Le parser regex de `JsonGovernanceStateStore` (V-9.19) ne gère que 2 champs
+  par objet. Pour `ChunkSnapshotEntry` (4 champs), extension du pattern regex
+  à 4 groupes capturants — même style maison, pas de Jackson ajouté.
+* `GovernanceIngestor.IngestResult` ne portait pas la `ChunkSnapshot` —
+  enrichi pour exposer l'état des chunks après ingestion (via
+  `InMemoryAgenticChunkRepository.listChunks`).
+* Le câblage CLI `CodebasePlugin` chaînait `orElse` (mutuellement exclusif) —
+  refactor en `project.provider` composant les 3 propriétés CLI
+  indépendamment (strictValidation + incremental + chunkIncremental).
+* `mergeChunkSnapshots` : en mode fichier incrémental, on retire les chunks
+  des fichiers modifiés/supprimés de la snapshot précédente, puis on ajoute
+  les nouveaux chunks. Les fichiers inchangés conservent leurs chunks
+  précédents (pas de réingestion).
+
+== Livrables
+
+* 5 fichiers production : `ChunkSnapshot.kt`, `ChunkDiff.kt`,
+  `ChunkChangeDetector.kt`, `ChunkStateStore.kt`, `ChunkIncrementalReport.kt`
+* 5 fichiers test unitaire : `ChunkSnapshotTest.kt`, `ChunkDiffTest.kt`,
+  `ChunkChangeDetectorTest.kt`, `ChunkStateStoreTest.kt`,
+  `ChunkIncrementalReportTest.kt`
+* 3 fichiers Cucumber : `epic_v_9_20_chunk_diff.feature`, `EpicV920Steps.kt`,
+  `EpicV920CucumberRunner.kt`
+* 8 fichiers modifiés : `IngestGovernanceTask.kt`, `GovernanceIngestor.kt`,
+  `GovernanceSummaryConfig.kt`, `CodebaseGovernanceExtension.kt`,
+  `CodebasePlugin.kt`, `build.gradle.kts`, `IngestGovernanceTaskTest.kt`,
+  `IngestGovernanceWorld.kt`

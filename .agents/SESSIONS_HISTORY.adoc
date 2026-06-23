@@ -128,3 +128,30 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 * **Lecons** :
 ** Garder `ValidationResult` stable mais le remplir d'objets métier typés plutôt que de String
 ** Le parser de line range doit tolérer `blank`, `single` et `start-end`
+
+== Session 156 — 2026-06-23
+
+* **EPICs** : EPIC V-9.20 Chunk diff incrémental entre sessions (niveau chunk)
+* **Livrables** :
+** `ChunkSnapshot`/`ChunkSnapshotEntry` DDD (fromChunks depuis AgenticChunk)
+** `ChunkDiff` DDD (added/modified/removed/unchanged + chunksToIngest)
+** `ChunkChangeDetector` service DDD (diff par id + checksum)
+** `JsonChunkStateStore` persistance JSON (build/governance/chunk-state.json, parser regex 4 champs)
+** `ChunkIncrementalReport` DDD (from(ChunkDiff), counts)
+** Câblage `IngestGovernanceTask.lastChunkIncrementalReport` + `mergeChunkSnapshots` + JSON `chunkIncremental`
+** `GovernanceSummaryConfig.chunkIncremental` + `CodebaseGovernanceExtension.chunkIncremental` + CLI `-Pcodebase.governance.chunkIncremental=true`
+** `GovernanceIngestor.IngestResult` enrichi `chunkSnapshot`
+** `CodebasePlugin` refactor 3 propriétés CLI via `project.provider` (composition indépendante)
+** Cucumber `@epic_v_9_20` (5 scénarios) + `EpicV920Steps` + `EpicV920CucumberRunner` + tâche `cucumberTestEpicV920`
+** `IngestGovernanceWorld` étendu (`lastChunkIncrementalReport`, `runTask(chunkIncremental=...)`)
+* **Tests** :
+** 40 JUnit5 unitaires (9 ChunkSnapshot + 7 ChunkDiff + 8 ChunkChangeDetector + 9 ChunkStateStore + 7 ChunkIncrementalReport)
+** 5 tests fonctionnels `IngestGovernanceTaskTest` V-9_20
+** 5/5 Cucumber `@epic_v_9_20` PASS
+** Régressions V-9.3 → V-9.19 Cucumber vertes
+** `compileKotlin` vert, `jar` vert
+* **Lecons** :
+** Le parser regex de V-9.19 (2 champs) étendu à 4 champs pour ChunkSnapshotEntry — même style maison, pas de Jackson
+** `GovernanceIngestor.IngestResult` ne portait pas la ChunkSnapshot — enrichi pour exposer l'état après ingestion
+** Le câblage CLI `orElse` chaîné (mutuellement exclusif) refactoré en `project.provider` composant les 3 propriétés CLI indépendamment
+** `mergeChunkSnapshots` : en mode fichier incrémental, retire les chunks des fichiers modifiés/supprimés, conserve les chunks des fichiers inchangés

@@ -40,6 +40,7 @@ class CodebasePlugin : Plugin<Project> {
         governanceExt.outputEnabled.convention(true)
         governanceExt.reportFormat.convention("json")
         governanceExt.incremental.convention(false)
+        governanceExt.chunkIncremental.convention(false)
 
         project.tasks.register(
             "collectFromCodebase",
@@ -102,18 +103,23 @@ class CodebasePlugin : Plugin<Project> {
             it.group = "generate"
             it.description = "Ingest governance EAGER files (AGENT.adoc, INDEX.adoc, BACKLOG.adoc) into AgenticIngestor (in-memory stub, EPIC V-LOCAL pont Y)"
             it.workspaceRoot.set(project.rootDir)
+            val strictProp = project.providers.gradleProperty("codebase.governance.strictValidation")
+            val incrementalProp = project.providers.gradleProperty("codebase.governance.incremental")
+            val chunkIncrementalProp = project.providers.gradleProperty("codebase.governance.chunkIncremental")
             it.governanceConfig.set(
-                project.providers.gradleProperty("codebase.governance.strictValidation")
-                    .map { value ->
-                        governanceExt.toConfig().copy(strictValidation = value.toBoolean())
+                project.provider {
+                    var config = governanceExt.toConfig()
+                    strictProp.orElse("").get().takeIf { v -> v.isNotEmpty() }?.let { v ->
+                        config = config.copy(strictValidation = v.toBoolean())
                     }
-                    .orElse(
-                        project.providers.gradleProperty("codebase.governance.incremental")
-                            .map { value ->
-                                governanceExt.toConfig().copy(incremental = value.toBoolean())
-                            }
-                            .orElse(governanceExt.toConfig())
-                    )
+                    incrementalProp.orElse("").get().takeIf { v -> v.isNotEmpty() }?.let { v ->
+                        config = config.copy(incremental = v.toBoolean())
+                    }
+                    chunkIncrementalProp.orElse("").get().takeIf { v -> v.isNotEmpty() }?.let { v ->
+                        config = config.copy(chunkIncremental = v.toBoolean())
+                    }
+                    config
+                }
             )
         }
 

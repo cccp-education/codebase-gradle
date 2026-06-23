@@ -54,6 +54,10 @@ abstract class IngestGovernanceTask : DefaultTask() {
     var lastIncrementalReport: IncrementalReport? = null
         private set
 
+    @get:Internal
+    var lastChunkIncrementalReport: ChunkIncrementalReport? = null
+        private set
+
     /**
      * Hook de blocage utilisable par [contracts.vibecoding.registry.ToolRegistry].
      * Retourne `null` tant que l'ingestion n'a pas produit d'executables PRE_HOOK.
@@ -153,7 +157,7 @@ abstract class IngestGovernanceTask : DefaultTask() {
 
         val result = if (config.incremental && pathsToIngest.isEmpty()) {
             log.info("[IngestGovernance] Incremental mode — no file changes detected, skipping ingestion")
-            GovernanceIngestor.IngestResult(IngestionReport(0, 0, 0, 0, 0), null)
+            GovernanceIngestor.IngestResult(IngestionReport(0, 0, 0, 0, 0), null, ChunkSnapshot.empty())
         } else if (config.incremental) {
             GovernanceIngestor(chunkValidator).ingestFiltered(root, pathsToIngest)
         } else {
@@ -163,6 +167,27 @@ abstract class IngestGovernanceTask : DefaultTask() {
         lastIngestionReport = result.report
         lastExecutor = result.executor
         lastIncrementalReport = incrementalReport
+
+        val chunkIncrementalReport: ChunkIncrementalReport? = if (config.chunkIncremental) {
+            val chunkStateStore = JsonChunkStateStore(
+                project.layout.buildDirectory.file("governance/chunk-state.json").get().asFile
+            )
+            val previousChunkSnapshot = chunkStateStore.load() ?: ChunkSnapshot.empty()
+            val currentChunkSnapshot = mergeChunkSnapshots(previousChunkSnapshot, result.chunkSnapshot, incrementalReport)
+            val chunkDetector = ChunkChangeDetector()
+            val chunkDiff = chunkDetector.diff(previousChunkSnapshot, currentChunkSnapshot)
+            val report = ChunkIncrementalReport.from(chunkDiff)
+            chunkStateStore.save(currentChunkSnapshot)
+            log.info(
+                "[IngestGovernance] Chunk Incremental — added={}, modified={}, removed={}, unchanged={}",
+                report.chunksAdded.size, report.chunksModified.size,
+                report.chunksRemoved.size, report.chunksUnchanged.size
+            )
+            report
+        } else {
+            null
+        }
+        lastChunkIncrementalReport = chunkIncrementalReport
 
         val taskNames = registerCompiledTasks(result.report.executables)
         if (taskNames.isNotEmpty()) {
@@ -193,12 +218,16 @@ abstract class IngestGovernanceTask : DefaultTask() {
 
         if (config.outputEnabled && output != null) {
             output.parentFile.mkdirs()
-            output.writeText(buildReportJson(result.report, incrementalReport), Charsets.UTF_8)
+            output.writeText(buildReportJson(result.report, incrementalReport, chunkIncrementalReport), Charsets.UTF_8)
             log.info("[IngestGovernance] Report written to {}", output.absolutePath)
         }
     }
 
-    private fun buildReportJson(report: IngestionReport, incremental: IncrementalReport? = null): String = buildString {
+    private fun buildReportJson(
+        report: IngestionReport,
+        incremental: IncrementalReport? = null,
+        chunkIncremental: ChunkIncrementalReport? = null
+    ): String = buildString {
         appendLine("{")
         appendLine("  \"filesScanned\": ${report.filesScanned},")
         appendLine("  \"chunksAdded\": ${report.chunksAdded},")
@@ -214,8 +243,13 @@ abstract class IngestGovernanceTask : DefaultTask() {
         if (incremental != null) {
             appendLine(",")
             appendLine("  \"incremental\": ${incrementalToJson(incremental)}")
-        } else {
+        } else if (chunkIncremental == null) {
             appendLine()
+        } else {
+            appendLine(",")
+        }
+        if (chunkIncremental != null) {
+            appendLine("  \"chunkIncremental\": ${chunkIncrementalToJson(chunkIncremental)}")
         }
         appendLine("}")
     }
@@ -227,6 +261,15 @@ abstract class IngestGovernanceTask : DefaultTask() {
         appendLine("    \"removed\": ${stringListToJson(report.removed)},")
         appendLine("    \"unchanged\": ${stringListToJson(report.unchanged)},")
         appendLine("    \"skippedDueToIncremental\": ${stringListToJson(report.skippedDueToIncremental)}")
+        append("  }")
+    }
+
+    private fun chunkIncrementalToJson(report: ChunkIncrementalReport): String = buildString {
+        appendLine("{")
+        appendLine("    \"chunksAdded\": ${stringListToJson(report.chunksAdded)},")
+        appendLine("    \"chunksModified\": ${stringListToJson(report.chunksModified)},")
+        appendLine("    \"chunksRemoved\": ${stringListToJson(report.chunksRemoved)},")
+        appendLine("    \"chunksUnchanged\": ${stringListToJson(report.chunksUnchanged)}")
         append("  }")
     }
 
@@ -297,5 +340,33 @@ abstract class IngestGovernanceTask : DefaultTask() {
             if (index < entries.size - 1) append(", ")
         }
         append("}")
+    }
+
+    /**
+     * Reconstruit la snapshot de chunks courante en fusionnant l'état précédent
+     * avec les chunks nouvellement ingérés.
+     *
+     * - En mode fichier incrémental : on retire de la snapshot précédente les
+     *   chunks des fichiers modifiés/supprimés, puis on ajoute les nouveaux
+     *   chunks des fichiers (ré)ingérés. Les fichiers inchangés conservent
+     *   leurs chunks précédents.
+     * - En mode non-incrémental fichier : tous les fichiers sont réingérés,
+     *   la snapshot courante est simplement celle produite par l'ingestor.
+     * - En mode chunk incrémental seul (sans fichier incrémental) : tous les
+     *   fichiers sont réingérés, la snapshot est celle de l'ingestor.
+     */
+    private fun mergeChunkSnapshots(
+        previous: ChunkSnapshot,
+        current: ChunkSnapshot,
+        fileIncremental: IncrementalReport?
+    ): ChunkSnapshot {
+        if (fileIncremental == null) return current
+        val removedPaths = fileIncremental.removed.toSet() + fileIncremental.modified.toSet()
+        val kept = previous.entries.filter { it.sourceFile !in removedPaths }
+        val merged = kept.associateBy { it.id }.toMutableMap()
+        for (entry in current.entries) {
+            merged[entry.id] = entry
+        }
+        return ChunkSnapshot(merged.values.toList())
     }
 }

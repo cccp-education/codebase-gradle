@@ -1,14 +1,19 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 156
-:session: 156
+= Prompt de Reprise — Codebase (Queens N1) — Session 157
+:session: 157
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 155 — EPIC V-9.19 Auto-detection livré (GovernanceFileSnapshot + GovernanceFileDiff + GovernanceFileChangeDetector + JsonGovernanceStateStore + IncrementalReport, mode incrémental câblé IngestGovernanceTask + extension DSL + CLI, 15 unit + 7 fonctionnel + 5 Cucumber @epic_v_9_19 PASS, régressions V-9.3→V-9.18 vertes, contrainte Ollama globale sauvegardée AGENTS.adoc + AGENT.adoc, 52/52 inférences gpt-oss:120b-cloud/gemma4:31b-cloud PASS)
+:session_precedente: 156 — EPIC V-9.20 Chunk diff incrémental livré (ChunkSnapshot + ChunkDiff + ChunkChangeDetector + JsonChunkStateStore + ChunkIncrementalReport DDD, câblage IngestGovernanceTask + extension DSL + CLI -Pcodebase.governance.chunkIncremental, 40 unit + 5 fonctionnel + 5 Cucumber @epic_v_9_20 PASS, régressions V-9.3→V-9.19 vertes)
 
-== Mission Session 156
+== Mission Session 157
 
-1. Attaquer V-9.20 Diff/incrémental entre sessions — comparer les chunks stockés entre deux runs `ingestGovernance` pour détecter les changements de contenu (pas seulement fichiers). Persister l'état des chunks (checksums) et produire un rapport de diff entre sessions (chunksAdded/chunksModified/chunksRemoved/chunksUnchanged au niveau chunk, pas fichier).
-2. Coder en baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber.
-3. Préserver V-9.3, V-9.5, V-9.7, V-9.8, V-9.9, V-9.10, V-9.11, V-9.13, V-9.14, V-9.15, V-9.16, V-9.17, V-9.18, V-9.19 et tous les tests `ToolRegistry` existants (zéro régression).
-4. `./gradlew :codebase-plugin:compileKotlin` doit rester vert entre chaque fichier modifié.
+1. V-9.20 terminé — inspecter le backlog EPIC V-9 Under-EPIC 5 restant.
+   Under-EPIC 5 (Qualité et Robustesse) est complet (V-9.15→V-9.20 tous livrés).
+   Vérifier s'il reste des items V-9.21+ ou si EPIC V-9 peut être clôturé.
+2. Si EPIC V-9 clôturable : marquer CLOSED dans INDEX.adoc + BACKLOG.adoc,
+   rédiger bilan EPIC V-9 (sessions 084-156, 20 items livrés).
+3. Sinon : attaquer l'item V-9.21 suivant en baby-step DDD/TDD/BDD.
+4. Coder en baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber.
+5. Préserver V-9.3→V-9.20 et tous les tests existants (zéro régression).
+6. `./gradlew :codebase-plugin:compileKotlin` doit rester vert entre chaque fichier modifié.
 
 == Méthodologie
 

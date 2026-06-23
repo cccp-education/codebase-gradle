@@ -12,6 +12,7 @@ import org.gradle.api.provider.Property
  *     outputEnabled.set(true)
  *     reportFormat.set("json")
  *     incremental.set(true)
+ *     chunkIncremental.set(true)
  * }
  * ```
  *
@@ -19,6 +20,7 @@ import org.gradle.api.provider.Property
  * ```
  * ./gradlew ingestGovernance -Pcodebase.governance.strictValidation=true
  * ./gradlew ingestGovernance -Pcodebase.governance.incremental=true
+ * ./gradlew ingestGovernance -Pcodebase.governance.chunkIncremental=true
  * ```
  */
 abstract class CodebaseGovernanceExtension {
@@ -50,12 +52,23 @@ abstract class CodebaseGovernanceExtension {
     abstract val incremental: Property<Boolean>
 
     /**
+     * Active le mode incrémental au niveau chunk : compare les checksums des
+     * chunks stockés entre deux runs `ingestGovernance` pour détecter les
+     * changements de contenu intra-fichier (pas seulement fichier). La snapshot
+     * de l'état des chunks est persistée dans
+     * `build/governance/chunk-state.json`.
+     * Défaut : `false` (rétrocompatible).
+     */
+    abstract val chunkIncremental: Property<Boolean>
+
+    /**
      * Expose une snapshot immuable du DSL sous forme de modèle DDD.
      */
     fun toConfig(): GovernanceSummaryConfig = GovernanceSummaryConfig(
         strictValidation = strictValidation.getOrElse(false),
         outputEnabled = outputEnabled.getOrElse(true),
         reportFormat = reportFormat.getOrElse("json"),
-        incremental = incremental.getOrElse(false)
+        incremental = incremental.getOrElse(false),
+        chunkIncremental = chunkIncremental.getOrElse(false)
     )
 }

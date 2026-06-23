@@ -27,8 +27,9 @@ class GovernanceIngestor(
 
         val report = kotlinx.coroutines.runBlocking { ingestor.ingest(files) }
         val executor = if (report.executables.isNotEmpty()) AgenticExecutor(report.executables) else null
+        val chunkSnapshot = chunkSnapshotFrom(repository)
 
-        return IngestResult(report, executor)
+        return IngestResult(report, executor, chunkSnapshot)
     }
 
     /**
@@ -48,9 +49,15 @@ class GovernanceIngestor(
 
         val report = kotlinx.coroutines.runBlocking { ingestor.ingest(files) }
         val executor = if (report.executables.isNotEmpty()) AgenticExecutor(report.executables) else null
+        val chunkSnapshot = chunkSnapshotFrom(repository)
 
-        return IngestResult(report, executor)
+        return IngestResult(report, executor, chunkSnapshot)
     }
+
+    private fun chunkSnapshotFrom(repository: InMemoryAgenticChunkRepository): ChunkSnapshot =
+        kotlinx.coroutines.runBlocking {
+            ChunkSnapshot.fromChunks(repository.listChunks(Int.MAX_VALUE).map { it.chunk })
+        }
 
     private fun collectGovernanceFiles(projectDir: File): List<Pair<String, String>> {
         val scanAgent = ScanAgent()
@@ -59,6 +66,7 @@ class GovernanceIngestor(
 
     data class IngestResult(
         val report: IngestionReport,
-        val executor: AgenticExecutor?
+        val executor: AgenticExecutor?,
+        val chunkSnapshot: ChunkSnapshot
     )
 }

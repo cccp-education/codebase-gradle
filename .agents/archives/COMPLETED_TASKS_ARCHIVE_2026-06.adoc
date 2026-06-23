@@ -105,3 +105,20 @@
 * Pivot stratégique : priorité donnée à la boucle vibecoding locale auto-alimentée (EPIC V-LOCAL) et au pont vers la gouvernance augmentée (EPIC Y).
 * Session 134 : anti-pattern détecté — un artefact N0 supprimé de workspace-bom peut encore être référencé via MavenLocal par d'autres boroughs. Le build compile mais la publication Central casse.
 * Session 138 : évolution backward-compatible d'un contrat N0 publié (`LlmInstance.volumeTag`) via champ nullable + `mavenLocal`, sans publication Central immédiate.
+
+== Session 156 — EPIC V-9.20 Chunk diff incrémental entre sessions
+
+* **Type** : Feature EPIC V-9 Under-EPIC 5
+* **Livrables** :
+** 5 value objects/services DDD : `ChunkSnapshot`/`ChunkSnapshotEntry`, `ChunkDiff`, `ChunkChangeDetector`, `JsonChunkStateStore`, `ChunkIncrementalReport`
+** Câblage `IngestGovernanceTask` : `lastChunkIncrementalReport`, `mergeChunkSnapshots`, JSON `chunkIncremental`
+** `GovernanceSummaryConfig.chunkIncremental` + `CodebaseGovernanceExtension.chunkIncremental` + CLI `-Pcodebase.governance.chunkIncremental=true`
+** `GovernanceIngestor.IngestResult` enrichi `chunkSnapshot`
+** `CodebasePlugin` refactor 3 propriétés CLI via `project.provider`
+** Cucumber `@epic_v_9_20` (5 scénarios) + Runner + Steps + tâche `cucumberTestEpicV920`
+** `IngestGovernanceWorld` étendu
+* **Commandes clés** :
+** `./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.ChunkSnapshotTest"`
+** `./gradlew :codebase-plugin:cucumberTestEpicV920`
+** `./gradlew :codebase-plugin:jar`
+* **Statut** : ✅ Terminé
