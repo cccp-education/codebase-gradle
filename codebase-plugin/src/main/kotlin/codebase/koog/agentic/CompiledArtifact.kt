@@ -16,5 +16,6 @@ data class CompiledArtifact(
     val artifactType: ArtifactType,
     val description: String,
     val targetHint: String?,
-    val confidence: Double
+    val confidence: Double,
+    val payload: ArtifactPayload? = null
 )

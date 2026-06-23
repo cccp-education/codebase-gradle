@@ -17,6 +17,13 @@ class AgenticChunkEnforcement {
             val chunk = chunkMap[artifact.sourceChunkId] ?: continue
             if (chunk.chunk.verb != TaxonomyVerb.INTERDIRE) continue
 
+            val payloadRules = extractRulesFromPayload(artifact)
+            if (payloadRules.isNotEmpty()) {
+                rules.addAll(payloadRules)
+                registered += payloadRules.size
+                continue
+            }
+
             val rules = extractRules(chunk, artifact)
             rules.forEach { rule ->
                 this.rules.add(rule)
@@ -73,6 +80,22 @@ class AgenticChunkEnforcement {
                 forbiddenPattern = pattern,
                 allowedPattern = allowedPattern,
                 toolName = toolName,
+                description = artifact.description
+            )
+        }
+    }
+
+    private fun extractRulesFromPayload(artifact: CompiledArtifact): List<EnforcementRule> {
+        val payload = artifact.payload as? ArtifactPayload.PreHookPayload ?: return emptyList()
+        if (payload.forbiddenPatterns.isEmpty()) return emptyList()
+
+        return payload.forbiddenPatterns.map { pattern ->
+            EnforcementRule(
+                sourceChunkId = artifact.sourceChunkId,
+                verb = TaxonomyVerb.INTERDIRE,
+                forbiddenPattern = pattern,
+                allowedPattern = payload.allowedPattern,
+                toolName = payload.toolName,
                 description = artifact.description
             )
         }

@@ -1,7 +1,7 @@
 = INDEX.adoc — Codebase Gradle (Queens N1)
 :date: 2026-06-23
-:session_en_cours: 145
-:session_precedente: 144 — EPIC V-9.8 Governance ingestion report livré (10 JUnit5 + 3 Cucumber @epic_v_9_8 PASS)
+:session_en_cours: 147
+:session_precedente: 146 — EPIC V-9.10 ChunkValidationReport livré (`ChunkValidationErrorType`, `lineStart`/`lineEnd`, `validationErrorsByType` JSON, 3 JUnit5 + 1 test fonctionnel + 3 Cucumber @epic_v_9_10 PASS, zéro régression V-9.x)
 
 == Roadmap EPICs
 
@@ -46,8 +46,8 @@
 | 136-139
 
 | EPIC V-9 Gouvernance Agentique
-| EN COURS (4/35 — Under-EPIC 1 complet V-9.1→V-9.5 ; V-9.6 déjà livré par EPIC Y-2 ; V-9.7 GovernanceOntologizer ✅ ; V-9.8 Governance ingestion report ✅ ; V-9.9 ChunkValidationGate livré session 145)
-| 141-145
+| EN COURS (5/35 — Under-EPIC 1 complet V-9.1→V-9.5 ; V-9.6 déjà livré par EPIC Y-2 ; V-9.7 GovernanceOntologizer ✅ ; V-9.8 Governance ingestion report ✅ ; V-9.9 ChunkValidationGate ✅ ; V-9.10 ChunkValidationReport ✅ ; V-9.11 AgenticCompiler exécutable livré session 147)
+| 141-147
 
 | EPIC 9 Opencode Augmenté
 | ✅ TERMINE
@@ -113,6 +113,8 @@
 == Sessions Récentes
 
 | Session | Date | EPIC | Résultat
+| 147 | 2026-06-23 | EPIC V-9 | V-9.11 AgenticCompiler exécutable — `ExecutableArtifact` + `ArtifactPayload` + `ExecutionResult`, `AgenticCompiler.compileExecutable()`, `AgenticChunkEnforcement` consomme PreHookPayload, 8 JUnit5 + 4 Cucumber @epic_v_9_11 PASS, zéro régression V-9.3/9.5/9.7/9.8/9.9/9.10/AgenticCompilerTest/AgenticChunkEnforcementTest ✅
+| 146 | 2026-06-23 | EPIC V-9 | V-9.10 ChunkValidationReport — `ChunkValidationErrorType`, `lineStart`/`lineEnd`, `validationErrorsByType` JSON, 3 JUnit5 + 1 test fonctionnel + 3 Cucumber @epic_v_9_10 PASS ✅
 | 145 | 2026-06-23 | EPIC V-9 | V-9.9 ChunkValidationGate — `ChunkValidator` câblé dans `AgenticIngestor`, `IngestionReport` enrichi `chunksInvalid`/`validationErrors`, JSON enrichi, 3 JUnit5 + 2 Cucumber @epic_v_9_9 PASS, régressions V-9.3/9.5/9.7/9.8 vertes. BACKLOG.adoc synchronisé ✅
 | 144 | 2026-06-23 | EPIC V-9 | V-9.8 Governance ingestion report — `GovernanceOntologizer` intégré dans `AgenticIngestor`/`IngestGovernanceTask`, `IngestionReport` enrichi `sectionsAdded`/`sectionsTotal`, JSON enrichi, tâches Cucumber V-9.3/9.5/9.7/9.8 enregistrées. 10 JUnit5 + 3 Cucumber @epic_v_9_8 PASS ✅
 | 143 | 2026-06-22 | EPIC V-9 | V-9.7 GovernanceOntologizer — 8 JUnit5 + 7 Cucumber @epic_v_9_7 PASS ✅ (V-9.6 déjà livré par EPIC Y-2)

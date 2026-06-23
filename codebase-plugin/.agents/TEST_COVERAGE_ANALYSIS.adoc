@@ -1,12 +1,11 @@
-= TEST_COVERAGE_ANALYSIS — Session 145
+= TEST_COVERAGE_ANALYSIS — Session 147
 :date: 2026-06-23
-:epic: EPIC V-9 — V-9.9 ChunkValidationGate (baby-step DDD/TDD/BDD)
+:epic: EPIC V-9 — V-9.11 AgenticCompiler : artefacts exécutables (baby-step DDD/TDD/BDD)
 
 == Contexte
 
-PROMPT_REPRISE 145 demandait d'identifier le prochain sous-item d'EPIC V-9.
-L'archive de cadrage session 084 n'étant pas disponible, l'Under-EPIC 3 a été déduit
-de l'état du code : `ChunkValidator.kt` existait mais n'était pas câblé dans `AgenticIngestor`.
+PROMPT_REPRISE 147 demandait d'attaquer V-9.11 : transformer un chunk ontologisé en artefact exécutable.
+L'Under-EPIC 2 (artefacts exécutables) était le prochain item logique après V-9.10.
 
 == Nouveaux fichiers source
 
@@ -14,9 +13,13 @@ de l'état du code : `ChunkValidator.kt` existait mais n'était pas câblé dans
 |===
 | Fichier | Rôle
 
-| `test/kotlin/scenarios/EpicV99CucumberRunner.kt` | Runner Cucumber @epic_v_9_9
-| `test/features/epic_v_9_9_governance_validation_gate.feature` | Feature 2 scénarios : 0 invalides sur fichiers valides, JSON counters
-| `sessions/145-epic_v9_9_chunk_validation_gate.adoc` | Archive session 145
+| `main/kotlin/koog/agentic/ExecutableArtifact.kt` | `ArtifactPayload` sealed, `ExecutionResult`, `ExecutableArtifact.execute()`
+| `test/kotlin/koog/agentic/ExecutableArtifactTest.kt` | 8 JUnit5 : PreHook, block/allow, GradleTask, Constraint, Metadata, backward compat
+| `test/kotlin/scenarios/EpicV911CucumberRunner.kt` | Runner Cucumber @epic_v_9_11
+| `test/kotlin/scenarios/EpicV911World.kt` | World Cucumber V-9.11
+| `test/kotlin/scenarios/EpicV911Steps.kt` | Steps Cucumber V-9.11
+| `test/features/epic_v_9_11_agentic_compiler.feature` | Feature 4 scénarios : PreHook bloquant, exception dry-run, GradleTask, Constraint bounds
+| `sessions/147-epic_v9_11_agentic_compiler_executable.adoc` | Archive session 147
 |===
 
 == Fichiers source modifiés
@@ -25,13 +28,12 @@ de l'état du code : `ChunkValidator.kt` existait mais n'était pas câblé dans
 |===
 | Fichier | Changement
 
-| `BACKLOG.adoc` | Section EPIC V-9 reconstruite et synchronisée avec l'état du code (Under-EPIC 1/2/3)
-| `koog/agentic/AgenticIngestor.kt` | `IngestionReport` : ajout `chunksInvalid` + `validationErrors`; `ChunkValidator` injecté; rejet avant stockage
-| `koog/agentic/ChunkValidator.kt` | `class` → `open class` et `fun validate` → `open fun validate` (testability)
-| `koog/agentic/IngestGovernanceTask.kt` | JSON de sortie enrichi `chunksInvalid` + `validationErrors`
-| `test/kotlin/koog/agentic/AgenticIngestorTest.kt` | +3 JUnit5 (invalid chunks, repo sanity, zero invalid)
-| `test/kotlin/scenarios/IngestGovernanceSteps.kt` | +2 steps Cucumber (chunks invalid, validation errors count)
-| `build.gradle.kts` | Enregistrement `cucumberTestEpicV99`
+| `koog/agentic/CompiledArtifact.kt` | Ajout `payload: ArtifactPayload? = null` (compatibilité source)
+| `koog/agentic/AgenticCompiler.kt` | `compile()` retourne `CompiledArtifact` avec payload ; ajout `compileExecutable()` ; `buildPayload()` extrait patterns/taskName/metadata/bounds
+| `koog/agentic/AgenticChunkEnforcement.kt` | Consommation prioritaire du `PreHookPayload` du compiler, fallback legacy
+| `PROMPT_REPRISE.adoc` | Mission N+1 (V-9.12 AgenticExecutor)
+| `.agents/INDEX.adoc` | Statut EPIC V-9 mis à jour 5/35, sessions récentes
+| `.agents/SESSIONS_HISTORY.adoc` | Entrée session 147
 |===
 
 == Tests
@@ -39,10 +41,16 @@ de l'état du code : `ChunkValidator.kt` existait mais n'était pas câblé dans
 |===
 | Scope | Résultat
 
-| `AgenticIngestorTest` | ✅ 10/10 PASS (7 existants + 3 nouveaux)
+| `ExecutableArtifactTest` | ✅ 8/8 PASS
+| `AgenticCompilerTest` | ✅ 16/16 PASS (zéro régression Y-4)
+| `AgenticChunkEnforcementTest` | ✅ 10/10 PASS
+| `AgenticIngestorTest` | ✅ 10/10 PASS (zéro régression)
 | `IngestGovernanceTaskTest` | ✅ 7/7 PASS (zéro régression)
 | `GovernanceOntologizerTest` | ✅ 8/8 PASS (zéro régression)
-| `EpicV99CucumberRunner` (2 scénarios @epic_v_9_9) | ✅ 2/2 PASS
+| `ChunkValidatorTest` | ✅ 10/10 PASS (zéro régression)
+| `EpicV911CucumberRunner` (4 scénarios @epic_v_9_11) | ✅ 4/4 PASS
+| `EpicV910CucumberRunner` (3 scénarios @epic_v_9_10) | ✅ 3/3 PASS (régression)
+| `EpicV99CucumberRunner` (2 scénarios @epic_v_9_9) | ✅ 2/2 PASS (régression)
 | `EpicV98CucumberRunner` (3 scénarios @epic_v_9_8) | ✅ 3/3 PASS (régression)
 | `EpicV97CucumberRunner` (7 scénarios @epic_v_9_7) | ✅ 7/7 PASS (régression)
 | `EpicV95CucumberRunner` (5 scénarios @epic_v_9_5) | ✅ 5/5 PASS (régression)
@@ -52,12 +60,12 @@ de l'état du code : `ChunkValidator.kt` existait mais n'était pas câblé dans
 | Régression tests préexistants | 0
 |===
 
-== Total session 145
+== Total session 147
 
-- JUnit5 : 3 nouveaux PASS
-- Cucumber : 2 scénarios / 7 steps PASS (@epic_v_9_9)
+- JUnit5 : 8 nouveaux PASS
+- Cucumber : 4 scénarios / 16 steps PASS (@epic_v_9_11)
 - Build : propre
 - Zéro réseau, zéro Testcontainers
-- BACKLOG synchronisé
+- BACKLOG non modifié (EPIC V-9 déjà synchronisé)
 
 '''

@@ -1,0 +1,54 @@
+= Session 147 — EPIC V-9.11 AgenticCompiler : artefacts exécutables
+:session: 147
+:date: 2026-06-23
+:borough: Queens — codebase-gradle (N1)
+
+== Contexte
+
+Mission issue de `PROMPT_REPRISE.adoc` session 147 :
+attaquer V-9.11 AgenticCompiler — transformer un chunk ontologisé en artefact exécutable (règle/procédure/contrainte).
+
+== Actions
+
+. Lecture EAGER : `AGENT.adoc`, `.agents/INDEX.adoc`, `PROMPT_REPRISE.adoc`, `BACKLOG.adoc`.
+. Audit de l'existant : `AgenticCompiler.kt` (EPIC Y-4) produisait des `CompiledArtifact` statiques sans capacité d'exécution ; `AgenticChunkEnforcement.kt` ré-extraitait les patterns à la main.
+. Ajout de `ExecutableArtifact.kt` (src/main) :
+  * `ArtifactPayload` sealed avec `PreHookPayload`, `GradleTaskPayload`, `ValidationPayload`, `ConstraintPayload`, `MetadataPayload`, `PromptTemplatePayload`.
+  * `ExecutionResult` (allowed/blocked + ruleId/reason).
+  * `ExecutableArtifact.execute(toolName, args)` : bloque `exec_shell`/`exec_gradle` selon patterns interdits et exception autorisée.
+. Enrichissement de `CompiledArtifact` avec champ `payload: ArtifactPayload? = null` (compatibilité source).
+. Refactor de `AgenticCompiler` :
+  * `compile()` retourne un `CompiledArtifact` avec payload.
+  * `compileExecutable()` retourne un `ExecutableArtifact`.
+  * `buildPayload()` extrait patterns, toolName, taskName, metadata, bounds.
+. Refactor de `AgenticChunkEnforcement` pour consommer le `PreHookPayload` du compiler avant de fallback sur l'extraction legacy.
+. Tests JUnit5 `ExecutableArtifactTest.kt` : 8 tests (PreHook, block/allow, GradleTask, Constraint, Metadata, backward compat).
+. Tests Cucumber V-9.11 : `epic_v_9_11_agentic_compiler.feature` (4 scénarios), `EpicV911CucumberRunner.kt`, `EpicV911World.kt`, `EpicV911Steps.kt`.
+. Régressions V-9.3/9.5/9.7/9.8/9.9/9.10 + `AgenticCompilerTest` + `AgenticChunkEnforcementTest` : vert.
+
+== Commandes
+
+[source,shell]
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.ExecutableArtifactTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.AgenticCompilerTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.AgenticChunkEnforcementTest"
+./gradlew :codebase-plugin:test --tests "codebase.scenarios.EpicV911CucumberRunner"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.*" --tests "codebase.scenarios.EpicV93CucumberRunner" --tests "codebase.scenarios.EpicV95CucumberRunner" --tests "codebase.scenarios.EpicV97CucumberRunner" --tests "codebase.scenarios.EpicV98CucumberRunner" --tests "codebase.scenarios.EpicV99CucumberRunner" --tests "codebase.scenarios.EpicV910CucumberRunner" --tests "codebase.scenarios.EpicV911CucumberRunner"
+----
+
+== Résultats
+
+* Compilation : verte.
+* `ExecutableArtifactTest` : 8/8 PASS.
+* `AgenticCompilerTest` : 16/16 PASS (zéro régression Y-4).
+* `AgenticChunkEnforcementTest` : 10/10 PASS.
+* Cucumber @epic_v_9_11 : 4 scénarios / 16 steps PASS.
+* Régressions V-9.x : vertes.
+
+== Leçons
+
+* Garder `CompiledArtifact` comme data class centrale mais lui adjoindre un `payload` évite de casser les consommateurs existants (enforcement, ingestion report).
+* Le pattern `compileExecutable()` permet de séparer la description de l'artefact de sa logique d'exécution.
+* Prochaine étape naturelle : câbler `ExecutableArtifact` dans `AgenticIngestor` pour stocker/exécuter les règles directement depuis le rapport d'ingestion (V-9.12).
