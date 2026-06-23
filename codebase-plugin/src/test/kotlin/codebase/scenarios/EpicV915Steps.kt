@@ -16,6 +16,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class EpicV915Steps {
@@ -24,13 +25,17 @@ class EpicV915Steps {
     private var lastReport: codebase.koog.agentic.IngestionReport? = null
     private var lastOutputFile: File? = null
     private var customValidator: ChunkValidator? = null
+    private var strictValidationEnabled: Boolean = false
+    private var lastException: Throwable? = null
 
-    @Before("@epic_v_9_15")
+    @Before("@epic_v_9_15 or @epic_v_9_16")
     fun reset() {
-        tempDir = Files.createTempDirectory("epic-v-9-15-")
+        tempDir = Files.createTempDirectory("epic-v-9-")
         lastReport = null
         lastOutputFile = null
         customValidator = null
+        strictValidationEnabled = false
+        lastException = null
     }
 
     @Given("a quarantine test project with file {string} containing")
@@ -89,10 +94,37 @@ class EpicV915Steps {
         lastOutputFile = outputFile
     }
 
+    @When("I run IngestGovernanceTask with strict validation enabled")
+    fun `run ingest governance task with strict validation`() {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-v9-16-strict")
+            .build()
+
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+            it.strictValidation.set(true)
+            customValidator?.let { validator -> it.chunkValidator = validator }
+        }.get()
+
+        try {
+            task.executeIngest()
+            lastReport = task.lastIngestionReport
+        } catch (e: Throwable) {
+            lastException = e
+        }
+    }
+
     @Then("the ingestion report should contain quarantined chunks")
     fun `report contains quarantined chunks`() {
         val report = lastReport ?: error("No IngestionReport captured")
         assertTrue(report.invalidChunks.isNotEmpty(), "Expected quarantined chunks in report")
+    }
+
+    @Then("the ingestion report should contain no quarantined chunks")
+    fun `report contains no quarantined chunks`() {
+        val report = lastReport ?: error("No IngestionReport captured")
+        assertTrue(report.invalidChunks.isEmpty(), "Expected no quarantined chunks in report")
     }
 
     @Then("each quarantined chunk should have at least one error")
@@ -100,6 +132,25 @@ class EpicV915Steps {
         val report = lastReport ?: error("No IngestionReport captured")
         assertTrue(report.invalidChunks.all { it.errors.isNotEmpty() },
             "Every quarantined chunk should carry validation errors")
+    }
+
+    @Then("the task should succeed")
+    fun `task should succeed`() {
+        assertNull(lastException, "Task should not have thrown an exception")
+    }
+
+    @Then("the task should fail with a strict validation error")
+    fun `task should fail with strict validation error`() {
+        assertNotNull(lastException, "Task should have thrown an exception")
+        assertTrue(lastException!!.message!!.contains("strict validation"),
+            "Exception should mention strict validation, but was: ${lastException!!.message}")
+    }
+
+    @Then("the error should mention the quarantined chunk error type")
+    fun `error should mention quarantined chunk error type`() {
+        assertNotNull(lastException, "Task should have thrown an exception")
+        assertTrue(lastException!!.message!!.contains("CHECKSUM_MISMATCH"),
+            "Exception should mention CHECKSUM_MISMATCH, but was: ${lastException!!.message}")
     }
 
     @Then("the output file should contain {string}")

@@ -976,7 +976,7 @@ _Pourquoi_ : Transformer la littérature agentique (AGENT.adoc, INDEX.adoc, BACK
 === Under-EPIC 5 — Qualité et Robustesse (backlog)
 
 * [x] V-9.15 InvalidChunkQuarantine — port `InvalidChunkRepository` + implémentations `InMemoryInvalidChunkRepository` et `R2dbcInvalidChunkRepository` (migration V4) + `InvalidChunkQuarantine` câblé dans `AgenticIngestor`, `IngestionReport.invalidChunks` + JSON. 12 JUnit5 + 2 Cucumber @epic_v_9_15 PASS (session 151).
-* [ ] V-9.16 StrictValidationMode — option Gradle `strictValidation=true` pour faire échouer la tâche si des chunks invalides sont détectés.
+* [x] V-9.16 StrictValidationMode — option Gradle `strictValidation=true` pour faire échouer la tâche si des chunks invalides sont détectés. Livré session 152 : `strictValidation: Property<Boolean>` dans `IngestGovernanceTask`, `GradleException` si invalidChunks non vide en mode strict, 3 JUnit5 + 3 Cucumber @epic_v_9_16 PASS.
 * [ ] V-9.17 Compilation vers Gradle tasks — pont AgenticCompiler → tâches concrètes.
 * [ ] V-9.18 Auto-détection de nouveaux fichiers de gouvernance.
 * [ ] V-9.19 Diff/incrémental entre sessions.

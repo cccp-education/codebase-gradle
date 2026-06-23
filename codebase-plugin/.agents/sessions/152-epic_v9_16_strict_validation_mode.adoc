@@ -1,0 +1,61 @@
+= Session 152 — EPIC V-9.16 Strict Validation Mode
+:session: 152
+:date: 2026-06-23
+:borough: Queens — codebase-gradle (N1)
+
+== Contexte
+
+Mission issue de `PROMPT_REPRISE.adoc` session 152 : attaquer V-9.16 StrictValidationMode — option Gradle `strictValidation=true` pour faire échouer `IngestGovernanceTask` si des chunks invalides sont détectés. Méthodologie baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber.
+
+== Actions
+
+. Lecture EAGER : `AGENT.adoc`, `.agents/INDEX.adoc`, `PROMPT_REPRISE.adoc`, `BACKLOG.adoc`, session 151.
+. Option Gradle DSL : ajout de `strictValidation: Property<Boolean>` dans `IngestGovernanceTask` avec convention `false`.
+. Logique de validation : après ingestion, si `strictValidation=true` et `report.invalidChunks` non vide, lever `GradleException` avec détail des types d'erreur.
+. Tests unitaires : `IngestGovernanceTaskTest` +3 tests V-9.16 (désactivé par défaut, échec en mode strict, passage quand valide).
+. Tests fonctionnels : extension Gradle `strictValidation.set(true)` via `ProjectBuilder`.
+. Tests Cucumber : `epic_v_9_16_strict_validation_mode.feature` (3 scénarios), `EpicV916CucumberRunner.kt`, steps réutilisés dans `EpicV915Steps.kt` — 3/3 PASS.
+. Enregistrement de la tâche Gradle `cucumberTestEpicV916` dans `build.gradle.kts`.
+. Régression V-9.4 corrigée : le scénario batch "Compile all chunks from TAXONOMIE_WORKSPACE" manquait d'un chunk CONCEPT INTERDIRE pour produire `PROMPT_TEMPLATE` — ajout d'une section `== Interdictions` dans le contenu de test de `AgenticCompilerSteps.kt`.
+. Régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11/9.13/9.14/9.15/9.16 vertes.
+
+== Commandes
+
+[source,shell]
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:compileTestKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.IngestGovernanceTaskTest"
+./gradlew :codebase-plugin:cucumberTestEpicV916
+./gradlew :codebase-plugin:cucumberTestEpicV915
+./gradlew :codebase-plugin:cucumberTestEpicV914
+./gradlew :codebase-plugin:cucumberTestEpicV913
+./gradlew :codebase-plugin:cucumberTestEpicV911
+./gradlew :codebase-plugin:cucumberTestEpicV910
+./gradlew :codebase-plugin:cucumberTestEpicV99
+./gradlew :codebase-plugin:cucumberTestEpicV98
+./gradlew :codebase-plugin:cucumberTestEpicV97
+./gradlew :codebase-plugin:cucumberTestEpicV95
+./gradlew :codebase-plugin:cucumberTestEpicV93
+./gradlew :codebase-plugin:cucumberTestEpicY4
+----
+
+== Résultats
+
+* Compilation : verte.
+* `IngestGovernanceTaskTest` : 13/13 PASS existants + 3 nouveaux V-9.16 = 16/16 PASS
+* Cucumber @epic_v_9_16 : 3 scénarios / 13 steps PASS
+* Régressions V-9.x : vertes
+* Régression V-9.4 batch TAXONOMIE_WORKSPACE : corrigée et verte
+* Build `compileKotlin` + `compileTestKotlin` : propre
+
+== Leçons
+
+* Une option de validation stricte doit être explicite et désactivée par défaut pour ne pas casser les workflows existants.
+* Les exceptions levées par une Gradle task doivent être des `GradleException` pour un affichage propre dans le build.
+* Réutiliser les steps Cucumber existants (V-9.15) via `@Before("@epic_v_9_15 or @epic_v_9_16")` évite la duplication tout en isolant les features.
+* Corriger une régression pré-existante découverte pendant la session est préférable à la laisser dans le build (zéro régression).
+
+== Prochaine étape naturelle
+
+V-9.17 Ingestion Summary DSL — exposer `strictValidation` via une extension `codebaseGovernance { strictValidation = true }` et/ou propriété Gradle `codebase.governance.strictValidation`.

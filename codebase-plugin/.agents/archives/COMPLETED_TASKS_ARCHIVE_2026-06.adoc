@@ -1,3 +1,16 @@
+== Session 152 — EPIC V-9.16 Strict Validation Mode
+
+- `koog/agentic/IngestGovernanceTask.kt` : ajout de `strictValidation: Property<Boolean>` avec convention `false` ; levée de `GradleException` si chunks invalides détectés en mode strict
+- `test/kotlin/codebase/koog/agentic/IngestGovernanceTaskTest.kt` : +3 tests V-9.16 PASS
+- `test/features/epic_v_9_16_strict_validation_mode.feature` + `EpicV916CucumberRunner.kt` : 3 scénarios Cucumber @epic_v_9_16 PASS
+- `test/kotlin/codebase/scenarios/EpicV915Steps.kt` : steps partagés V-9.15/V-9.16 avec gestion des exceptions
+- `build.gradle.kts` : enregistrement `cucumberTestEpicV916`
+- `test/kotlin/codebase/scenarios/AgenticCompilerSteps.kt` : correction régression V-9.4 batch (ajout section INTERDICTION dans contenu TAXONOMIE_WORKSPACE)
+- Régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11/9.13/9.14/9.15/9.16 et V-9.4 vertes
+- `compileKotlin` + `compileTestKotlin` verts
+
+'''
+
 == Session 151 — EPIC V-9.15 Invalid Chunk Quarantine
 
 - `koog/agentic/InvalidChunkRepository.kt` : port DDD + modèle `InvalidChunk`

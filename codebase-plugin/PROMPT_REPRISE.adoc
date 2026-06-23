@@ -1,13 +1,13 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 152
-:session: 152
+= Prompt de Reprise — Codebase (Queens N1) — Session 153
+:session: 153
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 151 — EPIC V-9.15 Invalid Chunk Quarantine livré (port `InvalidChunkRepository` + in-memory + R2DBC migration V4 + `InvalidChunkQuarantine` câblé dans `AgenticIngestor`, `IngestionReport.invalidChunks` + JSON, 12 JUnit5 + 2 Cucumber @epic_v_9_15 PASS, régressions V-9.x vertes)
+:session_precedente: 152 — EPIC V-9.16 StrictValidationMode livré (option Gradle `strictValidation` dans `IngestGovernanceTask`, 3 JUnit5 + 3 Cucumber @epic_v_9_16 PASS, régressions V-9.x vertes, régression V-9.4 batch corrigée)
 
-== Mission Session 152
+== Mission Session 153
 
-1. Attaquer V-9.16 StrictValidationMode — option Gradle `strictValidation=true` pour faire échouer `IngestGovernanceTask` si des chunks invalides sont détectés.
+1. Attaquer V-9.17 Ingestion Summary DSL — exposer `strictValidation` (et éventuellement d'autres flags V-9.x) via une extension Gradle dédiée `codebaseGovernance { strictValidation = true }` et/ou propriété projet `codebase.governance.strictValidation`.
 2. Coder en baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber.
-3. Préserver V-9.3, V-9.5, V-9.7, V-9.8, V-9.9, V-9.10, V-9.11, V-9.12, V-9.13, V-9.14, V-9.15 et tous les tests `ToolRegistry` existants (zéro régression).
+3. Préserver V-9.3, V-9.5, V-9.7, V-9.8, V-9.9, V-9.10, V-9.11, V-9.13, V-9.14, V-9.15, V-9.16 et tous les tests `ToolRegistry` existants (zéro régression).
 4. `./gradlew :codebase-plugin:compileKotlin` doit rester vert entre chaque fichier modifié.
 
 == Méthodologie

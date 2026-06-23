@@ -1,31 +1,10 @@
-:= TEST_COVERAGE_ANALYSIS — Session 151
+:= TEST_COVERAGE_ANALYSIS — Session 152
 :date: 2026-06-23
-:epic: EPIC V-9 — V-9.15 Invalid Chunk Quarantine : port `InvalidChunkRepository` + `InMemoryInvalidChunkRepository` + `R2dbcInvalidChunkRepository` + `InvalidChunkQuarantine` câblé dans `AgenticIngestor`
+:epic: EPIC V-9 — V-9.16 StrictValidationMode : option Gradle `strictValidation` dans `IngestGovernanceTask`, levée de `GradleException` quand `report.invalidChunks` est non vide en mode strict
 
 == Contexte
 
-PROMPT_REPRISE 151 demandait d'attaquer V-9.15+ (Under-EPIC 5 Qualité et Robustesse). V-9.15 = stocker les chunks invalides détectés par `ChunkValidator` dans une table/liste séparée pour diagnostic.
-
-== Nouveaux fichiers source
-
-[cols="2,3"]
-|===
-| Fichier | Rôle
-
-| `main/kotlin/codebase/koog/agentic/InvalidChunkRepository.kt` | Port DDD + modèle `InvalidChunk`
-| `main/kotlin/codebase/koog/agentic/InMemoryInvalidChunkRepository.kt` | Implémentation en mémoire du port (fallback/tests)
-| `main/kotlin/codebase/koog/agentic/InvalidChunkQuarantine.kt` | Service DDD orchestrant validation → quarantaine
-| `main/kotlin/codebase/koog/agentic/R2dbcInvalidChunkRepository.kt` | Implémentation R2DBC persistante
-| `main/resources/db/migration/V4__invalid_chunks.sql` | Migration Flyway créant la table `invalid_chunks`
-| `test/kotlin/codebase/koog/agentic/InMemoryInvalidChunkRepositoryTest.kt` | 3 JUnit5
-| `test/kotlin/codebase/koog/agentic/InvalidChunkQuarantineTest.kt` | 4 JUnit5
-| `test/kotlin/codebase/koog/agentic/R2dbcInvalidChunkRepositoryTest.kt` | 2 JUnit5 (Testcontainers)
-| `test/kotlin/codebase/koog/agentic/R2dbcInvalidChunkRepositoryMigrationTest.kt` | 1 JUnit5 (Testcontainers)
-| `test/features/epic_v_9_15_invalid_chunk_quarantine.feature` | Feature 2 scénarios
-| `test/kotlin/codebase/scenarios/EpicV915Steps.kt` | Steps Cucumber V-9.15 (glue unique)
-| `test/kotlin/codebase/scenarios/EpicV915CucumberRunner.kt` | Runner Cucumber @epic_v_9_15
-| `.agents/sessions/151-epic_v9_15_invalid_chunk_quarantine.adoc` | Archive session 151
-|===
+PROMPT_REPRISE 152 demandait d'attaquer V-9.16 StrictValidationMode. Objectif : faire échouer la tâche Gradle `ingestGovernance` quand l'option `strictValidation=true` est activée et que des chunks invalides sont détectés, tout en restant tolérant par défaut.
 
 == Fichiers source modifiés
 
@@ -33,14 +12,19 @@ PROMPT_REPRISE 151 demandait d'attaquer V-9.15+ (Under-EPIC 5 Qualité et Robust
 |===
 | Fichier | Changement
 
-| `koog/agentic/AgenticIngestor.kt` | `IngestionReport` enrichi de `invalidChunks: List<InvalidChunk>` ; `InvalidChunkRepository` injectable par défaut `InMemoryInvalidChunkRepository()` ; quarantaine des chunks invalides dans la boucle d'ingestion
-| `koog/agentic/IngestGovernanceTask.kt` | JSON du rapport expose `invalidChunks` (id, sourceFile, sourceLines, content, quarantinedAt, errors)
-| `build.gradle.kts` | Enregistrement de `cucumberTestEpicV915`
-| `PROMPT_REPRISE.adoc` | Mission N+1 (session 152)
-| `.agents/INDEX.adoc` | Session N+1 = 152, statut V-9.15 ✅
-| `.agents/SESSIONS_HISTORY.adoc` | Entrée session 151
+| `main/kotlin/codebase/koog/agentic/IngestGovernanceTask.kt` | Ajout de `strictValidation: Property<Boolean>` avec convention `false` ; levée de `GradleException` après ingestion si `strictValidation=true` et `invalidChunks` non vide ; message d'erreur incluant les types d'erreur
+| `test/kotlin/codebase/koog/agentic/IngestGovernanceTaskTest.kt` | +3 tests V-9.16 (désactivé par défaut, échec mode strict, passage quand valide)
+| `test/features/epic_v_9_16_strict_validation_mode.feature` | Feature 3 scénarios @epic_v_9_16
+| `test/kotlin/codebase/scenarios/EpicV916CucumberRunner.kt` | Runner Cucumber @epic_v_9_16
+| `test/kotlin/codebase/scenarios/EpicV915Steps.kt` | Steps partagés V-9.15/V-9.16 avec gestion de `lastException`
+| `build.gradle.kts` | Enregistrement de `cucumberTestEpicV916`
+| `codebase-plugin/PROMPT_REPRISE.adoc` | Mission N+1 (session 153)
+| `.agents/INDEX.adoc` | Session N+1 = 153, statut V-9.16 ✅
+| `.agents/SESSIONS_HISTORY.adoc` | Entrée session 152
+| `.agents/sessions/152-epic_v9_16_strict_validation_mode.adoc` | Archive session 152
 | `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-06.adoc` | Mise à jour EPIC V-9
-| `BACKLOG.adoc` | V-9.15 marqué ✅
+| `BACKLOG.adoc` | V-9.16 marqué ✅
+| `test/kotlin/codebase/scenarios/AgenticCompilerSteps.kt` | Correction régression V-9.4 batch : ajout section `== Interdictions` dans le contenu TAXONOMIE_WORKSPACE pour produire un chunk CONCEPT INTERDIRE → `PROMPT_TEMPLATE`
 |===
 
 == Tests
@@ -48,37 +32,37 @@ PROMPT_REPRISE 151 demandait d'attaquer V-9.15+ (Under-EPIC 5 Qualité et Robust
 |===
 | Scope | Résultat
 
-| `InMemoryInvalidChunkRepositoryTest` | ✅ 3/3 PASS
-| `InvalidChunkQuarantineTest` | ✅ 4/4 PASS
-| `R2dbcInvalidChunkRepositoryTest` | ✅ 2/2 PASS (Testcontainers pgvector)
-| `R2dbcInvalidChunkRepositoryMigrationTest` | ✅ 1/1 PASS (Testcontainers pgvector)
-| `IngestGovernanceTaskTest` | ✅ 13/13 PASS (10 existants + 3 V-9.15)
-| `AgenticIngestorTest` | ✅ zéro régression (report `invalidChunks` reste vide quand valid)
-| `EpicV915CucumberRunner` (2 scénarios @epic_v_9_15) | ✅ 2/2 PASS
+| `IngestGovernanceTaskTest` | ✅ 16/16 PASS (13 existants + 3 V-9.16)
+| `EpicV916CucumberRunner` (3 scénarios @epic_v_9_16) | ✅ 3/3 PASS
+| `EpicV915CucumberRunner` (2 scénarios @epic_v_9_15) | ✅ 2/2 PASS (régression)
 | `EpicV914CucumberRunner` (2 scénarios @epic_v_9_14) | ✅ 2/2 PASS (régression)
 | `EpicV913CucumberRunner` (5 scénarios @epic_v_9_13) | ✅ 5/5 PASS (régression)
-| `EpicV99CucumberRunner` (2 scénarios @epic_v_9_9) | ✅ 2/2 PASS (régression)
+| `EpicV911CucumberRunner` (6 scénarios @epic_v_9_11) | ✅ 6/6 PASS (régression)
 | `EpicV910CucumberRunner` (3 scénarios @epic_v_9_10) | ✅ 3/3 PASS (régression)
+| `EpicV99CucumberRunner` (2 scénarios @epic_v_9_9) | ✅ 2/2 PASS (régression)
+| `EpicV98CucumberRunner` (3 scénarios @epic_v_9_8) | ✅ 3/3 PASS (régression)
+| `EpicV97CucumberRunner` (7 scénarios @epic_v_9_7) | ✅ 7/7 PASS (régression)
+| `EpicV95CucumberRunner` (5 scénarios @epic_v_9_5) | ✅ 5/5 PASS (régression)
+| `EpicV93CucumberRunner` (6 scénarios @epic_v_9_3) | ✅ 6/6 PASS (régression)
+| `EpicY4CucumberRunner` (9 scénarios @epic_y_4) | ✅ 9/9 PASS (régression V-9.4 batch corrigée)
 | `compileKotlin` | ✅
 | `compileTestKotlin` | ✅
 | Régression tests préexistants | 0
 |===
 
-== Total session 151
+== Total session 152
 
-- JUnit5 : 10 nouveaux PASS (3 in-memory + 4 quarantine + 2 R2DBC + 1 migration)
-- Tests fonctionnels : 3 nouveaux PASS (`IngestGovernanceTaskTest`)
-- Cucumber : 2 scénarios / 11 steps PASS (@epic_v_9_15)
+- JUnit5 : 3 nouveaux PASS dans `IngestGovernanceTaskTest`
+- Tests fonctionnels : couverts par les tests JUnit5 `ProjectBuilder`
+- Cucumber : 3 scénarios / 13 steps PASS (@epic_v_9_16)
 - Build : `compileKotlin` + `compileTestKotlin` verts
-- Testcontainers : utilisé pour les tests R2DBC uniquement
-- BACKLOG synchronisé (V-9.15 marqué ✅)
+- Régression V-9.4 batch corrigée sans toucher au code de production
+- BACKLOG synchronisé (V-9.16 marqué ✅)
 
 == Leçons
 
-* Séparer le port `InvalidChunkRepository` du repository principal `AgenticChunkRepository` respecte DDD.
-* Utiliser une classe JSON intermédiaire pour PostgreSQL évite de marquer la classe domaine avec `@Serializable`.
-* Implémentation in-memory + R2DBC couvre les deux contextes : tests rapides et persistance réelle.
-
-== Prochaine étape naturelle
-
-V-9.16 StrictValidationMode — option Gradle `strictValidation=true` pour faire échouer la tâche si des chunks invalides sont détectés.
+* Désactiver `strictValidation` par défaut (`convention(false)`) préserve la rétrocompatibilité.
+* `GradleException` est le type d'exception approprié pour faire échouer proprement une tâche Gradle.
+* Partager les steps Cucumber entre EPICs proches (V-9.15/V-9.16) via des tags combinés réduit la duplication.
+* Corriger une régression pré-existante découverte lors d'un run de validation globale est préférable à l'ignorer.
+* Le catalogue de versions est auto-chargé par Gradle depuis `gradle/libs.versions.toml` à la racine ; pas besoin de `versionCatalogs` explicite.

@@ -2,7 +2,9 @@ package codebase.koog.agentic
 
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.Optional
@@ -25,6 +27,10 @@ abstract class IngestGovernanceTask : DefaultTask() {
     @get:Optional
     @get:Option(option = "outputFile", description = "Fichier de sortie rapport ingestion JSON")
     abstract val outputFile: RegularFileProperty
+
+    @get:Internal
+    @get:Option(option = "strictValidation", description = "Échoue la tâche si des chunks invalides sont détectés")
+    abstract val strictValidation: Property<Boolean>
 
     @get:Internal
     var lastIngestionReport: IngestionReport? = null
@@ -58,6 +64,7 @@ abstract class IngestGovernanceTask : DefaultTask() {
     init {
         group = "generate"
         description = "Ingest governance EAGER files (AGENT.adoc, INDEX.adoc, BACKLOG.adoc) into AgenticIngestor (in-memory stub)"
+        strictValidation.convention(false)
     }
 
     @TaskAction
@@ -87,6 +94,13 @@ abstract class IngestGovernanceTask : DefaultTask() {
         }
         if (result.report.sectionsTotal.isNotEmpty()) {
             log.info("[IngestGovernance] Sections total: {}", result.report.sectionsTotal)
+        }
+
+        if (strictValidation.getOrElse(false) && result.report.invalidChunks.isNotEmpty()) {
+            throw GradleException(
+                "IngestGovernance failed strict validation: ${result.report.invalidChunks.size} invalid chunk(s) detected. " +
+                "See report for details (error types: ${result.report.validationErrors.groupingBy { it.errorType }.eachCount()})"
+            )
         }
 
         if (output != null) {

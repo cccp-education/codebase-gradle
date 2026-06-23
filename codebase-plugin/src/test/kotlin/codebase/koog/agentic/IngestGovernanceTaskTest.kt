@@ -324,4 +324,85 @@ class IngestGovernanceTaskTest {
         assertTrue(content.contains("\"quarantinedAt\""), "JSON should expose quarantinedAt")
         assertTrue(content.contains("\"errorType\": \"CHECKSUM_MISMATCH\""), "JSON should expose quarantine error type")
     }
+
+    @Test
+    fun `V-9_16 strict validation is disabled by default and does not fail on invalid chunks`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+
+        val fakeValidator = object : ChunkValidator() {
+            override fun validate(chunk: AgenticChunk): ValidationResult {
+                val error = ChunkValidationError(
+                    sourceFile = chunk.sourceFile,
+                    sourceLines = chunk.sourceLines,
+                    lineStart = 1,
+                    lineEnd = 1,
+                    errorType = ChunkValidationErrorType.CHECKSUM_MISMATCH,
+                    message = "injected validation error"
+                )
+                return ValidationResult(valid = false, errors = listOf(error))
+            }
+        }
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+            it.chunkValidator = fakeValidator
+        }.get()
+
+        task.executeIngest()
+
+        val report = task.lastIngestionReport
+        assertNotNull(report)
+        assertTrue(report!!.invalidChunks.isNotEmpty(), "Invalid chunks should be quarantined")
+    }
+
+    @Test
+    fun `V-9_16 strict validation fails when invalid chunks are detected`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+
+        val fakeValidator = object : ChunkValidator() {
+            override fun validate(chunk: AgenticChunk): ValidationResult {
+                val error = ChunkValidationError(
+                    sourceFile = chunk.sourceFile,
+                    sourceLines = chunk.sourceLines,
+                    lineStart = 1,
+                    lineEnd = 1,
+                    errorType = ChunkValidationErrorType.CHECKSUM_MISMATCH,
+                    message = "injected validation error"
+                )
+                return ValidationResult(valid = false, errors = listOf(error))
+            }
+        }
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+            it.chunkValidator = fakeValidator
+            it.strictValidation.set(true)
+        }.get()
+
+        val exception = assertThrows<org.gradle.api.GradleException> {
+            task.executeIngest()
+        }
+
+        assertTrue(exception.message!!.contains("strict validation"), "Exception should mention strict validation")
+        assertTrue(exception.message!!.contains("CHECKSUM_MISMATCH"), "Exception should mention error type")
+    }
+
+    @Test
+    fun `V-9_16 strict validation passes when all chunks are valid`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+            it.strictValidation.set(true)
+        }.get()
+
+        task.executeIngest()
+
+        val report = task.lastIngestionReport
+        assertNotNull(report)
+        assertTrue(report!!.invalidChunks.isEmpty(), "No invalid chunks expected")
+    }
 }

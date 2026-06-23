@@ -97,6 +97,11 @@ class AgenticCompilerSteps(private val world: AgenticCompilerWorld) {
             == Conclusion
 
             Ce qu'on importe : les 4 verbes. Ce qu'on n'importe pas : le code Groovy.
+
+            == Interdictions
+
+            . NE DOIT JAMAIS publier sans permission explicite.
+            . NE DOIT JAMAIS supprimer les archives de session.
         """.trimIndent()
 
         val chunker = AgenticChunker()
