@@ -1,31 +1,18 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 128
-:session: 128
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 161
+:session: 161
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 127 — EPIC 8 ✅ (Expert Exposure, 16 JUnit5 + 5 Cucumber = 21/21 PASS)
+:session_precedente: 160 — Backlog & Roadmap cleanup. Borough dormant. Version 0.0.4.
 
-== Contexte Hérité
+== Contexte
 
-- EPIC W TERMINE (7/7)
-- EPIC X TERMINE (7/7)
-- EPIC Y TERMINE (8/8)
-- EPIC Z TERMINE (7/7)
-- EPIC 12 TERMINE — 19/19 PASS
-- EPIC SP TERMINE (7/7)
-- EPIC OCR 26/26
-- EPIC CR TERMINE (14/14)
-- EPIC 7 TERMINE (60/60 PASS — Expert Dispatcher)
-- EPIC 8 EN COURS (3/4 — Expert Exposure, 21/21 PASS)
-- Full suite ~530+ PASS
-- publishToMavenLocal OK
+- Codebase-gradle DORMANT — tous EPICs TERMINÉs
+- Version 0.0.4 (bump session 160)
+- Maven Central : 0.0.3 publié (HTTP 200)
+- Backlog restant : EPIC 1 stale (2 items) + V-FLYWAY conditionnel (P2)
 
-== Mission Session 128
+== Mission Session 161
 
-EPIC PUB : Publication Maven Central codebase-plugin + codebase-contracts.
-Dépend de codex-plugin et planner-plugin (N2) en library.
-Option A : publier codex + planner avant codebase.
-Option B : includeBuild temporaire.
-
-== Ordonnancement Sessions Suivantes
-
-| Session | EPIC | Livrable
-| 128 | EPIC PUB | Publication Maven Central codebase-plugin + codebase-contracts
+Aucune mission active. Réveil sur déclencheur externe :
+. Consommateur (training-gradle, Edster MVP1)
+. V-FLYWAY (5+ migrations, actuellement 4)
+. Bug critique régression

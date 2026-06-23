@@ -1,0 +1,84 @@
+= Session 160 — Backlog & Roadmap Cleanup (Codebase Dormant)
+:date: 2026-06-23
+:session: 160
+:borough: Queens — codebase-gradle (N1)
+:session_precedente: 159 — EPIC OCR-1/OCR-2 restants TERMINÉS (9/9 items)
+
+== Objectif
+
+Auditer le backlog restant de codebase-gradle et mettre à jour les documents
+de gouvernance (BACKLOG, INDEX, ROADMAP) pour refléter la réalité : tous les
+EPICs sont terminés, le borough est dormant.
+
+== Constat Initial
+
+Le backlog était très stale :
+
+* `.agents/BACKLOG.adoc` listait EPIC W, X, Y-6, Y-7, Z comme PENDING alors
+  qu'ils sont tous TERMINÉ. La section "Prochain EPIC à démarrer" était
+  complètement obsolète (items tous livrés).
+* `.agents/INDEX.adoc` affichait EPIC V-9 "EN COURS (14/35)" alors qu'il est
+  TERMINÉ (20/20, clôturé session 157). EPIC 1 affiché "EN COURS (6/8)" mais
+  stale (projet publié Maven Central 0.0.3). V-LOCAL et TRAD manquants.
+* `STRATEGIC_ROADMAP.adoc` décrivait un "Protocol v1.0.0" avec tout en TODO
+  (Phase 1-4), alors que SP, W, X, Y, Z, CR sont livrés.
+* `BACKLOG.adoc` (root) — EPIC 1 stale, V-FLYWAY conditionnel non clarifié.
+
+== Actions Effectuées
+
+=== 1. `.agents/BACKLOG.adoc` — réécriture complète
+
+* Dette technique P0/P1/P2 → toutes RÉSOLUES (ignoreFailures CI-aware,
+  vibecoding-contracts supprimé, println→logger, wrapper 9.5.1)
+* EPIC W → TERMINÉ (7/7)
+* EPIC X → TERMINÉ (7/7)
+* EPIC Y → TERMINÉ (8/8, Y-6 et Y-7 livrés)
+* EPIC Z → TERMINÉ (7/7)
+* EPIC SP, V-LOCAL, TRAD, V-6-POOL, V-7, V-8, V-9 → tous TERMINÉ
+* "Prochain EPIC à démarrer" supprimé — backlog liquidé
+* EPIC V-FLYWAY clarifié : conditionnel, seuil 5+ migrations (actuellement 4)
+
+=== 2. `.agents/INDEX.adoc` — corrections statuts
+
+* EPIC 1 → STALE (6/8 — items obsolètes, projet publié Central 0.0.3)
+* EPIC V-9 → TERMINÉ (20/20 — V-9.1→V-9.20 clôturé session 157)
+* EPIC V-LOCAL ajouté → TERMINÉ (7/7, sessions 129-132)
+* EPIC TRAD ajouté → TERMINÉ (session 133)
+
+=== 3. `BACKLOG.adoc` (root) — EPIC 1 et V-FLYWAY
+
+* EPIC 1 → STALE (6/8), 2 items restants marqués `[~]` stale
+* V-FLYWAY déjà documenté comme conditionnel (seuil 5+ migrations)
+
+=== 4. `STRATEGIC_ROADMAP.adoc` — mise à jour majeure
+
+* Executive Summary → "production-grade", publié Maven Central 0.0.3, dormant
+* Phase 1 → DELIVERED (tous les deliverables cochés)
+* Phase 2 → DELIVERED (Maven Central 0.0.3, spec publiée)
+* Phase 3 → DELIVERED (multi-provider, dashboard, intégrations)
+* Phase 4 → Future (Edster SaaS MVP1, hors scope plugin)
+* "What Needs Stabilization" → "All Resolved" avec résolutions
+* Critical Wins → "All Delivered"
+* Success Metrics → tous cochés
+* Implementation Checklist → toutes les weeks cochées
+* Success Definition → "ALL CRITERIA MET"
+* Document metadata → version 1.1, status ACCEPTED
+
+== Bilan
+
+* 4 fichiers de gouvernance mis à jour
+* Zéro modification de code source
+* Codebase-gradle confirmé dormant — aucun EPIC actif
+* Backlog restant : EPIC 1 stale (2 items obsolètes) + V-FLYWAY conditionnel (P2)
+
+== Fichiers Modifiés
+
+* `codebase-plugin/.agents/BACKLOG.adoc` — réécriture complète
+* `codebase-plugin/.agents/INDEX.adoc` — 3 corrections statut + 2 EPICs ajoutés
+* `codebase-plugin/BACKLOG.adoc` — EPIC 1 stale
+* `codebase-plugin/STRATEGIC_ROADMAP.adoc` — mise à jour majeure (phases, metrics, checklist)
+
+== Prochaine Session (161)
+
+Codebase-gradle dormant. Aucune mission active. Réveil sur demande consommateur
+(training-gradle, Edster SaaS MVP1) ou déclenchement V-FLYWAY (5+ migrations).

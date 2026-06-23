@@ -1,3 +1,26 @@
+== Session 160 — Backlog & Roadmap Cleanup + Version Bump 0.0.4 + Maven Central + Plugin Portal
+
+=== Documents gouvernance (4 fichiers)
+
+- `.agents/BACKLOG.adoc` : réécriture complète — W/X/Y/Z/PENDING → TERMINÉ, dette technique résolue, "Prochain EPIC" supprimé (backlog liquidé)
+- `.agents/INDEX.adoc` : EPIC V-9 → TERMINÉ (20/20), EPIC 1 → STALE, V-LOCAL + TRAD ajoutés
+- `BACKLOG.adoc` (root) : EPIC 1 → STALE (6/8), V-FLYWAY clarifié (conditionnel)
+- `STRATEGIC_ROADMAP.adoc` : phases 1-3 → DELIVERED, Phase 4 → Future (Edster MVP1), metrics/checklist/success criteria cochés, status ACCEPTED
+
+=== Version bump + Publication
+
+- `build.gradle.kts` racine : version 0.0.3 → 0.0.4
+- `publishToMavenLocal` : BUILD SUCCESSFUL, GPG signing OK
+- `publishAggregationToCentralPortal` : deployment `f4a91bf6-a441-481b-8f74-5610f631f85e` uploaded, VALIDATING → publishing
+- `publishPlugins` (Gradle Plugin Portal) : `education.cccp.codebase` submitted for approval
+
+=== Bilan
+
+- Codebase-gradle confirmé DORMANT — aucun EPIC actif
+- 4 fichiers gouvernance + 1 build.gradle.kts modifiés
+- Version 0.0.4 publiée Maven Central + soumise Plugin Portal
+- Zéro modification de code source
+
 == Session 159 — EPIC OCR-1/OCR-2 restants (HTTP 429 + env var + multi-compte + Tesseract)
 
 === codebase-gradle (Queens N1)

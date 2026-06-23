@@ -6,8 +6,8 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 
 == EPIC 1 : Initialisation gouvernance agent codebase-gradle
 
-**Statut** : EN COURS (6/8 items)
-**Priorite** : P0
+**Statut** : STALE (6/8 — items obsolètes, projet publié Maven Central 0.0.3)
+**Priorite** : N/A — backlog historique
 
 * [x] Migrer .agents/ + fichiers gouvernance depuis quizz-benchmark-gradle
 * [x] Creer AGENT.adoc adapte a codebase-gradle (cercles de confiance, BYOK, fine-tuning)
@@ -15,8 +15,8 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 * [x] Mettre a jour BACKLOG.adoc (ce fichier)
 * [x] Creer PROMPT_REPRISE.adoc pour session 1
 * [x] Mettre a jour AGENT_GOVERNANCE.adoc dans configuration/ (ajouter codebase au portefeuille)
-* [ ] Snapshot vision-archive post-migration dans configuration/
-* [ ] Commit initial codebase-gradle
+* [~] Snapshot vision-archive post-migration dans configuration/ — stale, projet publié Central
+* [~] Commit initial codebase-gradle — stale, projet publié Central 0.0.3
 
 == EPIC 2 : Expert Anonymisation LangChain4j — Prérequis Transverse
 **Statut** : MVP0 TERMINE (session 009)

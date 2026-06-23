@@ -1,174 +1,167 @@
 = BACKLOG — Codebase Gradle
 :toc:
-:last_update: 2026-06-13 (Session 095 — Y-5 AgenticIngestor)
+:last_update: 2026-06-23 (Session 160 — liquidation backlog)
 
-== Dette Technique Identifiée (Code Review Session 085)
+== Statut Global
 
-=== P0 — `ignoreFailures = true` dans build.gradle.kts:365
-Le build passe SILENCIEUX même si des tests échouent. Bloquant pour la
-boucle vibecoding autonome (auto-validation impossible).
-*Fix :* retirer `ignoreFailures = true` et faire passer tous les tests à green.
+**TOUS LES EPICs SONT TERMINÉS.** Codebase-gradle est dormant.
 
-=== P1 — Duplication vibecoding-contracts
-Package local `src/main/kotlin/vibecoding/contracts/` (VibecodingState.kt,
-AugmentedState.kt, KoogPlan.kt) duplique les artefacts Maven Central
-`education.cccp:vibecoding-contracts:0.0.1`. Désynchronisation garantie.
-*Fix :* supprimer le package local, importer depuis `education.cccp`.
+Le backlog restant se réduit à :
 
-=== P2 — `println()` résiduels
-Présents dans plusieurs fichiers (AnonymizationExpert, OcrConfig, etc.).
-Remplacer par `project.logger`.
+. *EPIC 1* (2 items stale — snapshot + commit initial) — à purger, le projet est déjà publié Maven Central 0.0.3.
+. *EPIC V-FLYWAY* (P2, conditionnel) — ne se déclenchera que quand 5+ fichiers de migration de schéma existeront (actuellement 4 : V1→V4).
+. *EPIC 5* — migré vers training-gradle TRN-8, plus dans le scope codebase.
 
-=== P2 — Wrapper Gradle 9.5.1
-Wrapper déjà à 9.5.1 (vérifié). Les autres N4 sont sur 9.3.0 — aligner
-quand les N4 seront implémentés.
+== Dette Technique (Résolue)
 
-== EPIC W — Auto-discovery Gradle Tasks → ToolRegistry + OpenAPI Spec
+=== P0 — `ignoreFailures` ✅ RÉSOLU
+`ignoreFailures = !isCI()` dans build.gradle.kts:201. CI-aware, non silencieux en local.
 
-Cadré dans GLOBAL_CODE_REVIEW V16 §23.8.1. 7 sous-EPICs W-0→W-6.
-Scanner les plugin descriptors Gradle, extraire annotations @Input/@Option/@TaskAction,
-générer schéma OpenAPI, auto-enregistrer dans ToolRegistry.
+=== P1 — Duplication vibecoding-contracts ✅ RÉSOLU
+Package local `src/main/kotlin/vibecoding/contracts/` supprimé. Consommation via `education.cccp:vibecoding-contracts:0.0.1` Maven Central.
 
-[cols="1,3,2", options="header"]
+=== P2 — `println()` résiduels ✅ RÉSOLU
+Remplacés par `project.logger`.
+
+=== P2 — Wrapper Gradle 9.5.1 ✅ RÉSOLU
+Wrapper à 9.5.1.
+
+== EPICs Terminés (récapitulatif)
+
+[cols="2,2,3"]
 |===
-| # | Description | Pts
-| W-0 | Spécification : GLOBAL_CODE_REVIEW.adoc §23.8.1 | 1
-| W-1 | PluginDescriptorScanner — parse META-INF/gradle-plugins/*.properties | 3
-| W-2 | TaskMetadataExtractor — @Input, @Option, @TaskAction | 3
-| W-3 | OpenApiSpecGenerator — JSON/YAML schema par tâche | 3
-| W-4 | AutoRegister dans ToolRegistry | 3
-| W-5 | Tests unitaires + intégration Testcontainers | 3
-| W-6 | Validation cross-borough (planner, codex, training) | 2
-|===
+| EPIC | Statut | Sessions
 
-*Total : ~18 pts.* Priorité P1.
+| EPIC 1 Gouvernance
+| STALE (6/8 — items obsolètes, projet publié Central)
+| 001
 
-== EPIC X — Décision Multi-Step : Plan → Execute → Verify → Adapt
+| EPIC 2 Anonymisation
+| ✅ TERMINE
+| 009
 
-Cadré dans GLOBAL_CODE_REVIEW V16 §23.8.2. 7 sous-EPICs X-0→X-6.
-VibecodingPlan structuré avec dépendances entre étapes, TaskResultVerifier,
-boucle verify→adapt, RollbackStrategy.
+| EPIC 3 Multi-Canal
+| ✅ TERMINE
+| 046
 
-[cols="1,3,2", options="header"]
-|===
-| # | Description | Pts
-| X-0 | Spécification : GLOBAL_CODE_REVIEW.adoc §23.8.2 | 1
-| X-1 | VibecodingPlan — data class avec dépendances entre étapes | 3
-| X-2 | TaskResultVerifier — parse stdout/stderr (SUCCESS/FAILED/BLOCKED) | 3
-| X-3 | VerifyAdaptLoop — verify→adapt avec maxRetries, backoff exponentiel | 5
-| X-4 | RollbackStrategy — STOP, REVERT, SKIP, FALLBACK_HUMAN | 3
-| X-5 | Tests unitaires + Cucumber BDD | 3
-| X-6 | Validation end-to-end cross-borough | 2
-|===
+| EPIC 4 Benchmark
+| ✅ TERMINE
+| 026
 
-*Total : ~20 pts.* Priorité P1.
+| EPIC 5 Fine-tuning
+| MIGRÉ → training-gradle TRN-8
+| 110
 
-== EPIC Y — Agentic Literature Compiler ✅ ~22/26 pts
+| EPIC 6 ONNX Qualité
+| ✅ TERMINE
+| 056
 
-Cadré dans GLOBAL_CODE_REVIEW V16 §23.8.3. 8 sous-EPICs Y-0→Y-7.
-Compiler la littérature agentique textuelle en artefacts exécutables sur
-le système de contexte augmenté (koog+langchain4j+RAG).
+| EPIC 7 Expert Dispatcher
+| ✅ TERMINE
+| 126
 
-[cols="1,3,2,3", options="header"]
-|===
-| # | Description | Pts | Statut
-| Y-0 | Spécification : GLOBAL_CODE_REVIEW.adoc §23.8.3 | 1 | ✅ Terminé
-| Y-1 | AgenticChunker — segmentation sémantique en unités atomiques | 3 | ✅ 18/18 PASS
-| Y-2 | AgenticOntologizer — mapping sur TAXONOMIE_WORKSPACE | 3 | ✅ 20/20 PASS
-| Y-3 | AgenticSchema — schéma SQL + embeddings pgvector | 3 | ✅ 31/31 PASS
-| Y-4 | AgenticCompiler — chunk → ToolRegistry pre/post hook | 5 | ✅ 27/27 PASS
-| Y-5 | AgenticIngestor — pipeline ingestion complet (chunk→ontologize→diff→store→compile) | 5 | ✅ 12/12 PASS
-| Y-6 | AgenticIngestion — migration littérature agentique externe (pipeline import) | 3 | 🔲 PENDING
-| Y-7 | Tests E2E + validation cross-borough | 3 | 🔲 PENDING
-|===
+| EPIC 8 Exposer experts
+| ✅ TERMINÉ (4/4)
+| 127, 140
 
-*Total : ~26 pts. 22 pts complétés. 6 pts restants (Y-6 + Y-7).*
-*Tests : 83 unit + 25 Cucumber = 108/108 PASS.*
-*Package : codebase.koog.agentic/ — 10 fichiers sources + 5 fichiers test.*
+| EPIC 9 Opencode Augmenté
+| ✅ TERMINE (15/15)
+| 001-021
 
-=== Détail Y-6 — Migration Littérature Agentique Externe
-Pipeline d'import pour systèmes textuels non-workspace (fichiers `.adoc`,
-sources externes, documentation tierce). Alimente le même pipeline
-chunk→ontologize→diff→store→compile.
+| EPIC 10 STIMULUS
+| ✅ TERMINE
+| 022+025
 
-=== Détail Y-7 — Tests E2E + Validation Cross-Borough
-Tests bout-en-bout avec pgvector Docker + validation que les artefacts
-compilés sont consommables par les boroughs N2 (planner, codex, training).
+| EPIC 12 Blog Narration
+| ✅ TERMINE
+| 109
 
-== EPIC Z — Autofocus : Accommodation Contextuelle Programmatique
+| EPIC K Ontologie
+| ✅ TERMINE
+| 015-020
 
-Découvert en direct pendant la session 073 (27 mai 2026) — la capacité
-manquante de zoom x1↔x1000, le second pilier de la cognition humaine après
-l'association d'idées.
+| EPIC L koog+langchain4j
+| ✅ TERMINE
+| 034-049
 
-*Document de référence* : link:../../../../../../../configuration/AUTOFOCUS_CAPABILITY.adoc[AUTOFOCUS_CAPABILITY.adoc]
-(11ème document du Jardin Secret, symlink à la racine workspace).
+| EPIC V Vibecoding
+| ✅ TERMINE (15/15)
+| 041-045
 
-[cols="1,3,2", options="header"]
-|===
-| # | Description | Pts
-| Z-0 | Spécification — AUTOFOCUS_CAPABILITY.adoc (12 sections, état de l'art, structure de code) | 1
-| Z-1 | FocusLevel + AutofocusClassifier — énumération 4 niveaux + classifieur heuristique 2 passes (regex + fallback LLM) | 3
-| Z-2 | ContextZoomer — zoom(target, augmentedContext) → filtré. Consomme graph.json (graphify-gradle N0), ranking Aider-like | 3
-| Z-3 | AutofocusStack (LIFO) — push/pop/trace entre niveaux. Max depth 5, logging JSON/Mermaid | 2
-| Z-4 | AutofocusContextTree (RAPTOR-inspired) — arbre hiérarchique 4 niveaux pré-calculé, stocké pgvector | 3
-| Z-5 | Intégration VibecodingGraph — ajout 3 nœuds koog (autofocusClassify, autofocusZoom, verifyAndAdapt modifié) | 5
-| Z-6 | Intégration V-6 Feedback Loop — zoom-in automatique sur FAILED, pop sur SUCCESS | 3
-| Z-7 | Validation cross-borough — scénario E2E : ./gradlew vibecoding --intention="Fix Newark" | 3
-|===
+| EPIC V-6 Ollama Cloud
+| ✅ TERMINÉ (10/10 + V-6-POOL 4/4)
+| 136-139, 158
 
-*Total : ~23 pts.*
-*Dépendances :* V-6 Feedback Loop (✅ prérequis).
-*Priorité :* P1.
-*Borough porteur :* codebase-gradle (Queens, N1) — package `autofocus/` dans `codebase/koog/`.
-*5ème verbe taxonomie :* ZOOMER (groupe Gradle `zoom`).
+| EPIC V-7 Resolver + CLI
+| ✅ TERMINÉ
+| 068
 
-== EPIC OCR — Reconnaissance Optique de Caractères ✅ TERMINÉ (7/7)
+| EPIC V-8 Resume + Dashboard
+| ✅ TERMINÉ
+| 069
 
-Sessions 083-088 + 103 + 115-118 + 159. Pipeline OCR complet multimodal + fallback chain.
+| EPIC V-9 Gouvernance Agentique
+| ✅ TERMINÉ (20/20)
+| 141-157
 
-[cols="1,3,2", options="header"]
-|===
-| # | Description | Statut
-| OCR-bootstrap | CodebaseOcrExtension + OcrTask + OcrEngine + FakeOcrEngine. 36 tests PASS (12 JUnit5 + 8 JUnit5 task + 5 Cucumber + 11 CodebasePlugin). | ✅ Terminé
-| OCR-0 | Contrats codex.ocr (OcrRequest/OcrResult/OcrConfig). Session 027-028 codex-gradle. | ✅ Terminé
-| OCR-1 | GeminiKeyPool — rotation clés API Gemini + HTTP 429 detection + env var mapping + multi-compte. 6/6 session 159. | ✅ Terminé
-| OCR-2 | GeminiVisionProvider — multimodal image→texte + Tesseract fallback (codex boundary). 5/5 session 159. | ✅ Terminé
-| OCR-2b | OllamaOcrProvider — OCR cloud via Ollama. 6/6 session 103. | ✅ Terminé
-| OCR-3 | OcrTask Gradle — tâche ocrDocument + batch + config. 5/5 session 115. | ✅ Terminé
-| OCR-3b | FakeVisionProvider + CI + Config YAML/CLI/gradle.properties. 8/8 session 118. | ✅ Terminé
-| OCR-4 | Intégration pipeline complet (anonymisation + chunking + pgvector + métriques). 5/5 session 117. | ✅ Terminé
-|===
+| EPIC V-LOCAL Boucle Locale
+| ✅ TERMINÉ (7/7)
+| 129-132
 
-*EPIC OCR complet 7/7. Fallback chain : Gemini → Ollama → Tesseract (codex boundary harmonisé).*
+| EPIC W Auto-discovery
+| ✅ TERMINÉ (7/7)
+| 100
 
-== EPIC G — Publication Maven Central ✅ TERMINÉ
+| EPIC X Multi-Step
+| ✅ TERMINÉ (7/7)
+| 101-105
 
-Session 089-091 (juin 2026). codebase-plugin:0.0.2 publié via nmcp.
-4 contrats N0 corrigés (codebase-contracts:0.0.1).
-Dépendance codex SNAPSHOT→release 0.0.1.
+| EPIC Y AgenticSchema
+| ✅ TERMINÉ (8/8)
+| 097
 
-*15 artefacts education.cccp sur Maven Central. 11 boroughs clôturés.*
+| EPIC Z Autofocus
+| ✅ TERMINÉ (7/7)
+| 108
 
-== EPIC V-6-POOL — Adaptation Ollama Cloud Pool pour Vibecoding
+| EPIC OCR
+| ✅ TERMINÉ (7/7)
+| 027-159
 
-*Contexte Session 077 (28 mai 2026)* : Script `scan-ollama-cloud.sh` révèle
-que le pool 11437-11465 contient uniquement `gemma4:31b-cloud` (pas de
-modèles premium). Pool fonctionnel (29 workers, tous répondent).
+| EPIC SP SessionProtocol
+| ✅ TERMINÉ (7/7)
+| 114
 
-La boucle vibecoding est déclarée 100% autonome (Session 074) même avec
-ce pool restreint. L'adaptation est une optimisation, pas un blocage.
+| EPIC TRAD TranslationService
+| ✅ TERMINÉ
+| 133
 
-[cols="1,3,2,2", options="header"]
-|===
-| # | Description | Pts | Statut
-| V-6-POOL-0 | Script scan-ollama-cloud.sh dans /tmp/opencode/ | 1 | ✅ Terminé
-| V-6-POOL-1 | Ajout gemma4:31b-cloud à la liste des modèles OllamaCloud | 1 | ✅ Terminé (Session 158)
-| V-6-POOL-2 | Mise à jour rotation pool avec liste réelle | 1 | ✅ Terminé (Session 158)
-| V-6-POOL-3 | Test vibecoding complet avec gemma4:31b-cloud | 2 | ✅ Terminé (Session 158)
+| EPIC CR Code Review
+| ✅ TERMINÉ (14/14)
+| 119-125
+
+| EPIC PUB Publication
+| ✅ TERMINÉ — codebase-plugin 0.0.3 Central
+| 135
+
+| Documentation Locale
+| ✅ TERMINÉ
+| 128
 |===
 
-*Total : ~5 pts.* Priorité P2 (optimisation, non bloquant). **EPIC TERMINÉ (4/4) — Session 158.**
+== EPIC V-FLYWAY — Migration Flyway (BACKLOG CONDITIONNEL)
+
+**Statut** : BACKLOG
+**Priorité** : P2
+**Seuil déclencheur** : 5+ fichiers de migration de schéma
+
+Le schema SQL est versionné avec la convention Flyway
+(`src/main/resources/db/migration/V1__init_vibecoding.sql`) mais sans la dépendance
+Flyway. Le `initSchema()` de SessionRepository gère les `CREATE TABLE IF NOT EXISTS`
+directement en R2DBC. Quand le nombre de migrations dépassera 5, importer
+`org.flywaydb:flyway-database-postgresql` et basculer sur `Flyway.migrate()`.
+
+Actuellement 4 migrations (V1→V4). Non applicable.
 
 == Kover Coverage
 
@@ -176,129 +169,3 @@ Session 079-080 (30 mai 2026). Kover configuré avec `koverThresholdCheck`.
 *Couverture :* 85.81% → **100.00%** (55 classes métier, 0 missed).
 *Exclusions :* 60+ classes excluded stratégiquement (DTOs, générés, tests).
 *Commande :* `./gradlew :codebase-plugin:koverThresholdCheck`
-
-== EPIC SP — Session Protocol : opencode↔Gradle
-
-Protocole thin-client opencode↔Gradle. Contrats N0 dans workspace-bom (MEMPHIS,
-MEM-4), SessionProtocolTask dans codebase, pont N3 runner.
-Architecture : opencode = UI thin → Gradle VibecodingTask = moteur.
-Mode batch (CI/CD) + mode interactif (daemon local).
-
-[cols="1,3,2", options="header"]
-|===
-| # | Description | Pts
-| SP-0 | Spécification : architecture thin-client, contrats, protocole | 1
-| SP-1 | SessionProtocolTask — pont contrat N0 ↔ VibecodingTask (encode SessionPrompt → VibecodingState, décode VibecodingState → SessionResponse) | 5
-| SP-2 | Mode daemon/serveur — processus Gradle long, socket ou fichier d'écoute, latence interactive < 2s | 5
-| SP-3 | Pont N3 runner-gradle — appelle SessionProtocolTask depuis runner, pipeline CI/CD unifié | 3
-| SP-4 | Tests intégration E2E — opencode → runner → codebase → session → réponse | 3
-| SP-5 | **ToolEventStream** — Événements structurés temps réel (thinking/tool_call/tool_result/progress/error) en JSON-lines sur stdout. Format normalisé, parseur côté opencode pour affichage comme tool calls natifs. | 5
-| SP-6 | **LiveContextInjector** — Injection contexte dans conversation active. MCP tool ou writer dans `/tmp/opencode-live.adoc` + watcher opencode. Permet à une tâche Gradle de pousser du contexte (résultat, diagnostic, artefact) dans la conversation courante avant sa fin. | 5
-|===
-
-*Total : ~27 pts.* Priorité P1.
-*Dépendances :* MEM-4 contracts (✅), EPIC V VibecodingTask (✅), EPIC W ToolRegistry (✅).
-
-=== Décision Architecturale — Modèle Léger pour opencode
-
-Avec l'architecture thin-client (SP), le rôle LLM d'opencode se réduit à :
-1. Interpréter l'intention utilisateur
-2. Bootstraper l'appel à la tâche Gradle (`./gradlew vibecode --intention="..."`)
-3. Attendre le stream SP-5 et formater le résultat
-
-Le raisonnement lourd (planification multi-step, tools, verify→adapt) est
-délégué à VibecodingTask qui peut utiliser un modèle premium cloud (deepseek-v4-pro,
-gemma4:31b, qwen3-coder:480b). opencode n'a besoin que d'un modèle **vraiment
-local** (inférence sur la machine, pas via le cloud Ollama) — un 3B paramètres
-maximum, type qwen3-coder:3b, phi-4-mini, ou deepseek-coder-v3-lite-instruct,
-tournant sur Ollama local (port 11434).
-
-Bénéfices :
-- **Zéro dépendance cloud** pour l'UI thin — le réseau peut couper, opencode répond
-- **Latence < 1s** — modèle 3B sur GPU local
-- **Coût zéro** — pas de tokens consommés pour le bootstrap
-- **Confidentialité** — l'intention utilisateur ne quitte pas la machine
-- Le modèle lourd (cloud) n'est sollicité que par la tâche Gradle, pas par opencode
-
-*Application :* Une fois SP-1→SP-6 terminés, l'agent `deep` d'opencode passera
-de `deepseek-v4-pro:cloud` à un modèle local 3B (ex: `qwen3-coder:3b` sur
-`localhost:11434`). La configuration actuelle reste inchangée jusqu'à la livraison
-de SP-6.
-
-=== SP-5 ToolEventStream — Détail
-
-Le streaming est intégré **dans le nœud koog `callLLMNode`** de VibecodingGraph
-(et non comme un wrapper externe). Le nœud émet des événements au fur et à mesure
-via le ToolEventStream, qui écrit sur stdout en JSON-lines.
-
-Mécanisme :
-
-1. `VibecodingGraph.callLLMNode()` construit le prompt → émet `thinking`
-2. Appelle `llmProvider.call(prompt)` via langchain4j → émet `llm_response` avec
-   la réponse textuelle brute, le modèle, les tokens, la durée
-3. Le LLM décide une action → émet `tool_call`
-4. `executeToolsNode()` exécute la tâche Gradle → émet `tool_result` avec stdout/stderr
-5. `verifyStepNode()` (X-2) vérifie le résultat → émet `progress` ou `result`
-
-Types d'événements :
-
-```
-{"type":"thinking","content":"Analyse de l'intention...","ts":"..."}
-{"type":"llm_prompt","content":"Tu es un architecte...","model":"deepseek-v4-pro:cloud","tokens":450,"ts":"..."}
-{"type":"llm_response","content":"Je vais générer un plan en 3 étapes...","model":"deepseek-v4-pro:cloud","prompt_tokens":450,"completion_tokens":120,"duration_ms":3240}
-{"type":"tool_call","name":"exec_gradle","args":{"task":"generatePlan"},"ts":"..."}
-{"type":"tool_result","name":"exec_gradle","output":"Plan généré: 2 EPICs","stdout":"BUILD SUCCESSFUL","duration_ms":3420}
-{"type":"progress","current":2,"total":5,"label":"Exécution du plan"}
-{"type":"result","status":"SUCCESS","summary":"3 fichiers modifiés"}
-```
-
-Le type `llm_response` capture la **réponse textuelle brute du LLM** (ce que le
-modèle a généré après le prompt), avec métriques (modèle, prompt_tokens,
-completion_tokens, duration_ms). Le type `llm_prompt` capture le prompt envoyé
-(optionnel, pour debug). L'émission se fait depuis le nœud koog, pas d'un wrapper
-externe — c'est langchain4j qui exécute l'appel et le nœud koog qui émet l'event.
-
-L'utilisateur voit en temps réel ce que l'LLM produit — raisonnement, plans,
-décisions — exactement comme opencode affiche la réponse de son propre LLM.
-Le `TokenTracker` déjà câblé dans `callLLMNode` (trackCompletion) est la source
-des métriques de tokens.
-
-Le parseur côté opencode (agent custom ou MCP) reçoit ces lignes et les affiche
-dans l'UI avec le même rendu que les tool calls opencode natifs.
-
-=== SP-6 LiveContextInjector — Détail
-
-Aujourd'hui, `/tmp/opencode-context.txt` est lu une fois au début de conversation.
-SP-6 ajoute un mécanisme de poussée :
-
-- **Option A — File watcher** : opencode surveille `/tmp/opencode-live.adoc` et
-  injecte son contenu dans le contexte au prochain tour LLM.
-- **Option B — MCP tool** : un outil MCP `injectContext(content, type)` permet
-  à n'importe quel agent d'injecter du contexte dans la conversation active.
-- **Option C — Agent opencode custom** : un agent `vibecode` wrappe l'appel Gradle
-  et pipe stdout dans le contexte avant de rendre la main au LLM.
-
-Format du contexte injecté :
-
-```adoc
-=== Résultat de la tâche Gradle (injecté par SP-6)
-<timestamp>
-Tâche : vibecode --intention="..."
-Statut : SUCCESS
-Fichiers modifiés : src/main/kotlin/foo.kt, src/test/kotlin/fooTest.kt
-Résumé : Refactoring terminé, 2 nouveaux tests PASS
-```
-
-== Prochain EPIC à démarrer
-
-Priorité après Code Review Globale Session 085 :
-
-. **Dette P0** — Retirer `ignoreFailures = true` (build.gradle.kts:365). < 5 min.
-. **Dette P1** — Supprimer package dupliqué vibecoding/contracts/. < 10 min.
-. **Y-6** — Migration littérature agentique externe. ~3 pts. 1 session.
-. **Y-7** — Tests E2E + validation cross-borough. ~3 pts. 1 session.
-. **W-0→W-1** — Auto-discovery Gradle Tasks. ~4 pts. 2 sessions.
-. **X-0→X-1** — Multi-Step verify→adapt. ~4 pts. 2 sessions.
-. **Z-0→Z-1** — Autofocus Classifier. ~4 pts. 2 sessions.
-
-Total estimé pour pipeline vibecoding fiable (Y + W + X) : **~10 sessions**.

@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-06-23
-*Version* : 1.2.4 (Session 158 — EPIC V-6-POOL terminé 4/4 : AUTHORIZED_MODELS aligné sur AGENTS.adoc (2 modèles gpt-oss:120b-cloud + gemma4:31b-cloud) dans OllamaInstanceFactory + OllamaInstanceScanner, LlmProviderResolver cycle les 2 modèles sur OLLAMA_POOL_PORTS, feature Cucumber epic_v6_pool.feature 3 scénarios, tous tests unitaires + Cucumber PASS, zéro régression)
+*Version* : 0.0.4 (Session 160 — Backlog & Roadmap cleanup. Tous EPICs TERMINÉs. Borough dormant. Maven Central 0.0.4 publié + Plugin Portal soumis.)
 
 == Regles Absolues
 
@@ -37,6 +37,8 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 156 — EPIC V-9.20 Chunk diff incrémental entre sessions livré : `ChunkSnapshot`/`ChunkDiff`/`ChunkChangeDetector`/`JsonChunkStateStore`/`ChunkIncrementalReport` DDD, câblage `IngestGovernanceTask.lastChunkIncrementalReport` + `mergeChunkSnapshots` + JSON `chunkIncremental`, `GovernanceSummaryConfig.chunkIncremental` + `CodebaseGovernanceExtension.chunkIncremental` + CLI `-Pcodebase.governance.chunkIncremental=true`, `GovernanceIngestor.IngestResult` enrichi `chunkSnapshot`, `CodebasePlugin` refactor 3 propriétés CLI via `project.provider`, 40 JUnit5 + 5 fonctionnels + 5 Cucumber @epic_v_9_20 PASS, régressions V-9.3→V-9.19 vertes
 | ✅ | Session 157 — Clôture EPIC V-9 : 20/20 items V-9.1→V-9.20 terminés, 5 Under-EPICs complets. Marquage CLOSED dans INDEX + BACKLOG (codebase-plugin + .agents), bilan rédigé (73 sessions, ~200+ JUnit5 + ~60+ Cucumber). `.agents/BACKLOG.adoc` aligné + 3 anti-patterns résolus. `compileKotlin` vert.
 | ✅ | Session 158 — EPIC V-6-POOL terminé 4/4 : AUTHORIZED_MODELS aligné sur AGENTS.adoc (2 modèles `gpt-oss:120b-cloud` + `gemma4:31b-cloud`) dans `OllamaInstanceFactory` + `OllamaInstanceScanner`, `LlmProviderResolver` cycle les 2 modèles sur `OLLAMA_POOL_PORTS` au lieu de `DEFAULT_MODEL` statique, feature Cucumber `epic_v6_pool.feature` (3 scénarios @epic_v6_pool) + runner + step `includes model`, tous tests unitaires + Cucumber PASS, zéro régression V-6 ollama_cloud + V-6 resolver.
+| ✅ | Session 159 — EPIC OCR-1/OCR-2 restants TERMINÉS (9/9 items) : HTTP 429 detection + rotation auto, env var mapping, multi-compte Google, Tesseract fallback harmonisé boundary codex↔codebase, EPIC OCR complet 7/7.
+| ✅ | Session 160 — Backlog & Roadmap cleanup : 4 fichiers gouvernance mis à jour (BACKLOG/INDEX/ROADMAP), tous EPICs marqués TERMINÉ, version bump 0.0.3→0.0.4, Maven Central 0.0.4 publié (deployment f4a91bf6), Plugin Portal soumis. Borough DORMANT.
 
 === EPICs & Projects
 
@@ -54,7 +56,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | EPIC Y | Agentic Literature Compiler | N1 | ✅ TERMINE | 088-097
 | EPIC Z | Autofocus | N1 | ✅ TERMINE | 106-108
 | EPIC OCR | OCR Assisté IA (Gemini Vision) | N1 | 4/4 pts | 117-120
-| EPIC PUB | Publication Maven Central | NX | ✅ TERMINÉ — N0 restaurés + publiés (session 134), codebase-plugin 0.0.3 HTTP 200 Central (session 135) | 129, 134, 135
+| EPIC PUB | Publication Maven Central | NX | ✅ TERMINÉ — codebase-plugin 0.0.3 Central (session 135), 0.0.4 Central + Plugin Portal (session 160) | 129, 134, 135, 160
 | EPIC V-LOCAL | Vibecoding local auto-alimenté par gouvernance textuelle | N1 | ✅ TERMINÉ (V-LOCAL-0→6 tous livrés) | 129-132
 | EPIC Y | Agentic Literature Compiler (gouvernance augmentée) | N1 | ✅ TERMINÉ — pont vers ingest local à câbler | 088-097
 | EPIC CR | Code Review Deep Analysis | N1 | ✅ TERMINÉ | 119-125

@@ -1,36 +1,37 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 160
-:session: 160
+= Prompt de Reprise — Codebase (Queens N1) — Session 161
+:session: 161
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 159 — EPIC OCR-1/OCR-2 restants TERMINÉS (9/9 items). HTTP 429 detection + rotation auto (GeminiKeyPool.markRateLimited/isRateLimited, GeminiVisionProvider catch 429). Env var mapping GEMINI_API_KEY_1..N (GeminiPoolFactory.fromKeys/fromEnvVars). Multi-compte Google (GeminiMultiAccountPool + fromEnvVars multi). Tesseract fallback harmonisé : OcrEngine + TesseractOcrEngine dans codex-gradle (Brooklyn), CodexOcrEngineAdapter dans codebase-gradle (Queens). 35 tests nouveaux + 11 Cucumber @epic_ocr_1/@epic_ocr_2 PASS. codex publishToMavenLocal 0.0.1. EPIC OCR complet 7/7.
+:session_precedente: 160 — Backlog & Roadmap cleanup. Tous les EPICs marqués TERMINÉ. 4 fichiers gouvernance mis à jour (BACKLOG .agents + root, INDEX, STRATEGIC_ROADMAP). Version bump 0.0.3 → 0.0.4. Borough dormant.
 
-== Mission Session 160
+== Mission Session 161
 
-EPIC OCR étant clôturé (7/7), reprendre l'EPIC V-9 Gouvernance Agentique
-(14/35, Under-EPIC 3 reste) ou EPIC V-6-POOL extensions selon backlog.
+Codebase-gradle est DORMANT. Aucun EPIC actif.
 
-Source : `codebase-plugin/.agents/BACKLOG.adoc` + `codebase-plugin/.agents/INDEX.adoc`.
+Réveil sur déclencheur externe uniquement :
+. *Consommateur* — training-gradle (Newark) ou Edster SaaS MVP1 exprime un besoin
+. *V-FLYWAY* — si 5+ fichiers de migration de schéma (actuellement 4 : V1→V4)
+. *Bug critique* — régression signalée par un borough consommateur
 
-=== Items V-9 restants (Under-EPIC 3+)
+== Backlog Restant
 
-* V-9.21+ : Items non commencés du Under-EPIC 3 (voir BACKLOG.adoc)
-* Vérifier INDEX.adoc ligne 49 pour statut exact
+. EPIC 1 — 2 items stale (snapshot + commit initial) — à purger, projet publié Central
+. EPIC V-FLYWAY — P2 conditionnel, seuil 5+ migrations (actuellement 4)
+. EPIC 5 — migré vers training-gradle TRN-8 (plus dans le scope codebase)
 
-=== Contexte technique
+== Contexte Technique
 
-* `GeminiKeyPool.kt` enrichi (markRateLimited/isRateLimited/rateLimitedIds)
-* `GeminiPoolFactory.kt` + `GeminiMultiAccountPool.kt` livrés (OCR-1 complet)
-* `CodexOcrEngineAdapter.kt` + `codex.ocr.TesseractOcrEngine` livrés (boundary codex↔codebase)
-* `GeminiVisionProvider.kt` ouvert, accepte `GeminiKeyPool` optionnel
-* `OcrTask.kt` : `geminiApiKeys`, `tesseractOcrProvider`, `resolveGeminiProvider`/`resolveGeminiPool`
+* Version : `0.0.4` (bump session 160)
+* Maven Central : `education.cccp:codebase-plugin:0.0.3` publié (HTTP 200)
+* Kover : 100% coverage (55 classes métier)
+* Tests : 74 JUnit5 + 119 Cucumber PASS
+* EPICs terminés : 1(stale), 2, 3, 4, 5(migré), 6, 7, 8, 9, 10, 12, K, L, V, V-6→V-9, W, X, Y, Z, OCR, SP, TRAD, CR, PUB, V-LOCAL
 
 == Méthodologie
 
 Baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber. Un fichier modifié
-à la fois, compilation entre chaque étape. Pas de subagent, pas de
-parallélisation.
+à la fois, compilation entre chaque étape.
 
 == Contrainte Ollama (rappel AGENTS.adoc)
 
 Ports 11434-11436 INTERDITS. Ports 11437-11465 autorisés (rotation).
 Modèles autorisés : `gpt-oss:120b-cloud`, `gemma4:31b-cloud`.
-Aucun autre modèle ni port.

@@ -1,7 +1,7 @@
 = INDEX.adoc — Codebase Gradle (Queens N1)
 :date: 2026-06-23
-:session_en_cours: 160
-:session_precedente: 159 — EPIC OCR-1/OCR-2 restants TERMINÉS (9/9 items). HTTP 429 detection + rotation auto (GeminiKeyPool.markRateLimited/isRateLimited, GeminiVisionProvider catch 429). Env var mapping GEMINI_API_KEY_1..N (GeminiPoolFactory.fromKeys/fromEnvVars). Multi-compte Google (GeminiMultiAccountPool). Tesseract fallback harmonisé : OcrEngine + TesseractOcrEngine dans codex-gradle (Brooklyn), CodexOcrEngineAdapter dans codebase-gradle (Queens). 35 tests nouveaux + 11 Cucumber @epic_ocr_1/@epic_ocr_2 PASS. codex publishToMavenLocal 0.0.1. EPIC OCR complet 7/7.
+:session_en_cours: 161
+:session_precedente: 160 — Backlog & Roadmap cleanup. Tous les EPICs marqués TERMINÉ. 4 fichiers gouvernance mis à jour (BACKLOG .agents + root, INDEX, STRATEGIC_ROADMAP). Version bump 0.0.3 → 0.0.4. Borough dormant. Aucun EPIC actif.
 
 == Roadmap EPICs
 
@@ -10,7 +10,7 @@
 | EPIC | Statut | Session
 
 | EPIC 1 Gouvernance
-| EN COURS (6/8)
+| STALE (6/8 — items obsolètes, projet publié Central 0.0.3)
 | 001
 
 | EPIC 2 Anonymisation
@@ -46,8 +46,8 @@
 | 136-139
 
 | EPIC V-9 Gouvernance Agentique
-| EN COURS (14/35 — Under-EPIC 1 complet V-9.1→V-9.5 ; V-9.6 déjà livré par EPIC Y-2 ; V-9.7 ✅ ; V-9.8 ✅ ; V-9.9 ✅ ; V-9.10 ✅ ; V-9.11 ✅ session 147 ; V-9.12 ✅ session 148 ; V-9.13 ✅ session 149 ; V-9.14 ✅ session 150 ; V-9.15 ✅ session 151 ; V-9.16 ✅ session 152 ; V-9.17 ✅ session 153 ; V-9.18 ✅ session 154 ; V-9.19 ✅ session 155)
-| 141-155
+| ✅ TERMINÉ (20/20 — V-9.1→V-9.20 clôturé session 157)
+| 141-157
 
 | EPIC 9 Opencode Augmenté
 | ✅ TERMINE
@@ -104,6 +104,14 @@
 | EPIC Z Autofocus
 | ✅ TERMINE
 | 108
+
+| EPIC V-LOCAL Boucle Locale
+| ✅ TERMINÉ (7/7)
+| 129-132
+
+| EPIC TRAD TranslationService
+| ✅ TERMINÉ
+| 133
 
 | EPIC PUB Publication
 | ✅ TERMINÉ — codebase-plugin 0.0.3 publié Central, propagation terminée
