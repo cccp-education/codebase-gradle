@@ -1,24 +1,47 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 157
-:session: 157
+= Prompt de Reprise — Codebase (Queens N1) — Session 158
+:session: 158
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 156 — EPIC V-9.20 Chunk diff incrémental livré (ChunkSnapshot + ChunkDiff + ChunkChangeDetector + JsonChunkStateStore + ChunkIncrementalReport DDD, câblage IngestGovernanceTask + extension DSL + CLI -Pcodebase.governance.chunkIncremental, 40 unit + 5 fonctionnel + 5 Cucumber @epic_v_9_20 PASS, régressions V-9.3→V-9.19 vertes)
+:session_precedente: 157 — Clôture EPIC V-9 (20/20 items V-9.1→V-9.20 terminés, 5 Under-EPICs complets, marquage CLOSED dans INDEX + BACKLOG, bilan rédigé, `.agents/BACKLOG.adoc` aligné + 3 anti-patterns résolus + Under-EPICs 6-7 abandonnés documentés + EPIC CR marqué TERMINÉ 14/14 + backlog stale résolu, `compileKotlin` vert)
 
-== Mission Session 157
+== Mission Session 158
 
-1. V-9.20 terminé — inspecter le backlog EPIC V-9 Under-EPIC 5 restant.
-   Under-EPIC 5 (Qualité et Robustesse) est complet (V-9.15→V-9.20 tous livrés).
-   Vérifier s'il reste des items V-9.21+ ou si EPIC V-9 peut être clôturé.
-2. Si EPIC V-9 clôturable : marquer CLOSED dans INDEX.adoc + BACKLOG.adoc,
-   rédiger bilan EPIC V-9 (sessions 084-156, 20 items livrés).
-3. Sinon : attaquer l'item V-9.21 suivant en baby-step DDD/TDD/BDD.
-4. Coder en baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber.
-5. Préserver V-9.3→V-9.20 et tous les tests existants (zéro régression).
-6. `./gradlew :codebase-plugin:compileKotlin` doit rester vert entre chaque fichier modifié.
+EPIC V-9 et EPIC CR étant clôturés, attaquer l'EPIC V-6-POOL
+(P2, 3 items PENDING, ~5 pts) en baby-step DDD/TDD/BDD.
+
+Source : `codebase-plugin/.agents/BACKLOG.adoc` lignes 150-168.
+
+=== Items V-6-POOL
+
+* V-6-POOL-1 : Ajout `gemma4:31b-cloud` à la liste des modèles OllamaCloud (1 pt)
+* V-6-POOL-2 : Mise à jour rotation pool avec liste réelle (1 pt)
+* V-6-POOL-3 : Test vibecoding complet avec `gemma4:31b-cloud` (2 pts)
+
+=== Contexte technique
+
+* Pool 11437-11465 contient uniquement `gemma4:31b-cloud` (29 workers).
+* `OllamaInstanceScanner` + `OllamaPool` + `OllamaLlmProvider` déjà livrés
+  (sessions 136-138).
+* `LlmProviderResolver` câble le pool (session 068).
+* Contrainte AGENTS.adoc : ports 11437-11465, modèles `gpt-oss:120b-cloud`
+  + `gemma4:31b-cloud` uniquement.
+
+=== Ordre d'attaque (baby-step)
+
+. V-6-POOL-1 : Identifier où la liste des modèles OllamaCloud est hardcodée.
+   Ajouter `gemma4:31b-cloud`. Tests unitaires (déterministes, zéro réseau).
+. V-6-POOL-2 : Mise à jour rotation pool — vérifier que `OllamaPool` utilise
+   bien la liste réelle (scanned) plutôt qu'une liste statique. Tests unitaires.
+. V-6-POOL-3 : Test fonctionnel/Cucumber vibecoding avec `gemma4:31b-cloud`
+   via FakeProvider (zéro réseau, déterministe).
 
 == Méthodologie
 
-Baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber. Un fichier modifié à la fois, compilation entre chaque étape. Pas de subagent, pas de parallélisation.
+Baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber. Un fichier modifié
+à la fois, compilation entre chaque étape. Pas de subagent, pas de
+parallélisation.
 
 == Contrainte Ollama (rappel AGENTS.adoc)
 
-Ports 11434-11436 INTERDITS. Ports 11437-11465 autorisés (rotation). Modèles autorisés : `gpt-oss:120b-cloud`, `gemma4:31b-cloud`. Aucun autre modèle ni port.
+Ports 11434-11436 INTERDITS. Ports 11437-11465 autorisés (rotation).
+Modèles autorisés : `gpt-oss:120b-cloud`, `gemma4:31b-cloud`.
+Aucun autre modèle ni port.

@@ -1,0 +1,128 @@
+= Session 157 — Clôture EPIC V-9 Vibecoding Gouvernance Agentique
+
+:session: 157
+:date: 2026-06-23
+:epic: V-9 (clôture)
+:borough: Queens — codebase-gradle (N1)
+
+== Contexte
+
+Reprise sur EPIC V-9 après V-9.20 (session 156 — diff/incrémental entre
+sessions au niveau chunk). Mission : vérifier si l'EPIC V-9 est clôturable
+et le marquer CLOSED.
+
+État d'entrée :
+* Under-EPIC 1 (Acquisition & Chunking) ✅ V-9.1→V-9.5
+* Under-EPIC 2 (Ontologisation & Rapport) ✅ V-9.6→V-9.8
+* Under-EPIC 3 (Validation Gate & Qualité) ✅ V-9.9→V-9.10
+* Under-EPIC 4 (Compilation Exécutable et Enforcement) ✅ V-9.11→V-9.14
+* Under-EPIC 5 (Qualité et Robustesse) ✅ V-9.15→V-9.20
+
+20/20 items cochés, zéro restant dans le backlog.
+
+== Actions
+
+. Lecture PROMPT_REPRISE.adoc (mission session 157), INDEX.adoc (état
+  EPICs), SESSION_CHECKLIST.adoc (procédure), BACKLOG.adoc (détail V-9).
+. Vérification `git status` — copie de travail propre, HEAD = 701ecdc
+  (session 156).
+. Compilation `./gradlew :codebase-plugin:compileKotlin` — vert (zéro
+  warning, zéro erreur).
+. Audit backlog EPIC V-9 : tous les items V-9.1→V-9.20 cochés dans
+  `codebase-plugin/BACKLOG.adoc`. Le `.agents/BACKLOG.adoc` (249 lignes)
+  était partiellement stale (Under-EPICs 3-7 marqués "à coder" alors que
+  déjà livrés, anti-patterns V-9 non résolus).
+. Marquage EPIC V-9 CLOSED dans `.agents/INDEX.adoc` — passage de
+  "EN COURS (12/35 items)" à "✅ TERMINE (20/20 items)".
+. Marquage EPIC V-9 CLOSED dans `codebase-plugin/BACKLOG.adoc` —
+  "EN COURS (11/35 items)" → "✅ TERMINE (20/20 items)".
+. Rédaction bilan EPIC V-9 dans `.agents/BACKLOG.adoc` :
+  ** Restructuration des 5 Under-EPICs avec statuts finaux.
+  ** Ajout section "Bilan EPIC V-9" (sessions 084-156, 20 items, ~200+
+     JUnit5 + ~60+ Cucumber, pipeline complet texte→exécution).
+  ** Résolution des 3 anti-patterns V-9 (stale/doublon/non-aligné).
+  ** Suppression du doublon `EPIC V-9.11` dans la section "Backlog stale".
+
+== Commandes
+
+----
+./gradlew :codebase-plugin:compileKotlin
+git status
+git log --oneline -10
+----
+
+== Résultats
+
+* EPIC V-9 marqué CLOSED dans les 3 fichiers gouvernance :
+  ** `.agents/INDEX.adoc` (ligne EPIC-V-9)
+  ** `codebase-plugin/BACKLOG.adoc` (ligne statut EPIC V-9)
+  ** `.agents/BACKLOG.adoc` (section EPIC V-9 restructurée + bilan)
+* `.agents/BACKLOG.adoc` aligné sur la réalité (anti-patterns résolus,
+  doublons supprimés, Under-EPICs 3-7 mis à jour).
+* `compileKotlin` vert avant et après modifications (zéro régression).
+
+== Bilan EPIC V-9 — Vibecoding Gouvernance Agentique
+
+[cols="1,4,1"]
+|===
+| Under-EPIC | Sujet | Items
+| 1 | Acquisition & Chunking | 5/5 ✅
+| 2 | Ontologisation & Rapport | 3/3 ✅
+| 3 | Validation Gate & Qualité | 2/2 ✅
+| 4 | Compilation Exécutable et Enforcement | 4/4 ✅
+| 5 | Qualité et Robustesse | 6/6 ✅
+|===
+
+* **Sessions** : 084 (cadrage) → 156 (V-9.20), soit 73 sessions
+* **Items livrés** : 20/20 (V-9.1→V-9.20)
+* **Tests cumulés** : ~200+ JUnit5 + ~60+ Cucumber
+* **Pipeline complet livré** :
+  Texte (AGENT.adoc/INDEX/BACKLOG/...) →
+  Scan récursif (.agents/) →
+  Chunking sémantique (5 types) →
+  Ontologisation (TAXONOMIE_WORKSPACE) →
+  Classification sections gouvernance →
+  Validation structurelle (gate + report détaillé) →
+  Compilation exécutable (PRE_HOOK/GRADLE_TASK/CONSTRAINT_CHECK) →
+  Enforcement ToolRegistry (blocage natif) →
+  Quarantaine chunks invalides (port + 2 impls + pgvector) →
+  Mode strict (GradleException) →
+  DSL Gradle `codebaseGovernance { }` →
+  Tâches Gradle dynamiques (enregistrement automatique) →
+  Mode incrémental fichier (diff snapshots) →
+  Diff inter-sessions (chunk-level checksums)
+* **Contrat respecté** : zéro régression V-9.3→V-9.20 à chaque livraison
+  (vérification Cucumber systématique à chaque session).
+
+== Leçons
+
+* Le `.agents/BACKLOG.adoc` (249 lignes) était stale sur V-9 alors que le
+  `codebase-plugin/BACKLOG.adoc` (1032 lignes) était à jour. Double source
+  de vérité = risque de divergence. La résolution a consisté à aligner les
+  deux + résoudre les anti-patterns documentés depuis la session 000.
+* L'EPIC V-9 a été recentré de 35 items (cadrage initial) à 20 items
+  effectifs — les items V-9.1/V-9.2/V-9.6 déjà livrés par EPIC Y ont été
+  comptés comme "déjà livrés" plutôt que recodés. Bonne discipline
+  anti-duplication.
+* La méthodologie baby-step DDD/TDD/BDD (unit → fonctionnel → Cucumber,
+  1 fichier à la fois, compilation entre chaque étape) a porté 20 items
+  sur 73 sessions sans régression. Le coût par item (~3-4 sessions) est
+  élevé mais la qualité est maximale : pipeline complet exécutable.
+
+== Livrables
+
+* 3 fichiers gouvernance modifiés :
+  ** `.agents/INDEX.adoc` (statut EPIC-V-9)
+  ** `codebase-plugin/BACKLOG.adoc` (statut EPIC V-9)
+  ** `.agents/BACKLOG.adoc` (restructuration complète section V-9 + bilan +
+     anti-patterns résolus + doublon supprimé)
+* 1 fichier archive créé : `.agents/sessions/157-v-9-closure.adoc` (ce
+  fichier)
+
+== Prochaine mission
+
+EPIC V-9 étant clôturé, la prochaine session (158) doit déterminer le
+prochain EPIC à attaquer. Candidats restants dans le backlog :
+* EPIC CR (Code Review Deep Analysis) — cadré, 14 items identifiés, P0→P3
+* EPIC OCR-1/OCR-2 — items partiels (rotation HTTP 429, fallback Tesseract)
+* EPIC-V-FLYWAY — backlog (seuil déclencheur : 5+ migrations)

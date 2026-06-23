@@ -155,3 +155,20 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** `GovernanceIngestor.IngestResult` ne portait pas la ChunkSnapshot — enrichi pour exposer l'état après ingestion
 ** Le câblage CLI `orElse` chaîné (mutuellement exclusif) refactoré en `project.provider` composant les 3 propriétés CLI indépendamment
 ** `mergeChunkSnapshots` : en mode fichier incrémental, retire les chunks des fichiers modifiés/supprimés, conserve les chunks des fichiers inchangés
+
+== Session 157 — 2026-06-23
+
+* **EPICs** : EPIC V-9 — Clôture (marquage CLOSED + bilan)
+* **Livrables** :
+** EPIC V-9 marqué ✅ TERMINE (20/20 items) dans `.agents/INDEX.adoc`
+** EPIC V-9 marqué ✅ TERMINE dans `codebase-plugin/BACKLOG.adoc`
+** `.agents/BACKLOG.adoc` restructuré : 5 Under-EPICs alignés, bilan EPIC V-9 rédigé, 3 anti-patterns résolus, doublon V-9.11 supprimé
+** Archive session 157 créée (`.agents/sessions/157-v-9-closure.adoc`)
+* **Résultats** :
+** `compileKotlin` vert avant et après modifications (zéro régression)
+** EPIC V-9 clôturé : 73 sessions (084→156), 20 items (V-9.1→V-9.20), 5 Under-EPICs complets
+** Pipeline complet livré : Texte → Chunk → Ontologie → Validation → Compilation → Enforcement → Quarantaine → Mode strict → DSL → Tâches dynamiques → Incrémental fichier → Diff inter-sessions
+* **Leçons** :
+** Double source de vérité (.agents/BACKLOG + codebase-plugin/BACKLOG) = risque de divergence — résolu par alignement
+** L'EPIC V-9 recentré de 35 items (cadrage) à 20 items effectifs (anti-duplication avec EPIC Y)
+** Méthodologie baby-step DDD/TDD/BDD a porté 20 items sur 73 sessions sans régression

@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-06-23
-*Version* : 1.2.2 (Session 156 — EPIC V-9.20 Chunk diff incrémental entre sessions livré : ChunkSnapshot + ChunkDiff + ChunkChangeDetector + JsonChunkStateStore + ChunkIncrementalReport DDD, câblage IngestGovernanceTask + extension DSL chunkIncremental + CLI -Pcodebase.governance.chunkIncremental, 40 unit + 5 fonctionnel + 5 Cucumber @epic_v_9_20 PASS, régressions V-9.3→V-9.19 vertes)
+*Version* : 1.2.3 (Session 157 — Clôture EPIC V-9 : 20/20 items V-9.1→V-9.20 terminés, 5 Under-EPICs complets, marquage CLOSED dans INDEX + BACKLOG, bilan rédigé, `.agents/BACKLOG.adoc` aligné + anti-patterns résolus, `compileKotlin` vert)
 
 == Regles Absolues
 
@@ -35,6 +35,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 146 — EPIC V-9.10 ChunkValidationReport livré (`ChunkValidationErrorType`, `lineStart`/`lineEnd`, `validationErrorsByType` JSON, 3 JUnit5 + 1 test fonctionnel + 3 Cucumber @epic_v_9_10 PASS, zéro régression V-9.x)
 | ✅ | Session 153 — EPIC V-9.17 Ingestion Summary DSL livré : extension `codebaseGovernance { strictValidation.set(true) }` + propriété `codebase.governance.strictValidation`, `GovernanceSummaryConfig` DDD + `CodebaseGovernanceExtension`, câblage `IngestGovernanceTask.governanceConfig`, 3 JUnit5 + 4 fonctionnels + 3 Cucumber @epic_v_9_17 PASS, régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11/9.13/9.14/9.15/9.16 vertes
 | ✅ | Session 156 — EPIC V-9.20 Chunk diff incrémental entre sessions livré : `ChunkSnapshot`/`ChunkDiff`/`ChunkChangeDetector`/`JsonChunkStateStore`/`ChunkIncrementalReport` DDD, câblage `IngestGovernanceTask.lastChunkIncrementalReport` + `mergeChunkSnapshots` + JSON `chunkIncremental`, `GovernanceSummaryConfig.chunkIncremental` + `CodebaseGovernanceExtension.chunkIncremental` + CLI `-Pcodebase.governance.chunkIncremental=true`, `GovernanceIngestor.IngestResult` enrichi `chunkSnapshot`, `CodebasePlugin` refactor 3 propriétés CLI via `project.provider`, 40 JUnit5 + 5 fonctionnels + 5 Cucumber @epic_v_9_20 PASS, régressions V-9.3→V-9.19 vertes
+| ✅ | Session 157 — Clôture EPIC V-9 : 20/20 items V-9.1→V-9.20 terminés, 5 Under-EPICs complets. Marquage CLOSED dans INDEX + BACKLOG (codebase-plugin + .agents), bilan rédigé (73 sessions, ~200+ JUnit5 + ~60+ Cucumber). `.agents/BACKLOG.adoc` aligné + 3 anti-patterns résolus. `compileKotlin` vert.
 
 === EPICs & Projects
 
@@ -44,7 +45,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | EPIC V | Vibecoding Task + Graph | N1 | 15/15 PTS | 041-045
 | EPIC-V-SESSION-REPO | SessionRepository + TokenTracker + Dashboard | N1 | 3/3 pts | 059
 | EPIC-V-FLYWAY | Migration Flyway (futur) | N2 | BACKLOG | —
-| EPIC-V-9 | Vibecoding Gouvernance Agentique | N1 | EN COURS (12/35 items — Under-EPIC 1 ✅, Under-EPIC 2 ✅, Under-EPIC 3 ✅, Under-EPIC 4 ✅, Under-EPIC 5 ✅ V-9.15→V-9.20) | 084-156
+| EPIC-V-9 | Vibecoding Gouvernance Agentique | N1 | ✅ TERMINE (20/20 items — Under-EPIC 1-5 tous complets V-9.1→V-9.20). Clôturé session 157. | 084-156
 | EPIC K | Ontologie Workspace | NX | ✅ TERMINE | 015-020
 | EPIC L | Migration langgraph4j → koog | NX | ✅ TERMINE | 034-049
 | EPIC W | Auto-discovery Gradle Tasks | N1 | ✅ TERMINE | 098-100
