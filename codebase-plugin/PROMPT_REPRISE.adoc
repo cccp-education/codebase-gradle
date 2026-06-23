@@ -1,9 +1,9 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 161
-:session: 161
+= Prompt de Reprise — Codebase (Queens N1) — Session 162
+:session: 162
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 160 — Backlog & Roadmap cleanup. Tous les EPICs marqués TERMINÉ. 4 fichiers gouvernance mis à jour (BACKLOG .agents + root, INDEX, STRATEGIC_ROADMAP). Version bump 0.0.3 → 0.0.4. Borough dormant.
+:session_precedente: 161 — Code Review affinage. 3 actions sûres appliquées (CVE-2015-7501, README.md, CI split). 3 concerns transverses dispatchés vers BACKLOG global (toolchain JDK, linter Kotlin, config cache). Borough dormant.
 
-== Mission Session 161
+== Mission Session 162
 
 Codebase-gradle est DORMANT. Aucun EPIC actif.
 

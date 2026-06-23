@@ -1,7 +1,7 @@
 = INDEX.adoc — Codebase Gradle (Queens N1)
 :date: 2026-06-23
-:session_en_cours: 161
-:session_precedente: 160 — Backlog & Roadmap cleanup. Tous les EPICs marqués TERMINÉ. 4 fichiers gouvernance mis à jour (BACKLOG .agents + root, INDEX, STRATEGIC_ROADMAP). Version bump 0.0.3 → 0.0.4. Borough dormant. Aucun EPIC actif.
+:session_en_cours: 162
+:session_precedente: 161 — Code Review affinage. 3 actions sûres : CVE-2015-7501, README.md, CI split. 3 concerns transverses dispatchés vers BACKLOG global (toolchain JDK, linter Kotlin, config cache). Borough dormant.
 
 == Roadmap EPICs
 

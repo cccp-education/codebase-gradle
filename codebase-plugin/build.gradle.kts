@@ -299,7 +299,7 @@ tasks.register("validateDependencies") {
             it.moduleVersion.id.version.startsWith("3.")
         }
         require(cveVulnerable.isEmpty()) {
-            "CVE-2015-6420: commons-collections 3.x detected in classpath: " +
+            "CVE-2015-7501: commons-collections 3.x (InvokerTransformer deserialization RCE) detected in classpath: " +
             cveVulnerable.joinToString { "${it.moduleVersion.id}" } +
             ". Replace with commons-collections4:4.4."
         }

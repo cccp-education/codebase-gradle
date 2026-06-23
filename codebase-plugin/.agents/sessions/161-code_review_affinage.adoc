@@ -1,0 +1,86 @@
+= Session 161 — Code Review Affinage & Actions Sûres
+:date: 2026-06-23
+:session: 161
+:borough: Queens — codebase-gradle (N1)
+:session_precedente: 160 — Backlog & Roadmap Cleanup
+
+== Objectif
+
+Analyser `CODE_REVIEW_MATURITY_ANALYSIS.adoc` (généré par GitHub Copilot
+Code Review Agent), affiner les critiques pour identifier celles qui
+permettent une refactorisation protectrice, appliquer les actions sûres,
+et dispatcher les concerns transverses vers la gouvernance globale.
+
+== Constat Principal
+
+L'analyse décrit un **état obsolète du repo**. Sur 10 critiques :
+
+[cols="2,2,1"]
+|===
+| Critique | État réel | Verdict
+
+| CRITICAL-1 (duplication 728 lignes Cucumber) | Factory `registerCucumberTask` déjà là (l.72-106), specs 1-ligne (l.108-156) | ❌ Faux
+| CRITICAL-2B (heap fixe, forkEvery=1, SerialGC) | Heap adaptatif déjà là (l.73-78), forkEvery=100, GC adaptatif CI/local | ❌ Faux
+| HIGH-3 (validation annotations manquante) | `validateDependencies` déjà implémenté (l.281-319) | ❌ Faux
+| MEDIUM-1 (timeouts 5 min) | Timeout défaut 15 min, OCR/Y4 à 8 min explicites | ❌ Faux
+| MEDIUM-2 (Kover sans seuil) | `verify { rule { minBound(79) } }` déjà actif (l.340-344) | ❌ Faux
+| CRITICAL-3 (CI 15 min pour 48 Cucumber) | `test.yml` = 28 lignes, timeout 15 min, `./gradlew build` lance tout | ✅ Vrai
+| HIGH-2 (pas de README.md) | Aucun README.md à la racine | ✅ Vrai
+| HIGH-1 (config cache off) | `configuration-cache=false` dans les deux `gradle.properties` | ✅ Vrai
+| CRITICAL-2A (root build.gradle.kts vide) | 12 lignes fonctionnelles (allprojects group/version/repos) | 🟡 Partiel
+| CVE-2015-6420 (commons-collections 3.x) | Référence dans le code (l.302) — la vraie CVE est CVE-2015-7501 | 🔴 Bug réel
+|===
+
+== Actions Appliquées (3 actions sûres, zéro risque de régression)
+
+=== 1. Correction CVE (build.gradle.kts l.302)
+
+`CVE-2015-6420` → `CVE-2015-7501` avec description exacte
+(InvokerTransformer deserialization RCE). CVE-2015-6420 = Cisco ASA,
+pas commons-collections.
+
+=== 2. README.md créé (racine du repo)
+
+Basé sur le code réel observé (`CodebasePlugin.kt` 250 lignes) :
+- 13 tâches documentées (collectFromCodebase, collectCompositeContext,
+  generatePlan, vibecode, sessionProtocolDaemon, ingestGovernance,
+  vibecodingDashboard, qualityGate, ocrDocument, ocrIngest, exposeExperts,
+  endSessionBlog, generateCompositeContext)
+- 3 extensions (codebaseOcr, codebaseExpert, codebaseGovernance)
+- Version 0.0.4, plugin id `education.cccp.codebase`
+- Structure des 9 packages source
+
+=== 3. CI splitée (.github/workflows/test.yml)
+
+3 jobs :
+- `fast-tests` (PR gate, 15 min, `testFast`)
+- `full-tests` (main only, 45 min, `testAll`, upload reports)
+- `publish` (tags `v*`, NMCP `publishAggregationToCentralPortal`, GPG import)
+
+Pas de service Postgres en doublon (Testcontainers gère déjà).
+Pas d'`actions/create-release@v1` (dépréciée).
+
+== Vérification
+
+- `./gradlew :codebase-plugin:compileKotlin` → OK (zéro erreur, zéro warning)
+- `python3 yaml.safe_load(test.yml)` → YAML OK
+
+== Items Transverses Dispatchés (gouvernance globale)
+
+3 concerns transverses aux 28 boroughs, dispatchés dans
+`BACKLOG.adoc` global (workspace root) sous section
+"Items Transverses — Build & Quality" :
+
+[cols="2,1,2,3"]
+|===
+| Item | Priorité | Borough porteur | Description
+| Toolchain JDK centralisé | P0 | conventions-gradle (ABIDJAN) | Supprimer `org.gradle.java.home` hardcodé des `gradle.properties` des 28 boroughs
+| Linter Kotlin par défaut (ktlint + detekt) | P1 | conventions-gradle (ABIDJAN) | Aucun borough n'a de linter Kotlin configuré
+| Configuration cache Gradle | P1 | conventions-gradle (ABIDJAN) | `configuration-cache=false` majoritaire, activer `true` + `problems=warn`
+|===
+
+== Conclusion
+
+Code review clôturée. 3 actions sûres appliquées, 3 concerns transverses
+dispatchés au niveau global. Les 5 autres critiques décrivaient un code
+déjà résolu — le doc était un fantôme d'une ancienne version.
