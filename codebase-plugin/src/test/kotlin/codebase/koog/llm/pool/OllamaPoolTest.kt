@@ -12,13 +12,10 @@ class OllamaPoolTest {
         /** Ports autorisés — plage 11437→11465 (29 ports) */
         val AUTHORIZED_PORTS = (11437..11465).toList()
 
-        /** 5 modèles autorisés, cyclés sur les 29 ports */
+        /** 2 modèles autorisés, cyclés sur les 29 ports */
         val AUTHORIZED_MODELS = listOf(
             "gpt-oss:120b-cloud",
-            "gpt-oss:20b-cloud",
-            "qwen3-coder-next:cloud",
-            "qwen3-next:80b-cloud",
-            "qwen3-coder:480b-cloud"
+            "gemma4:31b-cloud"
         )
 
         /** Pool complet : 29 instances, chaque port reçoit un modèle cyclé */
@@ -129,7 +126,7 @@ class OllamaPoolTest {
     }
 
     @Test
-    fun `full pool should cycle through all 29 ports with 5 authorized models`() {
+    fun `full pool should cycle through all 29 ports with 2 authorized models`() {
         val pool = fullPool()
         assertEquals(29, pool.size())
 
@@ -139,9 +136,9 @@ class OllamaPoolTest {
             assertTrue(port in allPorts, "Port $port missing from pool")
         }
 
-        // Vérifie que seuls les 5 modèles autorisés sont utilisés
+        // Vérifie que seuls les 2 modèles autorisés sont utilisés
         val allModels = pool.instances().map { it.model }.toSet()
-        assertEquals(5, allModels.size, "Exactly 5 authorized models should be present")
+        assertEquals(2, allModels.size, "Exactly 2 authorized models should be present")
         for (authorized in AUTHORIZED_MODELS) {
             assertTrue(authorized in allModels, "Model $authorized missing from pool")
         }

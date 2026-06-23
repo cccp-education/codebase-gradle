@@ -14,20 +14,17 @@ import contracts.llmpool.LlmInstance
  * qui identifie le volume Docker associé. Il ne contient jamais de clé SSH,
  * de chemin de fichier, ni de secret : l'auth est gérée côté conteneur.
  *
- * Modèles cyclés parmi les 5 modèles cloud autorisés par AGENT.adoc.
+ * Modèles cyclés parmi les 2 modèles cloud autorisés par AGENT.adoc.
  */
 object OllamaInstanceFactory {
 
     /** Plage par défaut des ports hôte mappés sur les conteneurs Ollama. */
     val DEFAULT_PORT_RANGE = 11437..11465
 
-    /** 5 modèles cloud autorisés, cyclés sur les ports. */
+    /** 2 modèles cloud autorisés, cyclés sur les ports. */
     val AUTHORIZED_MODELS = listOf(
         "gpt-oss:120b-cloud",
-        "gpt-oss:20b-cloud",
-        "qwen3-coder-next:cloud",
-        "qwen3-next:80b-cloud",
-        "qwen3-coder:480b-cloud"
+        "gemma4:31b-cloud"
     )
 
     /**

@@ -74,11 +74,14 @@ object LlmProviderResolver {
     private fun resolveOllamaInstances(): List<LlmInstance> {
         val explicitPorts = environmentReader().get("OLLAMA_POOL_PORTS")
         return if (!explicitPorts.isNullOrBlank()) {
-            parsePorts(explicitPorts).map { port ->
+            val ports = parsePorts(explicitPorts)
+            val models = OllamaInstanceFactory.AUTHORIZED_MODELS
+            ports.mapIndexed { index, port ->
                 LlmInstance(
-                    id = "gemma4-$port",
+                    id = "ollama-$port",
                     baseUrl = DEFAULT_HOST.format(port),
-                    model = DEFAULT_MODEL
+                    model = models[index % models.size],
+                    volumeTag = "ollama-$port"
                 )
             }
         } else if (useScanner()) {

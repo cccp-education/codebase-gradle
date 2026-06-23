@@ -45,7 +45,7 @@ class OllamaCloudWorld {
             LlmInstance(
                 id = "ollama-11438",
                 baseUrl = "http://localhost:11438",
-                model = "gpt-oss:20b-cloud",
+                model = "gemma4:31b-cloud",
                 quota = QuotaConfig(limitValue = 100, thresholdPercent = 80, resetPolicy = ResetPolicy.NEVER),
                 volumeTag = "ollama-11438"
             )

@@ -1,38 +1,44 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 158
-:session: 158
+= Prompt de Reprise — Codebase (Queens N1) — Session 159
+:session: 159
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 157 — Clôture EPIC V-9 (20/20 items V-9.1→V-9.20 terminés, 5 Under-EPICs complets, marquage CLOSED dans INDEX + BACKLOG, bilan rédigé, `.agents/BACKLOG.adoc` aligné + 3 anti-patterns résolus + Under-EPICs 6-7 abandonnés documentés + EPIC CR marqué TERMINÉ 14/14 + backlog stale résolu, `compileKotlin` vert)
+:session_precedente: 158 — EPIC V-6-POOL terminé (4/4 items). AUTHORIZED_MODELS aligné sur AGENTS.adoc (2 modèles gpt-oss:120b-cloud + gemma4:31b-cloud) dans OllamaInstanceFactory + OllamaInstanceScanner. LlmProviderResolver cycle les 2 modèles sur OLLAMA_POOL_PORTS au lieu de DEFAULT_MODEL statique. Feature Cucumber epic_v6_pool.feature (3 scénarios) + runner + step. Tous tests unitaires + Cucumber PASS, zéro régression.
 
-== Mission Session 158
+== Mission Session 159
 
-EPIC V-9 et EPIC CR étant clôturés, attaquer l'EPIC V-6-POOL
-(P2, 3 items PENDING, ~5 pts) en baby-step DDD/TDD/BDD.
+EPIC V-6-POOL étant clôturé, attaquer l'EPIC OCR-1/OCR-2 restant
+(P2, items PENDING) en baby-step DDD/TDD/BDD.
 
-Source : `codebase-plugin/.agents/BACKLOG.adoc` lignes 150-168.
+Source : `codebase-plugin/.agents/BACKLOG.adoc` lignes 591-607.
 
-=== Items V-6-POOL
+=== Items OCR-1 restants
 
-* V-6-POOL-1 : Ajout `gemma4:31b-cloud` à la liste des modèles OllamaCloud (1 pt)
-* V-6-POOL-2 : Mise à jour rotation pool avec liste réelle (1 pt)
-* V-6-POOL-3 : Test vibecoding complet avec `gemma4:31b-cloud` (2 pts)
+* OCR-1 : Lecture `GEMINI_API_KEY_1..N` via variables d'environnement —
+  mapping env var→LlmInstance pas dans le pool (PARTIEL)
+* OCR-1 : Quota detection HTTP 429 → rotation automatique — PARTIEL
+  (usageCounts map, pas de detection HTTP 429 réelle)
+* OCR-1 : 1 pool par compte Google (Ollama Pro = 1 compte Google = N clés) — PENDING
+
+=== Items OCR-2 restants
+
+* OCR-2 : Fallback Tesseract (OCR sans IA) si Gemini indisponible — PENDING
 
 === Contexte technique
 
-* Pool 11437-11465 contient uniquement `gemma4:31b-cloud` (29 workers).
-* `OllamaInstanceScanner` + `OllamaPool` + `OllamaLlmProvider` déjà livrés
-  (sessions 136-138).
-* `LlmProviderResolver` câble le pool (session 068).
-* Contrainte AGENTS.adoc : ports 11437-11465, modèles `gpt-oss:120b-cloud`
-  + `gemma4:31b-cloud` uniquement.
+* `GeminiKeyPool.kt` (82 lignes, ROUND_ROBIN + LEAST_USED) déjà livré.
+* `GeminiVisionProvider.kt` (95 lignes) déjà livré.
+* `FakeVisionProvider.kt` (62 lignes) branché sur GeminiKeyPool.
+* `OllamaOcrProvider.kt` fallback cloud déjà livré (OCR-2b terminé).
+* Tests : GeminiKeyPoolTest 162 lignes (29 clés, 5 modèles).
 
 === Ordre d'attaque (baby-step)
 
-. V-6-POOL-1 : Identifier où la liste des modèles OllamaCloud est hardcodée.
-   Ajouter `gemma4:31b-cloud`. Tests unitaires (déterministes, zéro réseau).
-. V-6-POOL-2 : Mise à jour rotation pool — vérifier que `OllamaPool` utilise
-   bien la liste réelle (scanned) plutôt qu'une liste statique. Tests unitaires.
-. V-6-POOL-3 : Test fonctionnel/Cucumber vibecoding avec `gemma4:31b-cloud`
-   via FakeProvider (zéro réseau, déterministe).
+. OCR-1 quota detection : Ajouter détection HTTP 429 dans GeminiKeyPool
+   ou GeminiVisionProvider. Tests unitaires (zéro réseau, FakeProvider).
+. OCR-1 env var mapping : Câbler `GEMINI_API_KEY_1..N` → LlmInstance
+   dans le pool. Tests unitaires.
+. OCR-1 multi-compte : 1 pool par compte Google. Tests unitaires.
+. OCR-2 Tesseract fallback : Si Gemini + Ollama indisponibles → Tesseract.
+   Tests unitaires + Cucumber.
 
 == Méthodologie
 

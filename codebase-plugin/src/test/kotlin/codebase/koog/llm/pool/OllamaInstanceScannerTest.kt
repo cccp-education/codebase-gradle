@@ -38,12 +38,18 @@ class OllamaInstanceScannerTest {
         assertEquals(
             listOf(
                 "gpt-oss:120b-cloud",
-                "gpt-oss:20b-cloud",
-                "qwen3-coder-next:cloud",
-                "qwen3-next:80b-cloud"
+                "gemma4:31b-cloud",
+                "gpt-oss:120b-cloud",
+                "gemma4:31b-cloud"
             ),
             models
         )
+    }
+
+    @Test
+    fun `scan includes gemma4 31b cloud in authorized models`() {
+        assertTrue("gemma4:31b-cloud" in OllamaInstanceScanner.AUTHORIZED_MODELS,
+            "gemma4:31b-cloud must be in the authorized models list")
     }
 
     @Test

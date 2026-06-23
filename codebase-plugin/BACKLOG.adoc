@@ -46,7 +46,7 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 * [x] Refactoring: consolidate LlmProviderResolver pool integration (LlmProviderResolver.kt:25-67 gemma4Pool lazy singleton)
 
 == EPIC V-6 — Cablage Ollama Cloud Docker + ConnectionFactory R2DBC (Session 065)
-**Statut** : EN COURS (10/10 items codés, reste câblage resolver→factory en session 139)
+**Statut** : ✅ TERMINÉ (10/10 items + V-6-POOL 4/4 — sessions 065, 136-138, 158)
 **Priorite** : P0
 
 === P0 — ConnectionFactory + Persistance R2DBC

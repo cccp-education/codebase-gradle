@@ -22,10 +22,7 @@ class PoolWorld {
         val AUTHORIZED_PORTS = (11437..11465).toList()
         val AUTHORIZED_MODELS = listOf(
             "gpt-oss:120b-cloud",
-            "gpt-oss:120b-cloud",
-            "qwen3-coder-next:cloud",
-            "qwen3-next:80b-cloud",
-            "qwen3-coder:480b-cloud"
+            "gemma4:31b-cloud"
         )
     }
 
@@ -63,7 +60,7 @@ class PoolWorld {
     }
 
     /**
-     * Crée un pool complet 29 ports avec 5 modèles cyclés.
+     * Crée un pool complet 29 ports avec 2 modèles cyclés.
      */
     fun setupFullPool(limit: Long = 10, threshold: Int = 50) {
         poolInstances = AUTHORIZED_PORTS.mapIndexed { i, port ->

@@ -1,0 +1,125 @@
+= Session 158 — EPIC V-6-POOL Adaptation Ollama Cloud Pool
+
+:session: 158
+:borough: Queens — codebase-gradle (N1)
+:epic: EPIC V-6-POOL — Adaptation Ollama Cloud Pool pour Vibecoding
+:date: 2026-06-23
+:methodologie: Baby-step DDD/TDD/BDD — unit → fonctionnel → Cucumber
+
+== Contexte
+
+PROMPT_REPRISE 158 demandait d'attaquer l'EPIC V-6-POOL (P2, 3 items
+PENDING, ~5 pts) après clôture des EPIC V-9 et EPIC CR.
+
+La contrainte AGENTS.adoc stipule : ports 11434-11436 INTERDITS, ports
+11437-11465 autorisés (29 ports), modèles autorisés `gpt-oss:120b-cloud`
++ `gemma4:31b-cloud` uniquement, rotation OBLIGATOIRE des 2 modèles sur
+toute la plage.
+
+Constat initial : `OllamaInstanceFactory.AUTHORIZED_MODELS` et
+`OllamaInstanceScanner.AUTHORIZED_MODELS` contenaient 5 modèles dont
+4 non autorisés par AGENTS.adoc (`gpt-oss:20b-cloud`, `qwen3-coder-next:cloud`,
+`qwen3-next:80b-cloud`, `qwen3-coder:480b-cloud`). `gemma4:31b-cloud` était
+absent. `LlmProviderResolver.resolveOllamaInstances()` assignait
+`DEFAULT_MODEL` (`gpt-oss:120b-cloud`) à toutes les instances quand
+`OLLAMA_POOL_PORTS` était défini, au lieu de cycler les modèles.
+
+== Actions
+
+=== V-6-POOL-1 : Aligner AUTHORIZED_MODELS sur AGENTS.adoc (TDD unit)
+
+. *Tests d'abord (red)* :
+  * `OllamaInstanceFactoryTest.kt` — tests "cycle through 2 authorized
+    models", "cycle after 2nd instance", "default uses only authorized
+    models" (2 modèles), nouveau test "includes gemma4:31b-cloud"
+  * `OllamaInstanceScannerTest.kt` — test "cycles authorized models" aligné
+    sur 2 modèles + nouveau test "includes gemma4:31b-cloud"
+  * `OllamaPoolTest.kt` — `AUTHORIZED_MODELS` 2 modèles, assertion 2 modèles
+  * `PoolWorld.kt` — `AUTHORIZED_MODELS` 2 modèles
+  * `OllamaCloudWorld.kt` — 2ème instance `gemma4:31b-cloud` au lieu de
+    `gpt-oss:20b-cloud`
+. *Code production (green)* :
+  * `OllamaInstanceFactory.kt` — `AUTHORIZED_MODELS` = 2 modèles
+    (`gpt-oss:120b-cloud`, `gemma4:31b-cloud`)
+  * `OllamaInstanceScanner.kt` — `AUTHORIZED_MODELS` = 2 modèles
+. *Compilation* : `compileTestKotlin` BUILD SUCCESSFUL
+
+=== V-6-POOL-2 : OllamaPool utilise la liste réelle cyclée (TDD unit)
+
+. *Test d'abord (red)* :
+  * `LlmProviderResolverTest.kt` — nouveau test "cycles authorized models
+    across OLLAMA_POOL_PORTS" vérifie que 3 ports explicites reçoivent
+    `gpt-oss:120b-cloud`, `gemma4:31b-cloud`, `gpt-oss:120b-cloud` au lieu
+    de tous recevoir `DEFAULT_MODEL`
+. *Code production (green)* :
+  * `LlmProviderResolver.kt` — `resolveOllamaInstances()` cycle
+    `OllamaInstanceFactory.AUTHORIZED_MODELS` sur les ports explicites au
+    lieu d'assigner `DEFAULT_MODEL` partout. Ajout `volumeTag = "ollama-$port"`.
+. *Compilation* : `compileTestKotlin` BUILD SUCCESSFUL
+
+=== V-6-POOL-3 : Test fonctionnel/Cucumber vibecoding avec gemma4:31b-cloud (BDD)
+
+. *Feature Cucumber* :
+  * `epic_v6_pool.feature` — NOUVEAU, 3 scénarios `@epic_v6_pool` :
+    - `@gemma4 @factory` : Factory pool inclut `gemma4:31b-cloud`, 29
+      instances, cycle 2 modèles
+    - `@gemma4 @explicit` : `OLLAMA_POOL_PORTS` cycle `gemma4:31b-cloud`
+      sur 3 ports
+    - `@gemma4 @vibecoding` : Pool 2 instances avec rotation quota exceeded
+      (réutilise Background OllamaCloudWorld)
+. *Runner Cucumber* :
+  * `EpicV6PoolCucumberRunner.kt` — NOUVEAU, filtre `@epic_v6_pool`
+. *Step definitions* :
+  * `OllamaCloudSteps.kt` — nouveau step `the provider pool includes model
+    {string}` vérifie qu'un modèle est présent dans le pool
+. *Feature existante mise à jour* :
+  * `epic_v6_resolver.feature` — "5 authorized cloud models" → "2
+    authorized cloud models"
+. *Compilation + tests* : `compileTestKotlin` + `test` BUILD SUCCESSFUL,
+  3/3 scénarios @epic_v6_pool PASS
+
+== Commandes exécutées
+
+----
+./gradlew :codebase-plugin:compileTestKotlin   # après chaque modification
+./gradlew :codebase-plugin:test --tests "codebase.scenarios.EpicV6PoolCucumberRunner"
+./gradlew :codebase-plugin:test --tests "codebase.koog.llm.pool.OllamaInstanceFactoryTest" \
+  --tests "codebase.koog.llm.pool.OllamaInstanceScannerTest" \
+  --tests "codebase.koog.llm.pool.OllamaPoolTest" \
+  --tests "codebase.koog.llm.LlmProviderResolverTest"
+./gradlew :codebase-plugin:test --tests "codebase.scenarios.EpicV6OllamaCloudCucumberRunner" \
+  --tests "codebase.scenarios.EpicV6ResolverCucumberRunner"
+----
+
+== Résultats
+
+* V-6-POOL-1 : ✅ TERMINÉ — `AUTHORIZED_MODELS` aligné sur AGENTS.adoc
+  (2 modèles) dans Factory + Scanner
+* V-6-POOL-2 : ✅ TERMINÉ — `LlmProviderResolver` cycle les 2 modèles sur
+  `OLLAMA_POOL_PORTS` au lieu de `DEFAULT_MODEL` statique
+* V-6-POOL-3 : ✅ TERMINÉ — Feature Cucumber `epic_v6_pool.feature` (3
+  scénarios) + runner + step, zéro réseau, déterministe
+
+*EPIC V-6-POOL complet : 4/4 items (V-6-POOL-0 déjà fait session 077 +
+V-6-POOL-1/2/3 cette session).*
+
+=== Tests
+
+* Tests unitaires : tous PASS (OllamaInstanceFactoryTest,
+  OllamaInstanceScannerTest, OllamaPoolTest, LlmProviderResolverTest)
+* Tests Cucumber V-6-POOL : 3/3 scénarios @epic_v6_pool PASS
+* Régression V-6 ollama_cloud : 2/2 scénarios PASS
+* Régression V-6 resolver : 3/3 scénarios PASS
+
+== Leçons
+
+. *Baby-step TDD* : modifier les tests d'abord (red) puis le code production
+  (green) puis compiler entre chaque étape a permis de détecter
+  immédiatement les 3 tests supplémentaires qui référençaient les 5 anciens
+  modèles (OllamaPoolTest, PoolWorld, OllamaCloudWorld).
+. *Duplication de constante* : `AUTHORIZED_MODELS` est dupliquée entre
+  `OllamaInstanceFactory` et `OllamaInstanceScanner`. Une future refacto
+  pourrait centraliser dans un seul point, mais les deux sont alignées.
+. *AGENTS.adoc comme source de vérité* : la contrainte globale (2 modèles
+  autorisés) a été respectée strictement — les 4 modèles non autorisés ont
+  été retirés du code production et des tests.

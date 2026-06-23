@@ -12,7 +12,7 @@ Feature: Ollama Cloud Resolver — deterministic factory mode
     When I resolve provider for model "ollama"
     Then the provider is an OllamaLlmProvider
     And the provider pool contains 29 instances
-    And the provider pool models cycle through the 5 authorized cloud models
+    And the provider pool models cycle through the 2 authorized cloud models
 
   @explicit
   Scenario: Resolver honors OLLAMA_POOL_PORTS when set

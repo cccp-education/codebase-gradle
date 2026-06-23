@@ -160,12 +160,12 @@ ce pool restreint. L'adaptation est une optimisation, pas un blocage.
 |===
 | # | Description | Pts | Statut
 | V-6-POOL-0 | Script scan-ollama-cloud.sh dans /tmp/opencode/ | 1 | ✅ Terminé
-| V-6-POOL-1 | Ajout gemma4:31b-cloud à la liste des modèles OllamaCloud | 1 | 🔲 PENDING
-| V-6-POOL-2 | Mise à jour rotation pool avec liste réelle | 1 | 🔲 PENDING
-| V-6-POOL-3 | Test vibecoding complet avec gemma4:31b-cloud | 2 | 🔲 PENDING
+| V-6-POOL-1 | Ajout gemma4:31b-cloud à la liste des modèles OllamaCloud | 1 | ✅ Terminé (Session 158)
+| V-6-POOL-2 | Mise à jour rotation pool avec liste réelle | 1 | ✅ Terminé (Session 158)
+| V-6-POOL-3 | Test vibecoding complet avec gemma4:31b-cloud | 2 | ✅ Terminé (Session 158)
 |===
 
-*Total : ~5 pts.* Priorité P2 (optimisation, non bloquant).
+*Total : ~5 pts.* Priorité P2 (optimisation, non bloquant). **EPIC TERMINÉ (4/4) — Session 158.**
 
 == Kover Coverage
 

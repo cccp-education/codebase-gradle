@@ -86,6 +86,21 @@ class LlmProviderResolverTest {
     }
 
     @Test
+    fun `resolve ollama cycles authorized models across OLLAMA_POOL_PORTS`() {
+        LlmProviderResolver.environmentReader = { EnvironmentReader { env ->
+            if (env == "OLLAMA_POOL_PORTS") "11450,11451,11452" else null
+        } }
+        val provider = LlmProviderResolver.resolve("ollama")
+        assertIs<OllamaLlmProvider>(provider)
+        val models = provider.pool.instances().map { it.model }
+        assertEquals(
+            listOf("gpt-oss:120b-cloud", "gemma4:31b-cloud", "gpt-oss:120b-cloud"),
+            models,
+            "Models should cycle across explicit ports, not all use DEFAULT_MODEL"
+        )
+    }
+
+    @Test
     fun `resolve ollama falls back to scanner when OLLAMA_SCAN_PORTS is true`() {
         LlmProviderResolver.environmentReader = { EnvironmentReader { env ->
             if (env == "OLLAMA_SCAN_PORTS") "true" else null

@@ -148,6 +148,13 @@ class OllamaCloudSteps(private val world: OllamaCloudWorld) {
         assertEquals(count, instancesOnPort.size, "Expected $count instance on port $port")
     }
 
+    @Then("the provider pool includes model {string}")
+    fun `provider pool includes model`(model: String) {
+        val provider = world.lastResolvedProvider as OllamaLlmProvider
+        val models = provider.pool.instances().map { it.model }
+        assertTrue(model in models, "Pool should include model '$model', got: $models")
+    }
+
     private val OllamaLlmProvider.pool: OllamaPool
         get() {
             val adapter = javaClass.getDeclaredField("adapter").apply { isAccessible = true }.get(this)

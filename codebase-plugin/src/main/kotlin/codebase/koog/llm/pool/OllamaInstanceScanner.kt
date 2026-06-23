@@ -12,7 +12,7 @@ import contracts.llmpool.QuotaConfig
  * Règles métier :
  * - Si `OLLAMA_POOL_PORTS` est défini, il est prioritaire (mode déclaratif).
  * - Sinon, on probe HTTP `GET /api/tags` sur chaque port de la plage.
- * - Seuls les 5 modèles autorisés sont utilisés, cyclés sur les ports vivants.
+ * - Seuls les 2 modèles autorisés sont utilisés, cyclés sur les ports vivants.
  *
  * @param scanner port de probe HTTP (fake dans les tests)
  * @param environmentReader port de lecture des variables d'environnement
@@ -50,10 +50,7 @@ class OllamaInstanceScanner(
 
         internal val AUTHORIZED_MODELS = listOf(
             "gpt-oss:120b-cloud",
-            "gpt-oss:20b-cloud",
-            "qwen3-coder-next:cloud",
-            "qwen3-next:80b-cloud",
-            "qwen3-coder:480b-cloud"
+            "gemma4:31b-cloud"
         )
 
         internal fun parsePorts(raw: String): List<Int> =

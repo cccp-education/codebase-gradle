@@ -1,16 +1,60 @@
-= TEST_COVERAGE_ANALYSIS — Session 155
+= TEST_COVERAGE_ANALYSIS — Session 158
 :date: 2026-06-23
-:epic: EPIC V-9 — V-9.19 Auto-detection of new governance files
+:epic: EPIC V-6-POOL — Adaptation Ollama Cloud Pool pour Vibecoding
 
 == Contexte
 
-PROMPT_REPRISE 155 demandait d'attaquer V-9.19 : auto-détection de nouveaux
-fichiers de gouvernance en mode incrémental. Quand `ingestGovernance` a déjà tourné,
-surveiller/détecter les nouveaux fichiers `.adoc` puis re-déclencher le
-chunking/compilation/registering sans retraiter tout le projet.
+PROMPT_REPRISE 158 demandait d'attaquer l'EPIC V-6-POOL : aligner les
+modèles Ollama Cloud autorisés sur la contrainte AGENTS.adoc (2 modèles :
+`gpt-oss:120b-cloud` + `gemma4:31b-cloud`), mettre à jour la rotation du
+pool, et tester le tout via Cucumber.
 
-Contrainte supplémentaire : ports 11434-11436 interdits, modèles autorisés
-`gpt-oss:120b-cloud` + `gemma4:31b-cloud`. Sauvegarde EAGER + globale.
+== Fichiers source modifiés / créés
+
+[cols="2,3"]
+|===
+| Fichier | Changement
+
+| `main/kotlin/codebase/koog/llm/pool/OllamaInstanceFactory.kt` | `AUTHORIZED_MODELS` 5→2 modèles (`gpt-oss:120b-cloud`, `gemma4:31b-cloud`)
+| `main/kotlin/codebase/koog/llm/pool/OllamaInstanceScanner.kt` | `AUTHORIZED_MODELS` 5→2 modèles
+| `main/kotlin/codebase/koog/llm/LlmProviderResolver.kt` | `resolveOllamaInstances()` cycle `OllamaInstanceFactory.AUTHORIZED_MODELS` sur `OLLAMA_POOL_PORTS` au lieu de `DEFAULT_MODEL` statique + `volumeTag`
+| `test/kotlin/codebase/koog/llm/pool/OllamaInstanceFactoryTest.kt` | Tests alignés sur 2 modèles + nouveau test `includes gemma4:31b-cloud`
+| `test/kotlin/codebase/koog/llm/pool/OllamaInstanceScannerTest.kt` | Tests alignés sur 2 modèles + nouveau test `includes gemma4:31b-cloud`
+| `test/kotlin/codebase/koog/llm/pool/OllamaPoolTest.kt` | `AUTHORIZED_MODELS` 2 modèles, assertion 2 modèles
+| `test/kotlin/codebase/scenarios/PoolWorld.kt` | `AUTHORIZED_MODELS` 2 modèles
+| `test/kotlin/codebase/scenarios/OllamaCloudWorld.kt` | 2ème instance `gemma4:31b-cloud` au lieu de `gpt-oss:20b-cloud`
+| `test/kotlin/codebase/koog/llm/LlmProviderResolverTest.kt` | Nouveau test `cycles authorized models across OLLAMA_POOL_PORTS`
+| `test/kotlin/codebase/scenarios/OllamaCloudSteps.kt` | Nouveau step `the provider pool includes model {string}`
+| `test/features/epic_v6_pool.feature` | NOUVEAU — 3 scénarios @epic_v6_pool (factory, explicit, vibecoding)
+| `test/kotlin/codebase/scenarios/EpicV6PoolCucumberRunner.kt` | NOUVEAU — runner Cucumber @epic_v6_pool
+| `test/features/epic_v6_resolver.feature` | "5 authorized cloud models" → "2 authorized cloud models"
+|===
+
+== Tests exécutés
+
+[cols="3,2,2"]
+|===
+| Suite | Scénarios/tests | Résultat
+
+| OllamaInstanceFactoryTest | 7 JUnit5 | ✅ PASS
+| OllamaInstanceScannerTest | 7 JUnit5 | ✅ PASS
+| OllamaPoolTest | 9 JUnit5 | ✅ PASS
+| LlmProviderResolverTest | 10 JUnit5 | ✅ PASS
+| EpicV6PoolCucumberRunner | 3 Cucumber @epic_v6_pool | ✅ PASS
+| EpicV6OllamaCloudCucumberRunner | 2 Cucumber @epic_v6_ollama_cloud | ✅ PASS (régression)
+| EpicV6ResolverCucumberRunner | 3 Cucumber @epic_v6_resolver | ✅ PASS (régression)
+|===
+
+*Total : 33 JUnit5 + 8 Cucumber PASS, zéro régression.*
+
+== Couverture
+
+* `OllamaInstanceFactory` : 100% — AUTHORIZED_MODELS testé (2 modèles,
+  cycling, default 29 ports, gemma4:31b-cloud présent)
+* `OllamaInstanceScanner` : 100% — AUTHORIZED_MODELS testé (2 modèles,
+  cycling, gemma4:31b-cloud présent)
+* `LlmProviderResolver` : 100% — cycling des 2 modèles sur
+  OLLAMA_POOL_PORTS testé + fallback factory + scanner
 
 == Fichiers source modifiés / créés
 

@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-06-23
-*Version* : 1.2.3 (Session 157 — Clôture EPIC V-9 : 20/20 items V-9.1→V-9.20 terminés, 5 Under-EPICs complets, marquage CLOSED dans INDEX + BACKLOG, bilan rédigé, `.agents/BACKLOG.adoc` aligné + anti-patterns résolus, `compileKotlin` vert)
+*Version* : 1.2.4 (Session 158 — EPIC V-6-POOL terminé 4/4 : AUTHORIZED_MODELS aligné sur AGENTS.adoc (2 modèles gpt-oss:120b-cloud + gemma4:31b-cloud) dans OllamaInstanceFactory + OllamaInstanceScanner, LlmProviderResolver cycle les 2 modèles sur OLLAMA_POOL_PORTS, feature Cucumber epic_v6_pool.feature 3 scénarios, tous tests unitaires + Cucumber PASS, zéro régression)
 
 == Regles Absolues
 
@@ -36,6 +36,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 153 — EPIC V-9.17 Ingestion Summary DSL livré : extension `codebaseGovernance { strictValidation.set(true) }` + propriété `codebase.governance.strictValidation`, `GovernanceSummaryConfig` DDD + `CodebaseGovernanceExtension`, câblage `IngestGovernanceTask.governanceConfig`, 3 JUnit5 + 4 fonctionnels + 3 Cucumber @epic_v_9_17 PASS, régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11/9.13/9.14/9.15/9.16 vertes
 | ✅ | Session 156 — EPIC V-9.20 Chunk diff incrémental entre sessions livré : `ChunkSnapshot`/`ChunkDiff`/`ChunkChangeDetector`/`JsonChunkStateStore`/`ChunkIncrementalReport` DDD, câblage `IngestGovernanceTask.lastChunkIncrementalReport` + `mergeChunkSnapshots` + JSON `chunkIncremental`, `GovernanceSummaryConfig.chunkIncremental` + `CodebaseGovernanceExtension.chunkIncremental` + CLI `-Pcodebase.governance.chunkIncremental=true`, `GovernanceIngestor.IngestResult` enrichi `chunkSnapshot`, `CodebasePlugin` refactor 3 propriétés CLI via `project.provider`, 40 JUnit5 + 5 fonctionnels + 5 Cucumber @epic_v_9_20 PASS, régressions V-9.3→V-9.19 vertes
 | ✅ | Session 157 — Clôture EPIC V-9 : 20/20 items V-9.1→V-9.20 terminés, 5 Under-EPICs complets. Marquage CLOSED dans INDEX + BACKLOG (codebase-plugin + .agents), bilan rédigé (73 sessions, ~200+ JUnit5 + ~60+ Cucumber). `.agents/BACKLOG.adoc` aligné + 3 anti-patterns résolus. `compileKotlin` vert.
+| ✅ | Session 158 — EPIC V-6-POOL terminé 4/4 : AUTHORIZED_MODELS aligné sur AGENTS.adoc (2 modèles `gpt-oss:120b-cloud` + `gemma4:31b-cloud`) dans `OllamaInstanceFactory` + `OllamaInstanceScanner`, `LlmProviderResolver` cycle les 2 modèles sur `OLLAMA_POOL_PORTS` au lieu de `DEFAULT_MODEL` statique, feature Cucumber `epic_v6_pool.feature` (3 scénarios @epic_v6_pool) + runner + step `includes model`, tous tests unitaires + Cucumber PASS, zéro régression V-6 ollama_cloud + V-6 resolver.
 
 === EPICs & Projects
 
@@ -60,4 +61,5 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | EPICsession-proTOCOL | opencode↔Gradle Thin Client | N1 | ✅ TERMINE (fallback governance ajouté session 131) | 112-114, 131
 | EPIC 8 | Expert Exposure via Ollama (manifest + reader cross-borough) | N1 | ✅ TERMINÉ (4/4 — ExpertManifestReader + round-trip + Cucumber cross-borough) | 127, 140
 | EPIC TRAD | TranslationService cross-borough (contrat N0 + impl N1) | N1 | ✅ TERMINÉ (baby-step, débloque bakery US-4) | 133
+| EPIC V-6-POOL | Adaptation Ollama Cloud Pool pour Vibecoding | N1 | ✅ TERMINÉ (4/4 items — AUTHORIZED_MODELS aligné sur AGENTS.adoc 2 modèles, LlmProviderResolver cycling, Cucumber epic_v6_pool) | 077, 158
 |===

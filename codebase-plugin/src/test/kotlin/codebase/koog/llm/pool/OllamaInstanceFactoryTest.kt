@@ -37,27 +37,24 @@ class OllamaInstanceFactoryTest {
     }
 
     @Test
-    fun `create should cycle through all 5 authorized models`() {
-        val instances = OllamaInstanceFactory.create(11437..11441)
+    fun `create should cycle through all 2 authorized models`() {
+        val instances = OllamaInstanceFactory.create(11437..11438)
 
         val expectedModels = listOf(
             "gpt-oss:120b-cloud",
-            "gpt-oss:20b-cloud",
-            "qwen3-coder-next:cloud",
-            "qwen3-next:80b-cloud",
-            "qwen3-coder:480b-cloud"
+            "gemma4:31b-cloud"
         )
         assertEquals(expectedModels, instances.map { it.model })
     }
 
     @Test
-    fun `create should cycle models after the 5th instance`() {
-        val instances = OllamaInstanceFactory.create(11437..11442)
+    fun `create should cycle models after the 2nd instance`() {
+        val instances = OllamaInstanceFactory.create(11437..11439)
 
-        assertEquals(6, instances.size)
+        assertEquals(3, instances.size)
         assertEquals("gpt-oss:120b-cloud", instances[0].model)
-        assertEquals("gpt-oss:120b-cloud", instances[5].model,
-            "6th instance should wrap back to the first authorized model")
+        assertEquals("gpt-oss:120b-cloud", instances[2].model,
+            "3rd instance should wrap back to the first authorized model")
     }
 
     @Test
@@ -74,10 +71,18 @@ class OllamaInstanceFactoryTest {
         val instances = OllamaInstanceFactory.create()
 
         val models = instances.map { it.model }.toSet()
-        assertEquals(5, models.size)
+        assertEquals(2, models.size)
         for (authorized in OllamaInstanceFactory.AUTHORIZED_MODELS) {
             assertTrue(authorized in models, "Authorized model '$authorized' missing")
         }
+    }
+
+    @Test
+    fun `create default should include gemma4 31b cloud`() {
+        val instances = OllamaInstanceFactory.create()
+
+        val models = instances.map { it.model }
+        assertTrue("gemma4:31b-cloud" in models, "gemma4:31b-cloud must be present in the pool")
     }
 
     private fun expectedInstance(port: Int, id: String, model: String): LlmInstance =

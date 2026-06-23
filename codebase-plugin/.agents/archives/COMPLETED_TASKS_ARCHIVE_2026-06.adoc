@@ -1,3 +1,20 @@
+== Session 158 — EPIC V-6-POOL Adaptation Ollama Cloud Pool
+
+- `koog/llm/pool/OllamaInstanceFactory.kt` : `AUTHORIZED_MODELS` 5→2 modèles (`gpt-oss:120b-cloud`, `gemma4:31b-cloud`)
+- `koog/llm/pool/OllamaInstanceScanner.kt` : `AUTHORIZED_MODELS` 5→2 modèles
+- `koog/llm/LlmProviderResolver.kt` : `resolveOllamaInstances()` cycle `AUTHORIZED_MODELS` sur `OLLAMA_POOL_PORTS` au lieu de `DEFAULT_MODEL` statique + `volumeTag`
+- `test/koog/llm/pool/OllamaInstanceFactoryTest.kt` : tests alignés 2 modèles + test `includes gemma4:31b-cloud`
+- `test/koog/llm/pool/OllamaInstanceScannerTest.kt` : tests alignés 2 modèles + test `includes gemma4:31b-cloud`
+- `test/koog/llm/pool/OllamaPoolTest.kt` : `AUTHORIZED_MODELS` 2 modèles, assertion 2 modèles
+- `test/scenarios/PoolWorld.kt` : `AUTHORIZED_MODELS` 2 modèles
+- `test/scenarios/OllamaCloudWorld.kt` : 2ème instance `gemma4:31b-cloud` au lieu de `gpt-oss:20b-cloud`
+- `test/koog/llm/LlmProviderResolverTest.kt` : nouveau test `cycles authorized models across OLLAMA_POOL_PORTS`
+- `test/scenarios/OllamaCloudSteps.kt` : nouveau step `the provider pool includes model {string}`
+- `test/features/epic_v6_pool.feature` : NOUVEAU — 3 scénarios @epic_v6_pool (factory, explicit, vibecoding)
+- `test/scenarios/EpicV6PoolCucumberRunner.kt` : NOUVEAU — runner Cucumber @epic_v6_pool
+- `test/features/epic_v6_resolver.feature` : "5 authorized cloud models" → "2 authorized cloud models"
+- 33 JUnit5 + 8 Cucumber PASS, zéro régression V-6 ollama_cloud + V-6 resolver
+
 == Session 155 — EPIC V-9.19 Auto-detection of new governance files
 
 - `koog/agentic/GovernanceFileSnapshot.kt` : NOUVEAU — value object DDD snapshot (List<ScannedFileEntry>, factory fromScanned SHA-256)
