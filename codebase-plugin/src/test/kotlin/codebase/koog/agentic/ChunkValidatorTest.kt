@@ -15,6 +15,17 @@ class ChunkValidatorTest {
         return hashBytes.joinToString("") { "%02x".format(it) }
     }
 
+    private fun assertHasError(
+        result: ValidationResult,
+        errorType: ChunkValidationErrorType,
+        messageFragment: String
+    ) {
+        assertTrue(
+            result.errors.any { it.errorType == errorType && it.message.contains(messageFragment, ignoreCase = true) },
+            "Expected error of type $errorType containing '$messageFragment', got ${result.errors}"
+        )
+    }
+
     private fun validChunk(
         content: String = "**INTERDICTION FORMELLE** de committer sans permission",
         checksum: String = sha256(content),
@@ -50,7 +61,7 @@ class ChunkValidatorTest {
         val result = validator.validate(chunk)
 
         assertTrue(!result.valid, "Chunk with blank id should be invalid")
-        assertTrue(result.errors.any { it.contains("id", ignoreCase = true) }, "Should report id error")
+        assertHasError(result, ChunkValidationErrorType.MISSING_ID, "id")
     }
 
     @Test
@@ -60,7 +71,7 @@ class ChunkValidatorTest {
         val result = validator.validate(chunk)
 
         assertTrue(!result.valid, "Chunk with blank sourceFile should be invalid")
-        assertTrue(result.errors.any { it.contains("sourceFile", ignoreCase = true) }, "Should report sourceFile error")
+        assertHasError(result, ChunkValidationErrorType.MISSING_SOURCE_FILE, "sourceFile")
     }
 
     @Test
@@ -70,7 +81,7 @@ class ChunkValidatorTest {
         val result = validator.validate(chunk)
 
         assertTrue(!result.valid, "Chunk with blank content should be invalid")
-        assertTrue(result.errors.any { it.contains("content", ignoreCase = true) }, "Should report content error")
+        assertHasError(result, ChunkValidationErrorType.MISSING_CONTENT, "content")
     }
 
     @Test
@@ -80,7 +91,7 @@ class ChunkValidatorTest {
         val result = validator.validate(chunk)
 
         assertTrue(!result.valid, "Chunk with blank sourceLines should be invalid")
-        assertTrue(result.errors.any { it.contains("sourceLines", ignoreCase = true) }, "Should report sourceLines error")
+        assertHasError(result, ChunkValidationErrorType.MISSING_SOURCE_LINES, "sourceLines")
     }
 
     @Test
@@ -90,7 +101,7 @@ class ChunkValidatorTest {
         val result = validator.validate(chunk)
 
         assertTrue(!result.valid, "Chunk with blank checksum should be invalid")
-        assertTrue(result.errors.any { it.contains("checksum", ignoreCase = true) }, "Should report checksum error")
+        assertHasError(result, ChunkValidationErrorType.MISSING_CHECKSUM, "checksum")
     }
 
     @Test
@@ -101,7 +112,7 @@ class ChunkValidatorTest {
         val result = validator.validate(chunk)
 
         assertTrue(!result.valid, "Chunk with mismatched checksum should be invalid")
-        assertTrue(result.errors.any { it.contains("checksum", ignoreCase = true) }, "Should report checksum mismatch")
+        assertHasError(result, ChunkValidationErrorType.CHECKSUM_MISMATCH, "checksum")
     }
 
     @Test
@@ -111,7 +122,7 @@ class ChunkValidatorTest {
         val result = validator.validate(chunk)
 
         assertTrue(!result.valid, "Chunk with negative weight should be invalid")
-        assertTrue(result.errors.any { it.contains("weight", ignoreCase = true) }, "Should report weight error")
+        assertHasError(result, ChunkValidationErrorType.NEGATIVE_WEIGHT, "weight")
     }
 
     @Test
@@ -121,7 +132,43 @@ class ChunkValidatorTest {
         val result = validator.validate(chunk)
 
         assertTrue(!result.valid, "Chunk with weight > 1.0 should be invalid")
-        assertTrue(result.errors.any { it.contains("weight", ignoreCase = true) }, "Should report weight error")
+        assertHasError(result, ChunkValidationErrorType.WEIGHT_EXCEEDS_ONE, "weight")
+    }
+
+    @Test
+    fun `should expose line range from sourceLines`() {
+        val chunk = validChunk().copy(sourceLines = "12-15", id = "")
+
+        val result = validator.validate(chunk)
+        val error = result.errors.first { it.errorType == ChunkValidationErrorType.MISSING_ID }
+
+        assertEquals(12, error.lineStart)
+        assertEquals(15, error.lineEnd)
+    }
+
+    @Test
+    fun `should expose single line range when sourceLines has no dash`() {
+        val chunk = validChunk().copy(sourceLines = "7", id = "")
+
+        val result = validator.validate(chunk)
+        val error = result.errors.first { it.errorType == ChunkValidationErrorType.MISSING_ID }
+
+        assertEquals(7, error.lineStart)
+        assertEquals(7, error.lineEnd)
+    }
+
+    @Test
+    fun `should expose null line range for blank sourceLines`() {
+        val chunk = validChunk().copy(sourceLines = "", id = "")
+
+        val result = validator.validate(chunk)
+        val idError = result.errors.first { it.errorType == ChunkValidationErrorType.MISSING_ID }
+        val linesError = result.errors.first { it.errorType == ChunkValidationErrorType.MISSING_SOURCE_LINES }
+
+        assertEquals(null, idError.lineStart)
+        assertEquals(null, idError.lineEnd)
+        assertEquals(null, linesError.lineStart)
+        assertEquals(null, linesError.lineEnd)
     }
 
     @Test

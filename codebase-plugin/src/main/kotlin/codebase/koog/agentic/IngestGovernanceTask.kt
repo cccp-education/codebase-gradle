@@ -28,6 +28,10 @@ abstract class IngestGovernanceTask : DefaultTask() {
     @get:Internal
     var lastIngestionReport: IngestionReport? = null
 
+    @get:Internal
+    var chunkValidator: ChunkValidator = ChunkValidator()
+        internal set
+
     init {
         group = "generate"
         description = "Ingest governance EAGER files (AGENT.adoc, INDEX.adoc, BACKLOG.adoc) into AgenticIngestor (in-memory stub)"
@@ -44,7 +48,8 @@ abstract class IngestGovernanceTask : DefaultTask() {
         val repository = InMemoryAgenticChunkRepository()
         val ingestor = AgenticIngestor(
             repository = repository,
-            governanceOntologizer = GovernanceOntologizer()
+            governanceOntologizer = GovernanceOntologizer(),
+            chunkValidator = chunkValidator
         )
 
         val report = runBlocking { ingestor.ingest(files) }
@@ -85,6 +90,7 @@ abstract class IngestGovernanceTask : DefaultTask() {
         appendLine("  \"artifactsCompiled\": ${report.artifactsCompiled},")
         appendLine("  \"sectionsAdded\": ${mapToJson(report.sectionsAdded)},")
         appendLine("  \"sectionsTotal\": ${mapToJson(report.sectionsTotal)},")
+        appendLine("  \"validationErrorsByType\": ${validationErrorsByTypeToJson(report.validationErrors)},")
         appendLine("  \"validationErrors\": ${validationErrorsToJson(report.validationErrors)}")
         appendLine("}")
     }
@@ -92,10 +98,28 @@ abstract class IngestGovernanceTask : DefaultTask() {
     private fun validationErrorsToJson(errors: List<ChunkValidationError>): String = buildString {
         append("[")
         errors.withIndex().forEach { (index, error) ->
-            append("{\"sourceFile\": \"${escapeJson(error.sourceFile)}\", \"sourceLines\": \"${escapeJson(error.sourceLines)}\", \"message\": \"${escapeJson(error.message)}\"}")
+            append("{")
+            append("\"sourceFile\": \"${escapeJson(error.sourceFile)}\", ")
+            append("\"sourceLines\": \"${escapeJson(error.sourceLines)}\", ")
+            append("\"lineStart\": ${error.lineStart ?: "null"}, ")
+            append("\"lineEnd\": ${error.lineEnd ?: "null"}, ")
+            append("\"errorType\": \"${error.errorType.name}\", ")
+            append("\"message\": \"${escapeJson(error.message)}\"")
+            append("}")
             if (index < errors.size - 1) append(", ")
         }
         append("]")
+    }
+
+    private fun validationErrorsByTypeToJson(errors: List<ChunkValidationError>): String = buildString {
+        val counts = errors.groupingBy { it.errorType }.eachCount()
+        append("{")
+        val entries = counts.entries.toList()
+        for ((index, entry) in entries.withIndex()) {
+            append("\"${entry.key.name}\": ${entry.value}")
+            if (index < entries.size - 1) append(", ")
+        }
+        append("}")
     }
 
     private fun escapeJson(value: String): String = value

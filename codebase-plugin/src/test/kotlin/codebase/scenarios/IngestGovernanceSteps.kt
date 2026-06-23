@@ -1,6 +1,11 @@
 package codebase.scenarios
 
+import codebase.koog.agentic.AgenticChunk
+import codebase.koog.agentic.ChunkValidationError
+import codebase.koog.agentic.ChunkValidationErrorType
+import codebase.koog.agentic.ChunkValidator
 import codebase.koog.agentic.GovernanceSection
+import codebase.koog.agentic.ValidationResult
 import io.cucumber.datatable.DataTable
 import io.cucumber.java.Before
 import io.cucumber.java.en.Given
@@ -11,7 +16,7 @@ import kotlin.test.assertTrue
 
 class IngestGovernanceSteps(private val world: IngestGovernanceWorld) {
 
-    @Before("@epic_v_9_8")
+    @Before("@epic_v_9_8,@epic_v_9_10")
     fun reset() {
         world.reset()
     }
@@ -79,5 +84,34 @@ class IngestGovernanceSteps(private val world: IngestGovernanceWorld) {
     @Then("the ingestion report section total is {string} with count greater than {int}")
     fun `section total greater than`(sectionName: String, min: Int) {
         world.assertSectionTotalGreaterThan(sectionName, min)
+    }
+
+    @Given("the ingestGovernance task uses a validator that rejects all chunks as MISSING_CONTENT")
+    fun `validator rejects all chunks as missing content`() {
+        world.chunkValidator = object : ChunkValidator() {
+            override fun validate(chunk: AgenticChunk): ValidationResult {
+                return ValidationResult(
+                    valid = false,
+                    errors = listOf(
+                        ChunkValidationError(
+                            sourceFile = chunk.sourceFile,
+                            sourceLines = chunk.sourceLines,
+                            lineStart = null,
+                            lineEnd = null,
+                            errorType = ChunkValidationErrorType.MISSING_CONTENT,
+                            message = "rejected by scenario validator"
+                        )
+                    )
+                )
+            }
+        }
+    }
+
+    @Then("the output JSON matches the validation error type summary for {string}")
+    fun `output json matches validation error type summary`(typeName: String) {
+        val json = world.outputJson()
+        val summaryRegex = Regex("\"validationErrorsByType\"\\s*:\\s*\\{[^}]*\"$typeName\"\\s*:\\s*\\d+")
+        assertTrue(summaryRegex.containsMatchIn(json),
+            "JSON should summarize errors for type $typeName")
     }
 }

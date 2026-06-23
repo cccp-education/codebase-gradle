@@ -31,6 +31,8 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 138 — `OllamaInstanceFactory` + contrat N0 `volumeTag` + feature Cucumber `@epic_v6_ollama_cloud` (2 scénarios, zéro réseau)
 | ✅ | Session 140 — EPIC 8 Expert Exposure clôturé 4/4 : `ExpertManifestReader` (read/readOrEmpty/findByDomain) + 8 JUnit5 + 2 round-trip JUnit5 + 1 scénario Cucumber cross-borough (6/6 @epic8 PASS)
 | ✅ | Session 142 — EPIC V-9.3 ScanAgent livré : `ScanAgent` scanner récursif `.agents/` (ignore build/.git/.gradle/node_modules) + `ScannedFile` value object DDD + 8 JUnit5 + 6 Cucumber @epic_v_9_3 PASS + refactor `IngestGovernanceTask.collectGovernanceFiles` (liste hardcoded supprimée, 5 tests préservés). Under-EPIC 1 complet 5/5.
+| ✅ | Session 145 — EPIC V-9.9 ChunkValidationGate livré (`ChunkValidator` câblé dans `AgenticIngestor`, `IngestionReport` enrichi `chunksInvalid`/`validationErrors`, 3 JUnit5 + 2 Cucumber @epic_v_9_9 PASS, régressions V-9.3/9.5/9.7/9.8 vertes)
+| ✅ | Session 146 — EPIC V-9.10 ChunkValidationReport livré (`ChunkValidationErrorType`, `lineStart`/`lineEnd`, `validationErrorsByType` JSON, 3 JUnit5 + 1 test fonctionnel + 3 Cucumber @epic_v_9_10 PASS, zéro régression V-9.x)
 
 === EPICs & Projects
 

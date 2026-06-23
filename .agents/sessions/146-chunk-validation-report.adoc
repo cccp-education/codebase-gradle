@@ -1,0 +1,44 @@
+= Session 146 — ChunkValidationReport (EPIC V-9.10)
+
+== Contexte
+
+Suite à la livraison de V-9.9 ChunkValidationGate (session 145), l'`IngestionReport` et `IngestGovernanceTask` exposaient déjà les erreurs de validation, mais sous forme brute (`sourceFile`, `sourceLines`, `message`). L'objectif de V-9.10 est de rendre ce rapport exploitable : par fichier, par ligne, par type d'erreur.
+
+== Actions réalisées
+
+. Domaine DDD : ajout de `ChunkValidationErrorType` enum + enrichissement de `ChunkValidationError` avec `lineStart`, `lineEnd`, `errorType`.
+. Refactor de `ChunkValidator` pour émettre des erreurs typées + parser `sourceLines` (`blank`/`single`/`start-end`).
+. Suppression du doublon `ChunkValidationError` dans `AgenticIngestor` ; utilisation directe de `validation.errors`.
+. Enrichissement JSON `IngestGovernanceTask` : `errorType`, `lineStart`, `lineEnd`, `validationErrorsByType`.
+. Injection contrôlée de `ChunkValidator` dans `IngestGovernanceTask` pour les tests.
+. Tests baby-step DDD/TDD/BDD :
+** 3 JUnit5 `ChunkValidatorTest` (line range + types)
+** 1 test fonctionnel `IngestGovernanceTaskTest` (JSON typé)
+** 3 scénarios Cucumber `@epic_v_9_10`
+. Mise à jour gouvernance : BACKLOG, INDEX, SESSIONS_HISTORY, TEST_COVERAGE_ANALYSIS.
+
+== Commandes exécutées
+
+* `./gradlew :codebase-plugin:compileKotlin`
+* `./gradlew :codebase-plugin:compileTestKotlin`
+* `./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.ChunkValidatorTest" --tests "codebase.koog.agentic.AgenticIngestorTest" --tests "codebase.koog.agentic.IngestGovernanceTaskTest"`
+* `./gradlew :codebase-plugin:cucumberTestEpicV910`
+* `./gradlew :codebase-plugin:cucumberTestEpicV93 :codebase-plugin:cucumberTestEpicV95 :codebase-plugin:cucumberTestEpicV97 :codebase-plugin:cucumberTestEpicV98 :codebase-plugin:cucumberTestEpicV99`
+
+== Résultats obtenus
+
+* Build `compileKotlin` vert entre chaque fichier modifié.
+* V-9.10 unit/fonctionnel/Cucumber PASS.
+* Régressions V-9.3/9.5/9.7/9.8/9.9 vertes.
+* JSON d'ingestion enrichi avec `errorType`, `lineStart`, `lineEnd`, `validationErrorsByType`.
+
+== Leçons apprises
+
+* Garder `ValidationResult` stable mais le remplir d'objets métier typés plutôt que de `String` évite les régressions et facilite le reporting.
+* Parser de line range doit tolérer `blank`, `single` et `start-end` sans explosion.
+* Un fichier modifié à la fois + compilation immédiate = debugging minimal.
+
+== Next steps
+
+* V-9.11 AgenticCompiler — Transformer chunk en artefact exécutable.
+* Poursuivre Under-EPIC 3 (Compilation et Enforcement).

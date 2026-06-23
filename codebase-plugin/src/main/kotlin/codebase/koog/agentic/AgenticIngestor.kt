@@ -12,12 +12,6 @@ data class IngestionReport(
     val validationErrors: List<ChunkValidationError> = emptyList()
 )
 
-data class ChunkValidationError(
-    val sourceFile: String,
-    val sourceLines: String,
-    val message: String
-)
-
 class AgenticIngestor(
     private val chunker: AgenticChunker = AgenticChunker(),
     private val ontologizer: AgenticOntologizer = AgenticOntologizer(),
@@ -53,15 +47,7 @@ class AgenticIngestor(
                 val validation = chunkValidator.validate(chunk.chunk)
                 if (!validation.valid) {
                     chunksInvalid++
-                    validation.errors.forEach { error ->
-                        validationErrors.add(
-                            ChunkValidationError(
-                                sourceFile = chunk.chunk.sourceFile,
-                                sourceLines = chunk.chunk.sourceLines,
-                                message = error
-                            )
-                        )
-                    }
+                    validationErrors.addAll(validation.errors)
                     continue
                 }
 

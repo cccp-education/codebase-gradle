@@ -136,4 +136,45 @@ class IngestGovernanceTaskTest {
         assertTrue(content.contains("sectionsAdded"), "JSON should contain sectionsAdded")
         assertTrue(content.contains("sectionsTotal"), "JSON should contain sectionsTotal")
     }
+
+    @Test
+    fun `task report json exposes typed validation errors`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val outputFile = File(tempDir, "ingestion-report.json")
+        val fakeValidator = object : ChunkValidator() {
+            override fun validate(chunk: AgenticChunk): ValidationResult {
+                val base = super.validate(chunk)
+                if (base.valid) {
+                    val error = ChunkValidationError(
+                        sourceFile = chunk.sourceFile,
+                        sourceLines = chunk.sourceLines,
+                        lineStart = 1,
+                        lineEnd = 1,
+                        errorType = ChunkValidationErrorType.MISSING_CONTENT,
+                        message = "injected validation error"
+                    )
+                    return ValidationResult(valid = false, errors = listOf(error))
+                }
+                return base
+            }
+        }
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+            it.outputFile.set(outputFile)
+            it.chunkValidator = fakeValidator
+        }.get()
+
+        task.executeIngest()
+
+        assertTrue(outputFile.exists(), "Report file should be written")
+        val content = outputFile.readText()
+        assertTrue(content.contains("\"errorType\": \"MISSING_CONTENT\""), "JSON should expose errorType")
+        assertTrue(content.contains("\"lineStart\": 1"), "JSON should expose lineStart")
+        assertTrue(content.contains("\"lineEnd\": 1"), "JSON should expose lineEnd")
+        assertTrue(content.contains("\"validationErrorsByType\""), "JSON should expose validationErrorsByType")
+        val summaryRegex = Regex("\"validationErrorsByType\"\\s*:\\s*\\{[^}]*\"MISSING_CONTENT\"\\s*:\\s*\\d+")
+        assertTrue(summaryRegex.containsMatchIn(content), "JSON should summarize errors by type")
+    }
 }

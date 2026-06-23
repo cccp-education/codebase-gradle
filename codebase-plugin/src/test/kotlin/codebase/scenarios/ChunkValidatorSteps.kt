@@ -1,5 +1,7 @@
 package codebase.scenarios
 
+import codebase.koog.agentic.ChunkValidationError
+import codebase.koog.agentic.ChunkValidationErrorType
 import codebase.koog.agentic.ChunkType
 import codebase.koog.agentic.TaxonomyVerb
 import io.cucumber.java.Before
@@ -80,8 +82,18 @@ class ChunkValidatorSteps(private val world: ChunkValidatorWorld) {
     fun `errors contain`(keyword: String) {
         val result = world.lastResult ?: error("No validation result")
         assertTrue(
-            result.errors.any { it.contains(keyword, ignoreCase = true) },
+            result.errors.any { it.message.contains(keyword, ignoreCase = true) },
             "Errors should contain '$keyword', got: ${result.errors}"
+        )
+    }
+
+    @Then("the validation error type is {string}")
+    fun `error type is`(typeName: String) {
+        val result = world.lastResult ?: error("No validation result")
+        val expectedType = ChunkValidationErrorType.valueOf(typeName)
+        assertTrue(
+            result.errors.any { it.errorType == expectedType },
+            "Errors should contain type $typeName, got: ${result.errors.map { it.errorType }}"
         )
     }
 }

@@ -177,7 +177,19 @@ class AgenticIngestorTest {
         val fakeValidator = object : ChunkValidator() {
             override fun validate(chunk: AgenticChunk): ValidationResult {
                 return if (chunk.content.contains("INVALID")) {
-                    ValidationResult(valid = false, errors = listOf("content contains INVALID marker"))
+                    ValidationResult(
+                        valid = false,
+                        errors = listOf(
+                            ChunkValidationError(
+                                sourceFile = chunk.sourceFile,
+                                sourceLines = chunk.sourceLines,
+                                lineStart = null,
+                                lineEnd = null,
+                                errorType = ChunkValidationErrorType.MISSING_CONTENT,
+                                message = "content contains INVALID marker"
+                            )
+                        )
+                    )
                 } else {
                     super.validate(chunk)
                 }
@@ -208,7 +220,19 @@ class AgenticIngestorTest {
         val fakeValidator = object : ChunkValidator() {
             override fun validate(chunk: AgenticChunk): ValidationResult {
                 return if (chunk.content.contains("INVALID")) {
-                    ValidationResult(valid = false, errors = listOf("invalid"))
+                    ValidationResult(
+                        valid = false,
+                        errors = listOf(
+                            ChunkValidationError(
+                                sourceFile = chunk.sourceFile,
+                                sourceLines = chunk.sourceLines,
+                                lineStart = null,
+                                lineEnd = null,
+                                errorType = ChunkValidationErrorType.MISSING_CONTENT,
+                                message = "invalid"
+                            )
+                        )
+                    )
                 } else {
                     super.validate(chunk)
                 }

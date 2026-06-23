@@ -7,9 +7,9 @@
 
 | Type | nb Tests | Coverage | Status |
 |------|----------|----------|--------|
-| JUnit5 | 137+ | ~60% | EN COURS |
-| Cucumber | 27+ | ~50% | EN COURS |
-| Total | 164+ | — | — |
+| JUnit5 | 140+ | ~60% | EN COURS |
+| Cucumber | 30+ | ~50% | EN COURS |
+| Total | 170+ | — | — |
 
 == Tests unitaires (JUnit5)
 
@@ -24,6 +24,9 @@
 | AgenticChunkEnforcementTest | 10 | 10 unit + 7 Cucumber = 17/17 PASS | TERMINÉ |
 | AgenticIngestorTest | 7 | Ingest pipeline (chunk→ontologize→store) — `InMemoryAgenticChunkRepository` | TERMINÉ (session 134 migration doublon) |
 | AgenticExternalImporterTest | 7 | External prompts import (copilot/cursor/claude/gemini) — `InMemoryAgenticChunkRepository` | TERMINÉ (session 134 migration doublon) |
+| ChunkValidatorTest | 14 | Validation chunk (id/sourceFile/content/sourceLines/checksum/weight + line range + error types) | TERMINÉ (session 146 V-9.10)
+| AgenticIngestorTest | 10 | Ingest pipeline + validation errors typées | TERMINÉ (session 146 V-9.10)
+| IngestGovernanceTaskTest | 8 | Task Gradle + report JSON enrichi | TERMINÉ (session 146 V-9.10)
 | GovernanceContextLoaderTest | 5 | Chargement AGENT/INDEX/PROMPT_REPRISE/BACKLOG | TERMINÉ |
 | SessionProtocolTaskTest | 21 | Fallback governance + lifecycle + contextFile | TERMINÉ |
 | SessionProtocolServerTest | 6 | JSON-lines daemon + governance fallback | TERMINÉ |
@@ -47,6 +50,7 @@
 | epic_sp_3_lifecycle.feature | 6 | Session lifecycle create/resume/close/list | EN COURS (timeout sans pgvector) |
 | epic_v_pool.feature | 8 | Ollama/Gemini key pool rotation | EN COURS |
 | epic_v6_ollama_cloud.feature | 2 | Ollama cloud quota exceeded rotation (zéro réseau) | TERMINÉ (session 138) |
+| epic_v_9_10_chunk_validation_report.feature | 3 | Rapport d'erreurs de validation typées (sourceFile, lineStart/End, validationErrorsByType) | TERMINÉ (session 146) |
 
 == Tests de regression
 
@@ -54,7 +58,7 @@
 |------|----------|--------|
 | EPIC Y (Agentic Literature Compiler) | 120+ | TERMINÉ |
 | EPIC V (Vibecoding) | 35+ | TERMINÉ |
-| EPIC V-9 (Vibecoding Gouvernance) | 0 | CADRAGE A FAIRE |
+| EPIC V-9 (Vibecoding Gouvernance) | 25+ | EN COURS (V-9.1→V-9.10 livrés) |
 
 == Performance & Benchmarks
 

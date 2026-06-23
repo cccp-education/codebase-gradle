@@ -93,3 +93,20 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** `OllamaInstanceFactory` génère 29 instances sur ports 11437-11465, modèles cyclés, volumeTag
 ** 7 JUnit5 `OllamaInstanceFactoryTest` + 2 scénarios Cucumber `@epic_v6_ollama_cloud` PASS (zéro réseau)
 ** Build codebase-gradle SUCCESSFUL
+
+== Session 146 — 2026-06-23
+
+* **EPICs** : EPIC V-9.10 ChunkValidationReport
+* **Livrables** :
+** `ChunkValidationErrorType` enum DDD (8 types)
+** `ChunkValidationError` enrichi avec `lineStart`, `lineEnd`, `errorType`
+** `ChunkValidator` émet des erreurs typées + parse `sourceLines`
+** `IngestGovernanceTask` expose `validationErrorsByType` dans le JSON
+* **Tests** :
+** 3 JUnit5 ajoutés dans `ChunkValidatorTest` (line range + types)
+** 1 test fonctionnel `IngestGovernanceTaskTest` (JSON typé)
+** 3 scénarios Cucumber `@epic_v_9_10` PASS
+** Régressions V-9.3/9.5/9.7/9.8/9.9 vertes
+* **Lecons** :
+** Garder `ValidationResult` stable mais le remplir d'objets métier typés plutôt que de String
+** Le parser de line range doit tolérer `blank`, `single` et `start-end`

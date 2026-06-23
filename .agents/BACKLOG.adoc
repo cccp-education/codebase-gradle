@@ -201,17 +201,29 @@
 **Origine** : Session 000 (2026-06-16) — gap vibecoding incomplet
 **Cadrage** : `codebase-plugin/.agents/CADRAGE_METHODE_EPIC_V9.adoc` (7 ateliers, 35 items)
 
-==== Under-EPIC 1 : Analyse et Extract (4/5 — V-9.3 reste)
+==== Under-EPIC 1 : Analyse et Extract (5/5 ✅)
 
 * [x] V-9.1 : AgenticChunker — *déjà livré par EPIC Y-1* (AgenticChunker.kt 439 lignes + 16 JUnit5 PASS)
 * [x] V-9.2 : AgenticChunkType — *déjà livré par EPIC Y* (ChunkType enum 5 types dans AgenticChunk.kt)
-* [ ] V-9.3 : ScanAgent — scanner récursif du dossier `.agents/` (remplacer collectGovernanceFiles hardcoded 7 paths). 12 JUnit5.
+* [x] V-9.3 : ScanAgent — ✅ TERMINÉ session 142 (8 JUnit5 + 6 Cucumber @epic_v_9_3 PASS)
 * [x] V-9.4 : ChunkExtractor — *couvert par AgenticChunker* (extraction + sha256 id + checksum déjà présents)
 * [x] V-9.5 : ChunkValidator — ✅ TERMINÉ session 141 (10 JUnit5 + 5 Cucumber @epic_v_9_5 PASS)
 
-==== Under-EPICs 2-7
+==== Under-EPIC 2 : Ontologisation (3/3 ✅)
 
-V-9.6→V-9.35 restent à coder. Voir `CADRAGE_METHODE_EPIC_V9.adoc` pour le détail.
+* [x] V-9.6 : AgenticOntologizer — *déjà livré par EPIC Y-2* (24 JUnit5 PASS)
+* [x] V-9.7 : GovernanceOntologizer — ✅ TERMINÉ (classifie AGENT/INDEX/BACKLOG/SESSIONS_HISTORY/TEST_COVERAGE/PROMPT_REPRISE → sections)
+* [x] V-9.8 : IngestionReport sections — ✅ TERMINÉ session 142 (`sectionsAdded`/`sectionsTotal` par `GovernanceSection`)
+
+==== Under-EPIC 3 : Compilation et Enforcement (1/5 en cours)
+
+* [x] V-9.9 : ChunkValidationGate — ✅ TERMINÉ session 145 (`ChunkValidator` câblé dans `AgenticIngestor`, `IngestionReport.chunksInvalid`/`validationErrors`)
+* [x] V-9.10 : ChunkValidationReport — ✅ TERMINÉ session 146 (`ChunkValidationErrorType`, `lineStart`/`lineEnd`, `validationErrorsByType` dans JSON)
+* [ ] V-9.11 : AgenticCompiler — Transforme chunk en artefact executable (27 JUnit5, session 094)
+
+==== Under-EPICs 4-7
+
+V-9.12→V-9.35 restent à coder. Voir `CADRAGE_METHODE_EPIC_V9.adoc` pour le détail.
 
 == Backlog stale
 
