@@ -1,0 +1,111 @@
+= Session 159 — EPIC OCR-1/OCR-2 restants (HTTP 429 + env var + multi-compte + Tesseract)
+:date: 2026-06-23
+:borough: Queens — codebase-gradle (N1) + Brooklyn — codex-gradle (N2)
+:epic: OCR-1 + OCR-2
+:method: Baby-step DDD/TDD/BDD — unit → fonctionnel → Cucumber
+
+== Mission
+
+Attaquer les items OCR-1/OCR-2 restants (P2, PENDING) du BACKLOG.adoc lignes 591-607 :
+- OCR-1 HTTP 429 detection + rotation auto
+- OCR-1 env var mapping `GEMINI_API_KEY_1..N` → LlmInstance
+- OCR-1 multi-compte (1 pool par compte Google)
+- OCR-2 fallback Tesseract (sans IA)
+
+== Items livrés
+
+=== OCR-1 HTTP 429 detection + rotation auto (backlog ligne 596)
+
+* `GeminiKeyPool.markRateLimited(instance)` / `isRateLimited(instance)` — instance skippée par `nextInstance()` jusqu'au `resetUsage()`
+* `GeminiVisionProvider` ouvert (`open class`, `override open suspend fun`), accepte `GeminiKeyPool` optionnel dans le constructeur
+* Détection "429" / "Too Many Requests" dans le `catch` de `processImage` → `pool.markRateLimited(instance)`
+* Fallback best-effort : si toutes les instances sont rate-limited, retourne la première non rate-limited
+* Tests : 4 unitaires `GeminiKeyPoolTest` + 2 unitaires `GeminiVisionProvider429Test` + 3 Cucumber `@epic_ocr_1`
+
+=== OCR-1 env var mapping GEMINI_API_KEY_1..N (backlog ligne 594)
+
+* `GeminiPoolFactory.fromKeys(keys, model, idPrefix)` — construit un `GeminiKeyPool` depuis une liste explicite
+* `GeminiPoolFactory.fromEnvVars(env, model)` — lit `GEMINI_API_KEY_1..N`, skip les vides, ordre 1→N garanti
+* Câblage `OcrTask.geminiApiKeys` + `resolveGeminiProvider(model)` + `resolveGeminiPool(model)` — pool construit depuis DSL ou `System.getenv()`
+* Tests : 11 unitaires `GeminiPoolFactoryTest` + 3 fonctionnels `OcrTaskPoolTest` + 2 Cucumber `@epic_ocr_1`
+
+=== OCR-1 multi-compte (backlog ligne 597)
+
+* `GeminiMultiAccountPool` — 1 `GeminiKeyPool` par compte Google, rotation entre comptes
+* `GeminiMultiAccountPool.fromEnvVars(env)` — lit `GEMINI_ACCOUNT_{accountId}_API_KEY_{keyIndex}`, skip vides
+* `markRateLimited` / `isRateLimited` / `resetUsage` délégués au bon sous-pool
+* `GeminiPoolFactory.fromKeys` enrichi avec `idPrefix` pour IDs uniques entre comptes
+* Tests : 8 unitaires `GeminiMultiAccountPoolTest` + 4 Cucumber `@epic_ocr_1`
+
+=== OCR-2 fallback Tesseract (backlog ligne 605) — boundary harmonisé
+
+*Decision* : Tesseract est un OCR documentaire sans IA → appartient à **codex-gradle (Brooklyn N2, READ+RAG)**, pas codebase (Queens N1, LLM).
+
+* **codex-gradle** : `codex.ocr.OcrEngine` interface (`process(OcrRequest): OcrResult`) + `codex.ocr.TesseractOcrEngine` (CLI tesseract via ProcessBuilder, best-effort ne jette pas)
+* **codex-gradle** : 5 tests JUnit5 `TesseractOcrEngineTest` PASS, `publishToMavenLocal` 0.0.1
+* **codebase-gradle** : `codebase.koog.llm.CodexOcrEngineAdapter` wrap `codex.ocr.OcrEngine` → `VisionProvider` (boundary adapter)
+* **codebase-gradle** : `TesseractOcrProvider` supprimé (plus de duplication), `OcrTask` fallback chain : Gemini → Ollama → `CodexOcrEngineAdapter(TesseractOcrEngine())`
+* Tests : 2 fonctionnels `OcrTaskTesseractFallbackTest` + 2 Cucumber `@epic_ocr_2`
+
+== Fichiers modifiés / créés
+
+=== codebase-gradle (Queens)
+
+* `main/kotlin/codebase/koog/llm/pool/GeminiKeyPool.kt` — `markRateLimited`/`isRateLimited`/`rateLimitedIds` set + fallback best-effort
+* `main/kotlin/codebase/koog/llm/pool/GeminiPoolFactory.kt` — NOUVEAU — `fromKeys`/`fromEnvVars` + `idPrefix`
+* `main/kotlin/codebase/koog/llm/pool/GeminiMultiAccountPool.kt` — NOUVEAU — multi-comptes + `fromEnvVars` multi
+* `main/kotlin/codebase/koog/llm/GeminiVisionProvider.kt` — `open class`, `keyPool` param, détection 429
+* `main/kotlin/codebase/koog/llm/CodexOcrEngineAdapter.kt` — NOUVEAU — adapter `OcrEngine` → `VisionProvider`
+* `main/kotlin/codebase/ocr/OcrTask.kt` — `geminiApiKeys`, `tesseractOcrProvider`, `resolveGeminiProvider`/`resolveGeminiPool`, fallback Tesseract
+* `test/kotlin/codebase/koog/llm/pool/GeminiKeyPoolTest.kt` — 4 tests `markRateLimited`/`isRateLimited`/`resetUsage`
+* `test/kotlin/codebase/koog/llm/pool/GeminiPoolFactoryTest.kt` — NOUVEAU — 11 tests factory
+* `test/kotlin/codebase/koog/llm/pool/GeminiMultiAccountPoolTest.kt` — NOUVEAU — 8 tests multi-compte
+* `test/kotlin/codebase/koog/llm/GeminiVisionProvider429Test.kt` — NOUVEAU — 2 tests 429 detection
+* `test/kotlin/codebase/ocr/OcrTaskPoolTest.kt` — NOUVEAU — 3 tests fonctionnels pool
+* `test/kotlin/codebase/ocr/OcrTaskTesseractFallbackTest.kt` — NOUVEAU — 2 tests fonctionnels Tesseract
+* `test/kotlin/codebase/scenarios/ocr/Ocr1PoolSteps.kt` — NOUVEAU — steps Cucumber `@epic_ocr_1`
+* `test/kotlin/codebase/scenarios/ocr/OcrSteps.kt` — steps Tesseract + `CodexOcrEngineAdapter`
+* `test/features/ocr.feature` — 9 scénarios `@epic_ocr_1` + 2 scénarios `@epic_ocr_2`
+
+=== codex-gradle (Brooklyn)
+
+* `main/kotlin/codex/ocr/OcrEngine.kt` — NOUVEAU — interface `process(OcrRequest): OcrResult`
+* `main/kotlin/codex/ocr/TesseractOcrEngine.kt` — NOUVEAU — CLI tesseract wrapper
+* `test/kotlin/codex/ocr/TesseractOcrEngineTest.kt` — NOUVEAU — 5 tests JUnit5
+
+== Tests
+
+[cols="3,2,2"]
+|===
+| Suite | Tests | Résultat
+
+| GeminiKeyPoolTest | 4 unitaires | ✅ PASS
+| GeminiPoolFactoryTest | 11 unitaires | ✅ PASS
+| GeminiMultiAccountPoolTest | 8 unitaires | ✅ PASS
+| GeminiVisionProvider429Test | 2 unitaires | ✅ PASS
+| OcrTaskPoolTest | 3 fonctionnels | ✅ PASS
+| OcrTaskTesseractFallbackTest | 2 fonctionnels | ✅ PASS
+| OcrCucumberRunner (@epic_ocr_1) | 9 scénarios | ✅ PASS
+| OcrCucumberRunner (@epic_ocr_2) | 2 scénarios | ✅ PASS
+| TesseractOcrEngineTest (codex) | 5 unitaires | ✅ PASS
+|===
+
+Total : 35 tests nouveaux + régressions OCR existantes vertes.
+
+== Boundary architecturale
+
+* **codex-gradle (Brooklyn N2, READ+RAG)** : détient les engines OCR documentaires (sans IA) — `OcrEngine` + `TesseractOcrEngine`
+* **codebase-gradle (Queens N1, LLM)** : orchestre la fallback chain LLM via `CodexOcrEngineAdapter` — Gemini → Ollama → Tesseract
+* Le boundary est strict : codex expose les engines OCR purs, codebase les adapte dans `VisionProvider`
+
+== Bilan EPIC OCR
+
+* OCR-0 : ✅ Contrats codex (session 027-028)
+* OCR-1 : ✅ TERMINÉ (6/6) — HTTP 429 + env var + multi-compte + rotation
+* OCR-2 : ✅ TERMINÉ (5/5) — GeminiVisionProvider + Tesseract fallback (boundary harmonisé)
+* OCR-2b : ✅ OllamaOcrProvider (session 103)
+* OCR-3 : ✅ OcrTask Gradle (session 115)
+* OCR-3b : ✅ FakeVisionProvider + CI (session 118)
+* OCR-4 : ✅ Intégration pipeline (session 117)
+
+EPIC OCR : 7/7 sous-EPICs TERMINÉS.

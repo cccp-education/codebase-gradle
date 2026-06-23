@@ -130,6 +130,49 @@ class GeminiKeyPoolTest {
     }
 
     @Test
+    fun `markRateLimited should skip instance on next rotation`() {
+        val pool = GeminiKeyPool(
+            listOf(instance("gemini-key-1", 11437), instance("gemini-key-2", 11438)),
+            rotationStrategy = RotationStrategy.ROUND_ROBIN
+        )
+        assertEquals("gemini-key-1", pool.nextInstance().id)
+        pool.markRateLimited(instance("gemini-key-1", 11437))
+        assertEquals("gemini-key-2", pool.nextInstance().id)
+        assertEquals("gemini-key-2", pool.nextInstance().id)
+    }
+
+    @Test
+    fun `isRateLimited should return true for marked instance`() {
+        val inst = instance("gemini-key-1", 11437)
+        val pool = GeminiKeyPool(listOf(inst, instance("gemini-key-2", 11438)))
+        pool.markRateLimited(inst)
+        assertTrue(pool.isRateLimited(inst))
+        assertFalse(pool.isRateLimited(instance("gemini-key-2", 11438)))
+    }
+
+    @Test
+    fun `resetUsage should clear rate-limited markers`() {
+        val inst = instance("gemini-key-1", 11437)
+        val pool = GeminiKeyPool(listOf(inst, instance("gemini-key-2", 11438)))
+        pool.markRateLimited(inst)
+        assertTrue(pool.isRateLimited(inst))
+        pool.resetUsage()
+        assertFalse(pool.isRateLimited(inst))
+        assertEquals("gemini-key-1", pool.nextInstance().id)
+    }
+
+    @Test
+    fun `nextInstance should skip all rate-limited and fall back best-effort`() {
+        val a = instance("gemini-key-1", 11437)
+        val b = instance("gemini-key-2", 11438)
+        val pool = GeminiKeyPool(listOf(a, b))
+        pool.markRateLimited(a)
+        pool.markRateLimited(b)
+        val fallback = pool.nextInstance()
+        assertTrue(fallback.id == a.id || fallback.id == b.id)
+    }
+
+    @Test
     fun `full pool should cycle through all 29 keys with 5 authorized models`() {
         val pool = fullPool()
         assertEquals(29, pool.size())

@@ -1,6 +1,8 @@
 package codebase.koog.llm
 
+import codebase.koog.llm.pool.GeminiKeyPool
 import codebase.rag.GeminiConfig
+import contracts.llmpool.LlmInstance
 import dev.langchain4j.data.message.ImageContent
 import dev.langchain4j.data.message.TextContent
 import dev.langchain4j.data.message.UserMessage
@@ -12,8 +14,9 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Base64
 
-class GeminiVisionProvider(
-    private val config: GeminiConfig = GeminiConfig()
+open class GeminiVisionProvider(
+    private val config: GeminiConfig = GeminiConfig(),
+    private val keyPool: GeminiKeyPool? = null
 ) : VisionProvider {
 
     private val log = LoggerFactory.getLogger(GeminiVisionProvider::class.java)
@@ -21,20 +24,26 @@ class GeminiVisionProvider(
     private var cachedModel: GoogleAiGeminiChatModel? = null
     private var cachedModelName: String? = null
     private var cachedMaxTokens: Int = -1
+    private var currentInstance: LlmInstance? = null
 
-    override suspend fun processImage(
+    override open suspend fun processImage(
         imageBytes: ByteArray,
         mimeType: String,
         language: String,
         model: String,
         maxTokens: Int
     ): String {
+        val instance = keyPool?.nextInstance()
+        currentInstance = instance
+        val apiKey = instance?.baseUrl?.substringAfter("key=")?.takeIf { it.isNotBlank() }
+            ?: config.resolveApiKey()
+
         log.info(
-            "[GeminiVision] Processing image: mimeType={}, language={}, model={}, maxTokens={}, imageSize={}bytes",
-            mimeType, language, model, maxTokens, imageBytes.size
+            "[GeminiVision] Processing image: mimeType={}, language={}, model={}, maxTokens={}, imageSize={}bytes, keyId={}",
+            mimeType, language, model, maxTokens, imageBytes.size, instance?.id ?: "default"
         )
 
-        val currentModel = resolveModel(model, maxTokens)
+        val currentModel = resolveModel(model, maxTokens, apiKey)
         val ocrPrompt = buildOcrPrompt(language, model)
         val base64Image = Base64.getEncoder().encodeToString(imageBytes)
         val userMessage = UserMessage.from(
@@ -50,17 +59,23 @@ class GeminiVisionProvider(
             log.info("[GeminiVision] Response received: length={}", text.length)
             text
         } catch (e: Exception) {
+            val message = e.message ?: ""
+            if (message.contains("429") || message.contains("Too Many Requests", ignoreCase = true)) {
+                instance?.let { pool ->
+                    log.warn("[GeminiVision] HTTP 429 detected — marking key {} as rate-limited", pool.id)
+                    keyPool?.markRateLimited(pool)
+                }
+            }
             throw IllegalStateException(
                 "Gemini Vision OCR failed for model=$model: ${e.message}", e
             )
         }
     }
 
-    private fun resolveModel(modelName: String, maxTokens: Int): GoogleAiGeminiChatModel {
+    private fun resolveModel(modelName: String, maxTokens: Int, apiKey: String): GoogleAiGeminiChatModel {
         if (modelName == cachedModelName && maxTokens == cachedMaxTokens && cachedModel != null) {
             return cachedModel!!
         }
-        val apiKey = config.resolveApiKey()
         log.info("[GeminiVision] Initializing model: model={}, maxOutputTokens={}", modelName, maxTokens)
         val newModel = GoogleAiGeminiChatModel.builder()
             .apiKey(apiKey)

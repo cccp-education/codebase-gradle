@@ -1,7 +1,7 @@
 = INDEX.adoc — Codebase Gradle (Queens N1)
 :date: 2026-06-23
-:session_en_cours: 156
-:session_precedente: 155 — EPIC V-9.19 Auto-detection livré (GovernanceFileSnapshot + GovernanceFileDiff + GovernanceFileChangeDetector + JsonGovernanceStateStore + IncrementalReport, mode incrémental câblé IngestGovernanceTask + extension DSL + CLI, 15 unit + 7 fonctionnel + 5 Cucumber @epic_v_9_19 PASS, régressions V-9.3→V-9.18 vertes, contrainte Ollama globale sauvegardée AGENTS.adoc + AGENT.adoc, 52/52 inférences gpt-oss:120b-cloud/gemma4:31b-cloud PASS)
+:session_en_cours: 160
+:session_precedente: 159 — EPIC OCR-1/OCR-2 restants TERMINÉS (9/9 items). HTTP 429 detection + rotation auto (GeminiKeyPool.markRateLimited/isRateLimited, GeminiVisionProvider catch 429). Env var mapping GEMINI_API_KEY_1..N (GeminiPoolFactory.fromKeys/fromEnvVars). Multi-compte Google (GeminiMultiAccountPool). Tesseract fallback harmonisé : OcrEngine + TesseractOcrEngine dans codex-gradle (Brooklyn), CodexOcrEngineAdapter dans codebase-gradle (Queens). 35 tests nouveaux + 11 Cucumber @epic_ocr_1/@epic_ocr_2 PASS. codex publishToMavenLocal 0.0.1. EPIC OCR complet 7/7.
 
 == Roadmap EPICs
 
@@ -86,8 +86,8 @@
 | 097
 
 | EPIC OCR
-| ✅ TERMINE
-| 26/26
+| ✅ TERMINÉ (7/7 — OCR-1 6/6 + OCR-2 5/5 + OCR-2b/3/3b/4 complets, session 159)
+| 027-159
 
 | EPIC CR Code Review
 | ✅ TERMINE
@@ -113,7 +113,9 @@
 == Sessions Récentes
 
 | Session | Date | EPIC | Résultat
-| 155 | 2026-06-23 | EPIC V-9 | V-9.19 Auto-detection of new governance files — `GovernanceFileSnapshot`/`GovernanceFileDiff`/`GovernanceFileChangeDetector`/`JsonGovernanceStateStore`/`IncrementalReport` DDD, mode incrémental câblé `IngestGovernanceTask` (diff snapshot précédente → `ingestFiltered`), extension DSL `incremental.set(true)` + CLI `-Pcodebase.governance.incremental=true`, 15 unit + 7 fonctionnel + 5 Cucumber @epic_v_9_19 PASS, régressions V-9.3→V-9.18 vertes ✅. Contrainte Ollama globale sauvegardée `AGENTS.adoc` + `AGENT.adoc` (ports 11434-11436 interdits, modèles `gpt-oss:120b-cloud`+`gemma4:31b-cloud`), 52/52 inférences PASS.
+| 159 | 2026-06-23 | EPIC OCR-1/OCR-2 | OCR-1/OCR-2 restants TERMINÉS (9/9 items) — HTTP 429 detection + rotation auto (`GeminiKeyPool.markRateLimited`/`isRateLimited`, `GeminiVisionProvider` catch 429), env var mapping `GEMINI_API_KEY_1..N` (`GeminiPoolFactory.fromKeys`/`fromEnvVars`), multi-compte Google (`GeminiMultiAccountPool`), Tesseract fallback harmonisé boundary codex↔codebase (`OcrEngine`+`TesseractOcrEngine` dans codex, `CodexOcrEngineAdapter` dans codebase), 35 tests nouveaux + 11 Cucumber `@epic_ocr_1`/`@epic_ocr_2` PASS, codex publishToMavenLocal 0.0.1, EPIC OCR complet 7/7 ✅
+| 158 | 2026-06-23 | EPIC V-6-POOL | V-6-POOL terminé 4/4 : AUTHORIZED_MODELS aligné sur AGENTS.adoc (2 modèles `gpt-oss:120b-cloud` + `gemma4:31b-cloud`) dans `OllamaInstanceFactory` + `OllamaInstanceScanner`, `LlmProviderResolver` cycle les 2 modèles sur `OLLAMA_POOL_PORTS` au lieu de `DEFAULT_MODEL` statique, feature Cucumber `epic_v6_pool.feature` (3 scénarios @epic_v6_pool) + runner + step `includes model`, tous tests unitaires + Cucumber PASS, zéro régression V-6 ollama_cloud + V-6 resolver ✅
+| 155 | 2026-06-23 | EPIC V-9 | V-9.19 Auto-detection of new governance files — `GovernanceFileSnapshot`/`GovernanceFileDiff`/`GovernanceFileChangeDetector`/`JsonGovernanceStateStore`/`IncrementalReport` DDD, mode incrémental câblé `IngestGovernanceTask` (diff snapshot précédente → `ingestFiltered`), extension DSL `incremental.set(true)` + CLI `-Pcodebase.governance.incremental=true`, 15 unit + 7 fonctionnel + 5 Cucumber @epic_v_9_19 PASS, régressions V-9.3→V-9.18 vertes ✅. Contrainte Ollama globale sauvegardée `AGENTS.adoc` + `AGENT.adoc`, 52/52 inférences PASS.
 | 154 | 2026-06-23 | EPIC V-9 | V-9.18 Compilation vers Gradle tasks — `AgenticGradleTaskRegistrar` enregistre GRADLE_TASK/CONSTRAINT_CHECK/VALIDATION comme tâches Gradle dynamiques (`runProcedure_*`, `enforceRule_*`, `validate_*`), câblage `IngestGovernanceTask`, enrichissement `AgenticChunker` verbes taxonomiques, 7 JUnit5 + 3 fonctionnels + 3 Cucumber @epic_v_9_18 PASS, régressions V-9.3→V-9.17 vertes ✅
 | 153 | 2026-06-23 | EPIC V-9 | V-9.17 Ingestion Summary DSL — extension Gradle `codebaseGovernance { strictValidation.set(true) }` + propriété projet `codebase.governance.strictValidation`, `GovernanceSummaryConfig` DDD + `CodebaseGovernanceExtension`, câblage `IngestGovernanceTask.governanceConfig`, 3 JUnit5 + 4 fonctionnels + 3 Cucumber @epic_v_9_17 PASS, régressions V-9.x vertes ✅
 | 152 | 2026-06-23 | EPIC V-9 | V-9.16 StrictValidationMode — option Gradle `strictValidation` dans `IngestGovernanceTask`, levée de `GradleException` si chunks invalides en mode strict, 3 JUnit5 + 3 Cucumber @epic_v_9_16 PASS, régression V-9.4 batch TAXONOMIE_WORKSPACE corrigée, régressions V-9.x vertes ✅

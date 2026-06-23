@@ -1,3 +1,33 @@
+== Session 159 — EPIC OCR-1/OCR-2 restants (HTTP 429 + env var + multi-compte + Tesseract)
+
+=== codebase-gradle (Queens N1)
+
+- `koog/llm/pool/GeminiKeyPool.kt` : `markRateLimited`/`isRateLimited`/`rateLimitedIds` set + fallback best-effort non rate-limited
+- `koog/llm/pool/GeminiPoolFactory.kt` : NOUVEAU — `fromKeys`/`fromEnvVars` + `idPrefix` param
+- `koog/llm/pool/GeminiMultiAccountPool.kt` : NOUVEAU — multi-comptes + `fromEnvVars` multi `GEMINI_ACCOUNT_N_API_KEY_M`
+- `koog/llm/GeminiVisionProvider.kt` : `open class`, `keyPool` param, détection 429 dans catch
+- `koog/llm/CodexOcrEngineAdapter.kt` : NOUVEAU — adapter `codex.ocr.OcrEngine` → `VisionProvider`
+- `ocr/OcrTask.kt` : `geminiApiKeys`, `tesseractOcrProvider`, `resolveGeminiProvider`/`resolveGeminiPool`, fallback Tesseract via adapter
+- `test/koog/llm/pool/GeminiKeyPoolTest.kt` : 4 tests `markRateLimited`/`isRateLimited`/`resetUsage`/`best-effort`
+- `test/koog/llm/pool/GeminiPoolFactoryTest.kt` : NOUVEAU — 11 tests factory
+- `test/koog/llm/pool/GeminiMultiAccountPoolTest.kt` : NOUVEAU — 8 tests multi-compte
+- `test/koog/llm/GeminiVisionProvider429Test.kt` : NOUVEAU — 2 tests 429 detection
+- `test/ocr/OcrTaskPoolTest.kt` : NOUVEAU — 3 tests fonctionnels pool
+- `test/ocr/OcrTaskTesseractFallbackTest.kt` : NOUVEAU — 2 tests fonctionnels Tesseract
+- `test/scenarios/ocr/Ocr1PoolSteps.kt` : NOUVEAU — steps Cucumber `@epic_ocr_1`
+- `test/scenarios/ocr/OcrSteps.kt` : steps Tesseract + `CodexOcrEngineAdapter`
+- `test/features/ocr.feature` : 9 scénarios `@epic_ocr_1` + 2 scénarios `@epic_ocr_2`
+- 35 tests nouveaux + 11 Cucumber PASS, zéro régression OCR existant
+
+=== codex-gradle (Brooklyn N2)
+
+- `codex/ocr/OcrEngine.kt` : NOUVEAU — interface `process(OcrRequest): OcrResult`
+- `codex/ocr/TesseractOcrEngine.kt` : NOUVEAU — CLI tesseract wrapper, best-effort
+- `test/codex/ocr/TesseractOcrEngineTest.kt` : NOUVEAU — 5 tests JUnit5
+- codex publishToMavenLocal 0.0.1
+
+EPIC OCR complet 7/7 TERMINÉ.
+
 == Session 158 — EPIC V-6-POOL Adaptation Ollama Cloud Pool
 
 - `koog/llm/pool/OllamaInstanceFactory.kt` : `AUTHORIZED_MODELS` 5→2 modèles (`gpt-oss:120b-cloud`, `gemma4:31b-cloud`)

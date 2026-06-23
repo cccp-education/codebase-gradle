@@ -123,21 +123,24 @@ l'association d'idées.
 *Borough porteur :* codebase-gradle (Queens, N1) — package `autofocus/` dans `codebase/koog/`.
 *5ème verbe taxonomie :* ZOOMER (groupe Gradle `zoom`).
 
-== EPIC OCR — Reconnaissance Optique de Caractères ✅ TERMINÉ
+== EPIC OCR — Reconnaissance Optique de Caractères ✅ TERMINÉ (7/7)
 
-Session 083-088 (30 mai 2026). Pipeline OCR complet multimodal.
+Sessions 083-088 + 103 + 115-118 + 159. Pipeline OCR complet multimodal + fallback chain.
 
 [cols="1,3,2", options="header"]
 |===
 | # | Description | Statut
 | OCR-bootstrap | CodebaseOcrExtension + OcrTask + OcrEngine + FakeOcrEngine. 36 tests PASS (12 JUnit5 + 8 JUnit5 task + 5 Cucumber + 11 CodebasePlugin). | ✅ Terminé
-| OCR-1 | GeminiKeyPool — rotation clés API Gemini (pattern OllamaPool). 9 JUnit5 PASS. | ✅ Terminé
-| OCR-2 | GeminiVisionProvider — multimodal image→texte. 6 JUnit5 PASS. | ✅ Terminé
-| OCR-3b-P0 | FakeVisionProvider — fallback test. 6 JUnit5 PASS. | ✅ Terminé
-| OCR-3b-P1+P2 | Config YAML/CLI/DSL + CI/CD .github/workflows/ocr.yml. 22 tests PASS. | ✅ Terminé
+| OCR-0 | Contrats codex.ocr (OcrRequest/OcrResult/OcrConfig). Session 027-028 codex-gradle. | ✅ Terminé
+| OCR-1 | GeminiKeyPool — rotation clés API Gemini + HTTP 429 detection + env var mapping + multi-compte. 6/6 session 159. | ✅ Terminé
+| OCR-2 | GeminiVisionProvider — multimodal image→texte + Tesseract fallback (codex boundary). 5/5 session 159. | ✅ Terminé
+| OCR-2b | OllamaOcrProvider — OCR cloud via Ollama. 6/6 session 103. | ✅ Terminé
+| OCR-3 | OcrTask Gradle — tâche ocrDocument + batch + config. 5/5 session 115. | ✅ Terminé
+| OCR-3b | FakeVisionProvider + CI + Config YAML/CLI/gradle.properties. 8/8 session 118. | ✅ Terminé
+| OCR-4 | Intégration pipeline complet (anonymisation + chunking + pgvector + métriques). 5/5 session 117. | ✅ Terminé
 |===
 
-*22/22 tests PASS. Package codebase/ocr/. Zéro régression.*
+*EPIC OCR complet 7/7. Fallback chain : Gemini → Ollama → Tesseract (codex boundary harmonisé).*
 
 == EPIC G — Publication Maven Central ✅ TERMINÉ
 

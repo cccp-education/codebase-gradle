@@ -21,6 +21,7 @@ class GeminiKeyPool(
 
     private var currentIndex = 0
     private val usageCounts = mutableMapOf<String, Long>()
+    private val rateLimitedIds = mutableSetOf<String>()
 
     init {
         instances.forEach { instance ->
@@ -32,12 +33,26 @@ class GeminiKeyPool(
 
     override fun instances(): List<LlmInstance> = instances.toList()
 
+    /**
+     * Marque une instance comme ayant reçu un HTTP 429 (Too Many Requests).
+     * L'instance sera skippée par [nextInstance] jusqu'à [resetUsage].
+     */
+    fun markRateLimited(instance: LlmInstance) {
+        rateLimitedIds.add(instance.id)
+    }
+
+    /**
+     * Vrai si l'instance a été marquée comme rate-limited (HTTP 429 reçu).
+     */
+    fun isRateLimited(instance: LlmInstance): Boolean =
+        instance.id in rateLimitedIds
+
     override fun nextInstance(): LlmInstance {
         if (instances.isEmpty()) {
             throw IllegalStateException("Gemini pool is empty — no API keys configured")
         }
 
-        // Cherche la prochaine instance non saturée
+        // Cherche la prochaine instance non saturée et non rate-limited
         val startIndex = when (rotationStrategy) {
             RotationStrategy.ROUND_ROBIN -> currentIndex
             RotationStrategy.LEAST_USED -> instances.indices.minByOrNull { i ->
@@ -51,7 +66,8 @@ class GeminiKeyPool(
             val candidate = instances[idx % instances.size]
             val usage = usageCounts[candidate.id] ?: 0
             val exceeded = candidate.quota.isExceeded(usage)
-            if (!exceeded) {
+            val limited = candidate.id in rateLimitedIds
+            if (!exceeded && !limited) {
                 usageCounts[candidate.id] = usage + 1
                 currentIndex = (idx + 1) % instances.size
                 return candidate
@@ -60,8 +76,9 @@ class GeminiKeyPool(
             attempts++
         }
 
-        // Toutes les instances sont saturées — retourne la première (best-effort)
-        val fallback = instances[startIndex % instances.size]
+        // Toutes les instances sont saturées ou rate-limited — retourne la première non rate-limited (best-effort)
+        val fallback = instances.firstOrNull { it.id !in rateLimitedIds }
+            ?: instances[startIndex % instances.size]
         usageCounts[fallback.id] = (usageCounts[fallback.id] ?: 0) + 1
         currentIndex = (startIndex + 1) % instances.size
         return fallback
@@ -78,5 +95,6 @@ class GeminiKeyPool(
             usageCounts[instance.id] = 0
         }
         currentIndex = 0
+        rateLimitedIds.clear()
     }
 }

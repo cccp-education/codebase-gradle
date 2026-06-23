@@ -1,9 +1,11 @@
 package codebase.scenarios.ocr
 
 import codebase.CodebasePlugin
+import codebase.koog.llm.CodexOcrEngineAdapter
 import codebase.koog.llm.FakeOllamaOcrProvider
 import codebase.koog.llm.FakeVisionProvider
 import codebase.koog.llm.ThrowingVisionProvider
+import codex.ocr.TesseractOcrEngine
 import codebase.ocr.FakeOcrEngine
 import codebase.ocr.OcrTask
 import io.cucumber.java.After
@@ -123,6 +125,9 @@ class OcrSteps {
                 task.geminiVisionProvider = FakeVisionProvider()
                 task.ollamaOcrProvider = FakeOllamaOcrProvider()
             }
+            "tesseract" -> {
+                task.tesseractOcrProvider = CodexOcrEngineAdapter(TesseractOcrEngine(tesseractPath = "tesseract"))
+            }
         }
 
         task.executeOcr()
@@ -148,6 +153,31 @@ class OcrSteps {
         task.outputFormat.set("asciidoc")
         task.geminiVisionProvider = ThrowingVisionProvider()
         task.ollamaOcrProvider = FakeOllamaOcrProvider()
+
+        task.executeOcr()
+
+        val ext = ".adoc"
+        lastOutputPath = project.layout.buildDirectory.dir("ocr").get().asFile
+            .resolve("${inputFile.nameWithoutExtension}_ocr$ext")
+    }
+
+    @When("I OCR {string} with provider {string} and Gemini and Ollama fail")
+    fun ocrWithProviderAndGeminiAndOllamaFail(filename: String, provider: String) {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tmpDir!!)
+            .withName("ocr-tess-fb")
+            .build()
+        project.pluginManager.apply(CodebasePlugin::class.java)
+
+        val inputFile = File(tmpDir, filename)
+        val task = project.tasks.getByName("ocrDocument") as OcrTask
+        task.ocrProvider.set(provider)
+        task.inputFile.set(project.layout.projectDirectory.file(filename))
+        task.ocrLanguage.set("eng")
+        task.outputFormat.set("asciidoc")
+        task.geminiVisionProvider = ThrowingVisionProvider()
+        task.ollamaOcrProvider = ThrowingVisionProvider()
+        task.tesseractOcrProvider = CodexOcrEngineAdapter(TesseractOcrEngine(tesseractPath = "tesseract"))
 
         task.executeOcr()
 

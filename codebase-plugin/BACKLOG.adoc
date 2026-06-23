@@ -588,21 +588,21 @@ Chaîne existante : anonymisation → chunking → embedding → pgvector
 * [x] Publier les contrats dans le package `codex.ocr` du codex-plugin
 * [x] publishToMavenLocal pour consommation par codebase
 
-==== OCR-1 : GeminiKeyPool — rotation de clés API — EN COURS (4/6, audité 2026-06-14)
+==== OCR-1 : GeminiKeyPool — rotation de clés API — TERMINÉ (6/6, session 159)
 
 * [x] Pattern `GeminiKeyPool` réutilisant l'architecture `OllamaPool` (GeminiKeyPool.kt 82 lignes, ROUND_ROBIN + LEAST_USED)
-* [ ] Lecture `GEMINI_API_KEY_1..N` via variables d'environnement — PARTIEL : CodebaseOcrExtension a geminiApiKeys ListProperty, mais le mapping env var→LlmInstance n'est pas dans le pool
+* [x] Lecture `GEMINI_API_KEY_1..N` via variables d'environnement — GeminiPoolFactory.fromEnvVars (session 159)
 * [x] RotationStrategy ROUND_ROBIN sur les clés (GeminiKeyPool.kt:19)
-* [ ] Quota detection : HTTP 429 → rotation automatique — PARTIEL : usageCounts map, pas de detection HTTP 429 reelle
-* [ ] 1 pool par compte Google (Ollama Pro = 1 compte Google = N clés) — PENDING
+* [x] Quota detection : HTTP 429 → rotation automatique — markRateLimited/isRateLimited (session 159)
+* [x] 1 pool par compte Google (Ollama Pro = 1 compte Google = N clés) — GeminiMultiAccountPool (session 159)
 * [x] Tests : 4+ clés en rotation, quota exceeded → fallback (GeminiKeyPoolTest.kt 162 lignes, 29 clés, 5 modèles)
 
-==== OCR-2 : GeminiVisionProvider — multimodal — EN COURS (4/5, audité 2026-06-14)
+==== OCR-2 : GeminiVisionProvider — multimodal — TERMINÉ (5/5, session 159)
 
 * [x] Créer `GeminiVisionProvider` dédié (GeminiVisionProvider.kt 95 lignes, implements VisionProvider)
 * [x] Support `UserMessage.from(ImageContent(bytes, mimeType), TextContent(prompt))` (GeminiVisionProvider.kt:40-43)
 * [x] Prompt engineering OCR : extraction texte + structuration AsciiDoc + détection langue (buildOcrPrompt() :76-94)
-* [ ] Fallback : si Gemini indisponible → Tesseract (OCR sans IA) — PENDING
+* [x] Fallback : si Gemini indisponible → Tesseract (OCR sans IA) — TesseractOcrEngine dans codex + CodexOcrEngineAdapter dans codebase (session 159)
 * [x] Tests : image synthétique avec texte connu → vérification output (FakeVisionProviderTest.kt 77 lignes, 5 tests)
 
 ==== OCR-2b : OllamaOcrProvider — OCR cloud via Ollama

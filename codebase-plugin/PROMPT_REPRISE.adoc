@@ -1,44 +1,27 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 159
-:session: 159
+= Prompt de Reprise — Codebase (Queens N1) — Session 160
+:session: 160
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 158 — EPIC V-6-POOL terminé (4/4 items). AUTHORIZED_MODELS aligné sur AGENTS.adoc (2 modèles gpt-oss:120b-cloud + gemma4:31b-cloud) dans OllamaInstanceFactory + OllamaInstanceScanner. LlmProviderResolver cycle les 2 modèles sur OLLAMA_POOL_PORTS au lieu de DEFAULT_MODEL statique. Feature Cucumber epic_v6_pool.feature (3 scénarios) + runner + step. Tous tests unitaires + Cucumber PASS, zéro régression.
+:session_precedente: 159 — EPIC OCR-1/OCR-2 restants TERMINÉS (9/9 items). HTTP 429 detection + rotation auto (GeminiKeyPool.markRateLimited/isRateLimited, GeminiVisionProvider catch 429). Env var mapping GEMINI_API_KEY_1..N (GeminiPoolFactory.fromKeys/fromEnvVars). Multi-compte Google (GeminiMultiAccountPool + fromEnvVars multi). Tesseract fallback harmonisé : OcrEngine + TesseractOcrEngine dans codex-gradle (Brooklyn), CodexOcrEngineAdapter dans codebase-gradle (Queens). 35 tests nouveaux + 11 Cucumber @epic_ocr_1/@epic_ocr_2 PASS. codex publishToMavenLocal 0.0.1. EPIC OCR complet 7/7.
 
-== Mission Session 159
+== Mission Session 160
 
-EPIC V-6-POOL étant clôturé, attaquer l'EPIC OCR-1/OCR-2 restant
-(P2, items PENDING) en baby-step DDD/TDD/BDD.
+EPIC OCR étant clôturé (7/7), reprendre l'EPIC V-9 Gouvernance Agentique
+(14/35, Under-EPIC 3 reste) ou EPIC V-6-POOL extensions selon backlog.
 
-Source : `codebase-plugin/.agents/BACKLOG.adoc` lignes 591-607.
+Source : `codebase-plugin/.agents/BACKLOG.adoc` + `codebase-plugin/.agents/INDEX.adoc`.
 
-=== Items OCR-1 restants
+=== Items V-9 restants (Under-EPIC 3+)
 
-* OCR-1 : Lecture `GEMINI_API_KEY_1..N` via variables d'environnement —
-  mapping env var→LlmInstance pas dans le pool (PARTIEL)
-* OCR-1 : Quota detection HTTP 429 → rotation automatique — PARTIEL
-  (usageCounts map, pas de detection HTTP 429 réelle)
-* OCR-1 : 1 pool par compte Google (Ollama Pro = 1 compte Google = N clés) — PENDING
-
-=== Items OCR-2 restants
-
-* OCR-2 : Fallback Tesseract (OCR sans IA) si Gemini indisponible — PENDING
+* V-9.21+ : Items non commencés du Under-EPIC 3 (voir BACKLOG.adoc)
+* Vérifier INDEX.adoc ligne 49 pour statut exact
 
 === Contexte technique
 
-* `GeminiKeyPool.kt` (82 lignes, ROUND_ROBIN + LEAST_USED) déjà livré.
-* `GeminiVisionProvider.kt` (95 lignes) déjà livré.
-* `FakeVisionProvider.kt` (62 lignes) branché sur GeminiKeyPool.
-* `OllamaOcrProvider.kt` fallback cloud déjà livré (OCR-2b terminé).
-* Tests : GeminiKeyPoolTest 162 lignes (29 clés, 5 modèles).
-
-=== Ordre d'attaque (baby-step)
-
-. OCR-1 quota detection : Ajouter détection HTTP 429 dans GeminiKeyPool
-   ou GeminiVisionProvider. Tests unitaires (zéro réseau, FakeProvider).
-. OCR-1 env var mapping : Câbler `GEMINI_API_KEY_1..N` → LlmInstance
-   dans le pool. Tests unitaires.
-. OCR-1 multi-compte : 1 pool par compte Google. Tests unitaires.
-. OCR-2 Tesseract fallback : Si Gemini + Ollama indisponibles → Tesseract.
-   Tests unitaires + Cucumber.
+* `GeminiKeyPool.kt` enrichi (markRateLimited/isRateLimited/rateLimitedIds)
+* `GeminiPoolFactory.kt` + `GeminiMultiAccountPool.kt` livrés (OCR-1 complet)
+* `CodexOcrEngineAdapter.kt` + `codex.ocr.TesseractOcrEngine` livrés (boundary codex↔codebase)
+* `GeminiVisionProvider.kt` ouvert, accepte `GeminiKeyPool` optionnel
+* `OcrTask.kt` : `geminiApiKeys`, `tesseractOcrProvider`, `resolveGeminiProvider`/`resolveGeminiPool`
 
 == Méthodologie
 

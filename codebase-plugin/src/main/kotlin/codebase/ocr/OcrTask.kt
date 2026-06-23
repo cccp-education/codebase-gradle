@@ -1,9 +1,13 @@
 package codebase.ocr
 
+import codebase.koog.llm.CodexOcrEngineAdapter
 import codebase.koog.llm.GeminiVisionProvider
 import codebase.koog.llm.OllamaOcrProvider
 import codebase.koog.llm.VisionProvider
+import codebase.koog.llm.pool.GeminiKeyPool
+import codebase.koog.llm.pool.GeminiPoolFactory
 import codebase.rag.GeminiConfig
+import codex.ocr.TesseractOcrEngine
 import codebase.rag.LlmConfig
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
@@ -61,6 +65,21 @@ abstract class OcrTask : DefaultTask() {
 
     @get:Internal
     var ollamaOcrProvider: VisionProvider? = null
+
+    /**
+     * Provider Tesseract injectable (fallback OCR sans IA).
+     * Si null, un [CodexOcrEngineAdapter] wrapant [TesseractOcrEngine] de codex est créé (OCR-2).
+     */
+    @get:Internal
+    var tesseractOcrProvider: VisionProvider? = null
+
+    /**
+     * Clés API Gemini injectables (DSL `geminiApiKeys` ou test).
+     * Si non vide, un [GeminiKeyPool] est construit et injecté dans [GeminiVisionProvider]
+     * pour la rotation automatique sur HTTP 429 (OCR-1).
+     */
+    @get:Internal
+    var geminiApiKeys: List<String> = emptyList()
 
     /**
      * Fichier YAML de config LLM (pattern keyRef/envVar, jamais de clé en dur).
@@ -326,27 +345,65 @@ abstract class OcrTask : DefaultTask() {
                 }
             }
             "gemini+ollama" -> {
-                val geminiProvider = geminiVisionProvider ?: GeminiVisionProvider()
+                val geminiProvider = geminiVisionProvider ?: resolveGeminiProvider(model)
                 try {
                     runBlocking {
                         geminiProvider.processImage(imageBytes, mimeType, language, model, maxTokens)
                     }
                 } catch (e: Exception) {
                     logger.warn("[OCR] Gemini failed: {} — fallback to Ollama", e.message)
-                    val ollamaProvider = ollamaOcrProvider
-                        ?: OllamaOcrProvider(baseUrl = ollamaUrl, model = ollamaVisionModel)
-                    runBlocking {
-                        ollamaProvider.processImage(imageBytes, mimeType, language, ollamaVisionModel, maxTokens)
+                    try {
+                        val ollamaProvider = ollamaOcrProvider
+                            ?: OllamaOcrProvider(baseUrl = ollamaUrl, model = ollamaVisionModel)
+                        runBlocking {
+                            ollamaProvider.processImage(imageBytes, mimeType, language, ollamaVisionModel, maxTokens)
+                        }
+                    } catch (e2: Exception) {
+                        logger.warn("[OCR] Ollama failed: {} — fallback to Tesseract", e2.message)
+                        val tesseract = tesseractOcrProvider ?: CodexOcrEngineAdapter(TesseractOcrEngine())
+                        runBlocking {
+                            tesseract.processImage(imageBytes, mimeType, language, "tesseract", 0)
+                        }
                     }
                 }
             }
+            "tesseract" -> {
+                val tesseract = tesseractOcrProvider ?: CodexOcrEngineAdapter(TesseractOcrEngine())
+                runBlocking {
+                    tesseract.processImage(imageBytes, mimeType, language, "tesseract", 0)
+                }
+            }
             else -> {
-                val geminiProvider = geminiVisionProvider ?: GeminiVisionProvider()
+                val geminiProvider = geminiVisionProvider ?: resolveGeminiProvider(model)
                 runBlocking {
                     geminiProvider.processImage(imageBytes, mimeType, language, model, maxTokens)
                 }
             }
         }
+    }
+
+    /**
+     * Construit un [GeminiVisionProvider] avec un [GeminiKeyPool] si des clés sont disponibles
+     * (DSL [geminiApiKeys] ou env vars `GEMINI_API_KEY_1..N`).
+     * Si aucune clé n'est configurée, fallback sur [GeminiConfig] (single key).
+     */
+    private fun resolveGeminiProvider(model: String): GeminiVisionProvider {
+        val pool = resolveGeminiPool(model)
+        return if (pool != null && pool.size() > 0) {
+            logger.lifecycle("[OCR] GeminiKeyPool construit : {} clé(s), rotation activée", pool.size())
+            GeminiVisionProvider(keyPool = pool)
+        } else {
+            logger.lifecycle("[OCR] Aucune clé Gemini pool — fallback GeminiConfig single key")
+            GeminiVisionProvider()
+        }
+    }
+
+    private fun resolveGeminiPool(model: String): GeminiKeyPool? {
+        if (geminiApiKeys.isNotEmpty()) {
+            return GeminiPoolFactory.fromKeys(geminiApiKeys, model = model)
+        }
+        val envPool = GeminiPoolFactory.fromEnvVars(System.getenv(), model = model)
+        return if (envPool.size() > 0) envPool else null
     }
 
     private fun executeTextOcr(

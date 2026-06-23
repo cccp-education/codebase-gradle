@@ -1,33 +1,46 @@
-= TEST_COVERAGE_ANALYSIS — Session 158
+= TEST_COVERAGE_ANALYSIS — Session 159
 :date: 2026-06-23
-:epic: EPIC V-6-POOL — Adaptation Ollama Cloud Pool pour Vibecoding
+:epic: EPIC OCR-1/OCR-2 restants — HTTP 429 + env var + multi-compte + Tesseract
 
 == Contexte
 
-PROMPT_REPRISE 158 demandait d'attaquer l'EPIC V-6-POOL : aligner les
-modèles Ollama Cloud autorisés sur la contrainte AGENTS.adoc (2 modèles :
-`gpt-oss:120b-cloud` + `gemma4:31b-cloud`), mettre à jour la rotation du
-pool, et tester le tout via Cucumber.
+PROMPT_REPRISE 159 demandait d'attaquer les items OCR-1/OCR-2 restants
+(P2, PENDING) du BACKLOG.adoc lignes 591-607, en baby-step DDD/TDD/BDD.
 
 == Fichiers source modifiés / créés
+
+=== codebase-gradle (Queens N1)
 
 [cols="2,3"]
 |===
 | Fichier | Changement
 
-| `main/kotlin/codebase/koog/llm/pool/OllamaInstanceFactory.kt` | `AUTHORIZED_MODELS` 5→2 modèles (`gpt-oss:120b-cloud`, `gemma4:31b-cloud`)
-| `main/kotlin/codebase/koog/llm/pool/OllamaInstanceScanner.kt` | `AUTHORIZED_MODELS` 5→2 modèles
-| `main/kotlin/codebase/koog/llm/LlmProviderResolver.kt` | `resolveOllamaInstances()` cycle `OllamaInstanceFactory.AUTHORIZED_MODELS` sur `OLLAMA_POOL_PORTS` au lieu de `DEFAULT_MODEL` statique + `volumeTag`
-| `test/kotlin/codebase/koog/llm/pool/OllamaInstanceFactoryTest.kt` | Tests alignés sur 2 modèles + nouveau test `includes gemma4:31b-cloud`
-| `test/kotlin/codebase/koog/llm/pool/OllamaInstanceScannerTest.kt` | Tests alignés sur 2 modèles + nouveau test `includes gemma4:31b-cloud`
-| `test/kotlin/codebase/koog/llm/pool/OllamaPoolTest.kt` | `AUTHORIZED_MODELS` 2 modèles, assertion 2 modèles
-| `test/kotlin/codebase/scenarios/PoolWorld.kt` | `AUTHORIZED_MODELS` 2 modèles
-| `test/kotlin/codebase/scenarios/OllamaCloudWorld.kt` | 2ème instance `gemma4:31b-cloud` au lieu de `gpt-oss:20b-cloud`
-| `test/kotlin/codebase/koog/llm/LlmProviderResolverTest.kt` | Nouveau test `cycles authorized models across OLLAMA_POOL_PORTS`
-| `test/kotlin/codebase/scenarios/OllamaCloudSteps.kt` | Nouveau step `the provider pool includes model {string}`
-| `test/features/epic_v6_pool.feature` | NOUVEAU — 3 scénarios @epic_v6_pool (factory, explicit, vibecoding)
-| `test/kotlin/codebase/scenarios/EpicV6PoolCucumberRunner.kt` | NOUVEAU — runner Cucumber @epic_v6_pool
-| `test/features/epic_v6_resolver.feature` | "5 authorized cloud models" → "2 authorized cloud models"
+| `main/kotlin/codebase/koog/llm/pool/GeminiKeyPool.kt` | `markRateLimited`/`isRateLimited`/`rateLimitedIds` set + fallback best-effort non rate-limited
+| `main/kotlin/codebase/koog/llm/pool/GeminiPoolFactory.kt` | NOUVEAU — `fromKeys`/`fromEnvVars` + `idPrefix` param
+| `main/kotlin/codebase/koog/llm/pool/GeminiMultiAccountPool.kt` | NOUVEAU — multi-comptes + `fromEnvVars` multi `GEMINI_ACCOUNT_N_API_KEY_M`
+| `main/kotlin/codebase/koog/llm/GeminiVisionProvider.kt` | `open class`, `keyPool` param, détection 429 dans catch
+| `main/kotlin/codebase/koog/llm/CodexOcrEngineAdapter.kt` | NOUVEAU — adapter `codex.ocr.OcrEngine` → `VisionProvider`
+| `main/kotlin/codebase/ocr/OcrTask.kt` | `geminiApiKeys`, `tesseractOcrProvider`, `resolveGeminiProvider`/`resolveGeminiPool`, fallback Tesseract via adapter
+| `test/kotlin/codebase/koog/llm/pool/GeminiKeyPoolTest.kt` | 4 tests `markRateLimited`/`isRateLimited`/`resetUsage`/`best-effort`
+| `test/kotlin/codebase/koog/llm/pool/GeminiPoolFactoryTest.kt` | NOUVEAU — 11 tests factory
+| `test/kotlin/codebase/koog/llm/pool/GeminiMultiAccountPoolTest.kt` | NOUVEAU — 8 tests multi-compte
+| `test/kotlin/codebase/koog/llm/GeminiVisionProvider429Test.kt` | NOUVEAU — 2 tests 429 detection
+| `test/kotlin/codebase/ocr/OcrTaskPoolTest.kt` | NOUVEAU — 3 tests fonctionnels pool
+| `test/kotlin/codebase/ocr/OcrTaskTesseractFallbackTest.kt` | NOUVEAU — 2 tests fonctionnels Tesseract
+| `test/kotlin/codebase/scenarios/ocr/Ocr1PoolSteps.kt` | NOUVEAU — steps Cucumber `@epic_ocr_1` (HTTP 429 + env var + multi-compte)
+| `test/kotlin/codebase/scenarios/ocr/OcrSteps.kt` | steps Tesseract + `CodexOcrEngineAdapter` imports
+| `test/features/ocr.feature` | 9 scénarios `@epic_ocr_1` + 2 scénarios `@epic_ocr_2` ajoutés
+|===
+
+=== codex-gradle (Brooklyn N2)
+
+[cols="2,3"]
+|===
+| Fichier | Changement
+
+| `main/kotlin/codex/ocr/OcrEngine.kt` | NOUVEAU — interface `process(OcrRequest): OcrResult`
+| `main/kotlin/codex/ocr/TesseractOcrEngine.kt` | NOUVEAU — CLI tesseract wrapper, best-effort
+| `test/kotlin/codex/ocr/TesseractOcrEngineTest.kt` | NOUVEAU — 5 tests JUnit5
 |===
 
 == Tests exécutés
@@ -36,97 +49,21 @@ pool, et tester le tout via Cucumber.
 |===
 | Suite | Scénarios/tests | Résultat
 
-| OllamaInstanceFactoryTest | 7 JUnit5 | ✅ PASS
-| OllamaInstanceScannerTest | 7 JUnit5 | ✅ PASS
-| OllamaPoolTest | 9 JUnit5 | ✅ PASS
-| LlmProviderResolverTest | 10 JUnit5 | ✅ PASS
-| EpicV6PoolCucumberRunner | 3 Cucumber @epic_v6_pool | ✅ PASS
-| EpicV6OllamaCloudCucumberRunner | 2 Cucumber @epic_v6_ollama_cloud | ✅ PASS (régression)
-| EpicV6ResolverCucumberRunner | 3 Cucumber @epic_v6_resolver | ✅ PASS (régression)
+| GeminiKeyPoolTest | 4 unitaires | ✅ PASS
+| GeminiPoolFactoryTest | 11 unitaires | ✅ PASS
+| GeminiMultiAccountPoolTest | 8 unitaires | ✅ PASS
+| GeminiVisionProvider429Test | 2 unitaires | ✅ PASS
+| OcrTaskPoolTest | 3 fonctionnels | ✅ PASS
+| OcrTaskTesseractFallbackTest | 2 fonctionnels | ✅ PASS
+| OcrCucumberRunner (@epic_ocr_1) | 9 scénarios | ✅ PASS
+| OcrCucumberRunner (@epic_ocr_2) | 2 scénarios | ✅ PASS
+| TesseractOcrEngineTest (codex) | 5 unitaires | ✅ PASS
 |===
 
-*Total : 33 JUnit5 + 8 Cucumber PASS, zéro régression.*
+Total : 35 tests nouveaux + régressions OCR existantes vertes.
 
-== Couverture
+== Boundary architecturale
 
-* `OllamaInstanceFactory` : 100% — AUTHORIZED_MODELS testé (2 modèles,
-  cycling, default 29 ports, gemma4:31b-cloud présent)
-* `OllamaInstanceScanner` : 100% — AUTHORIZED_MODELS testé (2 modèles,
-  cycling, gemma4:31b-cloud présent)
-* `LlmProviderResolver` : 100% — cycling des 2 modèles sur
-  OLLAMA_POOL_PORTS testé + fallback factory + scanner
-
-== Fichiers source modifiés / créés
-
-[cols="2,3"]
-|===
-| Fichier | Changement
-
-| `main/kotlin/codebase/koog/agentic/GovernanceFileSnapshot.kt` | NOUVEAU — value object DDD snapshot (List<ScannedFileEntry>, factory fromScanned SHA-256)
-| `main/kotlin/codebase/koog/agentic/GovernanceFileDiff.kt` | NOUVEAU — value object diff (added/modified/removed/unchanged + pathsToIngest)
-| `main/kotlin/codebase/koog/agentic/GovernanceFileChangeDetector.kt` | NOUVEAU — service diff entre deux snapshots
-| `main/kotlin/codebase/koog/agentic/GovernanceStateStore.kt` | NOUVEAU — interface + JsonGovernanceStateStore (load/save/clear JSON)
-| `main/kotlin/codebase/koog/agentic/IncrementalReport.kt` | NOUVEAU — rapport incrémental (added/modified/removed/unchanged/skippedDueToIncremental)
-| `main/kotlin/codebase/koog/agentic/GovernanceSummaryConfig.kt` | Ajout champ `incremental: Boolean = false`
-| `main/kotlin/codebase/koog/agentic/CodebaseGovernanceExtension.kt` | Ajout propriété `incremental`, propagation `toConfig()`
-| `main/kotlin/codebase/koog/agentic/GovernanceIngestor.kt` | Ajout méthode `ingestFiltered(root, pathsToIngest)`
-| `main/kotlin/codebase/koog/agentic/IngestGovernanceTask.kt` | Mode incrémental câblé (scan → snapshot → diff → ingestFiltered), `lastIncrementalReport`, JSON enrichi section `incremental`
-| `main/kotlin/codebase/CodebasePlugin.kt` | Wiring CLI `-Pcodebase.governance.incremental=true` + convention `false`
-| `test/kotlin/codebase/koog/agentic/GovernanceFileChangeDetectorTest.kt` | NOUVEAU — 8 tests unitaires
-| `test/kotlin/codebase/koog/agentic/GovernanceStateStoreTest.kt` | NOUVEAU — 7 tests unitaires
-| `test/kotlin/codebase/koog/agentic/GovernanceSummaryConfigTest.kt` | Ajout 1 test `incremental` default + 1 test enable
-| `test/kotlin/codebase/koog/agentic/CodebaseGovernanceExtensionTest.kt` | Ajout assertions `incremental` default + toConfig
-| `test/kotlin/codebase/koog/agentic/IngestGovernanceTaskTest.kt` | 7 tests fonctionnels V-9.19 (first/second/modified/removed/added/json/legacy)
-| `test/resources/features/epic_v_9_19_auto_detection.feature` | NOUVEAU — 5 scénarios Cucumber @epic_v_9_19
-| `test/kotlin/codebase/scenarios/EpicV919Steps.kt` | NOUVEAU — steps Cucumber
-| `test/kotlin/codebase/scenarios/EpicV919CucumberRunner.kt` | NOUVEAU — runner Cucumber
-| `test/kotlin/codebase/scenarios/IngestGovernanceWorld.kt` | Ajout `lastIncrementalReport`, `runTask(incremental)`, `deleteFile`
-| `build.gradle.kts` | Enregistrement `cucumberTestEpicV919`
-| `AGENT.adoc` (codebase-plugin) | Mise à jour section Ollama (modèles autorisés gpt-oss:120b-cloud + gemma4:31b-cloud)
-| `/home/cheroliv/workspace/AGENTS.adoc` | Ajout section "Instances Ollama — Ports et Modèles (CONTRAINTE GLOBALE)" dans Règles Transverses
-|===
-
-== Tests
-
-|===
-| Scope | Résultat
-
-| `GovernanceFileChangeDetectorTest` | ✅ 8/8 PASS
-| `GovernanceStateStoreTest` | ✅ 7/7 PASS
-| `GovernanceSummaryConfigTest` | ✅ 5/5 PASS (3 existants + 2 nouveaux)
-| `CodebaseGovernanceExtensionTest` | ✅ 4/4 PASS (3 existants + assertions incremental)
-| `IngestGovernanceTaskTest` (V-9.19 + régressions) | ✅ 30/30 PASS (23 existants + 7 nouveaux)
-| `EpicV919CucumberRunner` (5 scénarios @epic_v_9_19) | ✅ 5/5 PASS
-| `EpicV918CucumberRunner` (3 scénarios @epic_v_9_18) | ✅ 3/3 PASS (régression)
-| `EpicV917CucumberRunner` (3 scénarios @epic_v_9_17) | ✅ 3/3 PASS (régression)
-| `EpicV916CucumberRunner` (3 scénarios @epic_v_9_16) | ✅ 3/3 PASS (régression)
-| `EpicV915CucumberRunner` (2 scénarios @epic_v_9_15) | ✅ 2/2 PASS (régression)
-| `EpicV914CucumberRunner` (2 scénarios @epic_v_9_14) | ✅ 2/2 PASS (régression)
-| `EpicV913CucumberRunner` (5 scénarios @epic_v_9_13) | ✅ 5/5 PASS (régression)
-| `EpicV911CucumberRunner` (6 scénarios @epic_v_9_11) | ✅ 6/6 PASS (régression)
-| `EpicV910CucumberRunner` (3 scénarios @epic_v_9_10) | ✅ 3/3 PASS (régression)
-| `EpicV99CucumberRunner` (2 scénarios @epic_v_9_9) | ✅ 2/2 PASS (régression)
-| `EpicV98CucumberRunner` (3 scénarios @epic_v_9_8) | ✅ 3/3 PASS (régression)
-| `EpicV97CucumberRunner` (7 scénarios @epic_v_9_7) | ✅ 7/7 PASS (régression)
-| `EpicV95CucumberRunner` (5 scénarios @epic_v_9_5) | ✅ 5/5 PASS (régression)
-| `EpicV93CucumberRunner` (6 scénarios @epic_v_9_3) | ✅ 6/6 PASS (régression)
-| `ScanAgentTest`/`ChunkValidatorTest`/`AgenticIngestorTest`/`AgenticCompilerTest`/`AgenticChunkEnforcementTest`/`AgenticExecutorTest`/`InvalidChunkQuarantineTest`/`AgenticGradleTaskRegistrarTest`/`ToolRegistryTest` | ✅ PASS (régression)
-| `compileKotlin` / `compileTestKotlin` | ✅
-| Modèles Ollama (52 inférences) | ✅ 52/52 PASS (26 ports × 2 modèles)
-|===
-
-== Total session 155
-
-- JUnit5 : 15 nouveaux unitaires (8 detector + 7 store) + 7 nouveaux fonctionnels + 3 extension/config
-- Cucumber : 5 scénarios @epic_v_9_19 PASS
-- Régressions : 13 EPICs Cucumber V-9.3→V-9.18 + tests unitaires préexistants PASS
-- Build : `compileKotlin` + `compileTestKotlin` verts
-- Contrainte Ollama : sauvegardée EAGER globale + borough, 52/52 inférences modèles autorisés
-- BACKLOG synchronisé (V-9.19 marqué ✅)
-
-== Leçons
-
-* Isoler le diff incrémental dans des value objects purs (GovernanceFileSnapshot/GovernanceFileDiff/GovernanceFileChangeDetector) permet de tester la logique de détection sans Gradle ni infrastructure — TDD pur.
-* La persistance JSON custom (regex parsing) a été un compromis pragmatique pour éviter une dépendance externe. La méthode load() défensive (null si fichier absent/vide/JSON invalide) garantit la robustesse.
-* Le mode incrémental est rétrocompatible par défaut (incremental=false), ce qui préserve tous les tests existants sans modification.
-* La contrainte Ollama doit être sauvegardée à deux niveaux (global AGENTS.adoc + borough AGENT.adoc) pour être chargée à chaque ouverture de session, pas seulement dans le borough concerné.
+* **codex-gradle (Brooklyn N2, READ+RAG)** : détient les engines OCR documentaires (sans IA) — `OcrEngine` + `TesseractOcrEngine`
+* **codebase-gradle (Queens N1, LLM)** : orchestre la fallback chain LLM via `CodexOcrEngineAdapter` — Gemini → Ollama → Tesseract
+* Le boundary est strict : codex expose les engines OCR purs, codebase les adapte dans `VisionProvider`

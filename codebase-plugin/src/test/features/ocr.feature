@@ -38,6 +38,79 @@ Feature: OCR — Extraction de texte assistée IA
     When I OCR "fmt.txt" in French with format "markdown"
     Then the OCR result for "fmt" ends with ".md"
 
+  @unit @epic_ocr_1
+  Scenario: Gemini key pool rotates when HTTP 429 is received
+    Given a Gemini key pool with 3 keys "key-A,key-B,key-C"
+    When key "key-A" receives HTTP 429
+    Then the pool marks "key-A" as rate-limited
+    And the next available key is "key-B"
+
+  @unit @epic_ocr_1
+  Scenario: Gemini key pool skips all rate-limited keys best-effort
+    Given a Gemini key pool with 2 keys "key-A,key-B"
+    When key "key-A" receives HTTP 429
+    And key "key-B" receives HTTP 429
+    Then the pool marks "key-A" as rate-limited
+    And the pool marks "key-B" as rate-limited
+    And the next available key is one of "key-A,key-B"
+
+  @unit @epic_ocr_1
+  Scenario: Gemini key pool reset clears rate-limited markers
+    Given a Gemini key pool with 2 keys "key-A,key-B"
+    When key "key-A" receives HTTP 429
+    And the pool usage is reset
+    Then the pool does not mark "key-A" as rate-limited
+    And the next available key is "key-A"
+
+  @unit @epic_ocr_1
+  Scenario: Gemini pool factory maps env vars GEMINI_API_KEY_1..N to pool instances
+    Given env vars with GEMINI_API_KEY_1="env-secret-1" and GEMINI_API_KEY_2="env-secret-2"
+    When I build a Gemini pool from env vars
+    Then the pool has 2 instances
+    And the first instance key is "env-secret-1"
+    And the second instance key is "env-secret-2"
+
+  @unit @epic_ocr_1
+  Scenario: Gemini pool factory skips empty env vars
+    Given env vars with GEMINI_API_KEY_1="env-secret-1" and GEMINI_API_KEY_2="" and GEMINI_API_KEY_3="env-secret-3"
+    When I build a Gemini pool from env vars
+    Then the pool has 2 instances
+    And the first instance key is "env-secret-1"
+    And the second instance key is "env-secret-3"
+
+  @unit @epic_ocr_1
+  Scenario: Multi-account Gemini pool rotates across accounts
+    Given a multi-account Gemini pool with 2 accounts and keys "account-1:key-A1,key-A2" and "account-2:key-B1,key-B2"
+    Then the multi-account pool has 2 accounts
+    And the multi-account pool has 4 total instances
+    When I get 4 instances from the multi-account pool
+    Then all 4 instances should have distinct ids
+
+  @unit @epic_ocr_1
+  Scenario: Multi-account Gemini pool marks rate-limited key in correct account
+    Given a multi-account Gemini pool with 2 accounts and keys "account-1:key-A1,key-A2" and "account-2:key-B1"
+    When the first instance is marked rate-limited
+    Then the next instance from the multi-account pool is not the rate-limited one
+
+  @unit @epic_ocr_1
+  Scenario: Multi-account pool from env vars GEMINI_ACCOUNT_N_API_KEY_M
+    Given env vars with GEMINI_ACCOUNT_1_API_KEY_1="a1k1" and GEMINI_ACCOUNT_1_API_KEY_2="a1k2" and GEMINI_ACCOUNT_2_API_KEY_1="a2k1"
+    When I build a multi-account Gemini pool from env vars
+    Then the multi-account pool has 2 accounts
+    And the multi-account pool has 3 total instances
+
+  @unit @epic_ocr_2
+  Scenario: OCR with Tesseract provider processes image without IA
+    Given an OCR test file "tess-scan.png" with text "fake png for tesseract"
+    When I OCR "tess-scan.png" with provider "tesseract"
+    Then the OCR result for "tess-scan" exists
+
+  @unit @epic_ocr_2
+  Scenario: OCR with gemini+ollama falls back to Tesseract when both Gemini and Ollama fail
+    Given an OCR test file "tess-fallback.png" with text "fake png for tess fallback"
+    When I OCR "tess-fallback.png" with provider "gemini+ollama" and Gemini and Ollama fail
+    Then the OCR result for "tess-fallback" exists
+
   @unit @epic_ocr_2b
   Scenario: OCR with Ollama provider produces structured AsciiDoc
     Given an OCR test file "ollama-scan.png" with text "fake png for ollama"
