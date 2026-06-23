@@ -1,0 +1,63 @@
+= Session 162 — README i18n 10 langues (consumer + plugin)
+:session: 162
+:date: 2026-06-24
+:epic: DOC-I18N (documentation)
+:borough: Queens — codebase-gradle (N1)
+
+== Contexte
+
+Codebase-gradle est DORMANT depuis session 160 (version 0.0.4 sur Maven Central).
+Déclencheur externe : demande utilisateur de création de README multilingues
+couvrant les 10 langues les plus parlées (EN, ZH, HI, ES, FR, AR, BN, PT, RU, UR)
+pour le projet codebase ET les boroughs qui importent codebase (workspace-bom +
+8 consommateurs).
+
+== Actions
+
+. Création de `README.consommateurs/` (10 fichiers, 10 langues) — guide consommateur :
+  Quick Start, tâches, DSL extensions, prereqs, build & test, troubleshooting.
+. Création de `README.plugin/` (10 fichiers, 10 langues) — guide développeur :
+  module layout, N0 contracts, dépendances clés, matrice de tests, JVM tuning,
+  CI pipeline, publication NMCP, statut EPICs, contribution.
+. Badges shields.io sur chaque fichier : Maven Central, Gradle Plugin Portal,
+  CI workflow, License Apache 2.0.
+. Block markers en tête : Version 0.0.4, Group education.cccp, Plugin ID,
+  Toolchain Java 24/Kotlin 2.3.20/Gradle 9.5.1, Build cmd, Tests cmd, Coverage ≥80%.
+. Switcher i18n 10 langues en tête de chaque fichier (`🌐 Languages:`).
+. FR + 8 traductions marquées `<!-- translated from README.md rev 0.0.4 -->`.
+. AR + UR en prose RTL, code fences LTR.
+. Mise à jour README.md racine : ajout section "Multilingual documentation"
+  pointant vers les deux dossiers.
+. Coordination des clôtures des 9 autres boroughs (workspace-bom + 8
+  consommateurs) via agents parallèles.
+
+== Commandes
+
+----
+# aucun build/test — session pure documentation
+find README.consommateurs README.plugin -name '*.md' | wc -l  # → 20
+----
+
+== Résultats
+
+. 20 fichiers README créés pour codebase-gradle (10 langues × 2 axes).
+. 200 fichiers README créés au total (10 projets × 20 fichiers).
+. Aucun code Kotlin modifié.
+. Aucun test lancé.
+. Aucune régression.
+
+== Leçons
+
+. La structure `README.consommateurs/` + `README.plugin/` sépare proprement
+  les audiences (utilisateur vs contributeur) — réutilisable pour les autres boroughs.
+. 10 langues × 20 projets = 200 fichiers : les agents parallèles sont essentiels
+  pour tenir le timing.
+. AR/UR RTL : pas besoin de `dir="rtl"` explicite en Markdown GitHub, le rendu
+  gère nativement la direction du script.
+. Le block markers (version/build/tests/coverage) en tête de README donne
+  l'état du projet en un coup d'œil — à standardiser.
+
+== Score
+
+9/10 — livraison complète, aucune régression, structure réutilisable.
+Moins 1 point : maintenance des 200 fichiers à anticiper (EN = source de vérité).

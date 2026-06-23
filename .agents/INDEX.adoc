@@ -39,6 +39,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 158 — EPIC V-6-POOL terminé 4/4 : AUTHORIZED_MODELS aligné sur AGENTS.adoc (2 modèles `gpt-oss:120b-cloud` + `gemma4:31b-cloud`) dans `OllamaInstanceFactory` + `OllamaInstanceScanner`, `LlmProviderResolver` cycle les 2 modèles sur `OLLAMA_POOL_PORTS` au lieu de `DEFAULT_MODEL` statique, feature Cucumber `epic_v6_pool.feature` (3 scénarios @epic_v6_pool) + runner + step `includes model`, tous tests unitaires + Cucumber PASS, zéro régression V-6 ollama_cloud + V-6 resolver.
 | ✅ | Session 159 — EPIC OCR-1/OCR-2 restants TERMINÉS (9/9 items) : HTTP 429 detection + rotation auto, env var mapping, multi-compte Google, Tesseract fallback harmonisé boundary codex↔codebase, EPIC OCR complet 7/7.
 | ✅ | Session 160 — Backlog & Roadmap cleanup : 4 fichiers gouvernance mis à jour (BACKLOG/INDEX/ROADMAP), tous EPICs marqués TERMINÉ, version bump 0.0.3→0.0.4, Maven Central 0.0.4 publié (deployment f4a91bf6), Plugin Portal soumis. Borough DORMANT.
+| ✅ | Session 162 — README i18n 10 langues (consumer + plugin) : 20 fichiers créés (README.consommateurs/ + README.plugin/), badges Maven Central/Portal/CI/License, markers version 0.0.4/build/tests/coverage ≥80%, switcher i18n 10 langues, AR/UR RTL. Coordination des 9 autres boroughs (200 fichiers au total). Borough DORMANT.
 
 === EPICs & Projects
 

@@ -128,6 +128,11 @@ codebase/
 
 See [STRATEGIC_ROADMAP.adoc](./codebase-plugin/STRATEGIC_ROADMAP.adoc) for ecosystem overview.
 
+## Multilingual documentation
+
+- 📖 **Consumer guide** (Quick Start, tasks, DSL): [`README.consommateurs/`](./README.consommateurs/) — 10 languages (EN, 中文, हिन्दी, Español, Français, العربية, বাংলা, Português, Русский, اردو)
+- 🛠️ **Plugin internals** (architecture, modules, tests, publication): [`README.plugin/`](./README.plugin/) — 10 languages
+
 ## Documentation
 
 - [BUILDING.md](./codebase-plugin/BUILDING.md) — Build configuration & tasks

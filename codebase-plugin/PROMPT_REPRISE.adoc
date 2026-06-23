@@ -1,9 +1,9 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 162
-:session: 162
+= Prompt de Reprise — Codebase (Queens N1) — Session 163
+:session: 163
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 161 — Code Review affinage. 3 actions sûres appliquées (CVE-2015-7501, README.md, CI split). 3 concerns transverses dispatchés vers BACKLOG global (toolchain JDK, linter Kotlin, config cache). Borough dormant.
+:session_precedente: 162 — README i18n 10 langues (consumer + plugin). 20 fichiers créés. Coordination 9 autres boroughs (200 fichiers total). Borough dormant.
 
-== Mission Session 162
+== Mission Session 163
 
 Codebase-gradle est DORMANT. Aucun EPIC actif.
 
@@ -21,10 +21,10 @@ Réveil sur déclencheur externe uniquement :
 == Contexte Technique
 
 * Version : `0.0.4` (bump session 160)
-* Maven Central : `education.cccp:codebase-plugin:0.0.3` publié (HTTP 200)
+* Maven Central : `education.cccp:codebase-plugin:0.0.4` publié
 * Kover : 100% coverage (55 classes métier)
 * Tests : 74 JUnit5 + 119 Cucumber PASS
-* EPICs terminés : 1(stale), 2, 3, 4, 5(migré), 6, 7, 8, 9, 10, 12, K, L, V, V-6→V-9, W, X, Y, Z, OCR, SP, TRAD, CR, PUB, V-LOCAL
+* README i18n : 10 langues × consumer + plugin (session 162)
 
 == Méthodologie
 

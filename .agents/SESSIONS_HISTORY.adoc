@@ -2,6 +2,24 @@
 :toc: left
 :icons: font
 
+== Session 162 — 2026-06-24
+
+* **EPICs** : DOC-I18N (documentation)
+* **Livrables** :
+** 20 fichiers README créés (10 langues × consumer + plugin) dans `README.consommateurs/` et `README.plugin/`
+** Badges shields.io (Maven Central, Plugin Portal, CI, License), block markers (version, build, tests, coverage)
+** Switcher i18n 10 langues, AR/UR RTL, traductions marquées `translated from README.md rev 0.0.4`
+** README.md racine mis à jour (section "Multilingual documentation")
+** Coordination des 9 autres boroughs consommateurs (workspace-bom + codex, planner, slider, plantuml, readme, bakery, capsule, graphify)
+* **Résultats** :
+** 200 fichiers README au total (10 projets × 20 fichiers)
+** Aucun code Kotlin modifié, aucun test lancé, aucune régression
+** Borough DORMANT (déclencheur externe uniquement)
+* **Leçons** :
+** Structure `README.consommateurs/` + `README.plugin/` sépare proprement les audiences
+** Agents parallèles essentiels pour 200 fichiers
+** AR/UR RTL géré nativement par GitHub Markdown (pas de `dir="rtl"` explicite)
+
 == Session 000 — 2026-06-16
 
 * **EPICs** : Bootstrap gouvernance — AGENT.adoc, INDEX.adoc, SESSION_CHECKLIST.adoc, SESSION_PROCEDURE.adoc
