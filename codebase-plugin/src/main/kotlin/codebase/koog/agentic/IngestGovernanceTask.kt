@@ -10,6 +10,7 @@ import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
 import org.slf4j.LoggerFactory
+import contracts.vibecoding.registry.EnforcementHook
 import java.io.File
 
 @DisableCachingByDefault(because = "Ingest governance — in-memory stub, non-deterministic chunk ids")
@@ -36,6 +37,24 @@ abstract class IngestGovernanceTask : DefaultTask() {
     var lastExecutor: AgenticExecutor? = null
         private set
 
+    /**
+     * Hook de blocage utilisable par [contracts.vibecoding.registry.ToolRegistry].
+     * Retourne `null` tant que l'ingestion n'a pas produit d'executables PRE_HOOK.
+     */
+    fun buildEnforcementHook(): EnforcementHook? {
+        val executor = lastExecutor ?: return null
+        return { toolName, arguments ->
+            val result = executor.check(toolName, arguments)
+            if (result.allowed) null else formatEnforcementResult(result)
+        }
+    }
+
+    private fun formatEnforcementResult(result: ExecutionResult): String =
+        listOfNotNull(
+            result.reason,
+            result.ruleId?.let { "ruleId=$it" }
+        ).joinToString(" | ")
+
     init {
         group = "generate"
         description = "Ingest governance EAGER files (AGENT.adoc, INDEX.adoc, BACKLOG.adoc) into AgenticIngestor (in-memory stub)"
@@ -45,44 +64,36 @@ abstract class IngestGovernanceTask : DefaultTask() {
     fun executeIngest() {
         val root = workspaceRoot.asFile.getOrNull()
             ?: error("workspaceRoot must be set")
+        val output = outputFile.asFile.orNull
+        executeIngest(root, output)
+    }
 
-        val files = collectGovernanceFiles(root)
-        log.info("[IngestGovernance] Collected {} governance files from {}", files.size, root.absolutePath)
-
-        val repository = InMemoryAgenticChunkRepository()
-        val ingestor = AgenticIngestor(
-            repository = repository,
-            governanceOntologizer = GovernanceOntologizer(),
-            chunkValidator = chunkValidator
-        )
-
-        val report = runBlocking { ingestor.ingest(files) }
-        lastIngestionReport = report
-        lastExecutor = AgenticExecutor(report.executables)
+    /**
+     * Point d'entrée DDD indépendant des propriétés Gradle.
+     * Permet l'appel programmatique depuis [GovernanceEnforcementWirer] et les tests.
+     */
+    fun executeIngest(root: File, output: File?) {
+        val result = GovernanceIngestor(chunkValidator).ingest(root)
+        lastIngestionReport = result.report
+        lastExecutor = result.executor
 
         log.info(
             "[IngestGovernance] Report — scanned={}, added={}, skipped={}, modified={}, compiled={}",
-            report.filesScanned, report.chunksAdded, report.chunksSkipped,
-            report.chunksModified, report.artifactsCompiled
+            result.report.filesScanned, result.report.chunksAdded, result.report.chunksSkipped,
+            result.report.chunksModified, result.report.artifactsCompiled
         )
-        if (report.sectionsAdded.isNotEmpty()) {
-            log.info("[IngestGovernance] Sections added: {}", report.sectionsAdded)
+        if (result.report.sectionsAdded.isNotEmpty()) {
+            log.info("[IngestGovernance] Sections added: {}", result.report.sectionsAdded)
         }
-        if (report.sectionsTotal.isNotEmpty()) {
-            log.info("[IngestGovernance] Sections total: {}", report.sectionsTotal)
+        if (result.report.sectionsTotal.isNotEmpty()) {
+            log.info("[IngestGovernance] Sections total: {}", result.report.sectionsTotal)
         }
 
-        if (outputFile.isPresent) {
-            val out = outputFile.get().asFile
-            out.parentFile.mkdirs()
-            out.writeText(buildReportJson(report), Charsets.UTF_8)
-            log.info("[IngestGovernance] Report written to {}", out.absolutePath)
+        if (output != null) {
+            output.parentFile.mkdirs()
+            output.writeText(buildReportJson(result.report), Charsets.UTF_8)
+            log.info("[IngestGovernance] Report written to {}", output.absolutePath)
         }
-    }
-
-    private fun collectGovernanceFiles(projectDir: File): List<Pair<String, String>> {
-        val scanAgent = ScanAgent()
-        return scanAgent.scan(projectDir).map { it.relativePath to it.content }
     }
 
     private fun buildReportJson(report: IngestionReport): String = buildString {
@@ -96,7 +107,8 @@ abstract class IngestGovernanceTask : DefaultTask() {
         appendLine("  \"sectionsAdded\": ${mapToJson(report.sectionsAdded)},")
         appendLine("  \"sectionsTotal\": ${mapToJson(report.sectionsTotal)},")
         appendLine("  \"validationErrorsByType\": ${validationErrorsByTypeToJson(report.validationErrors)},")
-        appendLine("  \"validationErrors\": ${validationErrorsToJson(report.validationErrors)}")
+        appendLine("  \"validationErrors\": ${validationErrorsToJson(report.validationErrors)},")
+        appendLine("  \"invalidChunks\": ${invalidChunksToJson(report.invalidChunks)}")
         appendLine("}")
     }
 
@@ -125,6 +137,22 @@ abstract class IngestGovernanceTask : DefaultTask() {
             if (index < entries.size - 1) append(", ")
         }
         append("}")
+    }
+
+    private fun invalidChunksToJson(invalidChunks: List<InvalidChunk>): String = buildString {
+        append("[")
+        invalidChunks.withIndex().forEach { (index, invalidChunk) ->
+            append("{")
+            append("\"id\": \"${escapeJson(invalidChunk.id)}\", ")
+            append("\"sourceFile\": \"${escapeJson(invalidChunk.sourceFile)}\", ")
+            append("\"sourceLines\": \"${escapeJson(invalidChunk.sourceLines)}\", ")
+            append("\"content\": \"${escapeJson(invalidChunk.content)}\", ")
+            append("\"quarantinedAt\": \"${invalidChunk.quarantinedAt}\", ")
+            append("\"errors\": ${validationErrorsToJson(invalidChunk.errors)}")
+            append("}")
+            if (index < invalidChunks.size - 1) append(", ")
+        }
+        append("]")
     }
 
     private fun escapeJson(value: String): String = value

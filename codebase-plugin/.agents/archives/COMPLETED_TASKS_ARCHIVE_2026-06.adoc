@@ -1,3 +1,53 @@
+== Session 151 — EPIC V-9.15 Invalid Chunk Quarantine
+
+- `koog/agentic/InvalidChunkRepository.kt` : port DDD + modèle `InvalidChunk`
+- `koog/agentic/InMemoryInvalidChunkRepository.kt` : implémentation en mémoire (fallback/tests)
+- `koog/agentic/InvalidChunkQuarantine.kt` : service DDD validation → quarantaine
+- `koog/agentic/R2dbcInvalidChunkRepository.kt` : implémentation R2DBC persistante
+- `resources/db/migration/V4__invalid_chunks.sql` : migration table `invalid_chunks` (JSONB errors + indexes)
+- `koog/agentic/AgenticIngestor.kt` : `IngestionReport.invalidChunks`, quarantaine dans la boucle, `InvalidChunkRepository` injectable
+- `koog/agentic/IngestGovernanceTask.kt` : JSON du rapport expose `invalidChunks` avec metadata
+- `test/kotlin/codebase/koog/agentic/InMemoryInvalidChunkRepositoryTest.kt` : 3 JUnit5 PASS
+- `test/kotlin/codebase/koog/agentic/InvalidChunkQuarantineTest.kt` : 4 JUnit5 PASS
+- `test/kotlin/codebase/koog/agentic/R2dbcInvalidChunkRepositoryTest.kt` : 2 JUnit5 PASS (Testcontainers)
+- `test/kotlin/codebase/koog/agentic/R2dbcInvalidChunkRepositoryMigrationTest.kt` : 1 JUnit5 PASS (Testcontainers)
+- `test/kotlin/codebase/koog/agentic/IngestGovernanceTaskTest.kt` : +3 tests fonctionnels V-9.15 PASS
+- `test/features/epic_v_9_15_invalid_chunk_quarantine.feature` + `EpicV915CucumberRunner.kt` + `EpicV915Steps.kt` : 2 scénarios Cucumber @epic_v_9_15 PASS
+- `build.gradle.kts` : enregistrement `cucumberTestEpicV915`
+- Régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11/9.12/9.13/9.14 vertes
+- `compileKotlin` + `compileTestKotlin` verts
+
+'''
+
+== Session 150 — EPIC V-9.14 Auto-activation du hook d'interdiction
+
+- `koog/agentic/GovernanceIngestor.kt` : orchestrateur DDD d'ingestion de gouvernance, instanciable sans Gradle
+- `koog/agentic/IngestGovernanceTask.kt` : refactor DDD avec `executeIngest(root, output)` déléguant à `GovernanceIngestor`
+- `koog/agentic/GovernanceEnforcementWirer.kt` : helper DDD qui câble le hook dans un `ToolRegistry`
+- `koog/VibecodingTask.kt` : `GovernanceEnforcementWirer.wire()` appelé après enregistrement des outils ; registry remplacé si hook produit
+- `koog/SessionProtocolTask.kt` : `GovernanceEnforcementWirer.wire()` appelé avant création du `VibecodingGraph`
+- `test/kotlin/codebase/koog/agentic/GovernanceEnforcementWirerTest.kt` : 5 JUnit5 PASS
+- `test/kotlin/codebase/koog/VibecodingTaskTest.kt` : +1 test fonctionnel V-9.14 PASS
+- `test/kotlin/codebase/koog/SessionProtocolTaskTest.kt` : +1 test fonctionnel V-9.14 PASS
+- `test/features/epic_v_9_14_auto_activation_hook.feature` + `EpicV914CucumberRunner.kt` + `EpicV914Steps.kt` : 2 scénarios Cucumber @epic_v_9_14 PASS
+- `build.gradle.kts` : enregistrement `cucumberTestEpicV914` et correction `cucumberTestEpicV913`
+- Régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11/9.12/9.13 vertes
+- Build propre, zéro réseau, zéro Testcontainers
+
+'''
+
+== Session 149 — EPIC V-9.13 ToolRegistry enforcement hook
+
+- `contracts/vibecoding/registry/ToolRegistry.kt` : type `EnforcementHook`, paramètre constructeur optionnel, appel du hook au début d'`execute()`, audit du blocage
+- `koog/agentic/IngestGovernanceTask.kt` : import `EnforcementHook`, ajout `buildEnforcementHook()` qui wrappe `lastExecutor.check()`
+- `test/kotlin/codebase/koog/ToolRegistryTest.kt` : 3 nouveaux tests (hook bloque exec_shell/exec_gradle, hook null laisse passer)
+- `test/kotlin/codebase/koog/agentic/IngestGovernanceTaskTest.kt` : 3 nouveaux tests (hook null avant ingestion, hook bloque exec_shell, hook câblé dans ToolRegistry bloque exec_gradle publish)
+- `test/features/epic_v_9_13_tool_registry_enforcement.feature` + `EpicV913CucumberRunner.kt` + `EpicV913Steps.kt` : 5 scénarios Cucumber @epic_v_9_13 PASS
+- Régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11/9.12 vertes
+- Build propre, zéro réseau, zéro Testcontainers
+
+'''
+
 == Session 148 — EPIC V-9.12 AgenticExecutor
 
 - `koog/agentic/AgenticExecutor.kt` : filtre les `ExecutableArtifact` PRE_HOOK et expose `check(toolName, arguments): ExecutionResult`

@@ -10,6 +10,7 @@ import codebase.koog.session.SessionRepository
 import codebase.koog.tracking.TokenTracker
 import contracts.vibecoding.registry.ToolInfo
 import contracts.vibecoding.registry.ToolRegistry
+import codebase.koog.agentic.GovernanceEnforcementWirer
 import codebase.koog.state.VibecodingState
 import io.r2dbc.spi.ConnectionFactory
 import kotlinx.coroutines.runBlocking
@@ -86,7 +87,7 @@ abstract class VibecodingTask : DefaultTask() {
     abstract val workspaceRoot: DirectoryProperty
 
     @get:Internal
-    val toolRegistry: ToolRegistry = ToolRegistry()
+    var toolRegistry: ToolRegistry = ToolRegistry()
 
     /**
      * ConnectionFactory injectable pour la persistance R2DBC.
@@ -140,6 +141,13 @@ abstract class VibecodingTask : DefaultTask() {
         }
         log.info("Wired {} gradle_* tasks with structured argument mapping", schemas.size)
 
+        // V-9.14 Auto-activation du hook d'interdiction depuis la gouvernance locale
+        val wiredRegistry = GovernanceEnforcementWirer.wire(toolRegistry, root)
+        if (wiredRegistry !== toolRegistry) {
+            log.info("Governance enforcement hook activated — {} tools registered", wiredRegistry.toolCount())
+            toolRegistry = wiredRegistry
+        }
+
         val tokenTracker = TokenTracker()
         val modelName = model.getOrElse("")
         val llmProvider = if (modelName.isBlank()) null
@@ -165,7 +173,7 @@ abstract class VibecodingTask : DefaultTask() {
             val resumedState = VibecodingGraph.resumeSession(record)
             val resumedGraph = VibecodingGraph(
                 augmentedGraph = KoogAugmentedContextGraph(),
-                toolRegistry = toolRegistry,
+                toolRegistry = wiredRegistry,
                 llmProvider = llmProvider,
                 sessionRepository = repo,
                 connectionFactory = effectiveCf,
@@ -175,7 +183,7 @@ abstract class VibecodingTask : DefaultTask() {
         } else {
             val freshGraph = VibecodingGraph(
                 augmentedGraph = KoogAugmentedContextGraph(),
-                toolRegistry = toolRegistry,
+                toolRegistry = wiredRegistry,
                 llmProvider = llmProvider,
                 connectionFactory = cf,
                 tokenTracker = tokenTracker

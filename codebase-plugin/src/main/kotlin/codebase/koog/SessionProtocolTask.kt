@@ -8,6 +8,7 @@ import contracts.session.SessionStatus
 import contracts.session.TokenUsage
 import contracts.session.ToolCallRecord
 import contracts.vibecoding.registry.ToolRegistry
+import codebase.koog.agentic.GovernanceEnforcementWirer
 import codebase.koog.governance.GovernanceContextLoader
 import codebase.koog.state.VibecodingState
 import org.gradle.api.DefaultTask
@@ -188,6 +189,14 @@ abstract class SessionProtocolTask : DefaultTask() {
         lastAgentContext = agentContext
 
         log.info("[SessionProtocol] Executing session {} — prompt={}", sid, promptText)
+
+        // V-9.14 Auto-activation du hook d'interdiction depuis la gouvernance locale
+        val workspaceRootFile = workspaceRoot.asFile.get()
+        val wiredToolRegistry = GovernanceEnforcementWirer.wire(toolRegistry, workspaceRootFile)
+        if (wiredToolRegistry !== toolRegistry) {
+            log.info("[SessionProtocol] Governance enforcement hook activated")
+            toolRegistry = wiredToolRegistry
+        }
 
         val tokenTracker = TokenTracker()
 

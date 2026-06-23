@@ -74,4 +74,61 @@ class ToolRegistryTest {
             registry.execute("unknown_tool", emptyMap<String, String>(), "/tmp")
         }
     }
+
+    @Test
+    fun `enforcement hook should block exec_shell before execution`(@TempDir tempDir: File) {
+        val blocked = ToolRegistry(
+            enforcementHook = { toolName, _ ->
+                if (toolName == "exec_shell") "git push interdit" else null
+            }
+        )
+        val exception = assertThrows(SecurityException::class.java) {
+            blocked.execute(
+                toolName = "exec_shell",
+                arguments = mapOf("command" to "git push origin main"),
+                workspaceRoot = tempDir.absolutePath
+            )
+        }
+        assertTrue(exception.message!!.contains("ENFORCEMENT BLOCKED [exec_shell]"))
+        assertTrue(exception.message!!.contains("git push interdit"))
+        val entry = blocked.auditEntries().last()
+        assertEquals(tempDir.absolutePath, entry.workspaceRoot)
+        assertTrue(entry.error!!.contains("ENFORCEMENT BLOCKED"))
+    }
+
+    @Test
+    fun `enforcement hook returning null should allow normal execution`(@TempDir tempDir: File) {
+        val allowed = ToolRegistry(enforcementHook = { _, _ -> null })
+        allowed.registerHandler("exec_shell") { _, _, _ -> "shell_ok" }
+
+        val result = allowed.execute(
+            toolName = "exec_shell",
+            arguments = mapOf("command" to "ls"),
+            workspaceRoot = tempDir.absolutePath
+        )
+
+        assertEquals("shell_ok", result)
+    }
+
+    @Test
+    fun `enforcement hook should block exec_gradle before execution`(@TempDir tempDir: File) {
+        val blocked = ToolRegistry(
+            enforcementHook = { toolName, args ->
+                if (toolName == "exec_gradle" && args["task"]?.contains("publish") == true) {
+                    "publish interdit"
+                } else null
+            }
+        )
+
+        val exception = assertThrows(SecurityException::class.java) {
+            blocked.execute(
+                toolName = "exec_gradle",
+                arguments = mapOf("task" to "publish"),
+                workspaceRoot = tempDir.absolutePath
+            )
+        }
+
+        assertTrue(exception.message!!.contains("ENFORCEMENT BLOCKED [exec_gradle]"))
+        assertTrue(exception.message!!.contains("publish interdit"))
+    }
 }

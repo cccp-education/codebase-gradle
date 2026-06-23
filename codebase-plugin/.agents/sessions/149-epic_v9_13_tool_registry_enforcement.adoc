@@ -1,0 +1,54 @@
+= Session 149 — EPIC V-9.13 ToolRegistry enforcement hook
+:session: 149
+:date: 2026-06-23
+:borough: Queens — codebase-gradle (N1)
+
+== Contexte
+
+Mission issue de `PROMPT_REPRISE.adoc` session 149 :
+brancher `AgenticExecutor.check()` dans `ToolRegistry.execute()` pour que toute ingestion de gouvernance précédente bloque nativement `exec_shell`/`exec_gradle` avant exécution réelle, sans modifier la signature publique de `execute()`.
+
+== Actions
+
+. Lecture EAGER : `AGENT.adoc`, `.agents/INDEX.adoc`, `PROMPT_REPRISE.adoc`, `BACKLOG.adoc`.
+. Audit de l'existant V-9.12 : `AgenticExecutor` produit un `ExecutionResult`, mais `ToolRegistry` (contrat N0 `contracts.vibecoding.registry`) ne pouvait pas importer N1.
+. Contrat N0 `ToolRegistry.kt` :
+  * Ajout du type `EnforcementHook = (toolName, arguments) -> String?`.
+  * Paramètre constructeur optionnel `enforcementHook`.
+  * Appel du hook au début d'`execute()` ; si retour non-null, lance `SecurityException` avec message `ENFORCEMENT BLOCKED [$toolName]: $reason` et audite le blocage.
+. `IngestGovernanceTask.kt` (N1) :
+  * Importe `EnforcementHook` depuis le contrat N0.
+  * Ajout de `buildEnforcementHook()` qui wrappe `lastExecutor.check()` ; retourne `null` tant qu'aucune ingestion n'a eu lieu.
+. Tests unitaires `ToolRegistryTest.kt` : 3 nouveaux tests (hook bloque exec_shell/exec_gradle, hook null laisse passer).
+. Tests fonctionnels `IngestGovernanceTaskTest.kt` : 3 nouveaux tests (hook null avant ingestion, hook bloque exec_shell, hook câblé dans ToolRegistry bloque exec_gradle publish).
+. Tests Cucumber V-9.13 : `epic_v_9_13_tool_registry_enforcement.feature` (5 scénarios), `EpicV913CucumberRunner.kt`, `EpicV913Steps.kt` — expressions uniques pour éviter le conflit de glue avec V-9.12.
+. Régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11/9.12 : vertes.
+
+== Commandes
+
+[source,shell]
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:compileTestKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.ToolRegistryTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.IngestGovernanceTaskTest"
+./gradlew :codebase-plugin:test --tests "codebase.scenarios.EpicV913CucumberRunner"
+./gradlew :codebase-plugin:test --tests "codebase.koog.ToolRegistryTest" --tests "codebase.koog.agentic.AgenticExecutorTest" --tests "codebase.koog.agentic.IngestGovernanceTaskTest" --tests "codebase.scenarios.EpicV912CucumberRunner" --tests "codebase.scenarios.EpicV913CucumberRunner" --tests "codebase.scenarios.EpicV93CucumberRunner" --tests "codebase.scenarios.EpicV95CucumberRunner" --tests "codebase.scenarios.EpicV97CucumberRunner" --tests "codebase.scenarios.EpicV98CucumberRunner" --tests "codebase.scenarios.EpicV99CucumberRunner" --tests "codebase.scenarios.EpicV910CucumberRunner" --tests "codebase.scenarios.EpicV911CucumberRunner"
+./gradlew :codebase-plugin:build -x test
+----
+
+== Résultats
+
+* Compilation : verte.
+* `ToolRegistryTest` : 8/8 PASS (5 existants + 3 nouveaux).
+* `IngestGovernanceTaskTest` : 10/10 PASS (7 existants + 3 nouveaux).
+* Cucumber @epic_v_9_13 : 5 scénarios / 18 steps PASS.
+* Régressions V-9.x : vertes.
+* Build `-x test` : propre.
+
+== Leçons
+
+* Garder le contrat N0 pur en injectant un hook lambda évite toute dépendance inverse N0 -> N1.
+* `ToolRegistry` reste indépendant de `AgenticExecutor` ; seul le producteur N1 connaît les deux bouts.
+* Le mécanisme d'`EnforcementHook` est réutilisable par tout autre moteur de règles (ex: quality gates, PII detectors).
+* Prochaine étape naturelle : brancher automatiquement `buildEnforcementHook()` dans `VibecodingGraph` / `SessionProtocolTask` pour activer l'interdiction en production sans configuration manuelle (V-9.14+).

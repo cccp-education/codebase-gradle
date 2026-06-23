@@ -157,6 +157,44 @@ class SessionProtocolTaskTest {
     }
 
     @Test
+    fun `V-9_14 governance hook auto-activated blocks exec_shell git push`(@TempDir tempDir: Path) {
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tempDir.toFile())
+            .withName("test-v9-14-session-protocol")
+            .build()
+        project.pluginManager.apply("java-base")
+
+        File(tempDir.toFile(), "AGENT.adoc").writeText(
+            """
+            = Agent
+
+            * NE DOIT JAMAIS git push sans permission explicite.
+            """.trimIndent()
+        )
+
+        val task = project.tasks.register("sessionProtocol", SessionProtocolTask::class.java) {
+            it.prompt.set("V-9.14 auto-activation test")
+            it.maxActions.set(2)
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+
+        task.llmProvider = FakeLlmProvider()
+        task.toolRegistry = ToolRegistry()
+
+        task.executeProtocol()
+
+        val exception = assertThrows(SecurityException::class.java) {
+            task.toolRegistry.execute(
+                "exec_shell",
+                mapOf("command" to "git push origin main"),
+                tempDir.toFile().absolutePath
+            )
+        }
+        assertTrue(exception.message!!.contains("ENFORCEMENT BLOCKED [exec_shell]"))
+        assertTrue(exception.message!!.contains("git push", ignoreCase = true))
+    }
+
+    @Test
     fun `executeProtocol with model tracks token usage`(@TempDir tempDir: Path) {
         val project = ProjectBuilder.builder()
             .withProjectDir(tempDir.toFile())

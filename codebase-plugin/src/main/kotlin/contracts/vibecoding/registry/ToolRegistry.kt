@@ -29,10 +29,19 @@ data class AuditEntry(
  */
 typealias ToolHandler = (toolName: String, arguments: Map<String, String>, workspaceRoot: String) -> String
 
+/**
+ * Hook optionnel appele avant toute execution d'outil.
+ * Retourne `null` si l'appel est autorise, sinon le motif du blocage.
+ * Permet a un moteur N1 (ex: AgenticExecutor) d'interdire nativement
+ * exec_shell / exec_gradle sans dependance N0 -> N1.
+ */
+typealias EnforcementHook = (toolName: String, arguments: Map<String, String>) -> String?
+
 class ToolRegistry(
     private val tools: MutableMap<String, ToolInfo> = mutableMapOf(),
     private val auditTrail: MutableList<AuditEntry> = mutableListOf(),
-    private val handlers: MutableMap<String, ToolHandler> = mutableMapOf()
+    private val handlers: MutableMap<String, ToolHandler> = mutableMapOf(),
+    private val enforcementHook: EnforcementHook? = null
 ) {
     companion object {
         const val MAX_READ_FILE_SIZE: Long = 10 * 1024 * 1024 // 10 MB
@@ -72,6 +81,11 @@ class ToolRegistry(
 
     fun execute(toolName: String, arguments: Map<String, String>, workspaceRoot: String, dryRun: Boolean = false): String {
         val start = Instant.now()
+        enforcementHook?.invoke(toolName, arguments)?.let { reason ->
+            val message = "ENFORCEMENT BLOCKED [$toolName]: $reason"
+            auditTrail.add(AuditEntry(start, toolName, arguments, dryRun, result = "", error = message, workspaceRoot = workspaceRoot))
+            throw SecurityException(message)
+        }
         val result = try {
             executeInternal(toolName, arguments, workspaceRoot, dryRun)
         } catch (e: SecurityException) {

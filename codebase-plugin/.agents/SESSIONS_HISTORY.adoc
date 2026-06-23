@@ -4,6 +4,9 @@
 |===
 | Session | Date | EPIC | Résultat
 
+| 151 | 2026-06-23 | EPIC V-9 | V-9.15 Invalid Chunk Quarantine — port `InvalidChunkRepository` + implémentations in-memory/R2DBC (migration V4) + `InvalidChunkQuarantine` câblé dans `AgenticIngestor`, `IngestionReport.invalidChunks` + JSON, 12 JUnit5 + 2 Cucumber @epic_v_9_15 PASS, régressions V-9.x vertes ✅
+| 150 | 2026-06-23 | EPIC V-9 | V-9.14 Auto-activation du hook d'interdiction — `GovernanceEnforcementWirer` câblé dans `VibecodingTask` et `SessionProtocolTask`, 5 JUnit5 + 2 fonctionnels + 2 Cucumber @epic_v_9_14 PASS, zéro régression V-9.x ✅
+| 149 | 2026-06-23 | EPIC V-9 | V-9.13 ToolRegistry enforcement hook — `EnforcementHook` contrat N0, `buildEnforcementHook()` N1, `ToolRegistry` bloque nativement exec_shell/exec_gradle, 8 JUnit5 + 3 fonctionnels + 5 Cucumber @epic_v_9_13 PASS, zéro régression V-9.x ✅
 | 148 | 2026-06-23 | EPIC V-9 | V-9.12 AgenticExecutor — `AgenticExecutor` PRE_HOOK runner, `IngestionReport.executables`, câblage `IngestGovernanceTask.lastExecutor`, 8 JUnit5 + 5 Cucumber @epic_v_9_12 PASS, zéro régression V-9.x et tests Y-4/Y-7. ✅
 | 147 | 2026-06-23 | EPIC V-9 | V-9.11 AgenticCompiler exécutable — `ExecutableArtifact` + `ArtifactPayload` + `ExecutionResult`, `compileExecutable()`, `AgenticChunkEnforcement` consomme PreHookPayload, 8 JUnit5 + 4 Cucumber @epic_v_9_11 PASS, zéro régression V-9.x et tests Y-4/Y-7. ✅
 | 146 | 2026-06-23 | EPIC V-9 | V-9.10 ChunkValidationReport — `ChunkValidationErrorType`, `lineStart`/`lineEnd`, `validationErrorsByType` JSON, 3 JUnit5 + 1 test fonctionnel + 3 Cucumber @epic_v_9_10 PASS, zéro régression V-9.x ✅

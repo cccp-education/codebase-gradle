@@ -10,7 +10,8 @@ data class IngestionReport(
     val sectionsTotal: Map<GovernanceSection, Int> = emptyMap(),
     val chunksInvalid: Int = 0,
     val validationErrors: List<ChunkValidationError> = emptyList(),
-    val executables: List<ExecutableArtifact> = emptyList()
+    val executables: List<ExecutableArtifact> = emptyList(),
+    val invalidChunks: List<InvalidChunk> = emptyList()
 )
 
 class AgenticIngestor(
@@ -19,7 +20,8 @@ class AgenticIngestor(
     private val repository: AgenticChunkRepository,
     private val compiler: AgenticCompiler = AgenticCompiler(),
     private val governanceOntologizer: GovernanceOntologizer? = null,
-    private val chunkValidator: ChunkValidator = ChunkValidator()
+    private val chunkValidator: ChunkValidator = ChunkValidator(),
+    private val invalidChunkRepository: InvalidChunkRepository = InMemoryInvalidChunkRepository()
 ) {
 
     suspend fun ingest(files: List<Pair<String, String>>): IngestionReport {
@@ -34,6 +36,8 @@ class AgenticIngestor(
         val sectionsTotal = mutableMapOf<GovernanceSection, Int>()
         val validationErrors = mutableListOf<ChunkValidationError>()
         val executables = mutableListOf<ExecutableArtifact>()
+
+        val quarantine = InvalidChunkQuarantine(invalidChunkRepository)
 
         for ((sourceFile, content) in files) {
             if (content.isBlank()) continue
@@ -50,6 +54,7 @@ class AgenticIngestor(
                 if (!validation.valid) {
                     chunksInvalid++
                     validationErrors.addAll(validation.errors)
+                    quarantine.quarantineIfInvalid(chunk.chunk, validation)
                     continue
                 }
 
@@ -80,6 +85,8 @@ class AgenticIngestor(
             }
         }
 
+        val invalidChunks = quarantine.listQuarantined()
+
         return IngestionReport(
             filesScanned = files.size,
             chunksAdded = chunksAdded,
@@ -90,7 +97,8 @@ class AgenticIngestor(
             sectionsTotal = sectionsTotal,
             chunksInvalid = chunksInvalid,
             validationErrors = validationErrors,
-            executables = executables
+            executables = executables,
+            invalidChunks = invalidChunks
         )
     }
 }

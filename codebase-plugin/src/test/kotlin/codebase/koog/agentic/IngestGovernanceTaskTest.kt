@@ -1,10 +1,14 @@
 package codebase.koog.agentic
 
+import contracts.vibecoding.registry.ToolRegistry
 import org.gradle.testfixtures.ProjectBuilder
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class IngestGovernanceTaskTest {
@@ -176,5 +180,148 @@ class IngestGovernanceTaskTest {
         assertTrue(content.contains("\"validationErrorsByType\""), "JSON should expose validationErrorsByType")
         val summaryRegex = Regex("\"validationErrorsByType\"\\s*:\\s*\\{[^}]*\"MISSING_CONTENT\"\\s*:\\s*\\d+")
         assertTrue(summaryRegex.containsMatchIn(content), "JSON should summarize errors by type")
+    }
+
+    @Test
+    fun `buildEnforcementHook returns null when no ingestion happened`(@TempDir tempDir: File) {
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java).get()
+
+        assertNull(task.buildEnforcementHook(), "Hook should be null before ingestion")
+    }
+
+    @Test
+    fun `buildEnforcementHook blocks exec_shell after ingestion of INTERDIRE rule`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText(
+            """
+            = Agent
+
+            * NE DOIT JAMAIS git push sans permission explicite.
+            """.trimIndent()
+        )
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+
+        task.executeIngest()
+
+        val hook = task.buildEnforcementHook()
+        assertNotNull(hook, "Hook should be available after ingestion")
+        val reason = hook("exec_shell", mapOf("command" to "git push origin main"))
+        assertNotNull(reason, "Hook should block git push")
+        assertTrue(reason.contains("push", ignoreCase = true), "Reason should mention push: $reason")
+    }
+
+    @Test
+    fun `buildEnforcementHook wired into ToolRegistry blocks exec_gradle publish`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText(
+            """
+            = Agent
+
+            * NE DOIT JAMAIS ./gradlew publish sans verification.
+            """.trimIndent()
+        )
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+
+        task.executeIngest()
+
+        val registry = ToolRegistry(enforcementHook = task.buildEnforcementHook())
+
+        val exception = assertThrows<SecurityException> {
+            registry.execute("exec_gradle", mapOf("task" to "publish"), workspaceRoot = tempDir.absolutePath)
+        }
+
+        assertTrue(exception.message!!.contains("ENFORCEMENT BLOCKED"))
+        assertTrue(exception.message!!.contains("publish", ignoreCase = true))
+    }
+
+    @Test
+    fun `V-9_15 invalid chunks are quarantined in ingestion report`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+
+        val fakeValidator = object : ChunkValidator() {
+            override fun validate(chunk: AgenticChunk): ValidationResult {
+                val error = ChunkValidationError(
+                    sourceFile = chunk.sourceFile,
+                    sourceLines = chunk.sourceLines,
+                    lineStart = 1,
+                    lineEnd = 1,
+                    errorType = ChunkValidationErrorType.CHECKSUM_MISMATCH,
+                    message = "injected validation error"
+                )
+                return ValidationResult(valid = false, errors = listOf(error))
+            }
+        }
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+            it.chunkValidator = fakeValidator
+        }.get()
+
+        task.executeIngest()
+
+        val report = task.lastIngestionReport
+        assertNotNull(report)
+        assertTrue(report!!.chunksInvalid > 0, "Should count invalid chunks")
+        assertEquals(report.chunksInvalid, report.invalidChunks.size, "invalidChunks list size should match count")
+        assertTrue(report.invalidChunks.all { it.errors.isNotEmpty() }, "Each quarantined chunk should carry errors")
+    }
+
+    @Test
+    fun `V-9_15 valid chunks are not quarantined`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+
+        task.executeIngest()
+
+        val report = task.lastIngestionReport
+        assertNotNull(report)
+        assertEquals(0, report!!.invalidChunks.size, "Valid chunks should not be quarantined")
+    }
+
+    @Test
+    fun `V-9_15 report json includes invalidChunks array`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+
+        val fakeValidator = object : ChunkValidator() {
+            override fun validate(chunk: AgenticChunk): ValidationResult {
+                val error = ChunkValidationError(
+                    sourceFile = chunk.sourceFile,
+                    sourceLines = chunk.sourceLines,
+                    lineStart = 1,
+                    lineEnd = 1,
+                    errorType = ChunkValidationErrorType.CHECKSUM_MISMATCH,
+                    message = "injected validation error"
+                )
+                return ValidationResult(valid = false, errors = listOf(error))
+            }
+        }
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val outputFile = File(tempDir, "ingestion-report.json")
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+            it.outputFile.set(outputFile)
+            it.chunkValidator = fakeValidator
+        }.get()
+
+        task.executeIngest()
+
+        assertTrue(outputFile.exists())
+        val content = outputFile.readText()
+        assertTrue(content.contains("\"invalidChunks\""), "JSON should expose invalidChunks")
+        assertTrue(content.contains("\"quarantinedAt\""), "JSON should expose quarantinedAt")
+        assertTrue(content.contains("\"errorType\": \"CHECKSUM_MISMATCH\""), "JSON should expose quarantine error type")
     }
 }

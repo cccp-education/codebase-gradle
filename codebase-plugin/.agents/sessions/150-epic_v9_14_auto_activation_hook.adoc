@@ -1,0 +1,43 @@
+= Session 150 — EPIC V-9.14 Auto-activation du hook d'intervention
+
+== Contexte
+
+Mission V-9.14 : câbler `IngestGovernanceTask.buildEnforcementHook()` dans `VibecodingGraph` / `SessionProtocolTask` pour que l'interdiction s'applique automatiquement dès qu'une ingestion de gouvernance a produit des règles PRE_HOOK. Un appel à `exec_shell "git push"` ou `exec_gradle "publish"` lancé par le graphe vibecoding doit être bloqué nativement sans configuration manuelle du hook.
+
+== Actions
+
+. Refactor DDD de `IngestGovernanceTask` : extraction de `GovernanceIngestor` (classe instanciable directement, indépendante de Gradle) et méthode `executeIngest(root, output)`.
+. Création de `GovernanceEnforcementWirer` : helper DDD qui orchestre l'ingestion de gouvernance et retourne un `ToolRegistry` câblé avec le hook si des règles PRE_HOOK existent.
+. Câblage dans `VibecodingTask` : après l'enregistrement des outils gradle_*, appel de `GovernanceEnforcementWirer.wire(toolRegistry, root)` et remplacement du registry si un hook est produit.
+. Câblage dans `SessionProtocolTask` : avant la création du `VibecodingGraph`, appel du wirer avec `workspaceRoot.asFile.get()`.
+. Tests JUnit5 : `GovernanceEnforcementWirerTest` (5 tests) + tests fonctionnels dans `VibecodingTaskTest` et `SessionProtocolTaskTest`.
+. Tests Cucumber V-9.14 : 2 scénarios (VibecodingTask auto-activation + SessionProtocolTask auto-activation).
+. Enregistrement de la tâche Gradle `cucumberTestEpicV914` dans `build.gradle.kts`.
+
+== Commandes
+
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.GovernanceEnforcementWirerTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.VibecodingTaskTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.SessionProtocolTaskTest"
+./gradlew :codebase-plugin:cucumberTestEpicV914
+./gradlew :codebase-plugin:cucumberTestEpicV913
+./gradlew :codebase-plugin:cucumberTestEpicV99
+./gradlew :codebase-plugin:cucumberTestEpicV910
+----
+
+== Résultats
+
+- `GovernanceEnforcementWirerTest` : 5/5 PASS
+- `VibecodingTaskTest` : 19/19 PASS (18 existants + 1 V-9.14)
+- `SessionProtocolTaskTest` : 22/22 PASS (21 existants + 1 V-9.14)
+- `cucumberTestEpicV914` : 2/2 scénarios PASS
+- Régressions V-9.13/V-9.9/V-9.10 : vertes
+- `compileKotlin` : propre
+
+== Leçons
+
+. Extraire une classe DDD instanciable (`GovernanceIngestor`) évite le hack d'instanciation anonyme de `DefaultTask` et rend le wiring testable unitairement.
+. Remplacer le `ToolRegistry` par une copie câblée avec hook (plutôt que muter l'objet original) préserve la prédictibilité et permet de vérifier l'activation dans les tests.
+. L'ordre d'activation doit être après l'enregistrement des handlers personnalisés mais avant la création du `VibecodingGraph`.

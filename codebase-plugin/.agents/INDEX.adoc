@@ -1,7 +1,7 @@
 = INDEX.adoc — Codebase Gradle (Queens N1)
 :date: 2026-06-23
-:session_en_cours: 149
-:session_precedente: 148 — EPIC V-9.12 AgenticExecutor livré (`AgenticExecutor` PRE_HOOK runner, `IngestionReport.executables`, câblage `IngestGovernanceTask.lastExecutor`, 8 JUnit5 + 5 Cucumber @epic_v_9_12 PASS, zéro régression V-9.x)
+:session_en_cours: 152
+:session_precedente: 151 — EPIC V-9.15 Invalid Chunk Quarantine : `InvalidChunkRepository` port DDD + `InMemoryInvalidChunkRepository` + `R2dbcInvalidChunkRepository` (migration V4) + `InvalidChunkQuarantine` câblé dans `AgenticIngestor`, `IngestionReport.invalidChunks` + JSON, 12 JUnit5 + 2 Cucumber @epic_v_9_15 PASS, régressions V-9.x vertes
 
 == Roadmap EPICs
 
@@ -46,8 +46,8 @@
 | 136-139
 
 | EPIC V-9 Gouvernance Agentique
-| EN COURS (6/35 — Under-EPIC 1 complet V-9.1→V-9.5 ; V-9.6 déjà livré par EPIC Y-2 ; V-9.7 GovernanceOntologizer ✅ ; V-9.8 Governance ingestion report ✅ ; V-9.9 ChunkValidationGate ✅ ; V-9.10 ChunkValidationReport ✅ ; V-9.11 AgenticCompiler exécutable ✅ session 147 ; V-9.12 AgenticExecutor ✅ session 148)
-| 141-148
+| EN COURS (11/35 — Under-EPIC 1 complet V-9.1→V-9.5 ; V-9.6 déjà livré par EPIC Y-2 ; V-9.7 ✅ ; V-9.8 ✅ ; V-9.9 ✅ ; V-9.10 ✅ ; V-9.11 ✅ session 147 ; V-9.12 ✅ session 148 ; V-9.13 ✅ session 149 ; V-9.14 ✅ session 150 ; V-9.15 ✅ session 151)
+| 141-151
 
 | EPIC 9 Opencode Augmenté
 | ✅ TERMINE
@@ -113,6 +113,9 @@
 == Sessions Récentes
 
 | Session | Date | EPIC | Résultat
+| 151 | 2026-06-23 | EPIC V-9 | V-9.15 Invalid Chunk Quarantine — port `InvalidChunkRepository` + implémentations in-memory/R2DBC (migration V4) + service `InvalidChunkQuarantine` câblé dans `AgenticIngestor`, `IngestionReport.invalidChunks` + JSON, 12 JUnit5 + 2 Cucumber @epic_v_9_15 PASS, régressions V-9.x vertes ✅
+| 150 | 2026-06-23 | EPIC V-9 | V-9.14 Auto-activation du hook d'interdiction — `GovernanceEnforcementWirer` câblé dans `VibecodingTask` et `SessionProtocolTask`, 5 JUnit5 + 2 fonctionnels + 2 Cucumber @epic_v_9_14 PASS, zéro régression V-9.x ✅
+| 149 | 2026-06-23 | EPIC V-9 | V-9.13 ToolRegistry enforcement hook — `EnforcementHook` contrat N0, `buildEnforcementHook()` N1, ToolRegistry bloque nativement exec_shell/exec_gradle, 8 JUnit5 + 3 fonctionnels + 5 Cucumber @epic_v_9_13 PASS, zéro régression V-9.x ✅
 | 148 | 2026-06-23 | EPIC V-9 | V-9.12 AgenticExecutor — `AgenticExecutor` PRE_HOOK runner, `IngestionReport.executables`, câblage `IngestGovernanceTask.lastExecutor`, 8 JUnit5 + 5 Cucumber @epic_v_9_12 PASS, zéro régression V-9.x ✅
 | 147 | 2026-06-23 | EPIC V-9 | V-9.11 AgenticCompiler exécutable — `ExecutableArtifact` + `ArtifactPayload` + `ExecutionResult`, `AgenticCompiler.compileExecutable()`, `AgenticChunkEnforcement` consomme PreHookPayload, 8 JUnit5 + 4 Cucumber @epic_v_9_11 PASS, zéro régression V-9.3/9.5/9.7/9.8/9.9/9.10/AgenticCompilerTest/AgenticChunkEnforcementTest ✅
 

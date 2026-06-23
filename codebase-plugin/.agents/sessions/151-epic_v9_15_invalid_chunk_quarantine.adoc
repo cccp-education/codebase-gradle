@@ -1,0 +1,68 @@
+= Session 151 — EPIC V-9.15 Invalid Chunk Quarantine
+:session: 151
+:date: 2026-06-23
+:borough: Queens — codebase-gradle (N1)
+
+== Contexte
+
+Mission issue de `PROMPT_REPRISE.adoc` session 151 : attaquer V-9.15+ (Under-EPIC 5 Qualité et Robustesse). V-9.15 = stocker les chunks invalides détectés par `ChunkValidator` dans une table/liste séparée pour diagnostic, sans bloquer l'ingestion des chunks valides.
+
+== Actions
+
+. Lecture EAGER : `AGENT.adoc`, `.agents/INDEX.adoc`, `PROMPT_REPRISE.adoc`, `BACKLOG.adoc`, fichiers des sessions 149/150.
+. Modèle DDD : création de `InvalidChunk` + port `InvalidChunkRepository` dans `InvalidChunkRepository.kt`.
+. Implémentation en mémoire : `InMemoryInvalidChunkRepository.kt`.
+. Service DDD : `InvalidChunkQuarantine.kt` orchestre validation → quarantaine.
+. Intégration pipeline : `AgenticIngestor` reçoit `InvalidChunkRepository` par défaut, quarantaine les chunks invalides, `IngestionReport` enrichi de `invalidChunks`.
+. Tâche Gradle : `IngestGovernanceTask` JSON expose `invalidChunks` avec `id`, `sourceFile`, `sourceLines`, `content`, `quarantinedAt`, `errors`.
+. Persistance SQL : migration Flyway `V4__invalid_chunks.sql` + `R2dbcInvalidChunkRepository.kt`.
+. Tests unitaires :
+  * `InMemoryInvalidChunkRepositoryTest` — 3 JUnit5 PASS
+  * `InvalidChunkQuarantineTest` — 4 JUnit5 PASS
+  * `R2dbcInvalidChunkRepositoryTest` — 2 JUnit5 PASS (insert/list + idempotence)
+  * `R2dbcInvalidChunkRepositoryMigrationTest` — 1 JUnit5 PASS (table créée)
+. Tests fonctionnels : `IngestGovernanceTaskTest` +3 tests V-9.15 (quarantaine, pas de quarantaine quand valide, JSON report).
+. Tests Cucumber : `epic_v_9_15_invalid_chunk_quarantine.feature` (2 scénarios), `EpicV915Steps.kt`, `EpicV915CucumberRunner.kt` — 2/2 PASS.
+. Enregistrement de la tâche Gradle `cucumberTestEpicV915` dans `build.gradle.kts`.
+. Régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11/9.12/9.13/9.14 vertes.
+
+== Commandes
+
+[source,shell]
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:compileTestKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.InMemoryInvalidChunkRepositoryTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.InvalidChunkQuarantineTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.IngestGovernanceTaskTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.R2dbcInvalidChunkRepositoryTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.R2dbcInvalidChunkRepositoryMigrationTest"
+./gradlew :codebase-plugin:cucumberTestEpicV915
+./gradlew :codebase-plugin:cucumberTestEpicV914
+./gradlew :codebase-plugin:cucumberTestEpicV913
+./gradlew :codebase-plugin:cucumberTestEpicV99
+./gradlew :codebase-plugin:cucumberTestEpicV910
+----
+
+== Résultats
+
+* Compilation : verte.
+* `InMemoryInvalidChunkRepositoryTest` : 3/3 PASS
+* `InvalidChunkQuarantineTest` : 4/4 PASS
+* `IngestGovernanceTaskTest` : 13/13 PASS (10 existants + 3 V-9.15)
+* `R2dbcInvalidChunkRepositoryTest` : 2/2 PASS
+* `R2dbcInvalidChunkRepositoryMigrationTest` : 1/1 PASS
+* Cucumber @epic_v_9_15 : 2 scénarios / 11 steps PASS
+* Régressions V-9.x : vertes
+* Build `compileKotlin` + `compileTestKotlin` : propre
+
+== Leçons
+
+* Séparer le port `InvalidChunkRepository` du repository principal `AgenticChunkRepository` respecte DDD : deux bounded contexts différents (chunks valides vs chunks invalides).
+* Utiliser une classe JSON intermédiaire (`ChunkValidationErrorJson`) pour la sérialisation PostgreSQL évite de marquer la classe domaine `ChunkValidationError` avec `@Serializable`, qui est du ressort de l'infrastructure.
+* `InMemoryInvalidChunkRepository` suffit pour le fallback local et les tests sans Testcontainers.
+* La quarantaine ne doit pas bloquer l'ingestion des chunks valides : elle est un sous-compteur et une liste de diagnostic.
+
+== Prochaine étape naturelle
+
+V-9.16 StrictValidationMode — option Gradle pour faire échouer la tâche si des chunks invalides sont détectés.

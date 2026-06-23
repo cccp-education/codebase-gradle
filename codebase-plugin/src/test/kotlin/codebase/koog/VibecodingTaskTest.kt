@@ -235,6 +235,39 @@ class VibecodingTaskTest {
             "At least one audit line must contain the session intention")
     }
 
+    @Test
+    fun `V-9_14 governance hook auto-activated blocks git push via exec_shell`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText(
+            """
+            = Agent
+
+            * NE DOIT JAMAIS git push sans permission explicite.
+            """.trimIndent()
+        )
+
+        val project = ProjectBuilder.builder()
+            .withProjectDir(tempDir)
+            .build()
+        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
+            it.intention.set("V-9.14 auto-activation test")
+            it.dryRun.set(true)
+            it.maxActions.set(1)
+            it.workspaceRoot.set(tempDir)
+        }.get()
+
+        task.executeVibecoding()
+
+        val exception = assertThrows(SecurityException::class.java) {
+            task.toolRegistry.execute(
+                "exec_shell",
+                mapOf("command" to "git push origin main"),
+                tempDir.absolutePath
+            )
+        }
+        assertTrue(exception.message!!.contains("ENFORCEMENT BLOCKED [exec_shell]"))
+        assertTrue(exception.message!!.contains("git push", ignoreCase = true))
+    }
+
     // ─────────────────────────────────────────────────────────────────
     // EPIC-V integration : E2E VibecodingTask + Testcontainers + SessionRepository
     // ─────────────────────────────────────────────────────────────────

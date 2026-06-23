@@ -1,15 +1,14 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 149
-:session: 149
+= Prompt de Reprise — Codebase (Queens N1) — Session 152
+:session: 152
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 148 — EPIC V-9.12 AgenticExecutor livré (`AgenticExecutor` PRE_HOOK runner, `IngestionReport.executables`, câblage `IngestGovernanceTask.lastExecutor`, 8 JUnit5 + 5 Cucumber @epic_v_9_12 PASS, zéro régression V-9.x)
+:session_precedente: 151 — EPIC V-9.15 Invalid Chunk Quarantine livré (port `InvalidChunkRepository` + in-memory + R2DBC migration V4 + `InvalidChunkQuarantine` câblé dans `AgenticIngestor`, `IngestionReport.invalidChunks` + JSON, 12 JUnit5 + 2 Cucumber @epic_v_9_15 PASS, régressions V-9.x vertes)
 
-== Mission Session 149
+== Mission Session 152
 
-1. Attaquer V-9.13 ToolRegistry enforcement hook — brancher `AgenticExecutor.check()` dans `ToolRegistry.execute()` pour que toute ingestion de gouvernance précédente bloque nativement `exec_shell`/`exec_gradle` avant exécution réelle.
-2. Objectif : un `ToolRegistry` peut recevoir un `AgenticExecutor` (constructeur ou setter) et intercepter les appels dangereux avec un message explicite, sans modifier la signature publique de `execute()`.
-3. Coder en baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber.
-4. Préserver V-9.3, V-9.5, V-9.7, V-9.8, V-9.9, V-9.10, V-9.11, V-9.12 et tous les tests `ToolRegistry` (zéro régression).
-5. `./gradlew :codebase-plugin:compileKotlin` doit rester vert entre chaque fichier modifié.
+1. Attaquer V-9.16 StrictValidationMode — option Gradle `strictValidation=true` pour faire échouer `IngestGovernanceTask` si des chunks invalides sont détectés.
+2. Coder en baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber.
+3. Préserver V-9.3, V-9.5, V-9.7, V-9.8, V-9.9, V-9.10, V-9.11, V-9.12, V-9.13, V-9.14, V-9.15 et tous les tests `ToolRegistry` existants (zéro régression).
+4. `./gradlew :codebase-plugin:compileKotlin` doit rester vert entre chaque fichier modifié.
 
 == Méthodologie
 
