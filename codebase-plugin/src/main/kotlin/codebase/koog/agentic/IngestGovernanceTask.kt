@@ -32,6 +32,10 @@ abstract class IngestGovernanceTask : DefaultTask() {
     var chunkValidator: ChunkValidator = ChunkValidator()
         internal set
 
+    @get:Internal
+    var lastExecutor: AgenticExecutor? = null
+        private set
+
     init {
         group = "generate"
         description = "Ingest governance EAGER files (AGENT.adoc, INDEX.adoc, BACKLOG.adoc) into AgenticIngestor (in-memory stub)"
@@ -54,6 +58,7 @@ abstract class IngestGovernanceTask : DefaultTask() {
 
         val report = runBlocking { ingestor.ingest(files) }
         lastIngestionReport = report
+        lastExecutor = AgenticExecutor(report.executables)
 
         log.info(
             "[IngestGovernance] Report — scanned={}, added={}, skipped={}, modified={}, compiled={}",

@@ -9,7 +9,8 @@ data class IngestionReport(
     val sectionsAdded: Map<GovernanceSection, Int> = emptyMap(),
     val sectionsTotal: Map<GovernanceSection, Int> = emptyMap(),
     val chunksInvalid: Int = 0,
-    val validationErrors: List<ChunkValidationError> = emptyList()
+    val validationErrors: List<ChunkValidationError> = emptyList(),
+    val executables: List<ExecutableArtifact> = emptyList()
 )
 
 class AgenticIngestor(
@@ -32,6 +33,7 @@ class AgenticIngestor(
         val sectionsAdded = mutableMapOf<GovernanceSection, Int>()
         val sectionsTotal = mutableMapOf<GovernanceSection, Int>()
         val validationErrors = mutableListOf<ChunkValidationError>()
+        val executables = mutableListOf<ExecutableArtifact>()
 
         for ((sourceFile, content) in files) {
             if (content.isBlank()) continue
@@ -69,9 +71,10 @@ class AgenticIngestor(
                 }
                 repository.insertChunk(chunk)
 
-                val artifact = compiler.compile(chunk)
-                if (artifact != null) {
+                val executable = compiler.compileExecutable(chunk)
+                if (executable != null) {
                     artifactsCompiled++
+                    executables.add(executable)
                 }
                 section?.let { sectionsTotal.merge(it, 1, Int::plus) }
             }
@@ -86,7 +89,8 @@ class AgenticIngestor(
             sectionsAdded = sectionsAdded,
             sectionsTotal = sectionsTotal,
             chunksInvalid = chunksInvalid,
-            validationErrors = validationErrors
+            validationErrors = validationErrors,
+            executables = executables
         )
     }
 }

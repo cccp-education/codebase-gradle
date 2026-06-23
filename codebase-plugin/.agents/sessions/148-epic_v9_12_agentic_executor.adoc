@@ -1,0 +1,54 @@
+= Session 148 — EPIC V-9.12 AgenticExecutor : règles PRE_HOOK exécutées depuis l'ingestion
+:session: 148
+:date: 2026-06-23
+:borough: Queens — codebase-gradle (N1)
+
+== Contexte
+
+Mission issue de `PROMPT_REPRISE.adoc` session 148 :
+câbler `ExecutableArtifact` dans `AgenticIngestor`/`IngestGovernanceTask` pour produire un `AgenticExecutor` capable de bloquer/allow des appels `exec_shell`/`exec_gradle` selon les chunks ingérés.
+
+== Actions
+
+. Lecture EAGER : `AGENT.adoc`, `.agents/INDEX.adoc`, `PROMPT_REPRISE.adoc`, `BACKLOG.adoc`.
+. Audit de l'existant V-9.11 : `ExecutableArtifact.execute()` bloquait déjà, mais aucun consommateur systémique ; `IngestionReport` ne transportait pas les artefacts compilés.
+. Ajout de `AgenticExecutor.kt` (src/main) :
+  * Filtre les `ExecutableArtifact` de type `PRE_HOOK`.
+  * `check(toolName, arguments): ExecutionResult` — bloque/allow en itérant les hooks.
+. Enrichissement de `IngestionReport` avec `executables: List<ExecutableArtifact>` (rétrocompatibilité par défaut vide).
+. Refactor de `AgenticIngestor` :
+  * Appelle `compiler.compileExecutable(chunk)` au lieu de `compiler.compile(chunk)`.
+  * Ajoute chaque `ExecutableArtifact` dans le rapport.
+. Refactor de `IngestGovernanceTask` :
+  * Expose `lastExecutor: AgenticExecutor?` instancié à partir de `report.executables`.
+. Tests unitaires `AgenticExecutorTest.kt` : 8 tests (allow vide, block git push, dry-run exception, unrelated tools, block gradle publish, multi-rule, ignore non-hooks).
+. Tests fonctionnels `IngestGovernanceTaskTest` : préservés (5/5 PASS), aucun changement de contrat brisé.
+. Tests Cucumber V-9.12 : `epic_v_9_12_agentic_executor.feature` (5 scénarios), `EpicV912CucumberRunner.kt`, `EpicV912Steps.kt`.
+. Régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11/AgenticCompilerTest/AgenticChunkEnforcementTest : vertes.
+
+== Commandes
+
+[source,shell]
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:compileTestKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.AgenticExecutorTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.IngestGovernanceTaskTest"
+./gradlew :codebase-plugin:test --tests "codebase.scenarios.EpicV912CucumberRunner"
+./gradlew :codebase-plugin:test --tests "codebase.scenarios.EpicV93CucumberRunner" --tests "codebase.scenarios.EpicV95CucumberRunner" --tests "codebase.scenarios.EpicV97CucumberRunner" --tests "codebase.scenarios.EpicV98CucumberRunner" --tests "codebase.scenarios.EpicV99CucumberRunner" --tests "codebase.scenarios.EpicV911CucumberRunner" --tests "codebase.scenarios.EpicV912CucumberRunner"
+----
+
+== Résultats
+
+* Compilation : verte.
+* `AgenticExecutorTest` : 8/8 PASS.
+* `IngestGovernanceTaskTest` : 5/5 PASS (zéro régression).
+* Cucumber @epic_v_9_12 : 5 scénarios / 24 steps PASS.
+* Régressions V-9.x : vertes.
+* Note : un test EpicVPoolCucumberRunner (hors V-9.x) échoue de manière intermittente en l'absence d'Ollama actif — non bloquant, pas lié à V-9.12.
+
+== Leçons
+
+* Transport des `ExecutableArtifact` dans `IngestionReport` évite de recalculer les règles à l'exécution et préserve la traçabilité chunk→artefact→résultat.
+* `AgenticExecutor` est le pont entre l'ingestion de gouvernance et le `ToolRegistry` : il reste à l'enregistrer comme pre-hook du ToolRegistry dans une prochaine session (V-9.13+).
+* Prochaine étape naturelle : câbler `AgenticExecutor.check()` dans `ToolRegistry.execute()` pour bloquer nativement `exec_shell`/`exec_gradle` avant exécution réelle.

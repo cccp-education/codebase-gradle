@@ -1,11 +1,10 @@
-= TEST_COVERAGE_ANALYSIS — Session 147
+= TEST_COVERAGE_ANALYSIS — Session 148
 :date: 2026-06-23
-:epic: EPIC V-9 — V-9.11 AgenticCompiler : artefacts exécutables (baby-step DDD/TDD/BDD)
+:epic: EPIC V-9 — V-9.12 AgenticExecutor : exécution des règles PRE_HOOK depuis le rapport d'ingestion
 
 == Contexte
 
-PROMPT_REPRISE 147 demandait d'attaquer V-9.11 : transformer un chunk ontologisé en artefact exécutable.
-L'Under-EPIC 2 (artefacts exécutables) était le prochain item logique après V-9.10.
+PROMPT_REPRISE 148 demandait de câbler `ExecutableArtifact` dans `AgenticIngestor`/`IngestGovernanceTask` pour produire un `AgenticExecutor` opérationnel.
 
 == Nouveaux fichiers source
 
@@ -13,13 +12,12 @@ L'Under-EPIC 2 (artefacts exécutables) était le prochain item logique après V
 |===
 | Fichier | Rôle
 
-| `main/kotlin/koog/agentic/ExecutableArtifact.kt` | `ArtifactPayload` sealed, `ExecutionResult`, `ExecutableArtifact.execute()`
-| `test/kotlin/koog/agentic/ExecutableArtifactTest.kt` | 8 JUnit5 : PreHook, block/allow, GradleTask, Constraint, Metadata, backward compat
-| `test/kotlin/scenarios/EpicV911CucumberRunner.kt` | Runner Cucumber @epic_v_9_11
-| `test/kotlin/scenarios/EpicV911World.kt` | World Cucumber V-9.11
-| `test/kotlin/scenarios/EpicV911Steps.kt` | Steps Cucumber V-9.11
-| `test/features/epic_v_9_11_agentic_compiler.feature` | Feature 4 scénarios : PreHook bloquant, exception dry-run, GradleTask, Constraint bounds
-| `sessions/147-epic_v9_11_agentic_compiler_executable.adoc` | Archive session 147
+| `main/kotlin/codebase/koog/agentic/AgenticExecutor.kt` | Filtre les `ExecutableArtifact` PRE_HOOK et exécute `check(toolName, arguments)`
+| `test/kotlin/codebase/koog/agentic/AgenticExecutorTest.kt` | 8 JUnit5 : allow vide, block git push, dry-run exception, unrelated tools, block gradle publish, multi-rule, ignore non-hooks
+| `test/kotlin/codebase/scenarios/EpicV912CucumberRunner.kt` | Runner Cucumber @epic_v_9_12
+| `test/kotlin/codebase/scenarios/EpicV912Steps.kt` | Steps Cucumber V-9.12 (IngestGovernanceTask → executor)
+| `test/features/epic_v_9_12_agentic_executor.feature` | Feature 5 scénarios : block/allow git push, block gradle publish, multi-rule, unrelated tools
+| `.agents/sessions/148-epic_v9_12_agentic_executor.adoc` | Archive session 148
 |===
 
 == Fichiers source modifiés
@@ -28,12 +26,11 @@ L'Under-EPIC 2 (artefacts exécutables) était le prochain item logique après V
 |===
 | Fichier | Changement
 
-| `koog/agentic/CompiledArtifact.kt` | Ajout `payload: ArtifactPayload? = null` (compatibilité source)
-| `koog/agentic/AgenticCompiler.kt` | `compile()` retourne `CompiledArtifact` avec payload ; ajout `compileExecutable()` ; `buildPayload()` extrait patterns/taskName/metadata/bounds
-| `koog/agentic/AgenticChunkEnforcement.kt` | Consommation prioritaire du `PreHookPayload` du compiler, fallback legacy
-| `PROMPT_REPRISE.adoc` | Mission N+1 (V-9.12 AgenticExecutor)
-| `.agents/INDEX.adoc` | Statut EPIC V-9 mis à jour 5/35, sessions récentes
-| `.agents/SESSIONS_HISTORY.adoc` | Entrée session 147
+| `koog/agentic/AgenticIngestor.kt` | `IngestionReport` enrichi de `executables: List<ExecutableArtifact>` ; compilation via `compileExecutable(chunk)` ; collecte des artefacts
+| `koog/agentic/IngestGovernanceTask.kt` | Expose `lastExecutor: AgenticExecutor?` initialisé depuis `report.executables`
+| `PROMPT_REPRISE.adoc` | Mission N+1 (V-9.13 ToolRegistry enforcement hook)
+| `.agents/INDEX.adoc` | Statut EPIC V-9 mis à jour 6/35, sessions récentes
+| `.agents/SESSIONS_HISTORY.adoc` | Entrée session 148
 |===
 
 == Tests
@@ -41,14 +38,16 @@ L'Under-EPIC 2 (artefacts exécutables) était le prochain item logique après V
 |===
 | Scope | Résultat
 
-| `ExecutableArtifactTest` | ✅ 8/8 PASS
+| `AgenticExecutorTest` | ✅ 8/8 PASS
 | `AgenticCompilerTest` | ✅ 16/16 PASS (zéro régression Y-4)
-| `AgenticChunkEnforcementTest` | ✅ 10/10 PASS
-| `AgenticIngestorTest` | ✅ 10/10 PASS (zéro régression)
-| `IngestGovernanceTaskTest` | ✅ 7/7 PASS (zéro régression)
-| `GovernanceOntologizerTest` | ✅ 8/8 PASS (zéro régression)
-| `ChunkValidatorTest` | ✅ 10/10 PASS (zéro régression)
-| `EpicV911CucumberRunner` (4 scénarios @epic_v_9_11) | ✅ 4/4 PASS
+| `ExecutableArtifactTest` | ✅ 8/8 PASS (zéro régression V-9.11)
+| `AgenticChunkEnforcementTest` | ✅ 10/10 PASS (zéro régression V-9.7/Y-7)
+| `AgenticIngestorTest` | ✅ 10/10 PASS (zéro régression V-9.5/V-9.9)
+| `IngestGovernanceTaskTest` | ✅ 5/5 PASS (zéro régression V-LOCAL-6)
+| `GovernanceOntologizerTest` | ✅ 8/8 PASS (zéro régression V-9.7)
+| `ChunkValidatorTest` | ✅ 10/10 PASS (zéro régression V-9.5)
+| `EpicV912CucumberRunner` (5 scénarios @epic_v_9_12) | ✅ 5/5 PASS
+| `EpicV911CucumberRunner` (4 scénarios @epic_v_9_11) | ✅ 4/4 PASS (régression)
 | `EpicV910CucumberRunner` (3 scénarios @epic_v_9_10) | ✅ 3/3 PASS (régression)
 | `EpicV99CucumberRunner` (2 scénarios @epic_v_9_9) | ✅ 2/2 PASS (régression)
 | `EpicV98CucumberRunner` (3 scénarios @epic_v_9_8) | ✅ 3/3 PASS (régression)
@@ -60,10 +59,10 @@ L'Under-EPIC 2 (artefacts exécutables) était le prochain item logique après V
 | Régression tests préexistants | 0
 |===
 
-== Total session 147
+== Total session 148
 
 - JUnit5 : 8 nouveaux PASS
-- Cucumber : 4 scénarios / 16 steps PASS (@epic_v_9_11)
+- Cucumber : 5 scénarios / 24 steps PASS (@epic_v_9_12)
 - Build : propre
 - Zéro réseau, zéro Testcontainers
 - BACKLOG non modifié (EPIC V-9 déjà synchronisé)

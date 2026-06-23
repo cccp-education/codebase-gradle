@@ -1,14 +1,14 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 148
-:session: 148
+= Prompt de Reprise — Codebase (Queens N1) — Session 149
+:session: 149
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 147 — EPIC V-9.11 AgenticCompiler livré (`ExecutableArtifact`, `ArtifactPayload`, `ExecutionResult`, `AgenticCompiler.compileExecutable()`, `AgenticChunkEnforcement` consomme PreHookPayload, 8 JUnit5 + 4 Cucumber @epic_v_9_11 PASS, zéro régression V-9.x)
+:session_precedente: 148 — EPIC V-9.12 AgenticExecutor livré (`AgenticExecutor` PRE_HOOK runner, `IngestionReport.executables`, câblage `IngestGovernanceTask.lastExecutor`, 8 JUnit5 + 5 Cucumber @epic_v_9_12 PASS, zéro régression V-9.x)
 
-== Mission Session 148
+== Mission Session 149
 
-1. Attaquer V-9.12 AgenticExecutor — câbler `ExecutableArtifact` dans `AgenticIngestor`/`IngestGovernanceTask` pour exécuter directement les règles PRE_HOOK compilées depuis la gouvernance ingérée.
-2. Objectif : `IngestGovernanceTask` produit un rapport + un `AgenticExecutor` prêt à bloquer/allow des appels `exec_shell`/`exec_gradel` (tool calling simulé) selon les chunks ingérés.
+1. Attaquer V-9.13 ToolRegistry enforcement hook — brancher `AgenticExecutor.check()` dans `ToolRegistry.execute()` pour que toute ingestion de gouvernance précédente bloque nativement `exec_shell`/`exec_gradle` avant exécution réelle.
+2. Objectif : un `ToolRegistry` peut recevoir un `AgenticExecutor` (constructeur ou setter) et intercepter les appels dangereux avec un message explicite, sans modifier la signature publique de `execute()`.
 3. Coder en baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber.
-4. Préserver V-9.3, V-9.5, V-9.7, V-9.8, V-9.9, V-9.10, V-9.11 et `IngestGovernanceTaskTest` (zéro régression).
+4. Préserver V-9.3, V-9.5, V-9.7, V-9.8, V-9.9, V-9.10, V-9.11, V-9.12 et tous les tests `ToolRegistry` (zéro régression).
 5. `./gradlew :codebase-plugin:compileKotlin` doit rester vert entre chaque fichier modifié.
 
 == Méthodologie

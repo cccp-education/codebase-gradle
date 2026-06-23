@@ -1,19 +1,37 @@
-== Session 145 — EPIC V-9.9 ChunkValidationGate
+== Session 148 — EPIC V-9.12 AgenticExecutor
 
-- `BACKLOG.adoc` : reconstruction synchronisée d'EPIC V-9 depuis l'état du code (Under-EPIC 1/2/3)
-- `koog/agentic/AgenticIngestor.kt` : `IngestionReport` enrichi de `chunksInvalid` + `validationErrors`; `ChunkValidator` injecté et câblé avant stockage
-- `koog/agentic/ChunkValidator.kt` : rendu `open` pour testability (fake validator)
-- `koog/agentic/IngestGovernanceTask.kt` : JSON de sortie enrichi `chunksInvalid` + `validationErrors`
-- `test/kotlin/koog/agentic/AgenticIngestorTest.kt` : +3 JUnit5 (invalid report, repo sanity, zero invalid)
-- `test/features/epic_v_9_9_governance_validation_gate.feature` + `EpicV99CucumberRunner.kt` : 2 scénarios Cucumber @epic_v_9_9
-- `test/kotlin/scenarios/IngestGovernanceSteps.kt` : +2 steps
-- `build.gradle.kts` : enregistrement `cucumberTestEpicV99`
-- Régressions V-9.3 (6), V-9.5 (5), V-9.7 (7), V-9.8 (3) vertes
+- `koog/agentic/AgenticExecutor.kt` : filtre les `ExecutableArtifact` PRE_HOOK et expose `check(toolName, arguments): ExecutionResult`
+- `koog/agentic/AgenticIngestor.kt` : `IngestionReport` enrichi de `executables: List<ExecutableArtifact>` ; compilation via `compileExecutable(chunk)`
+- `koog/agentic/IngestGovernanceTask.kt` : expose `lastExecutor: AgenticExecutor?` initialisé depuis `report.executables`
+- `test/kotlin/koog/agentic/AgenticExecutorTest.kt` : 8 JUnit5 PASS
+- `test/features/epic_v_9_12_agentic_executor.feature` + `EpicV912CucumberRunner.kt` + `EpicV912Steps.kt` : 5 scénarios Cucumber @epic_v_9_12 PASS
+- Régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11 vertes
 - Build propre, zéro réseau, zéro Testcontainers
 
 '''
 
-== Session 144 — EPIC V-9.8 Governance Ingestion Report
+== Session 147 — EPIC V-9.11 AgenticCompiler : artefacts exécutables
+
+- `koog/agentic/ExecutableArtifact.kt` : `ArtifactPayload` sealed, `ExecutionResult`, `ExecutableArtifact.execute()`
+- `koog/agentic/AgenticCompiler.kt` : `compile()` retourne `CompiledArtifact` avec payload ; `compileExecutable()` ; `buildPayload()`
+- `koog/agentic/AgenticChunkEnforcement.kt` : consommation prioritaire du `PreHookPayload`
+- `test/kotlin/koog/agentic/ExecutableArtifactTest.kt` : 8 JUnit5 PASS
+- `test/features/epic_v_9_11_agentic_compiler.feature` + `EpicV911CucumberRunner.kt` + `EpicV911World.kt` + `EpicV911Steps.kt` : 4 scénarios PASS
+- Régressions V-9.x vertes
+
+'''
+
+== Session 146 — EPIC V-9.10 ChunkValidationReport
+
+- `koog/agentic/ChunkValidationErrorType.kt` : enum des types d'erreur
+- `koog/agentic/ChunkValidationError.kt` : `lineStart`/`lineEnd`
+- `koog/agentic/IngestGovernanceTask.kt` : JSON `validationErrorsByType`
+- 3 JUnit5 + 1 test fonctionnel + 3 Cucumber @epic_v_9_10 PASS
+- Régressions V-9.x vertes
+
+'''
+
+== Session 145 — EPIC V-9.8 Governance Ingestion Report
 
 - `IngestionReport` enrichi de `sectionsAdded: Map<GovernanceSection, Int>` et `sectionsTotal: Map<GovernanceSection, Int>` (rétrocompatibilité par défaut vides)
 - `AgenticIngestor` : injection optionnelle de `GovernanceOntologizer`; calcul des sections sur chunks ajoutés/modifiés/skippés
