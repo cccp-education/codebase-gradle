@@ -483,4 +483,175 @@ class IngestGovernanceTaskTest {
         val names = task.lastRegisteredTaskNames
         assertTrue(names.any { it.startsWith("enforceRule_") }, "Should register enforceRule_*")
     }
+
+    @Test
+    fun `V-9_19 incremental mode first run ingests all files`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+        File(tempDir, "BACKLOG.adoc").writeText("= Backlog\n\n* [ ] Open item\n")
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+            it.governanceConfig.set(GovernanceSummaryConfig(incremental = true))
+        }.get()
+
+        task.executeIngest()
+
+        val report = task.lastIngestionReport
+        assertNotNull(report)
+        assertTrue(report!!.filesScanned >= 2, "First incremental run should ingest all files")
+        assertTrue(report.chunksAdded > 0, "First incremental run should add chunks")
+        val incremental = task.lastIncrementalReport
+        assertNotNull(incremental, "Incremental report should be populated in incremental mode")
+        assertTrue(incremental.added.contains("AGENT.adoc"), "AGENT.adoc should be added on first run")
+        assertTrue(incremental.added.contains("BACKLOG.adoc"), "BACKLOG.adoc should be added on first run")
+        assertTrue(incremental.unchanged.isEmpty(), "No unchanged on first run")
+    }
+
+    @Test
+    fun `V-9_19 incremental mode second run without changes skips all files`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+        File(tempDir, "BACKLOG.adoc").writeText("= Backlog\n\n* [ ] Open item\n")
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+            it.governanceConfig.set(GovernanceSummaryConfig(incremental = true))
+        }.get()
+
+        task.executeIngest()
+        val firstReport = task.lastIngestionReport!!
+        assertTrue(firstReport.chunksAdded > 0, "First run should add chunks")
+
+        task.executeIngest()
+        val secondReport = task.lastIngestionReport!!
+        assertEquals(0, secondReport.filesScanned, "Second run should scan 0 files")
+        assertEquals(0, secondReport.chunksAdded, "Second run should add 0 chunks")
+
+        val incremental = task.lastIncrementalReport
+        assertNotNull(incremental)
+        assertTrue(incremental.added.isEmpty(), "No added on second unchanged run")
+        assertTrue(incremental.modified.isEmpty(), "No modified on second unchanged run")
+        assertTrue(incremental.removed.isEmpty(), "No removed on second unchanged run")
+        assertTrue(
+            incremental.unchanged.contains("AGENT.adoc"),
+            "AGENT.adoc should be unchanged on second run"
+        )
+        assertTrue(
+            incremental.skippedDueToIncremental.contains("AGENT.adoc"),
+            "AGENT.adoc should be skipped due to incremental"
+        )
+    }
+
+    @Test
+    fun `V-9_19 incremental mode detects modified file and reingests only it`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+        File(tempDir, "BACKLOG.adoc").writeText("= Backlog\n\n* [ ] Open item\n")
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+            it.governanceConfig.set(GovernanceSummaryConfig(incremental = true))
+        }.get()
+
+        task.executeIngest()
+        assertTrue(task.lastIngestionReport!!.chunksAdded > 0, "First run should add chunks")
+
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n* DOIT valider les tests\n")
+        task.executeIngest()
+
+        val secondReport = task.lastIngestionReport!!
+        assertEquals(1, secondReport.filesScanned, "Second run should only ingest the modified file")
+        assertTrue(secondReport.chunksAdded > 0, "Modified file should produce new chunks")
+
+        val incremental = task.lastIncrementalReport
+        assertNotNull(incremental)
+        assertEquals(listOf("AGENT.adoc"), incremental.modified, "Only AGENT.adoc should be modified")
+        assertTrue(incremental.unchanged.contains("BACKLOG.adoc"), "BACKLOG.adoc should be unchanged")
+        assertTrue(incremental.added.isEmpty(), "No added on second run")
+    }
+
+    @Test
+    fun `V-9_19 incremental mode detects removed file`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+        File(tempDir, "BACKLOG.adoc").writeText("= Backlog\n\n* [ ] Open item\n")
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+            it.governanceConfig.set(GovernanceSummaryConfig(incremental = true))
+        }.get()
+
+        task.executeIngest()
+
+        File(tempDir, "BACKLOG.adoc").delete()
+        task.executeIngest()
+
+        val incremental = task.lastIncrementalReport
+        assertNotNull(incremental)
+        assertTrue(incremental.removed.contains("BACKLOG.adoc"), "BACKLOG.adoc should be removed")
+        assertTrue(incremental.unchanged.contains("AGENT.adoc"), "AGENT.adoc should be unchanged")
+    }
+
+    @Test
+    fun `V-9_19 incremental mode detects newly added file`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+            it.governanceConfig.set(GovernanceSummaryConfig(incremental = true))
+        }.get()
+
+        task.executeIngest()
+
+        File(tempDir, "INDEX.adoc").writeText("= Index\n\n== EPIC Y\nEn cours.\n")
+        task.executeIngest()
+
+        val secondReport = task.lastIngestionReport!!
+        assertEquals(1, secondReport.filesScanned, "Second run should only ingest the added file")
+
+        val incremental = task.lastIncrementalReport
+        assertNotNull(incremental)
+        assertTrue(incremental.added.contains("INDEX.adoc"), "INDEX.adoc should be added")
+        assertTrue(incremental.unchanged.contains("AGENT.adoc"), "AGENT.adoc should be unchanged")
+    }
+
+    @Test
+    fun `V-9_19 incremental report is exposed in output JSON`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+        File(tempDir, "BACKLOG.adoc").writeText("= Backlog\n\n* [ ] Open item\n")
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val outputFile = File(tempDir, "ingestion-report.json")
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+            it.outputFile.set(outputFile)
+            it.governanceConfig.set(GovernanceSummaryConfig(incremental = true))
+        }.get()
+
+        task.executeIngest()
+
+        assertTrue(outputFile.exists())
+        val content = outputFile.readText()
+        assertTrue(content.contains("\"incremental\""), "JSON should expose incremental section")
+        assertTrue(content.contains("\"added\""), "JSON should expose added files")
+        assertTrue(content.contains("AGENT.adoc"), "JSON should list AGENT.adoc as added")
+    }
+
+    @Test
+    fun `V-9_19 non-incremental mode keeps legacy behavior with no incremental report`(@TempDir tempDir: File) {
+        File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
+            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+        }.get()
+
+        task.executeIngest()
+
+        assertNull(task.lastIncrementalReport, "Incremental report should be null in non-incremental mode")
+        val report = task.lastIngestionReport!!
+        assertTrue(report.chunksAdded > 0, "Legacy mode should ingest all files")
+    }
 }

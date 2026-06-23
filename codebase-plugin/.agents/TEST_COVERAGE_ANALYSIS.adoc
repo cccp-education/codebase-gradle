@@ -1,10 +1,16 @@
-:= TEST_COVERAGE_ANALYSIS — Session 154
+= TEST_COVERAGE_ANALYSIS — Session 155
 :date: 2026-06-23
-:epic: EPIC V-9 — V-9.18 Compile Governance Chunks to Gradle Tasks
+:epic: EPIC V-9 — V-9.19 Auto-detection of new governance files
 
 == Contexte
 
-PROMPT_REPRISE 154 demandait de transformer les artefacts compilés par `AgenticCompiler` en tâches Gradle dynamiques quand un chunk PROCEDURE/GENERER ou CONSTRAINT est ingéré.
+PROMPT_REPRISE 155 demandait d'attaquer V-9.19 : auto-détection de nouveaux
+fichiers de gouvernance en mode incrémental. Quand `ingestGovernance` a déjà tourné,
+surveiller/détecter les nouveaux fichiers `.adoc` puis re-déclencher le
+chunking/compilation/registering sans retraiter tout le projet.
+
+Contrainte supplémentaire : ports 11434-11436 interdits, modèles autorisés
+`gpt-oss:120b-cloud` + `gemma4:31b-cloud`. Sauvegarde EAGER + globale.
 
 == Fichiers source modifiés / créés
 
@@ -12,20 +18,28 @@ PROMPT_REPRISE 154 demandait de transformer les artefacts compilés par `Agentic
 |===
 | Fichier | Changement
 
-| `main/kotlin/codebase/koog/agentic/AgenticGradleTaskRegistrar.kt` | NOUVEAU — registrar DDD qui transforme `ExecutableArtifact` en tâches Gradle nommées `runProcedure_*`, `enforceRule_*`, `validate_*`
-| `main/kotlin/codebase/koog/agentic/AgenticChunker.kt` | Enrichissement de `extractVerbFromProcedure` pour détecter les verbes taxonomiques `GENERER`, `COLLECTER`, `TRANSFORMER`, `DEPLOYER`, `VALIDER`, `INTERDIRE`
-| `main/kotlin/codebase/koog/agentic/IngestGovernanceTask.kt` | Câblage `registerCompiledTasks(report.executables)`, exposition `lastRegisteredTaskNames`
-| `test/kotlin/codebase/koog/agentic/AgenticGradleTaskRegistrarTest.kt` | NOUVEAU — 7 tests JUnit5
-| `test/kotlin/codebase/koog/agentic/IngestGovernanceTaskTest.kt` | 3 tests fonctionnels V-9.18 ajoutés
-| `test/resources/features/epic_v_9_18_compile_to_gradle_tasks.feature` | NOUVEAU — 3 scénarios Cucumber @epic_v_9_18
-| `test/kotlin/codebase/scenarios/EpicV918CucumberRunner.kt` | NOUVEAU — runner Cucumber
-| `test/kotlin/codebase/scenarios/EpicV918Steps.kt` | NOUVEAU — steps Cucumber
-| `test/kotlin/codebase/scenarios/IngestGovernanceWorld.kt` | Ajout `lastProject` et `lastRegisteredTaskNames`
-| `codebase-plugin/PROMPT_REPRISE.adoc` | Mission N+1 (session 155)
-| `.agents/INDEX.adoc` | Session N+1 = 155, statut V-9.18 ✅
-| `.agents/SESSIONS_HISTORY.adoc` | Entrée session 154
-| `.agents/sessions/154-epic_v9_18_compile_to_gradle_tasks.adoc` | Archive session 154
-| `BACKLOG.adoc` | V-9.18 marqué ✅
+| `main/kotlin/codebase/koog/agentic/GovernanceFileSnapshot.kt` | NOUVEAU — value object DDD snapshot (List<ScannedFileEntry>, factory fromScanned SHA-256)
+| `main/kotlin/codebase/koog/agentic/GovernanceFileDiff.kt` | NOUVEAU — value object diff (added/modified/removed/unchanged + pathsToIngest)
+| `main/kotlin/codebase/koog/agentic/GovernanceFileChangeDetector.kt` | NOUVEAU — service diff entre deux snapshots
+| `main/kotlin/codebase/koog/agentic/GovernanceStateStore.kt` | NOUVEAU — interface + JsonGovernanceStateStore (load/save/clear JSON)
+| `main/kotlin/codebase/koog/agentic/IncrementalReport.kt` | NOUVEAU — rapport incrémental (added/modified/removed/unchanged/skippedDueToIncremental)
+| `main/kotlin/codebase/koog/agentic/GovernanceSummaryConfig.kt` | Ajout champ `incremental: Boolean = false`
+| `main/kotlin/codebase/koog/agentic/CodebaseGovernanceExtension.kt` | Ajout propriété `incremental`, propagation `toConfig()`
+| `main/kotlin/codebase/koog/agentic/GovernanceIngestor.kt` | Ajout méthode `ingestFiltered(root, pathsToIngest)`
+| `main/kotlin/codebase/koog/agentic/IngestGovernanceTask.kt` | Mode incrémental câblé (scan → snapshot → diff → ingestFiltered), `lastIncrementalReport`, JSON enrichi section `incremental`
+| `main/kotlin/codebase/CodebasePlugin.kt` | Wiring CLI `-Pcodebase.governance.incremental=true` + convention `false`
+| `test/kotlin/codebase/koog/agentic/GovernanceFileChangeDetectorTest.kt` | NOUVEAU — 8 tests unitaires
+| `test/kotlin/codebase/koog/agentic/GovernanceStateStoreTest.kt` | NOUVEAU — 7 tests unitaires
+| `test/kotlin/codebase/koog/agentic/GovernanceSummaryConfigTest.kt` | Ajout 1 test `incremental` default + 1 test enable
+| `test/kotlin/codebase/koog/agentic/CodebaseGovernanceExtensionTest.kt` | Ajout assertions `incremental` default + toConfig
+| `test/kotlin/codebase/koog/agentic/IngestGovernanceTaskTest.kt` | 7 tests fonctionnels V-9.19 (first/second/modified/removed/added/json/legacy)
+| `test/resources/features/epic_v_9_19_auto_detection.feature` | NOUVEAU — 5 scénarios Cucumber @epic_v_9_19
+| `test/kotlin/codebase/scenarios/EpicV919Steps.kt` | NOUVEAU — steps Cucumber
+| `test/kotlin/codebase/scenarios/EpicV919CucumberRunner.kt` | NOUVEAU — runner Cucumber
+| `test/kotlin/codebase/scenarios/IngestGovernanceWorld.kt` | Ajout `lastIncrementalReport`, `runTask(incremental)`, `deleteFile`
+| `build.gradle.kts` | Enregistrement `cucumberTestEpicV919`
+| `AGENT.adoc` (codebase-plugin) | Mise à jour section Ollama (modèles autorisés gpt-oss:120b-cloud + gemma4:31b-cloud)
+| `/home/cheroliv/workspace/AGENTS.adoc` | Ajout section "Instances Ollama — Ports et Modèles (CONTRAINTE GLOBALE)" dans Règles Transverses
 |===
 
 == Tests
@@ -33,10 +47,13 @@ PROMPT_REPRISE 154 demandait de transformer les artefacts compilés par `Agentic
 |===
 | Scope | Résultat
 
-| `AgenticGradleTaskRegistrarTest` | ✅ 7/7 PASS
-| `IngestGovernanceTaskTest` (V-9.18 ajouts + régressions) | ✅ 23/23 PASS
-| `AgenticChunkerTest` | ✅ 18/18 PASS
-| `EpicV918CucumberRunner` (3 scénarios @epic_v_9_18) | ✅ 3/3 PASS
+| `GovernanceFileChangeDetectorTest` | ✅ 8/8 PASS
+| `GovernanceStateStoreTest` | ✅ 7/7 PASS
+| `GovernanceSummaryConfigTest` | ✅ 5/5 PASS (3 existants + 2 nouveaux)
+| `CodebaseGovernanceExtensionTest` | ✅ 4/4 PASS (3 existants + assertions incremental)
+| `IngestGovernanceTaskTest` (V-9.19 + régressions) | ✅ 30/30 PASS (23 existants + 7 nouveaux)
+| `EpicV919CucumberRunner` (5 scénarios @epic_v_9_19) | ✅ 5/5 PASS
+| `EpicV918CucumberRunner` (3 scénarios @epic_v_9_18) | ✅ 3/3 PASS (régression)
 | `EpicV917CucumberRunner` (3 scénarios @epic_v_9_17) | ✅ 3/3 PASS (régression)
 | `EpicV916CucumberRunner` (3 scénarios @epic_v_9_16) | ✅ 3/3 PASS (régression)
 | `EpicV915CucumberRunner` (2 scénarios @epic_v_9_15) | ✅ 2/2 PASS (régression)
@@ -49,22 +66,23 @@ PROMPT_REPRISE 154 demandait de transformer les artefacts compilés par `Agentic
 | `EpicV97CucumberRunner` (7 scénarios @epic_v_9_7) | ✅ 7/7 PASS (régression)
 | `EpicV95CucumberRunner` (5 scénarios @epic_v_9_5) | ✅ 5/5 PASS (régression)
 | `EpicV93CucumberRunner` (6 scénarios @epic_v_9_3) | ✅ 6/6 PASS (régression)
-| `compileKotlin` | ✅
-| `compileTestKotlin` | ✅
-| Régression tests préexistants | 0 (hors `ExecGradleToolTest` instable par timeout daemon)
+| `ScanAgentTest`/`ChunkValidatorTest`/`AgenticIngestorTest`/`AgenticCompilerTest`/`AgenticChunkEnforcementTest`/`AgenticExecutorTest`/`InvalidChunkQuarantineTest`/`AgenticGradleTaskRegistrarTest`/`ToolRegistryTest` | ✅ PASS (régression)
+| `compileKotlin` / `compileTestKotlin` | ✅
+| Modèles Ollama (52 inférences) | ✅ 52/52 PASS (26 ports × 2 modèles)
 |===
 
-== Total session 154
+== Total session 155
 
-- JUnit5 : 7 nouveaux PASS (`AgenticGradleTaskRegistrarTest`) + 3 nouveaux fonctionnels (`IngestGovernanceTaskTest`)
-- Tests fonctionnels : 3 couverts par `ProjectBuilder`
-- Cucumber : 3 scénarios / 10 steps PASS (@epic_v_9_18)
+- JUnit5 : 15 nouveaux unitaires (8 detector + 7 store) + 7 nouveaux fonctionnels + 3 extension/config
+- Cucumber : 5 scénarios @epic_v_9_19 PASS
+- Régressions : 13 EPICs Cucumber V-9.3→V-9.18 + tests unitaires préexistants PASS
 - Build : `compileKotlin` + `compileTestKotlin` verts
-- BACKLOG synchronisé (V-9.18 marqué ✅)
+- Contrainte Ollama : sauvegardée EAGER globale + borough, 52/52 inférences modèles autorisés
+- BACKLOG synchronisé (V-9.19 marqué ✅)
 
 == Leçons
 
-* Séparer le registrar DDD de la tâche Gradle permet de tester l'enregistrement de tâches sans daemon.
-* L'enrichissement du chunker doit être rétrocompatible : on ajoute la reconnaissance des verbes taxonomiques sans supprimer la logique `VALIDER` existante.
-* Pour les tests Cucumber, capturer le `Project` Gradle dans le World permet de vérifier l'existence réelle des tâches dynamiques après ingestion.
-* Les tâches dynamiques doivent utiliser des noms stables (id tronqué + type) pour éviter les collisions tout en restant déterministes.
+* Isoler le diff incrémental dans des value objects purs (GovernanceFileSnapshot/GovernanceFileDiff/GovernanceFileChangeDetector) permet de tester la logique de détection sans Gradle ni infrastructure — TDD pur.
+* La persistance JSON custom (regex parsing) a été un compromis pragmatique pour éviter une dépendance externe. La méthode load() défensive (null si fichier absent/vide/JSON invalide) garantit la robustesse.
+* Le mode incrémental est rétrocompatible par défaut (incremental=false), ce qui préserve tous les tests existants sans modification.
+* La contrainte Ollama doit être sauvegardée à deux niveaux (global AGENTS.adoc + borough AGENT.adoc) pour être chargée à chaque ouverture de session, pas seulement dans le borough concerné.

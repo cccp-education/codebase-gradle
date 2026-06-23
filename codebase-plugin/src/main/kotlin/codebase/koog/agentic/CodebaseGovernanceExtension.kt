@@ -11,12 +11,14 @@ import org.gradle.api.provider.Property
  *     strictValidation.set(true)
  *     outputEnabled.set(true)
  *     reportFormat.set("json")
+ *     incremental.set(true)
  * }
  * ```
  *
  * Usage CLI (priorité max) :
  * ```
  * ./gradlew ingestGovernance -Pcodebase.governance.strictValidation=true
+ * ./gradlew ingestGovernance -Pcodebase.governance.incremental=true
  * ```
  */
 abstract class CodebaseGovernanceExtension {
@@ -40,11 +42,20 @@ abstract class CodebaseGovernanceExtension {
     abstract val reportFormat: Property<String>
 
     /**
+     * Active le mode incrémental : ne retraiter que les fichiers de gouvernance
+     * nouveaux ou modifiés depuis la dernière ingestion. La snapshot de l'état
+     * précédent est persistée dans `build/governance/governance-state.json`.
+     * Défaut : `false` (rétrocompatible — retraite tous les fichiers).
+     */
+    abstract val incremental: Property<Boolean>
+
+    /**
      * Expose une snapshot immuable du DSL sous forme de modèle DDD.
      */
     fun toConfig(): GovernanceSummaryConfig = GovernanceSummaryConfig(
         strictValidation = strictValidation.getOrElse(false),
         outputEnabled = outputEnabled.getOrElse(true),
-        reportFormat = reportFormat.getOrElse("json")
+        reportFormat = reportFormat.getOrElse("json"),
+        incremental = incremental.getOrElse(false)
     )
 }

@@ -31,6 +31,27 @@ class GovernanceIngestor(
         return IngestResult(report, executor)
     }
 
+    /**
+     * Ingestion incrémentale : ne traite que les fichiers dont le [relativePath]
+     * est dans [pathsToIngest]. Les autres fichiers sont ignorés pour ce tour.
+     */
+    fun ingestFiltered(workspaceRoot: File, pathsToIngest: Set<String>): IngestResult {
+        val files = collectGovernanceFiles(workspaceRoot)
+            .filter { (relativePath, _) -> relativePath in pathsToIngest }
+
+        val repository = InMemoryAgenticChunkRepository()
+        val ingestor = AgenticIngestor(
+            repository = repository,
+            governanceOntologizer = GovernanceOntologizer(),
+            chunkValidator = chunkValidator
+        )
+
+        val report = kotlinx.coroutines.runBlocking { ingestor.ingest(files) }
+        val executor = if (report.executables.isNotEmpty()) AgenticExecutor(report.executables) else null
+
+        return IngestResult(report, executor)
+    }
+
     private fun collectGovernanceFiles(projectDir: File): List<Pair<String, String>> {
         val scanAgent = ScanAgent()
         return scanAgent.scan(projectDir).map { it.relativePath to it.content }

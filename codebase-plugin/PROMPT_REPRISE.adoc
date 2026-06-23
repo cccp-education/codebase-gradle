@@ -1,15 +1,19 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 155
-:session: 155
+= Prompt de Reprise — Codebase (Queens N1) — Session 156
+:session: 156
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 154 — EPIC V-9.18 Compilation vers Gradle tasks livré (`AgenticGradleTaskRegistrar`, câblage `IngestGovernanceTask`, 7 JUnit5 + 3 fonctionnels + 3 Cucumber @epic_v_9_18 PASS, régressions V-9.3→V-9.17 vertes)
+:session_precedente: 155 — EPIC V-9.19 Auto-detection livré (GovernanceFileSnapshot + GovernanceFileDiff + GovernanceFileChangeDetector + JsonGovernanceStateStore + IncrementalReport, mode incrémental câblé IngestGovernanceTask + extension DSL + CLI, 15 unit + 7 fonctionnel + 5 Cucumber @epic_v_9_19 PASS, régressions V-9.3→V-9.18 vertes, contrainte Ollama globale sauvegardée AGENTS.adoc + AGENT.adoc, 52/52 inférences gpt-oss:120b-cloud/gemma4:31b-cloud PASS)
 
-== Mission Session 155
+== Mission Session 156
 
-1. Attaquer V-9.19 Auto-détection de nouveaux fichiers de gouvernance — quand `ingestGovernance` a déjà tourné, surveiller/détecter les nouveaux fichiers `.adoc` dans `.agents/` et à la racine, puis re-déclencher le chunking/compilation/registering de tâches sans retraiter tout le projet.
+1. Attaquer V-9.20 Diff/incrémental entre sessions — comparer les chunks stockés entre deux runs `ingestGovernance` pour détecter les changements de contenu (pas seulement fichiers). Persister l'état des chunks (checksums) et produire un rapport de diff entre sessions (chunksAdded/chunksModified/chunksRemoved/chunksUnchanged au niveau chunk, pas fichier).
 2. Coder en baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber.
-3. Préserver V-9.3, V-9.5, V-9.7, V-9.8, V-9.9, V-9.10, V-9.11, V-9.13, V-9.14, V-9.15, V-9.16, V-9.17, V-9.18 et tous les tests `ToolRegistry` existants (zéro régression).
+3. Préserver V-9.3, V-9.5, V-9.7, V-9.8, V-9.9, V-9.10, V-9.11, V-9.13, V-9.14, V-9.15, V-9.16, V-9.17, V-9.18, V-9.19 et tous les tests `ToolRegistry` existants (zéro régression).
 4. `./gradlew :codebase-plugin:compileKotlin` doit rester vert entre chaque fichier modifié.
 
 == Méthodologie
 
 Baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber. Un fichier modifié à la fois, compilation entre chaque étape. Pas de subagent, pas de parallélisation.
+
+== Contrainte Ollama (rappel AGENTS.adoc)
+
+Ports 11434-11436 INTERDITS. Ports 11437-11465 autorisés (rotation). Modèles autorisés : `gpt-oss:120b-cloud`, `gemma4:31b-cloud`. Aucun autre modèle ni port.

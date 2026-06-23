@@ -50,6 +50,10 @@ abstract class IngestGovernanceTask : DefaultTask() {
     var lastRegisteredTaskNames: List<String> = emptyList()
         private set
 
+    @get:Internal
+    var lastIncrementalReport: IncrementalReport? = null
+        private set
+
     /**
      * Hook de blocage utilisable par [contracts.vibecoding.registry.ToolRegistry].
      * Retourne `null` tant que l'ingestion n'a pas produit d'executables PRE_HOOK.
@@ -115,9 +119,50 @@ abstract class IngestGovernanceTask : DefaultTask() {
     }
 
     private fun executeIngest(root: File, config: GovernanceSummaryConfig, output: File?) {
-        val result = GovernanceIngestor(chunkValidator).ingest(root)
+        val scanAgent = ScanAgent()
+        val scanned = scanAgent.scan(root)
+        val currentSnapshot = GovernanceFileSnapshot.fromScanned(scanned)
+
+        val stateStore = JsonGovernanceStateStore(
+            project.layout.buildDirectory.file("governance/governance-state.json").get().asFile
+        )
+
+        val pathsToIngest: Set<String>
+        val incrementalReport: IncrementalReport?
+
+        if (config.incremental) {
+            val previous = stateStore.load() ?: GovernanceFileSnapshot.empty()
+            val detector = GovernanceFileChangeDetector()
+            val diff = detector.diff(previous, currentSnapshot)
+            pathsToIngest = diff.pathsToIngest().toSet()
+            incrementalReport = IncrementalReport(
+                added = diff.added,
+                modified = diff.modified,
+                removed = diff.removed,
+                unchanged = diff.unchanged,
+                skippedDueToIncremental = diff.unchanged
+            )
+            log.info(
+                "[IngestGovernance] Incremental — added={}, modified={}, removed={}, unchanged={}, toIngest={}",
+                diff.added.size, diff.modified.size, diff.removed.size, diff.unchanged.size, pathsToIngest.size
+            )
+        } else {
+            pathsToIngest = scanned.map { it.relativePath }.toSet()
+            incrementalReport = null
+        }
+
+        val result = if (config.incremental && pathsToIngest.isEmpty()) {
+            log.info("[IngestGovernance] Incremental mode — no file changes detected, skipping ingestion")
+            GovernanceIngestor.IngestResult(IngestionReport(0, 0, 0, 0, 0), null)
+        } else if (config.incremental) {
+            GovernanceIngestor(chunkValidator).ingestFiltered(root, pathsToIngest)
+        } else {
+            GovernanceIngestor(chunkValidator).ingest(root)
+        }
+
         lastIngestionReport = result.report
         lastExecutor = result.executor
+        lastIncrementalReport = incrementalReport
 
         val taskNames = registerCompiledTasks(result.report.executables)
         if (taskNames.isNotEmpty()) {
@@ -136,6 +181,8 @@ abstract class IngestGovernanceTask : DefaultTask() {
             log.info("[IngestGovernance] Sections total: {}", result.report.sectionsTotal)
         }
 
+        stateStore.save(currentSnapshot)
+
         val effectiveStrict = config.strictValidation || strictValidation.getOrElse(false)
         if (effectiveStrict && result.report.invalidChunks.isNotEmpty()) {
             throw GradleException(
@@ -146,12 +193,12 @@ abstract class IngestGovernanceTask : DefaultTask() {
 
         if (config.outputEnabled && output != null) {
             output.parentFile.mkdirs()
-            output.writeText(buildReportJson(result.report), Charsets.UTF_8)
+            output.writeText(buildReportJson(result.report, incrementalReport), Charsets.UTF_8)
             log.info("[IngestGovernance] Report written to {}", output.absolutePath)
         }
     }
 
-    private fun buildReportJson(report: IngestionReport): String = buildString {
+    private fun buildReportJson(report: IngestionReport, incremental: IncrementalReport? = null): String = buildString {
         appendLine("{")
         appendLine("  \"filesScanned\": ${report.filesScanned},")
         appendLine("  \"chunksAdded\": ${report.chunksAdded},")
@@ -164,7 +211,32 @@ abstract class IngestGovernanceTask : DefaultTask() {
         appendLine("  \"validationErrorsByType\": ${validationErrorsByTypeToJson(report.validationErrors)},")
         appendLine("  \"validationErrors\": ${validationErrorsToJson(report.validationErrors)},")
         appendLine("  \"invalidChunks\": ${invalidChunksToJson(report.invalidChunks)}")
+        if (incremental != null) {
+            appendLine(",")
+            appendLine("  \"incremental\": ${incrementalToJson(incremental)}")
+        } else {
+            appendLine()
+        }
         appendLine("}")
+    }
+
+    private fun incrementalToJson(report: IncrementalReport): String = buildString {
+        appendLine("{")
+        appendLine("    \"added\": ${stringListToJson(report.added)},")
+        appendLine("    \"modified\": ${stringListToJson(report.modified)},")
+        appendLine("    \"removed\": ${stringListToJson(report.removed)},")
+        appendLine("    \"unchanged\": ${stringListToJson(report.unchanged)},")
+        appendLine("    \"skippedDueToIncremental\": ${stringListToJson(report.skippedDueToIncremental)}")
+        append("  }")
+    }
+
+    private fun stringListToJson(list: List<String>): String = buildString {
+        append("[")
+        list.withIndex().forEach { (index, value) ->
+            append("\"${escapeJson(value)}\"")
+            if (index < list.size - 1) append(", ")
+        }
+        append("]")
     }
 
     private fun validationErrorsToJson(errors: List<ChunkValidationError>): String = buildString {

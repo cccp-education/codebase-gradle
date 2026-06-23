@@ -49,11 +49,12 @@ Ce projet vit dans `foundry/codebase-gradle/` → *cercle 4 (public, Apache 2.0)
 
 === Instances Ollama — Ports reserves + Rotation
 
-* *11434 a 11436* — PROTEGES, ne jamais modifier, ne jamais toucher
+* *11434 a 11436* — INTERDITS, ne jamais utiliser, ne jamais modifier, ne jamais toucher
 * *11437 a 11465* — disponibles (29 ports), rotation OBLIGATOIRE sur toute la plage
-* Modeles autorises : gpt-oss:120b-cloud, gpt-oss:20b-cloud, qwen3-coder-next:cloud, qwen3-next:80b-cloud, qwen3-coder:480b-cloud
-* Rotation : distribuer les 5 modeles sur les 29 ports avec cycling automatique
-* Aucun autre modele ni port ne doit etre utilise dans le code
+* Modeles autorises : gpt-oss:120b-cloud, gemma4:31b-cloud
+* Rotation : distribuer les 2 modeles sur les 29 ports avec cycling automatique
+* Aucun autre modele ni port ne doit etre utilise dans le code, les tests, ou l'execution
+* Si un modele manque en local : `ollama pull <modele>` avant utilisation (pull du manifest seul, inférence cloud)
 
 === Regle d'or
 

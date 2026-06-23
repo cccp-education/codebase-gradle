@@ -14,6 +14,7 @@ class GovernanceSummaryConfigTest {
         assertFalse(config.strictValidation, "strictValidation should default to false")
         assertTrue(config.outputEnabled, "outputEnabled should default to true")
         assertEquals("json", config.reportFormat)
+        assertFalse(config.incremental, "incremental should default to false")
     }
 
     @Test
@@ -31,5 +32,12 @@ class GovernanceSummaryConfigTest {
         val config = GovernanceSummaryConfig(outputEnabled = false)
 
         assertFalse(config.outputEnabled)
+    }
+
+    @Test
+    fun `can enable incremental mode`() {
+        val config = GovernanceSummaryConfig(incremental = true)
+
+        assertTrue(config.incremental)
     }
 }

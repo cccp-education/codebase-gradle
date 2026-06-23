@@ -1,0 +1,107 @@
+= Session 155 — EPIC V-9.19 Auto-detection of new governance files
+
+:session: 155
+:borough: Queens — codebase-gradle (N1)
+:epic: EPIC V-9 — Vibecoding Gouvernance Agentique (Under-EPIC 5)
+:date: 2026-06-23
+:methodologie: Baby-step DDD/TDD/BDD — unit → fonctionnel → Cucumber
+
+== Contexte
+
+PROMPT_REPRISE 155 demandait d'attaquer V-9.19 Auto-détection de nouveaux
+fichiers de gouvernance — quand `ingestGovernance` a déjà tourné, surveiller/
+détecter les nouveaux fichiers `.adoc` dans `.agents/` et à la racine, puis
+re-déclencher le chunking/compilation/registering sans retraiter tout le projet.
+
+Contrainte supplémentaire reçue en cours de session : ports 11434-11436
+INTERDITS, modèles autorisés `gpt-oss:120b-cloud` + `gemma4:31b-cloud` uniquement.
+Sauvegarde EAGER + globale de la contrainte + vérification opencode.json + test
+d'inférence des deux modèles sur 26 ports actifs.
+
+== Actions
+
+=== 1. Value objects DDD (TDD unit)
+
+* `GovernanceFileSnapshot.kt` — snapshot immuable (List<ScannedFileEntry>), factory `fromScanned(List<ScannedFile>)` calculant checksums SHA-256
+* `GovernanceFileDiff.kt` — value object diff (added/modified/removed/unchanged + `pathsToIngest()` = added+modified)
+* `GovernanceFileChangeDetector.kt` — service de diff entre deux snapshots
+* `GovernanceStateStore.kt` — interface + impl `JsonGovernanceStateStore` (load/save/clear, JSON fichier)
+* `IncrementalReport.kt` — rapport incrémental (added/modified/removed/unchanged/skippedDueToIncremental)
+
+Tests unitaires (TDD) :
+* `GovernanceFileChangeDetectorTest.kt` — 8 tests (added/modified/removed/unchanged/mixte/empty/pathsToIngest)
+* `GovernanceStateStoreTest.kt` — 7 tests (load null/save+load roundtrip/clear/invalid json/empty file)
+
+=== 2. Câblage fonctionnel (TDD fonctionnel)
+
+* `GovernanceSummaryConfig` : ajout champ `incremental: Boolean = false` (rétrocompatible)
+* `CodebaseGovernanceExtension` : ajout propriété `incremental`, propagation `toConfig()`
+* `CodebasePlugin` : wiring CLI `-Pcodebase.governance.incremental=true` + convention `false`
+* `GovernanceIngestor.ingestFiltered(root, pathsToIngest)` — ingestion filtrée par paths
+* `IngestGovernanceTask.executeIngest` — mode incrémental : scan → snapshot courante → diff avec snapshot précédente (chargée depuis `build/governance/governance-state.json`) → `ingestFiltered` si changes, sinon skip + log. Sauvegarde nouvelle snapshot après ingestion. `lastIncrementalReport` exposé. JSON enrichi section `incremental`.
+
+Tests fonctionnels `IngestGovernanceTaskTest` (7 nouveaux) :
+* First incremental run ingests all files
+* Second run without changes skips all (filesScanned=0)
+* Modified file detected, reingests only it (filesScanned=1)
+* Removed file detected
+* Newly added file detected
+* Incremental report exposed in output JSON
+* Non-incremental mode keeps legacy behavior (lastIncrementalReport=null)
+
+Tests extension `CodebaseGovernanceExtensionTest` : ajout `incremental` default + toConfig.
+Tests `GovernanceSummaryConfigTest` : ajout `incremental` default + copy.
+
+=== 3. Cucumber BDD (TDD BDD)
+
+* Feature `epic_v_9_19_auto_detection.feature` — 5 scénarios @epic_v_9_19
+* `EpicV919Steps.kt` — steps (runTask incremental, incremental report lists X as added/modified/unchanged/removed, filesScanned equal/greater than)
+* `EpicV919CucumberRunner.kt` — runner
+* `IngestGovernanceWorld.kt` — ajout `lastIncrementalReport`, `runTask(incremental)`, `deleteFile`
+* `build.gradle.kts` — enregistrement `cucumberTestEpicV919`
+
+Résultat : 5/5 Cucumber @epic_v_9_19 PASS.
+
+=== 4. Régressions
+
+* V-9.3, V-9.5, V-9.7, V-9.8, V-9.9, V-9.10, V-9.11, V-9.13, V-9.14, V-9.15, V-9.16, V-9.17, V-9.18 Cucumber PASS
+* ScanAgentTest, ChunkValidatorTest, GovernanceOntologizerTest, AgenticIngestorTest, AgenticCompilerTest, AgenticChunkEnforcementTest, AgenticExecutorTest, InvalidChunkQuarantineTest, AgenticGradleTaskRegistrarTest, ToolRegistryTest PASS
+* `./gradlew :codebase-plugin:compileKotlin` vert
+
+=== 5. Contrainte Ollama globale
+
+* `AGENTS.adoc` racine : section "Instances Ollama — Ports et Modèles (CONTRAINTE GLOBALE)" ajoutée dans Règles Transverses
+* `codebase-plugin/AGENT.adoc` : section "Instances Ollama — Ports reserves + Rotation" mise à jour (modèles autorisés : `gpt-oss:120b-cloud`, `gemma4:31b-cloud`)
+* Vérification `opencode.json` : les deux modèles sont enabled sur 29 providers (11437-11465)
+* Pull `gpt-oss:120b-cloud` sur port 11437 (manifest cloud 384 B)
+* Script `/tmp/opencode/test-models.sh` : 52/52 inférences PASS (26 ports × 2 modèles), aucun port interdit utilisé
+
+== Commandes exécutées
+
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.GovernanceFileChangeDetectorTest" --tests "codebase.koog.agentic.GovernanceStateStoreTest"
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.IngestGovernanceTaskTest" --tests "codebase.koog.agentic.GovernanceSummaryConfigTest" --tests "codebase.koog.agentic.CodebaseGovernanceExtensionTest"
+./gradlew :codebase-plugin:cucumberTestEpicV919
+./gradlew :codebase-plugin:cucumberTestEpicV93 ... cucumberTestEpicV918 (régressions)
+OLLAMA_HOST=127.0.0.1:11437 ollama pull gpt-oss:120b-cloud
+bash /tmp/opencode/test-models.sh
+----
+
+== Résultats
+
+* 15 tests unitaires nouveaux (8 detector + 7 store)
+* 7 tests fonctionnels nouveaux (IngestGovernanceTaskTest)
+* 3 tests extension/config nouveaux
+* 5 scénarios Cucumber @epic_v_9_19 PASS
+* 13 EPICs Cucumber V-9.3→V-9.18 régression PASS
+* 52/52 inférences modèles autorisés PASS
+* Zéro régression
+* V-9.19 ✅ TERMINÉ
+
+== Leçons
+
+* L'approche DDD/TDD baby-step a permis d'isoler le diff incrémental dans des value objects purs testables sans Gradle, puis de les câbler progressivement. Le `GovernanceFileChangeDetector` ne dépend d'aucune infrastructure — il aurait pu être testé en premier.
+* La persistance JSON custom (regex) a été un compromis pragmatique pour éviter une dépendance JSON parser. La méthode `load()` défensive (null si fichier absent/vide/JSON invalide) garantit la robustesse face à un état corrompu.
+* Le mode incrémental est rétrocompatible par défaut (`incremental=false`), ce qui préserve tous les tests existants sans modification.
+* La contrainte Ollama a été sauvegardée à deux niveaux (global `AGENTS.adoc` + borough `AGENT.adoc`) pour être chargée à chaque ouverture de session.

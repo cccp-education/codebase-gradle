@@ -2,6 +2,8 @@ package codebase.scenarios
 
 import codebase.koog.agentic.ChunkValidator
 import codebase.koog.agentic.GovernanceSection
+import codebase.koog.agentic.GovernanceSummaryConfig
+import codebase.koog.agentic.IncrementalReport
 import codebase.koog.agentic.IngestGovernanceTask
 import codebase.koog.agentic.IngestionReport
 import org.gradle.api.Project
@@ -25,6 +27,9 @@ class IngestGovernanceWorld {
     var lastRegisteredTaskNames: List<String> = emptyList()
         private set
 
+    var lastIncrementalReport: IncrementalReport? = null
+        private set
+
     var chunkValidator: ChunkValidator = ChunkValidator()
 
     fun file(path: String): File = File(tempDir, path)
@@ -35,12 +40,19 @@ class IngestGovernanceWorld {
         target.writeText(content)
     }
 
-    fun runTask(outputPath: String? = null) {
+    fun deleteFile(path: String) {
+        file(path).delete()
+    }
+
+    fun runTask(outputPath: String? = null, incremental: Boolean = false) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         val outputFile = outputPath?.let { file(it) }
         val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
             it.workspaceRoot.set(project.layout.projectDirectory.file("."))
             it.chunkValidator = chunkValidator
+            if (incremental) {
+                it.governanceConfig.set(GovernanceSummaryConfig(incremental = true))
+            }
             if (outputFile != null) {
                 it.outputFile.set(outputFile)
             }
@@ -50,6 +62,7 @@ class IngestGovernanceWorld {
         lastOutputFile = outputFile
         lastProject = project
         lastRegisteredTaskNames = task.lastRegisteredTaskNames
+        lastIncrementalReport = task.lastIncrementalReport
     }
 
     fun outputJson(): String {
@@ -62,6 +75,7 @@ class IngestGovernanceWorld {
         lastOutputFile = null
         lastProject = null
         lastRegisteredTaskNames = emptyList()
+        lastIncrementalReport = null
         tempDir.deleteRecursively()
         tempDir.mkdirs()
     }

@@ -1,3 +1,26 @@
+== Session 155 — EPIC V-9.19 Auto-detection of new governance files
+
+- `koog/agentic/GovernanceFileSnapshot.kt` : NOUVEAU — value object DDD snapshot (List<ScannedFileEntry>, factory fromScanned SHA-256)
+- `koog/agentic/GovernanceFileDiff.kt` : NOUVEAU — value object diff (added/modified/removed/unchanged + pathsToIngest)
+- `koog/agentic/GovernanceFileChangeDetector.kt` : NOUVEAU — service diff entre deux snapshots
+- `koog/agentic/GovernanceStateStore.kt` : NOUVEAU — interface + JsonGovernanceStateStore (load/save/clear JSON)
+- `koog/agentic/IncrementalReport.kt` : NOUVEAU — rapport incrémental (added/modified/removed/unchanged/skippedDueToIncremental)
+- `koog/agentic/GovernanceSummaryConfig.kt` : ajout champ `incremental: Boolean = false`
+- `koog/agentic/CodebaseGovernanceExtension.kt` : ajout propriété `incremental`, propagation `toConfig()`
+- `koog/agentic/GovernanceIngestor.kt` : ajout méthode `ingestFiltered(root, pathsToIngest)`
+- `koog/agentic/IngestGovernanceTask.kt` : mode incrémental câblé (scan → snapshot → diff → ingestFiltered), `lastIncrementalReport`, JSON enrichi section `incremental`
+- `CodebasePlugin.kt` : wiring CLI `-Pcodebase.governance.incremental=true`
+- `test/kotlin/codebase/koog/agentic/GovernanceFileChangeDetectorTest.kt` : 8 JUnit5 PASS
+- `test/kotlin/codebase/koog/agentic/GovernanceStateStoreTest.kt` : 7 JUnit5 PASS
+- `test/kotlin/codebase/koog/agentic/IngestGovernanceTaskTest.kt` : +7 tests fonctionnels V-9.19 PASS (30/30 total)
+- `test/resources/features/epic_v_9_19_auto_detection.feature` + `EpicV919CucumberRunner.kt` + `EpicV919Steps.kt` : 5 scénarios Cucumber @epic_v_9_19 PASS
+- `IngestGovernanceWorld.kt` : ajout `lastIncrementalReport`, `runTask(incremental)`, `deleteFile`
+- `build.gradle.kts` : enregistrement `cucumberTestEpicV919`
+- `AGENT.adoc` (codebase-plugin) : mise à jour section Ollama (modèles gpt-oss:120b-cloud + gemma4:31b-cloud)
+- `AGENTS.adoc` (racine workspace) : ajout section "Instances Ollama — Ports et Modèles (CONTRAINTE GLOBALE)"
+- 52/52 inférences modèles autorisés PASS (26 ports × 2 modèles)
+- Régressions V-9.3→V-9.18 vertes
+
 == Session 154 — EPIC V-9.18 Compile Governance Chunks to Gradle Tasks
 
 - `koog/agentic/AgenticGradleTaskRegistrar.kt` : NOUVEAU — registrar DDD transformant `ExecutableArtifact` en tâches Gradle dynamiques (`runProcedure_*`, `enforceRule_*`, `validate_*`)

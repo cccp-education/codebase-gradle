@@ -22,6 +22,7 @@ class CodebaseGovernanceExtensionTest {
         assertFalse(ext.strictValidation.getOrElse(true), "strictValidation should default to false")
         assertTrue(ext.outputEnabled.getOrElse(false), "outputEnabled should default to true")
         assertEquals("json", ext.reportFormat.getOrElse(""))
+        assertFalse(ext.incremental.getOrElse(true), "incremental should default to false")
     }
 
     @Test
@@ -33,11 +34,13 @@ class CodebaseGovernanceExtensionTest {
         ext.strictValidation.set(true)
         ext.outputEnabled.set(false)
         ext.reportFormat.set("json")
+        ext.incremental.set(true)
 
         val config = ext.toConfig()
         assertTrue(config.strictValidation)
         assertFalse(config.outputEnabled)
         assertEquals("json", config.reportFormat)
+        assertTrue(config.incremental)
     }
 
     @Test

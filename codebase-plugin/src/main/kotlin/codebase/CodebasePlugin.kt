@@ -39,6 +39,7 @@ class CodebasePlugin : Plugin<Project> {
         governanceExt.strictValidation.convention(false)
         governanceExt.outputEnabled.convention(true)
         governanceExt.reportFormat.convention("json")
+        governanceExt.incremental.convention(false)
 
         project.tasks.register(
             "collectFromCodebase",
@@ -106,7 +107,13 @@ class CodebasePlugin : Plugin<Project> {
                     .map { value ->
                         governanceExt.toConfig().copy(strictValidation = value.toBoolean())
                     }
-                    .orElse(governanceExt.toConfig())
+                    .orElse(
+                        project.providers.gradleProperty("codebase.governance.incremental")
+                            .map { value ->
+                                governanceExt.toConfig().copy(incremental = value.toBoolean())
+                            }
+                            .orElse(governanceExt.toConfig())
+                    )
             )
         }
 
