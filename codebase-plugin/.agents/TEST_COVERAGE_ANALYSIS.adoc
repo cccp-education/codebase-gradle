@@ -1,10 +1,10 @@
-:= TEST_COVERAGE_ANALYSIS — Session 152
+:= TEST_COVERAGE_ANALYSIS — Session 153
 :date: 2026-06-23
-:epic: EPIC V-9 — V-9.16 StrictValidationMode : option Gradle `strictValidation` dans `IngestGovernanceTask`, levée de `GradleException` quand `report.invalidChunks` est non vide en mode strict
+:epic: EPIC V-9 — V-9.17 Ingestion Summary DSL : extension Gradle `codebaseGovernance` + propriété `codebase.governance.strictValidation`
 
 == Contexte
 
-PROMPT_REPRISE 152 demandait d'attaquer V-9.16 StrictValidationMode. Objectif : faire échouer la tâche Gradle `ingestGovernance` quand l'option `strictValidation=true` est activée et que des chunks invalides sont détectés, tout en restant tolérant par défaut.
+PROMPT_REPRISE 153 demandait d'exposer les flags V-9.x (en particulier `strictValidation`) via une extension Gradle dédiée `codebaseGovernance { strictValidation = true }` et/ou une propriété projet `codebase.governance.strictValidation`.
 
 == Fichiers source modifiés
 
@@ -12,19 +12,22 @@ PROMPT_REPRISE 152 demandait d'attaquer V-9.16 StrictValidationMode. Objectif : 
 |===
 | Fichier | Changement
 
-| `main/kotlin/codebase/koog/agentic/IngestGovernanceTask.kt` | Ajout de `strictValidation: Property<Boolean>` avec convention `false` ; levée de `GradleException` après ingestion si `strictValidation=true` et `invalidChunks` non vide ; message d'erreur incluant les types d'erreur
-| `test/kotlin/codebase/koog/agentic/IngestGovernanceTaskTest.kt` | +3 tests V-9.16 (désactivé par défaut, échec mode strict, passage quand valide)
-| `test/features/epic_v_9_16_strict_validation_mode.feature` | Feature 3 scénarios @epic_v_9_16
-| `test/kotlin/codebase/scenarios/EpicV916CucumberRunner.kt` | Runner Cucumber @epic_v_9_16
-| `test/kotlin/codebase/scenarios/EpicV915Steps.kt` | Steps partagés V-9.15/V-9.16 avec gestion de `lastException`
-| `build.gradle.kts` | Enregistrement de `cucumberTestEpicV916`
-| `codebase-plugin/PROMPT_REPRISE.adoc` | Mission N+1 (session 153)
-| `.agents/INDEX.adoc` | Session N+1 = 153, statut V-9.16 ✅
-| `.agents/SESSIONS_HISTORY.adoc` | Entrée session 152
-| `.agents/sessions/152-epic_v9_16_strict_validation_mode.adoc` | Archive session 152
+| `main/kotlin/codebase/koog/agentic/GovernanceSummaryConfig.kt` | Modèle DDD pur : `strictValidation`, `outputEnabled`, `reportFormat`, défauts rétrocompatibles
+| `main/kotlin/codebase/koog/agentic/CodebaseGovernanceExtension.kt` | Extension Gradle `codebaseGovernance` avec `toConfig()`
+| `main/kotlin/codebase/CodebasePlugin.kt` | Enregistrement de l'extension + résolution prioritaire propriété `codebase.governance.strictValidation`
+| `main/kotlin/codebase/koog/agentic/IngestGovernanceTask.kt` | `governanceConfig: Property<GovernanceSummaryConfig>`, point d'entrée DDD, rapport par défaut dans `build/reports/ingest-governance.json`
+| `test/kotlin/codebase/koog/agentic/GovernanceSummaryConfigTest.kt` | 3 tests JUnit5 (defaults, copy, output disabled)
+| `test/kotlin/codebase/koog/agentic/CodebaseGovernanceExtensionTest.kt` | 4 tests fonctionnels ProjectBuilder (DSL defaults, DSL strict, task wiring, CLI override)
+| `test/features/epic_v_9_17_ingestion_summary_dsl.feature` | 3 scénarios Cucumber @epic_v_9_17
+| `test/kotlin/codebase/scenarios/EpicV917CucumberRunner.kt` | Runner Cucumber @epic_v_9_17
+| `test/kotlin/codebase/scenarios/EpicV917Steps.kt` | Steps Cucumber V-9.17
+| `build.gradle.kts` | Enregistrement de `cucumberTestEpicV917` (rétroactivité `cucumberTestEpicV916`)
+| `codebase-plugin/PROMPT_REPRISE.adoc` | Mission N+1 (session 154)
+| `.agents/INDEX.adoc` | Session N+1 = 154, statut V-9.17 ✅
+| `.agents/SESSIONS_HISTORY.adoc` | Entrée session 153
+| `.agents/sessions/153-epic_v9_17_ingestion_summary_dsl.adoc` | Archive session 153
 | `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-06.adoc` | Mise à jour EPIC V-9
-| `BACKLOG.adoc` | V-9.16 marqué ✅
-| `test/kotlin/codebase/scenarios/AgenticCompilerSteps.kt` | Correction régression V-9.4 batch : ajout section `== Interdictions` dans le contenu TAXONOMIE_WORKSPACE pour produire un chunk CONCEPT INTERDIRE → `PROMPT_TEMPLATE`
+| `BACKLOG.adoc` | V-9.17 marqué ✅
 |===
 
 == Tests
@@ -32,8 +35,12 @@ PROMPT_REPRISE 152 demandait d'attaquer V-9.16 StrictValidationMode. Objectif : 
 |===
 | Scope | Résultat
 
-| `IngestGovernanceTaskTest` | ✅ 16/16 PASS (13 existants + 3 V-9.16)
-| `EpicV916CucumberRunner` (3 scénarios @epic_v_9_16) | ✅ 3/3 PASS
+| `GovernanceSummaryConfigTest` | ✅ 3/3 PASS
+| `CodebaseGovernanceExtensionTest` | ✅ 4/4 PASS
+| `EpicV917CucumberRunner` (3 scénarios @epic_v_9_17) | ✅ 3/3 PASS
+| `IngestGovernanceTaskTest` | ✅ 16/16 PASS (régression)
+| `ToolRegistryTest` | ✅ vert (régression)
+| `EpicV916CucumberRunner` (3 scénarios @epic_v_9_16) | ✅ 3/3 PASS (régression)
 | `EpicV915CucumberRunner` (2 scénarios @epic_v_9_15) | ✅ 2/2 PASS (régression)
 | `EpicV914CucumberRunner` (2 scénarios @epic_v_9_14) | ✅ 2/2 PASS (régression)
 | `EpicV913CucumberRunner` (5 scénarios @epic_v_9_13) | ✅ 5/5 PASS (régression)
@@ -44,25 +51,21 @@ PROMPT_REPRISE 152 demandait d'attaquer V-9.16 StrictValidationMode. Objectif : 
 | `EpicV97CucumberRunner` (7 scénarios @epic_v_9_7) | ✅ 7/7 PASS (régression)
 | `EpicV95CucumberRunner` (5 scénarios @epic_v_9_5) | ✅ 5/5 PASS (régression)
 | `EpicV93CucumberRunner` (6 scénarios @epic_v_9_3) | ✅ 6/6 PASS (régression)
-| `EpicY4CucumberRunner` (9 scénarios @epic_y_4) | ✅ 9/9 PASS (régression V-9.4 batch corrigée)
 | `compileKotlin` | ✅
 | `compileTestKotlin` | ✅
 | Régression tests préexistants | 0
 |===
 
-== Total session 152
+== Total session 153
 
-- JUnit5 : 3 nouveaux PASS dans `IngestGovernanceTaskTest`
-- Tests fonctionnels : couverts par les tests JUnit5 `ProjectBuilder`
-- Cucumber : 3 scénarios / 13 steps PASS (@epic_v_9_16)
+- JUnit5 : 3 nouveaux PASS (`GovernanceSummaryConfigTest`) + 4 nouveaux PASS (`CodebaseGovernanceExtensionTest`)
+- Tests fonctionnels : 4 couverts par `ProjectBuilder`
+- Cucumber : 3 scénarios / 13 steps PASS (@epic_v_9_17)
 - Build : `compileKotlin` + `compileTestKotlin` verts
-- Régression V-9.4 batch corrigée sans toucher au code de production
-- BACKLOG synchronisé (V-9.16 marqué ✅)
+- BACKLOG synchronisé (V-9.17 marqué ✅)
 
 == Leçons
 
-* Désactiver `strictValidation` par défaut (`convention(false)`) préserve la rétrocompatibilité.
-* `GradleException` est le type d'exception approprié pour faire échouer proprement une tâche Gradle.
-* Partager les steps Cucumber entre EPICs proches (V-9.15/V-9.16) via des tags combinés réduit la duplication.
-* Corriger une régression pré-existante découverte lors d'un run de validation globale est préférable à l'ignorer.
-* Le catalogue de versions est auto-chargé par Gradle depuis `gradle/libs.versions.toml` à la racine ; pas besoin de `versionCatalogs` explicite.
+* Séparer modèle DDD (`GovernanceSummaryConfig`) de l'extension Gradle facilite les tests purs.
+* `project.providers.gradleProperty()` ne lit pas `extraProperties` de `ProjectBuilder` ; utiliser un vrai `gradle.properties` pour tester le CLI override.
+* Garder `strictValidation` en propriété task interne pendant la transition V-9.16→V-9.17 préserve la rétrocompatibilité, mais la prochaine étape doit unifier la source de vérité dans `GovernanceSummaryConfig`.

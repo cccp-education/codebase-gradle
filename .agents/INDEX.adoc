@@ -3,8 +3,8 @@
 :icons: font
 
 *Date de creation* : 2026-06-16
-*Derniere mise a jour* : 2026-06-22
-*Version* : 1.2.0 (Session 147 — EPIC V-9.11 AgenticCompiler livré : 30 JUnit5 + 8 ExecutableArtifactTest + 6 Cucumber @epic_v_9_11, zéro régression V-9.x)
+*Derniere mise a jour* : 2026-06-23
+*Version* : 1.2.1 (Session 153 — EPIC V-9.17 Ingestion Summary DSL livré : extension `codebaseGovernance` + propriété `codebase.governance.strictValidation`, 3 JUnit5 + 4 fonctionnels + 3 Cucumber @epic_v_9_17 PASS, régressions V-9.x vertes)
 
 == Regles Absolues
 
@@ -33,7 +33,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 142 — EPIC V-9.3 ScanAgent livré : `ScanAgent` scanner récursif `.agents/` (ignore build/.git/.gradle/node_modules) + `ScannedFile` value object DDD + 8 JUnit5 + 6 Cucumber @epic_v_9_3 PASS + refactor `IngestGovernanceTask.collectGovernanceFiles` (liste hardcoded supprimée, 5 tests préservés). Under-EPIC 1 complet 5/5.
 | ✅ | Session 145 — EPIC V-9.9 ChunkValidationGate livré (`ChunkValidator` câblé dans `AgenticIngestor`, `IngestionReport` enrichi `chunksInvalid`/`validationErrors`, 3 JUnit5 + 2 Cucumber @epic_v_9_9 PASS, régressions V-9.3/9.5/9.7/9.8 vertes)
 | ✅ | Session 146 — EPIC V-9.10 ChunkValidationReport livré (`ChunkValidationErrorType`, `lineStart`/`lineEnd`, `validationErrorsByType` JSON, 3 JUnit5 + 1 test fonctionnel + 3 Cucumber @epic_v_9_10 PASS, zéro régression V-9.x)
-| ✅ | Session 147 — EPIC V-9.11 AgenticCompiler livré (`compile` retourne `null` pour chunks non compilables, `shouldCompile` explicite, `PostHookPayload`, `ExecutableArtifact.execute` PreHook/PostHook, 30 JUnit5 + 8 `ExecutableArtifactTest` + 6 Cucumber @epic_v_9_11 PASS, build propre)
+| ✅ | Session 153 — EPIC V-9.17 Ingestion Summary DSL livré : extension `codebaseGovernance { strictValidation.set(true) }` + propriété `codebase.governance.strictValidation`, `GovernanceSummaryConfig` DDD + `CodebaseGovernanceExtension`, câblage `IngestGovernanceTask.governanceConfig`, 3 JUnit5 + 4 fonctionnels + 3 Cucumber @epic_v_9_17 PASS, régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11/9.13/9.14/9.15/9.16 vertes
 
 === EPICs & Projects
 
@@ -43,7 +43,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | EPIC V | Vibecoding Task + Graph | N1 | 15/15 PTS | 041-045
 | EPIC-V-SESSION-REPO | SessionRepository + TokenTracker + Dashboard | N1 | 3/3 pts | 059
 | EPIC-V-FLYWAY | Migration Flyway (futur) | N2 | BACKLOG | —
-| EPIC-V-9 | Vibecoding Gouvernance Agentique | N1 | ✅ CADRÉ (7 ateliers, 35 items, 7-10 sessions) | 084
+| EPIC-V-9 | Vibecoding Gouvernance Agentique | N1 | EN COURS (11/35 items — Under-EPIC 1 ✅, Under-EPIC 2 ✅, Under-EPIC 3 ✅, Under-EPIC 4 ✅, Under-EPIC 5 en cours) | 084-153
 | EPIC K | Ontologie Workspace | NX | ✅ TERMINE | 015-020
 | EPIC L | Migration langgraph4j → koog | NX | ✅ TERMINE | 034-049
 | EPIC W | Auto-discovery Gradle Tasks | N1 | ✅ TERMINE | 098-100

@@ -1,3 +1,18 @@
+== Session 153 — EPIC V-9.17 Ingestion Summary DSL
+
+- `koog/agentic/GovernanceSummaryConfig.kt` : modèle DDD pur (strictValidation, outputEnabled, reportFormat)
+- `koog/agentic/CodebaseGovernanceExtension.kt` : extension Gradle `codebaseGovernance` + `toConfig()`
+- `CodebasePlugin.kt` : enregistrement extension + priorité propriété `codebase.governance.strictValidation`
+- `koog/agentic/IngestGovernanceTask.kt` : `governanceConfig`, point d'entrée DDD, rapport par défaut `build/reports/ingest-governance.json`
+- `test/kotlin/codebase/koog/agentic/GovernanceSummaryConfigTest.kt` : 3 JUnit5 PASS
+- `test/kotlin/codebase/koog/agentic/CodebaseGovernanceExtensionTest.kt` : 4 tests fonctionnels PASS
+- `test/features/epic_v_9_17_ingestion_summary_dsl.feature` + `EpicV917CucumberRunner.kt` + `EpicV917Steps.kt` : 3 scénarios Cucumber @epic_v_9_17 PASS
+- `build.gradle.kts` : enregistrement `cucumberTestEpicV917` (et `cucumberTestEpicV916` rétroactivement)
+- Régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11/9.13/9.14/9.15/9.16 vertes
+- `compileKotlin` + `compileTestKotlin` verts
+
+'''
+
 == Session 152 — EPIC V-9.16 Strict Validation Mode
 
 - `koog/agentic/IngestGovernanceTask.kt` : ajout de `strictValidation: Property<Boolean>` avec convention `false` ; levée de `GradleException` si chunks invalides détectés en mode strict

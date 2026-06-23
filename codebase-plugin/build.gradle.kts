@@ -149,6 +149,7 @@ val cucumberTaskSpecs = listOf(
     CucumberTaskSpec("cucumberTestEpicV914", "Runs Cucumber BDD tests — EPIC V-9.14 (Auto-activation governance enforcement hook) only", "codebase.scenarios.EpicV914CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicV915", "Runs Cucumber BDD tests — EPIC V-9.15 (Invalid chunk quarantine) only", "codebase.scenarios.EpicV915CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicV916", "Runs Cucumber BDD tests — EPIC V-9.16 (Strict validation mode) only", "codebase.scenarios.EpicV916CucumberRunner"),
+    CucumberTaskSpec("cucumberTestEpicV917", "Runs Cucumber BDD tests — EPIC V-9.17 (Ingestion Summary DSL) only", "codebase.scenarios.EpicV917CucumberRunner"),
 )
 
 val cucumberTasks = cucumberTaskSpecs.map { registerCucumberTask(it) }

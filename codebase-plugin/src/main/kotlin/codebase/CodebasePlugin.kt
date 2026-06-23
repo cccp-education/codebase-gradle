@@ -3,6 +3,7 @@ package codebase
 import codebase.blog.EndSessionBlogTask
 import codebase.koog.SessionProtocolDaemonTask
 import codebase.koog.VibecodingTask
+import codebase.koog.agentic.CodebaseGovernanceExtension
 import codebase.koog.agentic.IngestGovernanceTask
 import codebase.koog.expert.CodebaseExpertExtension
 import codebase.koog.expert.ExpertExposureTask
@@ -33,6 +34,11 @@ class CodebasePlugin : Plugin<Project> {
         expertExt.domains.convention(emptyList())
         expertExt.anonymizeEndpoints.convention(true)
         expertExt.outputFile.convention("build/experts/exposure-manifest.json")
+
+        val governanceExt = project.extensions.create("codebaseGovernance", CodebaseGovernanceExtension::class.java)
+        governanceExt.strictValidation.convention(false)
+        governanceExt.outputEnabled.convention(true)
+        governanceExt.reportFormat.convention("json")
 
         project.tasks.register(
             "collectFromCodebase",
@@ -95,6 +101,13 @@ class CodebasePlugin : Plugin<Project> {
             it.group = "generate"
             it.description = "Ingest governance EAGER files (AGENT.adoc, INDEX.adoc, BACKLOG.adoc) into AgenticIngestor (in-memory stub, EPIC V-LOCAL pont Y)"
             it.workspaceRoot.set(project.rootDir)
+            it.governanceConfig.set(
+                project.providers.gradleProperty("codebase.governance.strictValidation")
+                    .map { value ->
+                        governanceExt.toConfig().copy(strictValidation = value.toBoolean())
+                    }
+                    .orElse(governanceExt.toConfig())
+            )
         }
 
         project.tasks.register(

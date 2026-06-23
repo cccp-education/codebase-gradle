@@ -33,6 +33,9 @@ abstract class IngestGovernanceTask : DefaultTask() {
     abstract val strictValidation: Property<Boolean>
 
     @get:Internal
+    abstract val governanceConfig: Property<GovernanceSummaryConfig>
+
+    @get:Internal
     var lastIngestionReport: IngestionReport? = null
 
     @get:Internal
@@ -65,21 +68,38 @@ abstract class IngestGovernanceTask : DefaultTask() {
         group = "generate"
         description = "Ingest governance EAGER files (AGENT.adoc, INDEX.adoc, BACKLOG.adoc) into AgenticIngestor (in-memory stub)"
         strictValidation.convention(false)
+        governanceConfig.convention(GovernanceSummaryConfig())
     }
 
     @TaskAction
     fun executeIngest() {
         val root = workspaceRoot.asFile.getOrNull()
             ?: error("workspaceRoot must be set")
-        val output = outputFile.asFile.orNull
-        executeIngest(root, output)
+        val config = governanceConfig.getOrElse(GovernanceSummaryConfig())
+        val output = when {
+            outputFile.asFile.isPresent -> outputFile.asFile.orNull
+            config.outputEnabled -> project.layout.buildDirectory.file("reports/ingest-governance.json").get().asFile
+            else -> null
+        }
+        executeIngest(root, config, output)
     }
 
     /**
      * Point d'entrée DDD indépendant des propriétés Gradle.
      * Permet l'appel programmatique depuis [GovernanceEnforcementWirer] et les tests.
+     *
+     * Version rétrocompatible sans [GovernanceSummaryConfig] : strictValidation est lu
+     * depuis la propriété Gradle interne.
      */
     fun executeIngest(root: File, output: File?) {
+        val baseConfig = governanceConfig.getOrElse(GovernanceSummaryConfig())
+        val config = baseConfig.copy(
+            strictValidation = strictValidation.getOrElse(false) || baseConfig.strictValidation
+        )
+        executeIngest(root, config, output)
+    }
+
+    private fun executeIngest(root: File, config: GovernanceSummaryConfig, output: File?) {
         val result = GovernanceIngestor(chunkValidator).ingest(root)
         lastIngestionReport = result.report
         lastExecutor = result.executor
@@ -96,14 +116,15 @@ abstract class IngestGovernanceTask : DefaultTask() {
             log.info("[IngestGovernance] Sections total: {}", result.report.sectionsTotal)
         }
 
-        if (strictValidation.getOrElse(false) && result.report.invalidChunks.isNotEmpty()) {
+        val effectiveStrict = config.strictValidation || strictValidation.getOrElse(false)
+        if (effectiveStrict && result.report.invalidChunks.isNotEmpty()) {
             throw GradleException(
                 "IngestGovernance failed strict validation: ${result.report.invalidChunks.size} invalid chunk(s) detected. " +
                 "See report for details (error types: ${result.report.validationErrors.groupingBy { it.errorType }.eachCount()})"
             )
         }
 
-        if (output != null) {
+        if (config.outputEnabled && output != null) {
             output.parentFile.mkdirs()
             output.writeText(buildReportJson(result.report), Charsets.UTF_8)
             log.info("[IngestGovernance] Report written to {}", output.absolutePath)

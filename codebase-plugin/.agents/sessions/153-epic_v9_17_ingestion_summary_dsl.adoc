@@ -1,0 +1,50 @@
+= Session 153 — EPIC V-9.17 Ingestion Summary DSL
+:date: 2026-06-23
+:borough: Queens — codebase-gradle (N1)
+:session: 153
+
+== Contexte
+
+Mission issue du PROMPT_REPRISE 153 : exposer l'option `strictValidation` (et les futurs flags V-9.x) via une extension Gradle dédiée `codebaseGovernance { strictValidation = true }` et/ou la propriété projet `codebase.governance.strictValidation`.
+
+== Actions
+
+. Création du modèle DDD pur `GovernanceSummaryConfig` (`strictValidation`, `outputEnabled`, `reportFormat`, défauts rétrocompatibles).
+. Création de l'extension Gradle `CodebaseGovernanceExtension` avec `toConfig()` DDD.
+. Câblage dans `CodebasePlugin` : enregistrement de l'extension `codebaseGovernance` + lecture prioritaire de la propriété `codebase.governance.strictValidation`.
+. Refactor de `IngestGovernanceTask` :
+  * ajout de `governanceConfig: Property<GovernanceSummaryConfig>`
+  * point d'entrée DDD `executeIngest(root, config, output)`
+  * rétrocompatibilité de `executeIngest(root, output)`
+  * rapport écrit par défaut dans `build/reports/ingest-governance.json` quand `outputEnabled=true` et `outputFile` non explicitement défini
+. Tests :
+  * 3 JUnit5 `GovernanceSummaryConfigTest`
+  * 4 fonctionnels `CodebaseGovernanceExtensionTest` (DSL défaut, DSL strict, task wiring, CLI override)
+  * 3 scénarios Cucumber `@epic_v_9_17`
+  * enregistrement de la tâche `cucumberTestEpicV917` dans `build.gradle.kts`
+. Régressions : V-9.3, V-9.5, V-9.7, V-9.8, V-9.9, V-9.10, V-9.11, V-9.13, V-9.14, V-9.15, V-9.16 vertes.
+. Documentation : mise à jour `BACKLOG.adoc`, `.agents/INDEX.adoc`, `.agents/SESSIONS_HISTORY.adoc`, `PROMPT_REPRISE.adoc`.
+
+== Commandes
+
+----
+./gradlew :codebase-plugin:compileKotlin
+./gradlew :codebase-plugin:compileTestKotlin
+./gradlew :codebase-plugin:test --tests "codebase.koog.agentic.GovernanceSummaryConfigTest" --tests "codebase.koog.agentic.CodebaseGovernanceExtensionTest"
+./gradlew :codebase-plugin:cucumberTestEpicV917
+./gradlew :codebase-plugin:cucumberTestEpicV93 :codebase-plugin:cucumberTestEpicV95 :codebase-plugin:cucumberTestEpicV97 :codebase-plugin:cucumberTestEpicV98 :codebase-plugin:cucumberTestEpicV99 :codebase-plugin:cucumberTestEpicV910 :codebase-plugin:cucumberTestEpicV911 :codebase-plugin:cucumberTestEpicV913 :codebase-plugin:cucumberTestEpicV914 :codebase-plugin:cucumberTestEpicV915 :codebase-plugin:cucumberTestEpicV916
+----
+
+== Résultats
+
+* `GovernanceSummaryConfigTest` : 3/3 PASS
+* `CodebaseGovernanceExtensionTest` : 4/4 PASS
+* `EpicV917CucumberRunner` : 3/3 PASS
+* Régressions V-9.x : toutes vertes (V-9.3 6/6, V-9.5 5/5, V-9.7 7/7, V-9.8 3/3, V-9.9 2/2, V-9.10 3/3, V-9.11 6/6, V-9.13 5/5, V-9.14 2/2, V-9.15 2/2, V-9.16 3/3)
+* `compileKotlin` + `compileTestKotlin` verts
+
+== Leçons
+
+* Garder un modèle DDD pur (`GovernanceSummaryConfig`) séparé de l'extension Gradle permet de tester la logique sans Project/Task.
+* `project.providers.gradleProperty()` ne lit pas les `extraProperties` de `ProjectBuilder` ; utiliser un vrai `gradle.properties` dans le répertoire projet pour les tests CLI override.
+* La rétrocompatibilité se paie avec une convention par défaut `false` et une double source de vérité temporaire (`strictValidation` task property + `governanceConfig.strictValidation`) ; la prochaine étape V-9.18 doit déprécier la propriété task interne au profit de l'extension.
