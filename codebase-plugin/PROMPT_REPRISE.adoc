@@ -1,9 +1,9 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 163
-:session: 163
+= Prompt de Reprise — Codebase (Queens N1) — Session 164
+:session: 164
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 162 — README i18n 10 langues (consumer + plugin). 20 fichiers créés. Coordination 9 autres boroughs (200 fichiers total). Borough dormant.
+:session_precedente: 163 — Architecture README Plugin + Consommateur. Déplacement README.plugin → codebase-plugin/, README.consommateurs → racine. Liens i18n recréés (10 langues).
 
-== Mission Session 163
+== Mission Session 164
 
 Codebase-gradle est DORMANT. Aucun EPIC actif.
 
@@ -24,7 +24,7 @@ Réveil sur déclencheur externe uniquement :
 * Maven Central : `education.cccp:codebase-plugin:0.0.4` publié
 * Kover : 100% coverage (55 classes métier)
 * Tests : 74 JUnit5 + 119 Cucumber PASS
-* README i18n : 10 langues × consumer + plugin (session 162)
+* README i18n : architecture plugin + consommateur (session 163)
 
 == Méthodologie
 

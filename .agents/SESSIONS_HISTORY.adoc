@@ -2,6 +2,21 @@
 :toc: left
 :icons: font
 
+== Session 163 — 2026-06-24
+
+* **EPICs** : DOC-I18N (architecture README)
+* **Livrables** :
+** Architecture README Plugin + Consommateur déployée (article 0124)
+** `README.plugin/` déplacé de la racine vers `codebase-plugin/README.plugin/`
+** `README.md` (master EN plugin) remonté à la racine de `codebase-plugin/`
+** `README.consommateurs/README.md` (consumer guide EN) remonté à la racine du borough
+** Liens i18n recréés : `README.plugin/README.{lang}.md` (plugin) + `README.consommateurs/README.{lang}.md` (consumer), 10 langues
+** Ancien README.md racine (legacy court) remplacé par version consommateur
+* **Résultats** :
+** 20 fichiers repositionnés (10 plugin + 10 consumer)
+** Aucun code Kotlin modifié
+** Borough DORMANT
+
 == Session 162 — 2026-06-24
 
 * **EPICs** : DOC-I18N (documentation)

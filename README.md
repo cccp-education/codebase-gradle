@@ -1,15 +1,27 @@
-# codebase-gradle
+<!-- master source — other languages are translations of this file -->
+# codebase-gradle — Consumer Guide
 
-RAG-powered Gradle plugin for LLM-augmented codebase indexing and orchestration.
+> RAG-powered Gradle plugin for LLM-augmented codebase indexing & vibecoding.
 
-> Published to [Maven Central](https://central.sonatype.com/namespace/education.cccp) as `education.cccp:codebase-plugin`
+[![Maven Central](https://img.shields.io/maven-central/v/education.cccp/codebase-plugin.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/education.cccp/codebase-plugin)
+[![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.codebase.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.codebase)
+[![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/codebase-gradle/test.yml?branch=main&label=tests)](https://github.com/cheroliv/codebase-gradle/actions/workflows/test.yml)
+[![License](https://img.shields.io/github/license/cheroliv/codebase-gradle?label=License)](../LICENSE)
 
-## What This Is
+- **Version**: `0.0.4` · **Group**: `education.cccp` · **Plugin ID**: `education.cccp.codebase`
+- **Build**: `./gradlew build` · **Tests**: `./gradlew testAll` (JUnit5 + 48 Cucumber suites)
+- **Coverage**: ≥ 80 % (Kover, wired into `check`)
 
-**codebase-gradle** indexes project source files into PostgreSQL + pgvector,
-exposes composite context augmentation, anonymization, benchmark, quality gates,
-OCR (Gemini Vision), and **vibecoding** (LLM-orchestrated multi-turn code
-generation via koog-agents).
+🌐 Languages: **EN** | [中文](README.consommateurs/README.zh.md) | [हिन्दी](README.consommateurs/README.hi.md) | [Español](README.consommateurs/README.es.md) | [Français](README.consommateurs/README.fr.md) | [العربية](README.consommateurs/README.ar.md) | [বাংলা](README.consommateurs/README.bn.md) | [Português](README.consommateurs/README.pt.md) | [Русский](README.consommateurs/README.ru.md) | [اردو](README.consommateurs/README.ur.md)
+
+---
+
+## What it does
+
+`codebase-gradle` indexes your project sources into **PostgreSQL + pgvector**, exposes
+composite context augmentation, anonymization, OCR (Gemini Vision), quality gates
+(sentiment + PII + off-topic), and **vibecoding** — an LLM-orchestrated multi-turn
+code generation loop powered by `koog-agents`.
 
 Part of the CCCP Education multi-plugin ecosystem:
 
@@ -19,7 +31,7 @@ user intent → codex-gradle (indexing) → [codebase-gradle] → koog-agents �
 
 ## Quick Start
 
-### 1. Add Plugin to Your Project
+### 1. Apply the plugin
 
 ```gradle
 plugins {
@@ -27,14 +39,14 @@ plugins {
 }
 ```
 
-### 2. Index Your Codebase
+### 2. Index your codebase
 
 ```bash
-./gradlew collectFromCodebase          # Per-borough context → build/context/
-./gradlew collectCompositeContext       # Workspace-level composite
+./gradlew collectFromCodebase          # per-borough context → build/context/
+./gradlew collectCompositeContext       # workspace-level composite
 ```
 
-### 3. Run Vibecoding
+### 3. Run vibecoding
 
 ```bash
 ./gradlew vibecode \
@@ -43,118 +55,86 @@ plugins {
   --maxActions=10
 ```
 
-See [VIBECODING_USAGE_GUIDE.adoc](./VIBECODING_USAGE_GUIDE.adoc) for complete options.
+See [VIBECODING_USAGE_GUIDE.adoc](../VIBECODING_USAGE_GUIDE.adoc) for full options.
 
-## Tasks
+## Available tasks
 
 | Task | Group | Description |
 |------|-------|-------------|
-| `collectFromCodebase` | collect | Collect per-borough augmented context (EAGER/RAG/Graphify) |
-| `collectCompositeContext` | collect | Assemble workspace-level composite from all boroughs |
-| `generateCompositeContext` | generate | Composite context N1+N2 (codex + training) → JSON |
-| `generatePlan` | generate | Augmented planning — classify intention → EPICs/UserStories/Tasks |
-| `vibecode` | generate | Koog autonomous loop (context → plan → execute → audit) |
-| `sessionProtocolDaemon` | generate | stdin JSON-lines SessionPrompt → stdout SessionResponse |
-| `ingestGovernance` | generate | Ingest EAGER files (AGENT.adoc, INDEX.adoc, BACKLOG.adoc) |
-| `vibecodingDashboard` | tracking | Session summary, token costs, privacy filters |
-| `qualityGate` | validate | Sentiment + off-topic + PII residual checks |
-| `ocrDocument` | collect | OCR via Gemini Vision → AsciiDoc |
-| `ocrIngest` | collect | Ingest OCR output into pgvector (chunk → embed → RAG) |
-| `exposeExperts` | generate | Expert manifest JSON for slider/plantuml/bakery |
-| `endSessionBlog` | generate | Extract sessions → AsciiDoc blog articles |
+| `collectFromCodebase`      | collect   | Per-borough augmented context (EAGER/RAG/Graphify) |
+| `collectCompositeContext`  | collect   | Workspace-level composite from all boroughs |
+| `generateCompositeContext` | generate  | Composite N1+N2 (codex + training) → JSON |
+| `generatePlan`             | generate  | Augmented planning — classify intention → EPICs/US/Tasks |
+| `vibecode`                 | generate  | Koog autonomous loop (context → plan → execute → audit) |
+| `sessionProtocolDaemon`    | generate  | stdin JSON-lines SessionPrompt → stdout SessionResponse |
+| `ingestGovernance`         | generate  | Ingest EAGER files (AGENT.adoc, INDEX.adoc, BACKLOG.adoc) |
+| `vibecodingDashboard`      | tracking  | Session summary, token costs, privacy filters |
+| `qualityGate`              | validate  | Sentiment + off-topic + PII residual checks |
+| `ocrDocument`              | collect   | OCR via Gemini Vision → AsciiDoc |
+| `ocrIngest`                | collect   | Ingest OCR output into pgvector |
+| `exposeExperts`            | generate  | Expert manifest JSON for slider/plantuml/bakery |
+| `endSessionBlog`           | generate  | Extract sessions → AsciiDoc blog articles |
 
-## Extensions
+## Extension DSL
 
 ```gradle
 codebaseOcr {
-    ocrProvider = "gemini"
-    geminiModel = "gemini-2.5-flash"
-    ocrLanguage = "fr"
-    outputFormat = "asciidoc"
-    ocrEnabled = false
-    maxTokens = 8192
+    ocrProvider   = "gemini"
+    geminiModel   = "gemini-2.5-flash"
+    ocrLanguage   = "fr"
+    outputFormat  = "asciidoc"
+    ocrEnabled    = false
+    maxTokens     = 8192
 }
 
 codebaseExpert {
-    domains = []
-    anonymizeEndpoints = true
-    outputFile = "build/experts/exposure-manifest.json"
+    domains             = []
+    anonymizeEndpoints  = true
+    outputFile          = "build/experts/exposure-manifest.json"
 }
 
 codebaseGovernance {
-    strictValidation = false
-    outputEnabled = true
-    reportFormat = "json"
-    incremental = false
-    chunkIncremental = false
+    strictValidation   = false
+    outputEnabled      = true
+    reportFormat       = "json"
+    incremental        = false
+    chunkIncremental   = false
 }
 ```
 
 ## Prerequisites
 
-- Java 24+
-- Gradle 9.5.1+
-- PostgreSQL 15+ with pgvector extension
-- Docker (for Testcontainers tests)
+- **Java** 24+ (Kotlin 2.3.20 toolchain)
+- **Gradle** 9.5.1+
+- **PostgreSQL** 15+ with `pgvector` extension
+- **Docker** (for Testcontainers)
 
-## Building Locally
-
-```bash
-./gradlew build                    # Full build
-./gradlew testFast                 # Quick Cucumber tests (timeout <= 8 min)
-./gradlew testAll                  # Full test suite (JUnit5 + all Cucumber)
-./gradlew testEpics                # All EPIC Cucumber BDD tests
-./gradlew testHelp                 # List all test tasks
-./gradlew validateDependencies     # CVE audit + dependency validation
-./gradlew publishToMavenLocal      # Publish locally
-```
-
-See [BUILDING.md](./codebase-plugin/BUILDING.md) for detailed build guide.
-
-## Architecture
-
-```
-codebase/
-├── rag/        pgvector integration, RAG indexing, composite context
-├── vibecoding/ Orchestration, tool registry, planning layer
-├── ocr/        Gemini Vision + Ollama integration
-├── quality/    ONNX-based quality gates (sentiment, PII, off-topic)
-├── koog/       Agentic DSL graphs, session protocol, governance
-├── walker/     Source code walking, anonymization
-├── benchmark/  Anonymization benchmark
-├── blog/       Session → blog article generation
-└── i18n/       TranslationService cross-borough
-```
-
-See [STRATEGIC_ROADMAP.adoc](./codebase-plugin/STRATEGIC_ROADMAP.adoc) for ecosystem overview.
-
-## Multilingual documentation
-
-- 📖 **Consumer guide** (Quick Start, tasks, DSL): [`README.consommateurs/`](./README.consommateurs/) — 10 languages (EN, 中文, हिन्दी, Español, Français, العربية, বাংলা, Português, Русский, اردو)
-- 🛠️ **Plugin internals** (architecture, modules, tests, publication): [`README.plugin/`](./README.plugin/) — 10 languages
-
-## Documentation
-
-- [BUILDING.md](./codebase-plugin/BUILDING.md) — Build configuration & tasks
-- [LOCAL_VIBECODING_LOOP.adoc](./codebase-plugin/LOCAL_VIBECODING_LOOP.adoc) — Local development setup
-- [VIBECODING_USAGE_GUIDE.adoc](./VIBECODING_USAGE_GUIDE.adoc) — Usage modes (with/without runner)
-- [STRATEGIC_ROADMAP.adoc](./codebase-plugin/STRATEGIC_ROADMAP.adoc) — Full ecosystem architecture
-- [AGENT.adoc](./codebase-plugin/AGENT.adoc) — Agent instructions & protocols
-
-## Test Coverage
-
-48 Cucumber BDD test suites covering EPICs V-6, V-7, V-8, V-9.x, Y-3–Y-7,
-W-4, X-1, X-2, X-4, X-5, X-6, SP-1–SP-6, Z-7, L-3, OCR, Translation, and more.
-
-## Publishing to Maven Central
-
-Publication is handled via NMCP (`com.gradleup.nmcp`) configured in
-`settings.gradle.kts`. Credentials are read from `~/.gradle/gradle.properties`.
+## Build & test
 
 ```bash
-./gradlew publishAggregationToCentralPortal --no-daemon
+./gradlew build                    # full build
+./gradlew testFast                 # quick Cucumber (≤ 8 min)
+./gradlew testAll                  # full suite (JUnit5 + all Cucumber)
+./gradlew testEpics               # all EPIC Cucumber BDD
+./gradlew testHelp                 # list all test tasks
+./gradlew validateDependencies    # CVE audit + dependency validation
+./gradlew publishToMavenLocal      # publish locally
 ```
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| `Java heap space`        | `export GRADLE_OPTS="-Xmx2g"` |
+| Postgres container stuck | `docker rm -f postgres-*` then retry |
+| Test timeout             | check `docker ps`, increase heap, check LLM API latency |
+
+See [BUILDING.md](../codebase-plugin/BUILDING.md) for details.
 
 ## License
 
-Apache License 2.0 — See [LICENSE](./LICENSE)
+Apache License 2.0 — see [LICENSE](../LICENSE).
+
+---
+
+_Part of the CCCP Education ecosystem — `groupId: education.cccp`._

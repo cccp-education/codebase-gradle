@@ -1,0 +1,48 @@
+= Session 163 — Architecture README Plugin + Consommateur
+:session: 163
+:date: 2026-06-24
+:type: Refactor README
+:score: 8/10
+
+== Objectif
+
+Réorganiser les README selon l'architecture « Plugin Indépendant + Racine
+Consommateur » (article 0124). Déplacer les dossiers `README.plugin/` vers
+`{borough}-plugin/` et les dossiers `README.consommateurs/` vers la racine
+du borough. Recréer les liens i18n.
+
+== Ce qui a été fait
+
+=== 1. Déplacement README.plugin → codebase-plugin/README.plugin/
+
+* `README.plugin/` (10 fichiers : README.md + 9 traductions) déplacé du
+  root vers `codebase-plugin/README.plugin/`.
+* `README.md` (master source EN) remonté à la racine de `codebase-plugin/`.
+* 9 traductions restent dans `codebase-plugin/README.plugin/`.
+
+=== 2. Déplacement README.consommateurs → racine du borough
+
+* `README.consommateurs/README.md` (consumer guide EN) remonté à la racine
+  du borough `codebase-gradle/README.md`.
+* L'ancien `README.md` racine (version legacy courte) a été remplacé par la
+  version consommateur et supprimé de `README.consommateurs/`.
+* 9 traductions restent dans `README.consommateurs/`.
+
+=== 3. Mise à jour des liens i18n
+
+* `codebase-plugin/README.md` : liens langues → `README.plugin/README.{lang}.md`
+  (10 langues : EN, ZH, HI, ES, FR, AR, BN, PT, RU, UR).
+* `README.md` (racine) : liens langues → `README.consommateurs/README.{lang}.md`
+  (10 langues).
+
+== Fichiers modifiés
+
+* `README.md` (racine) — nouveau master source consommateur + liens i18n
+* `codebase-plugin/README.md` — liens i18n mis à jour
+* `codebase-plugin/README.plugin/README.{ar,bn,es,fr,hi,pt,ru,ur,zh}.md` — déplacés
+* `README.consommateurs/README.{ar,bn,es,fr,hi,pt,ru,ur,zh}.md` — inchangés (déjà là)
+
+== Prochaines étapes
+
+* Vérifier que les liens internes des traductions pointent correctement
+* Valider le rendu sur GitHub
