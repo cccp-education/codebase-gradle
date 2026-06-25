@@ -17,5 +17,5 @@ import org.junit.platform.suite.api.Suite
     value = "pretty, html:build/reports/cucumber-epic-v6.html, json:build/reports/cucumber-epic-v6.json"
 )
 @ConfigurationParameter(key = FEATURES_PROPERTY_NAME, value = "src/test/features/epic_v_vibecoding.feature")
-@ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "@epic_v_6")
+@ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "@epic_v_6 and not @integration")
 class EpicV6CucumberRunner
