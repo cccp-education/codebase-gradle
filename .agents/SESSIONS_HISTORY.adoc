@@ -225,3 +225,31 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** `testFast` échouait depuis session 159 (DuplicateStepDefinition) sans être remarqué — la CI GitHub Actions n'était pas active. Importance de valider `testFast` après chaque modification de steps Cucumber.
 ** Contrainte AGENTS.adoc modèles/ports légitime pour vibecoding production, doit céder devant réalité runner CI gratuit (RAM limitée, pas d'auth cloud). Exception documentée préserve la règle générale.
 ** Baby steps DDD/TDD/BDD : 1 fichier à la fois, compilation entre chaque, test ciblé sur runners impactés avant `testFast` complet.
+
+== Session 165 — 2026-06-25
+
+* **EPICs** : EPIC BOM (transverse — debug CI/CD + migration BOM)
+* **Livrables** :
+** Debug CI/CD en cascade (4 erreurs résolues en baby steps)
+** Fix 1 : `gradle-wrapper.jar` dé-gitignoré + versionné (`.gitignore` corrigé)
+** Fix 2 : `org.gradle.java.home` retiré des 2 `gradle.properties` (path SDKMAN inexistant sur CI)
+** Fix 3 : Credentials nmcp optionnels dans `settings.gradle.kts` (fallback `?: ""` au lieu de `error()`)
+** Fix 4 : Migration vers `workspace-bom:0.0.3` (source unique vérité versions)
+** `codex-plugin:0.0.2` re-publié sur Central (OcrEngine/TesseractOcrEngine)
+** `llm-pool-contracts:0.0.2` re-publié sur Central (volumeTag)
+** 4 contracts N0 re-publiés en 0.0.2 (agent, codebase, opencode-session, i18n)
+** `workspace-bom:0.0.3` publié sur Central (constraints internes activées)
+** `libs.versions.toml` migré : deps sans version (gérées par BOM)
+** `implementation(platform(libs.workspace.bom))` ajouté au `build.gradle.kts`
+** Archive session 165 créée
+* **Résultats** :
+** Compilation locale verte avec BOM
+** CI en attente propagation Central (15-30 min) — `Could not find workspace-bom:0.0.3`
+** 4 commits poussés sur `main`
+* **Leçons** :
+** Wrapper jar DOIT être versionné (convention workspace : 4 autres boroughs le font)
+** `org.gradle.java.home` ne doit jamais être hardcodé dans un fichier versionné
+** `nmcpSettings` ne doit pas `error()` au settings phase — fallback optionnel
+** BOM = source unique de vérité versions cross-borough (pattern Maven standard)
+** Versions cross-borough doivent être publiées sur Central avant que les consommateurs puissent compiler en CI
+** Planner-plugin (Manhattan) : borough dormant à structure cassée (catalog inaccessible depuis sous-module). À traiter séparément.

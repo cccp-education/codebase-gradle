@@ -141,3 +141,21 @@
 ** `./gradlew :codebase-plugin:testFast --console=plain` — BUILD SUCCESSFUL (1m 10s)
 ** `git stash` + test sur commit précédent — confirmé bugs préexistants
 * **Statut** : ✅ Terminé — `testFast` vert, CI GitHub Actions prête
+
+== Session 165 — 2026-06-25 — Debug CI/CD + Migration BOM
+
+* **EPICs** : EPIC BOM (transverse)
+* **Actions** :
+** Debug CI/CD en cascade (4 erreurs résolues en baby steps)
+** Fix 1 : `gradle-wrapper.jar` dé-gitignoré + versionné (`.gitignore` corrigé)
+** Fix 2 : `org.gradle.java.home` retiré des 2 `gradle.properties` (path SDKMAN inexistant CI)
+** Fix 3 : Credentials nmcp optionnels dans `settings.gradle.kts` (fallback `?: ""`)
+** Fix 4 : Migration vers `workspace-bom:0.0.3` (source unique vérité versions)
+** `codex-plugin:0.0.2` + `llm-pool-contracts:0.0.2` + 4 contracts 0.0.2 re-publiés Central
+** `libs.versions.toml` migré : deps sans version (gérées par BOM)
+** `implementation(platform(libs.workspace.bom))` ajouté au `build.gradle.kts`
+* **Commandes clés** :
+** `gh run view <id> --log-failed` — analyse logs CI
+** `./gradlew publishAggregationToCentralPortal` — 7 publications Central
+** `./gradlew :codebase-plugin:compileKotlin` — compilation verte avec BOM
+* **Statut** : ✅ Terminé — 4 commits poussés, CI en attente propagation Central

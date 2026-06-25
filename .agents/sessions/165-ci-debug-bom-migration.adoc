@@ -1,0 +1,74 @@
+= Session 165 — Debug CI/CD + Migration BOM
+:date: 2026-06-25
+:epic: EPIC BOM (transverse)
+
+== Contexte
+
+Reprise codebase-gradle avec mission debug CI/CD. La CI échouait sur
+les 3 workflows (CI, OCR, Ingest Governance) à chaque push.
+
+== Diagnostic en cascade (baby steps)
+
+. *Erreur 1* : `Unable to access jarfile gradle/wrapper/gradle-wrapper.jar`
+   Cause : `.gitignore:16` excluait le wrapper jar. Jamais poussé sur GitHub.
+   Fix : retrait de la ligne + `git add` du jar (48 KB, Gradle 9.5.1).
+
+. *Erreur 2* : `Java home supplied is invalid`
+   Cause : `org.gradle.java.home` hardcodé vers `/home/cheroliv/.sdkman/...`
+   dans `gradle.properties` (racine + codebase-plugin). Path inexistant sur CI.
+   Fix : retrait de la ligne dans les 2 fichiers. Gradle utilise `JAVA_HOME`.
+
+. *Erreur 3* : `ossrhUsername not found`
+   Cause : `nmcpSettings.centralPortal` utilisait `error()` si creds absents.
+   Évalué au settings phase → plantait tout build, même `testFast`.
+   Fix : fallback chaîne vide `?: ""` (publish task échoue proprement si absents).
+
+. *Erreur 4* : `Unresolved reference 'OcrEngine'`, `'TesseractOcrEngine'`, `'volumeTag'`
+   Cause : codex-plugin:0.0.1 (Central) sans ces symboles (ajoutés en SNAPSHOT local
+   sessions 138/159, jamais re-publés). llm-pool-contracts:0.0.1 sans `volumeTag`.
+   CI résout depuis Central → symboles manquants.
+   Fix : re-publication codex-plugin:0.0.2 + llm-pool-contracts:0.0.2 + 4 contracts
+   + migration codebase vers `platform(workspace-bom)`.
+
+== Migration BOM (source unique vérité)
+
+Décision utilisateur : workspace-bom pilote toutes les versions internes
+via `java-platform` constraints. Pas de `includeBuild` — pattern Maven
+classique (mavenLocal + Central).
+
+. workspace-bom 0.0.3 publié sur Central (avec constraints internes)
+. codex-plugin 0.0.2 publié sur Central (OcrEngine/TesseractOcrEngine)
+. llm-pool-contracts 0.0.2 publié sur Central (volumeTag)
+. 4 contracts 0.0.2 publiés (agent, codebase, opencode-session, i18n)
+. codebase-gradle migré : `implementation(platform(libs.workspace.bom))` +
+  deps sans version dans `libs.versions.toml`
+
+== Commits poussés (4)
+
+. `fix(ci): versionne gradle-wrapper.jar`
+. `fix(ci): retire org.gradle.java.home hardcodé`
+. `fix(ci): rend les credentials nmcp optionnels`
+. `feat(bom): migre codebase vers workspace-bom 0.0.3`
+
+== État CI
+
+CI actuelle échoue sur `Could not find workspace-bom:0.0.3` — artefacts
+en propagation Maven Central (15-30 min). Relancer après propagation :
+`gh run rerun 28181873046 --repo cccp-education/codebase-gradle --failed`
+
+== Leçons
+
+. Wrapper jar DOIT être versionné (convention workspace : 4 autres boroughs le font)
+. `org.gradle.java.home` ne doit jamais être hardcodé dans un fichier versionné
+. `nmcpSettings` ne doit pas `error()` au settings phase — fallback optionnel
+. Versions cross-borough doivent être publiées sur Central avant que les
+  consommateurs puissent compiler en CI (mavenLocal vide sur runner)
+. BOM = source unique de vérité — pattern retenu pour tout le workspace
+
+== Prochaine session (166)
+
+. Vérifier propagation Central (~30 min)
+. Relancer CI codebase-gradle
+. Si vert → vérifier OCR + Ingest Governance workflows
+. Planner-plugin (Manhattan) : borough dormant à structure cassée (catalog
+  libs.versions.toml inaccessible depuis sous-module). À traiter séparément.
