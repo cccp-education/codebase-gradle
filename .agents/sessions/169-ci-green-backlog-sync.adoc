@@ -1,0 +1,89 @@
+= Session 169 — CI-green confirmé + synchronisation backlog
+:date: 2026-06-26
+:borough: Queens — codebase-gradle (N1)
+:session_precedente: 168 — Fix 19 échecs JUnit5 CI full-tests
+
+== Contexte
+
+Codebase-gradle DORMANT. Déclencheur CI : valider que le push session 168
+a fait passer `full-tests` au vert (19 échecs résolus). Backlog à synchroniser
+avec la gouvernance (staleness détectée).
+
+== Actions
+
+=== 1. Validation CI run 28206228434
+
+Surveillance du run CI déclenché par le push session 168 (commit `a339d22`) :
+
+* `fast-tests` (PR Gate) : ✅ PASS en 2m31s
+* `full-tests` (Full Test Suite) : ✅ PASS en 33m50s
+  - Docker Ollama 0.20.2 démarré sur ports 11466-11467
+  - `qwen3:0.6b` pullé sur chaque instance
+  - `./gradlew testAll` : tous tests JUnit5 + Cucumber PASS
+* `publish` : skip (pas un tag `v*`)
+
+Première CI `full-tests` verte depuis les sessions 164-167.
+Les 19 fixes session 168 sont validés end-to-end en CI.
+
+Annotations non bloquantes :
+- `Node.js 20 deprecated` — actions@v4 ciblent Node 20, forcées sur Node 24
+- `Failed to save: tar exit code 2` — échec cache Ollama models (cosmétique)
+
+=== 2. Synchronisation backlog ↔ gouvernance
+
+Diagnostic staleness backlog (1038 lignes analysées) :
+
+* EPIC 1 : marqué STALE (6/8, 2 items `[~]`) → projet publié Central 0.0.4
+  → purgé : 8/8 TERMINÉ
+* EPIC CR : marqué "CADRÉ — 14 items" alors que 14/14 items `[x]` done
+  → corrigé : ✅ TERMINÉ
+* EPIC OCR : marqué "CADRÉ — Prêt à démarrer" alors que OCR-0→4 + OCR-2b + OCR-3b tous livrés
+  → corrigé : ✅ TERMINÉ
+
+Backlog réellement restant après purge :
+* EPIC V-FLYWAY (P2 conditionnel, seuil 5+ migrations, actuellement 4 : V1→V4)
+* Warnings CI Node.js 20 deprecated (actions@v4 → v5)
+
+=== 3. Fichiers gouvernance modifiés
+
+* `codebase-plugin/BACKLOG.adoc` :
+  - En-tête synthèse ajouté (tableau récapitulatif EPICs)
+  - EPIC 1 : 2 items stale `[~]` → `[x]` + statut ✅ TERMINÉ
+  - EPIC OCR : statut "CADRÉ" → ✅ TERMINÉ
+  - EPIC CR : statut "CADRÉ" → ✅ TERMINÉ
+  - Date mise à jour : 2026-05-19 → 2026-06-26
+
+* `.agents/INDEX.adoc` :
+  - Version : session 168 → 169 (CI-green confirmé)
+  - Session 169 ajoutée dans l'historique
+  - Tableau EPICs aligné : EPIC 1 ajouté, EPIC OCR corrigé, EPIC CR corrigé,
+    EPIC SP renommé (session-proTOCOL → SP), doublon EPIC Y supprimé
+
+* `codebase-plugin/PROMPT_REPRISE.adoc` :
+  - Session 169 → 170
+  - Déclencheur CI retiré (validé), ajout warning CI Node.js deprecated
+  - Backlog restant aligné (V-FLYWAY + warnings CI)
+
+== Commandes
+
+----
+gh run view 28206228434
+gh run view --job=83557437890   # fast-tests
+gh run view --job=83557752111   # full-tests
+./gradlew :codebase-plugin:compileKotlin --no-daemon
+----
+
+== Résultats
+
+* CI run 28206228434 : fast-tests ✅ + full-tests ✅
+* Build : `compileKotlin` UP-TO-DATE — BUILD SUCCESSFUL
+* Backlog synchronisé : 3 staleness corrigés, 1 EPIC légitime restant (V-FLYWAY)
+* Borough DORMANT CI-green
+
+== Leçons
+
+* La surveillance CI `full-tests` nécessite ~35 min (Docker Ollama + testAll)
+* Le backlog doit être audité à chaque fin de session pour détecter les
+  statuts stale (EPICs marqués CADRÉ mais déjà terminés)
+* Les annotations CI non bloquantes (Node.js deprecated, cache tar) ne doivent
+  pas être ignorées — elles deviendront bloquantes à terme

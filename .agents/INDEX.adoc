@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-06-26
-*Version* : 0.0.4 (Session 168 — Fix 19 échecs JUnit5 CI full-tests : TokenTracker COST_PER_MILLION (deepseek→gpt-oss/gemma4/qwen3), Locale.FRENCH DilutionExecutor+StimulusCascade (6 tests), MigrationTest attendus 2→4, KoogPlanningOrchestratorTest assertion étendue, TaskSchemaScannerTest attendus alignés (13 tasks, 4 collect/7 generate), 7 tests @integration légitimes (ExecGradleTool subprocess, PgVectorConfig reflection JDK24, LlmConfig gitignoré, paths hardcodés). test + testFast verts.)
+*Version* : 0.0.4 (Session 169 — CI-green confirmé : run 28206228434 fast-tests ✅ 2m31s + full-tests ✅ 33m50s. Backlog synchronisé : EPIC 1 stale purgé, EPIC OCR + CR stale corrigés. Backlog restant = EPIC V-FLYWAY uniquement (P2 conditionnel, seuil 5+ migrations, actuellement 4). Borough DORMANT CI-green.)
 
 == Regles Absolues
 
@@ -46,6 +46,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 166 — Fix 6 scénarios Cucumber CI `full-tests` rouge. (1) TaskResultVerifier reconnaît `DRY RUN` comme SUCCESS (+2 tests unitaires), (2) VibecodingGraph `executePlanTasks` ne marque plus tâches échouées comme exécutées + `checkProgressNode` utilise `drainAutofocusStack()` (préserve focusLevel), (3) 3 scénarios dépendants de l'environnement taggés `@integration` (pgvector stop, V-6 retry, US-9.10 EAGER). 12 tests JUnit5 préexistants rouges corrigés + Z-6 (4/4) + Z-7 (4/4) Cucumber verts. testFast vert.
 | ✅ | Session 167 — Fix CI `full-tests` V-6 runner `@integration` + suppression workflow `ingest-governance.yml` cassé. `EpicV6CucumberRunner` filtre `@epic_v_6 and not @integration` (scénario ligne 76 `epic_v_vibecoding.feature` lançait `./gradlew` depuis `/tmp` inexistant en CI → `MaxRetriesExhausted`). Workflow `ingest-governance.yml` supprimé (task `:codebase-plugin:ingestGovernance` inexistante, CodebasePlugin non self-applied — fichier orphelin session 160). Fast Tests ✅ local + CI. Full Test Suite CI run 28196553990 en cours validation.
 | ✅ | Session 168 — Fix 19 échecs JUnit5 CI `full-tests` (run 28197805505). 5 bugs corrigés : (1) `TokenTracker.kt` `COST_PER_MILLION` deepseek→gpt-oss/gemma4/qwen3, (2) `DilutionExecutor.kt`+`StimulusCascade.kt` `Locale.FRENCH` sur `DateTimeFormatter`+`String.format` (6 tests), (3) `MigrationTest` attendus 2→4 migrations (V1-V4), (4) `KoogPlanningOrchestratorTest` accepte `ContextBuildPartial`, (5) `TaskSchemaScannerTest` attendus alignés (13 tasks plugin, 4 collect/7 generate). 7 tests `@integration` légitimes exclus du task `test` via `excludeTags` : `ExecGradleToolTest` (subprocess Gradle conflit catalog), `VibecodingGraphTest.v6 retry` (idem), `PgVectorConfigTest.fromEnv` (reflection JDK24), `LlmConfigTest` (llm-config.yml gitignoré), `MultiChannelContextGraphTest`+`GovernanceContextLoaderTest` (paths hardcodés). `test` + `testFast` verts.
+| ✅ | Session 169 — CI-green confirmé + synchronisation backlog. Run CI 28206228434 : fast-tests ✅ 2m31s + full-tests ✅ 33m50s (19 fixes session 168 validés). Backlog synchronisé : EPIC 1 stale purgé (8/8 TERMINÉ), EPIC OCR stale corrigé (✅ TERMINÉ), EPIC CR stale corrigé (✅ TERMINÉ 14/14). Backlog restant = EPIC V-FLYWAY uniquement (P2 conditionnel, seuil 5+ migrations, actuellement 4). Borough DORMANT CI-green.
 
 === EPICs & Projects
 
@@ -62,13 +63,13 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | EPIC X | Decision Multi-Step | N1 | ✅ TERMINE | 101-105
 | EPIC Y | Agentic Literature Compiler | N1 | ✅ TERMINE | 088-097
 | EPIC Z | Autofocus | N1 | ✅ TERMINE | 106-108
-| EPIC OCR | OCR Assisté IA (Gemini Vision) | N1 | 4/4 pts | 117-120
+| EPIC OCR | OCR Assisté IA (Gemini Vision + Ollama qwen3-vl) | N1 | ✅ TERMINÉ (OCR-0→4 + OCR-2b + OCR-3b, sessions 103, 115-120, 159) | 103, 115-120, 159
 | EPIC PUB | Publication Maven Central | NX | ✅ TERMINÉ — codebase-plugin 0.0.3 Central (session 135), 0.0.4 Central + Plugin Portal (session 160) | 129, 134, 135, 160
 | EPIC V-LOCAL | Vibecoding local auto-alimenté par gouvernance textuelle | N1 | ✅ TERMINÉ (V-LOCAL-0→6 tous livrés) | 129-132
-| EPIC Y | Agentic Literature Compiler (gouvernance augmentée) | N1 | ✅ TERMINÉ — pont vers ingest local à câbler | 088-097
-| EPIC CR | Code Review Deep Analysis | N1 | ✅ TERMINÉ | 119-125
-| EPICsession-proTOCOL | opencode↔Gradle Thin Client | N1 | ✅ TERMINE (fallback governance ajouté session 131) | 112-114, 131
+| EPIC CR | Code Review Deep Analysis (14/14 items) | N1 | ✅ TERMINÉ | 119-125
+| EPIC SP | opencode↔Gradle Thin Client (SessionProtocol) | N1 | ✅ TERMINE (fallback governance ajouté session 131) | 112-114, 131
 | EPIC 8 | Expert Exposure via Ollama (manifest + reader cross-borough) | N1 | ✅ TERMINÉ (4/4 — ExpertManifestReader + round-trip + Cucumber cross-borough) | 127, 140
 | EPIC TRAD | TranslationService cross-borough (contrat N0 + impl N1) | N1 | ✅ TERMINÉ (baby-step, débloque bakery US-4) | 133
 | EPIC V-6-POOL | Adaptation Ollama Cloud Pool pour Vibecoding | N1 | ✅ TERMINÉ (4/4 items — AUTHORIZED_MODELS aligné sur AGENTS.adoc 2 modèles, LlmProviderResolver cycling, Cucumber epic_v6_pool) | 077, 158
+| EPIC 1 | Init gouvernance agent | NX | ✅ TERMINÉ (items stale purgés session 169) | 001
 |===

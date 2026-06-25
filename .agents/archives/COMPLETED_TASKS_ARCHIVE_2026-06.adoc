@@ -190,3 +190,17 @@
 ** `./gradlew :codebase-plugin:test` — validation test vert
 ** `./gradlew :codebase-plugin:testFast --offline` — validation testFast vert
 * **Statut** : ✅ Terminé — test + testFast verts, CI full-tests en attente validation push
+
+== Session 169 — CI-green confirmé + synchronisation backlog
+
+* **Type** : Validation CI + gouvernance
+* **Livrables** :
+** CI run 28206228434 : `fast-tests` ✅ 2m31s + `full-tests` ✅ 33m50s (première CI full-tests verte depuis sessions 164-167)
+** Backlog synchronisé : EPIC 1 stale purgé (8/8 TERMINÉ), EPIC OCR stale corrigé (✅ TERMINÉ), EPIC CR stale corrigé (✅ TERMINÉ)
+** INDEX.adoc : session 169 + tableau EPICs aligné (EPIC 1, OCR, CR, SP corrigés, doublon EPIC Y supprimé)
+** PROMPT_REPRISE.adoc : session 170, déclencheur CI retiré, backlog restant = V-FLYWAY + warnings CI
+** 5 fichiers gouvernance modifiés (BACKLOG, INDEX, PROMPT_REPRISE, SESSIONS_HISTORY, archive 169)
+* **Commandes clés** :
+** `gh run view 28206228434` — surveillance CI fast-tests + full-tests
+** `./gradlew :codebase-plugin:compileKotlin --no-daemon` — validation build
+* **Statut** : ✅ Terminé — Borough DORMANT CI-green

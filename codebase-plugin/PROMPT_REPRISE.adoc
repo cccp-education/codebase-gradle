@@ -1,24 +1,22 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 169
-:session: 169
+= Prompt de Reprise — Codebase (Queens N1) — Session 170
+:session: 170
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 168 — Fix 19 échecs JUnit5 CI full-tests (bugs TokenTracker locale FR, MigrationTest attendus, TaskSchemaScanner attendus, 7 tests @integration légitimes). test + testFast verts.
+:session_precedente: 169 — CI-green confirmé (run 28206228434 fast-tests ✅ + full-tests ✅ 33m50s). Backlog synchronisé : EPIC 1 stale purgé, EPIC OCR + CR stale corrigés. Borough DORMANT CI-green.
 
-== Mission Session 169
+== Mission Session 170
 
-Codebase-gradle est DORMANT. Aucun EPIC actif.
+Codebase-gradle est DORMANT CI-green. Aucun EPIC actif.
 
 Réveil sur déclencheur externe uniquement :
-. *CI GitHub Actions* — valider que le push session 168 a fait passer `full-tests`
-  au vert (19 échecs résolus). Si OK, borough officiellement dormant CI-green.
 . *Consommateur* — training-gradle (Newark) ou Edster SaaS MVP1 exprime un besoin
 . *V-FLYWAY* — si 5+ fichiers de migration de schéma (actuellement 4 : V1→V4)
 . *Bug critique* — régression signalée par un borough consommateur
+. *Dette technique CI* — warnings GitHub Actions Node.js 20 deprecated (actions@v4→v5)
 
 == Backlog Restant
 
-. EPIC 1 — 2 items stale (snapshot + commit initial) — à purger, projet publié Central
-. EPIC V-FLYWAY — P2 conditionnel, seuil 5+ migrations (actuellement 4)
-. EPIC 5 — migré vers training-gradle TRN-8 (plus dans le scope codebase)
+. EPIC V-FLYWAY — P2 conditionnel, seuil 5+ migrations (actuellement 4 : V1→V4)
+. Warnings CI — actions/checkout@v4, setup-java@v4, cache@v4, upload-artifact@v4 → upgrade v5 (Node.js 24)
 
 == Contexte Technique
 
@@ -26,7 +24,7 @@ Réveil sur déclencheur externe uniquement :
 * Maven Central : `education.cccp:codebase-plugin:0.0.4` publié
 * Kover : 100% coverage (55 classes métier)
 * Tests : 76 JUnit5 + 119 Cucumber PASS (testFast vert, 7 tests @integration exclus du task test)
-* CI : workflow `test.yml` — fast-tests (PR gate) + full-tests (Ollama Docker 11466-11467)
+* CI : workflow `test.yml` — fast-tests ✅ (PR gate) + full-tests ✅ (Ollama Docker 11466-11467)
 * Exception CI/CD : `qwen3:0.6b` + ports 11466-11467 pour tests d'intégration GitHub Actions uniquement
 
 == Méthodologie

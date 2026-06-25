@@ -2,6 +2,23 @@
 :toc: left
 :icons: font
 
+== Session 169 — 2026-06-26
+
+* **EPICs** : Aucun (validation CI + synchronisation backlog)
+* **Livrables** :
+** CI run 28206228434 validé : `fast-tests` ✅ 2m31s + `full-tests` ✅ 33m50s (19 fixes session 168 validés end-to-end)
+** Backlog synchronisé : EPIC 1 stale purgé (8/8 TERMINÉ), EPIC OCR stale corrigé (✅ TERMINÉ), EPIC CR stale corrigé (✅ TERMINÉ)
+** INDEX.adoc : session 169 ajoutée + tableau EPICs aligné (EPIC 1, OCR, CR, SP corrigés, doublon EPIC Y supprimé)
+** PROMPT_REPRISE.adoc : session 170, déclencheur CI retiré (validé), backlog restant = V-FLYWAY + warnings CI
+** Archive session 169 créée
+* **Tests** : Aucun test lancé (session de gouvernance uniquement)
+* **Build** : `compileKotlin` UP-TO-DATE — BUILD SUCCESSFUL
+* **Backlog restant** : EPIC V-FLYWAY (P2 conditionnel, seuil 5+ migrations, actuellement 4) + warnings CI Node.js 20 deprecated
+* **Leçons** :
+** Backlog doit être audité à chaque fin de session pour détecter statuts stale
+** CI `full-tests` nécessite ~35 min (Docker Ollama + testAll)
+** Annotations CI non bloquantes (Node.js deprecated) doivent être trackées
+
 == Session 168 — 2026-06-26
 
 * **EPICs** : Aucun (fix CI full-tests)

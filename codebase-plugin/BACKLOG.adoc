@@ -1,12 +1,25 @@
 = Backlog — Codebase Gradle
 :sectnums:
-:date: 2026-05-19
+:date: 2026-06-26
 
 _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux._
 
+== Synthèse Backlog (Session 169 — 2026-06-26)
+
+[cols="1,3,1,2"]
+|===
+| EPIC | Sujet | Statut | Remarque
+| EPIC 1 | Init gouvernance | ✅ TERMINÉ | Items stale purgés (projet publié Central 0.0.4)
+| EPIC V-FLYWAY | Migration Flyway | BACKLOG P2 | Seuil déclenchement : 5+ migrations (actuellement 4 : V1→V4)
+| Tous autres EPICs | V, W, X, Y, Z, K, L, OCR, CR, TRAD, PUB, V-LOCAL, SP, V-6, V-7, V-8, V-9, 2→12 | ✅ TERMINÉ | Voir détails ci-dessous
+|===
+
+*Backlog réellement restant* : EPIC V-FLYWAY uniquement (P2 conditionnel).
+*Borough DORMANT CI-green* depuis session 169 (run 28206228434 fast-tests + full-tests PASS).
+
 == EPIC 1 : Initialisation gouvernance agent codebase-gradle
 
-**Statut** : STALE (6/8 — items obsolètes, projet publié Maven Central 0.0.3)
+**Statut** : ✅ TERMINÉ (8/8 — items stale purgés session 169, projet publié Maven Central 0.0.4)
 **Priorite** : N/A — backlog historique
 
 * [x] Migrer .agents/ + fichiers gouvernance depuis quizz-benchmark-gradle
@@ -15,8 +28,8 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 * [x] Mettre a jour BACKLOG.adoc (ce fichier)
 * [x] Creer PROMPT_REPRISE.adoc pour session 1
 * [x] Mettre a jour AGENT_GOVERNANCE.adoc dans configuration/ (ajouter codebase au portefeuille)
-* [~] Snapshot vision-archive post-migration dans configuration/ — stale, projet publié Central
-* [~] Commit initial codebase-gradle — stale, projet publié Central 0.0.3
+* [x] Snapshot vision-archive post-migration — purgé (projet publié Central, non pertinent)
+* [x] Commit initial codebase-gradle — purgé (projet publié Central 0.0.4)
 
 == EPIC 2 : Expert Anonymisation LangChain4j — Prérequis Transverse
 **Statut** : MVP0 TERMINE (session 009)
@@ -547,7 +560,7 @@ et transforme la préconisation agentique en tâche Gradle."
 
 == EPIC OCR : OCR Assisté IA (Gemini Vision) via contrats Codex
 
-**Statut** : CADRÉ — Prêt à démarrer
+**Statut** : ✅ TERMINÉ (OCR-0→4 + OCR-2b + OCR-3b tous livrés sessions 103, 115-120, 159)
 **Priorité** : P0
 **Dépend de** : Codex N2 (contrats partagés `OcrResult`/`OcrConfig`/`OcrRequest`)
 **Origine** : Session 2026-05-30 — Discussion architecture OCR cross-borough
@@ -990,7 +1003,7 @@ _Pourquoi_ : Transformer la littérature agentique (AGENT.adoc, INDEX.adoc, BACK
 
 == EPIC CR — Code Review Deep Analysis (CODE_REVIEW_DEEP_ANALYSIS.adoc, 1535 lignes)
 
-**Statut** : CADRÉ — 14 items identifiés
+**Statut** : ✅ TERMINÉ (14/14 items — CR-1→CR-14 tous livrés sessions 119-125)
 **Priorité** : P0→P3
 **Source** : CODE_REVIEW_DEEP_ANALYSIS.adoc (score 4.0/5.0)
 
