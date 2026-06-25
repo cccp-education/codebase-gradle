@@ -267,3 +267,16 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** BOM = source unique de vérité versions cross-borough (pattern Maven standard)
 ** Versions cross-borough doivent être publiées sur Central avant que les consommateurs puissent compiler en CI
 ** Planner-plugin (Manhattan) : borough dormant à structure cassée (catalog inaccessible depuis sous-module). À traiter séparément.
+
+=== Session 167 — 2026-06-25
+* **EPICs** : Aucun (fix CI)
+* **Livrables** :
+** `EpicV6CucumberRunner.kt` : filtre `@epic_v_6` → `@epic_v_6 and not @integration` (1 ligne)
+** `.github/workflows/ingest-governance.yml` supprimé (workflow cassé depuis session 160, task inexistante)
+** Archive session 167 créée
+* **Tests** : cucumberTestEpicV6 vert (scénario @integration SKIPPED), testFast vert
+* **CI** : Fast Tests ✅ (2m5s), Full Test Suite run 28196553990 en cours validation
+* **Leçons** :
+** Tag `@integration` sur feature ne suffit pas — chaque runner dédié doit aussi exclure `@integration` dans `FILTER_TAGS_PROPERTY_NAME`
+** Workflow CI non testé localement avant commit = anti-pattern (ingest-governance.yml appelait task inexistante depuis session 160)
+** `gh run view --log --job=<id>` = outil debug CI le plus efficace (stack traces complètes)

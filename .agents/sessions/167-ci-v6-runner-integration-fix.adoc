@@ -1,0 +1,71 @@
+= Session 167 — Fix CI full-tests V-6 runner @integration + suppression workflow ingest-governance.yml cassé
+
+== Contexte
+
+Borough DORMANT. Mission session 167 : valider que le push session 166 fait passer
+`full-tests` au vert sur GitHub Actions. 6 scénarios Cucumber corrigés en session 166,
+mais la CI full-tests restait rouge.
+
+== Actions réalisées
+
+. Lecture PROMPT_REPRISE (codebase-plugin/PROMPT_REPRISE.adoc) + INDEX + BACKLOG + SESSION_PROCEDURE.
+. Inspection des runs GitHub Actions via `gh run list` / `gh run view`.
+. Dernier push session 166 (bfb6ab0) : Fast Tests ✅, Ingest Governance ❌, Full Test Suite ❌.
+. Analyse logs `gh run view --log` :
+  * `Ingest Governance` : `Cannot locate tasks that match ':codebase-plugin:ingestGovernance'`
+    (task inexistante car CodebasePlugin n'est pas self-applied sur :codebase-plugin).
+  * `Full Test Suite` : `EpicV6CucumberRunner > Erreur récupérable déclenche un retry avec LLM FAILED`
+    — `Cannot run program "./gradlew" (in directory "/tmp"): error=2, No such file or directory`.
+. Diagnostic root cause :
+  * Scénario ligne 76 `epic_v_vibecoding.feature` taggé `@epic_v_6 @integration` en session 166.
+  * `CucumberTestRunner` générique exclut `@integration` (filtre `not @wip and not @integration and not @epic_l_3`).
+  * `EpicV6CucumberRunner` (runner dédié) filtre `@epic_v_6` seul — sans exclure `@integration`.
+  * Le scénario s'exécute donc en CI via le runner dédié, tente de lancer `./gradlew` depuis `/tmp`
+    (inexistant en CI), et échoue avec `MaxRetriesExhausted`.
+. Baby-step TDD :
+  * `EpicV6CucumberRunner.kt` : filtre `@epic_v_6` → `@epic_v_6 and not @integration` (1 ligne).
+  * Suppression `.github/workflows/ingest-governance.yml` (workflow cassé depuis session 160,
+    appelle une task inexistante — fichier orphelin commité sans test).
+. Validation locale :
+  * `./gradlew :codebase-plugin:cucumberTestEpicV6 -x build` → BUILD SUCCESSFUL (scénario @integration SKIPPED).
+  * `./gradlew testFast -x build` → BUILD SUCCESSFUL (PR gate vert).
+  * `./gradlew :codebase-plugin:compileKotlin :codebase-plugin:jar` → BUILD SUCCESSFUL.
+. Commit `ddfe6a0` + push origin main.
+. CI post-push : Fast Tests ✅ (2m5s), Full Test Suite en cours (Run all tests).
+
+== Commandes exécutées
+
+----
+gh run list --repo cccp-education/codebase-gradle --limit 15
+gh run view --log --job=83519477623 --repo cccp-education/codebase-gradle
+gh run view --log-failed 28194942202 --repo cccp-education/codebase-gradle
+./gradlew :codebase-plugin:cucumberTestEpicV6 -x build
+./gradlew testFast -x build
+./gradlew :codebase-plugin:compileKotlin :codebase-plugin:jar
+git push origin main
+----
+
+== Résultats obtenus
+
+* `EpicV6CucumberRunner` corrigé — filtre `@epic_v_6 and not @integration`.
+* Workflow `ingest-governance.yml` supprimé (cassé depuis session 160, task inexistante).
+* Fast Tests (PR gate) ✅ local + CI.
+* Full Test Suite CI en cours (validation attendue ~13 min).
+
+== Leçons apprises
+
+* **Tag `@integration` sur feature ne suffit pas** : chaque runner dédié doit aussi exclure
+  `@integration` dans son filtre `FILTER_TAGS_PROPERTY_NAME`. Sinon le scénario s'exécute
+  via le runner dédié même s'il est exclu du runner générique.
+* **Workflow CI non testé localement avant commit** : le workflow `ingest-governance.yml`
+  (session 160) appelait une task inexistante — aurait dû être testé via
+  `./gradlew :codebase-plugin:ingestGovernance` avant commit.
+* `gh run view --log --job=<id>` est l'outil de debug CI le plus efficace — donne les
+  stack traces complètes avec contexte.
+
+== Next steps
+
+. Valider que Full Test Suite CI passe au vert (run 28196553990).
+. Si vert : borough officiellement DORMANT CI-green. PROMPT_REPRISE N+1 = surveillance.
+. Si rouge : analyser le nouveau failure et corriger.
+. Backlog reste vide d'EPIC actif — réveil sur déclencheur externe uniquement.

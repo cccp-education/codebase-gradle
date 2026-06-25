@@ -1,14 +1,15 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 167
-:session: 167
+= Prompt de Reprise — Codebase (Queens N1) — Session 168
+:session: 168
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 166 — Fix 6 scénarios Cucumber CI rouge (TaskResultVerifier DRY RUN, VibecodingGraph focusLevel/executedTasks, pgvector @integration). testFast vert. CI full-tests en attente de validation push.
+:session_precedente: 167 — Fix CI full-tests V-6 runner @integration + suppression workflow ingest-governance.yml cassé. Fast Tests ✅. Full Test Suite CI en cours validation.
 
-== Mission Session 167
+== Mission Session 168
 
 Codebase-gradle est DORMANT. Aucun EPIC actif.
 
 Réveil sur déclencheur externe uniquement :
-. *CI GitHub Actions* — valider que le push session 166 fait passer `full-tests` au vert (6 scénarios corrigés). Si OK, borough officiellement dormant CI-green.
+. *CI GitHub Actions* — valider que le push session 167 (ddfe6a0) a fait passer `full-tests`
+  au vert (run 28196553990). Si OK, borough officiellement dormant CI-green.
 . *Consommateur* — training-gradle (Newark) ou Edster SaaS MVP1 exprime un besoin
 . *V-FLYWAY* — si 5+ fichiers de migration de schéma (actuellement 4 : V1→V4)
 . *Bug critique* — régression signalée par un borough consommateur
@@ -24,9 +25,9 @@ Réveil sur déclencheur externe uniquement :
 * Version : `0.0.4` (bump session 160)
 * Maven Central : `education.cccp:codebase-plugin:0.0.4` publié
 * Kover : 100% coverage (55 classes métier)
-* Tests : 76 JUnit5 + 119 Cucumber PASS (testFast vert, 6 scénarios CI corrigés session 166)
+* Tests : 76 JUnit5 + 119 Cucumber PASS (testFast vert, 6 scénarios CI corrigés session 166, runner V-6 corrigé session 167)
 * CI : workflow `test.yml` — fast-tests (PR gate) + full-tests (Ollama Docker 11466-11467)
-* Exception CI/CD : `qwen3:0.6b` + ports 11466-11467 pour tests d'intégration CI uniquement
+* Exception CI/CD : `qwen3:0.6b` + ports 11466-11467 pour tests d'intégration GitHub Actions uniquement
 
 == Méthodologie
 

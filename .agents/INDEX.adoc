@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-06-25
-*Version* : 0.0.4 (Session 166 — Fix 6 scénarios Cucumber CI rouge. TaskResultVerifier DRY RUN, VibecodingGraph focusLevel/executedTasks, pgvector @integration. testFast vert. CI full-tests en attente validation push.)
+*Version* : 0.0.4 (Session 167 — Fix CI full-tests V-6 runner @integration + suppression workflow ingest-governance.yml cassé. EpicV6CucumberRunner filter @epic_v_6 and not @integration. Fast Tests ✅. Full Test Suite CI run 28196553990 en cours validation.)
 
 == Regles Absolues
 
@@ -44,6 +44,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 164 — Exception CI/CD Ollama documentée (ports 11466-11467 + qwen3:0.6b pour tests d'intégration GitHub Actions uniquement, hors plage rotation 11437-11465). Workflow test.yml enrichi (cache Docker + 2 instances Ollama + env vars OLLAMA_TEST_PORT/MODEL). Fix 2 bugs Cucumber préexistants : DuplicateStepDefinition Ocr1PoolSteps vs PoolSteps (step renommé "the Gemini key pool usage is reset"), assertion stale epic_v_pool.feature (5 modèles → 2). testFast vert.
 | ✅ | Session 165 — Debug CI/CD en cascade + migration BOM. 4 fixes : (1) gradle-wrapper.jar dé-gitignoré + versionné, (2) org.gradle.java.home retiré des gradle.properties (path SDKMAN inexistant CI), (3) nmcp credentials optionnels (fallback "" au lieu error()), (4) migration vers workspace-bom:0.0.3 (source unique vérité). codex-plugin:0.0.2 + llm-pool-contracts:0.0.2 + 4 contracts 0.0.2 re-publiés Central. CI en attente propagation Central.
 | ✅ | Session 166 — Fix 6 scénarios Cucumber CI `full-tests` rouge. (1) TaskResultVerifier reconnaît `DRY RUN` comme SUCCESS (+2 tests unitaires), (2) VibecodingGraph `executePlanTasks` ne marque plus tâches échouées comme exécutées + `checkProgressNode` utilise `drainAutofocusStack()` (préserve focusLevel), (3) 3 scénarios dépendants de l'environnement taggés `@integration` (pgvector stop, V-6 retry, US-9.10 EAGER). 12 tests JUnit5 préexistants rouges corrigés + Z-6 (4/4) + Z-7 (4/4) Cucumber verts. testFast vert.
+| ✅ | Session 167 — Fix CI `full-tests` V-6 runner `@integration` + suppression workflow `ingest-governance.yml` cassé. `EpicV6CucumberRunner` filtre `@epic_v_6 and not @integration` (scénario ligne 76 `epic_v_vibecoding.feature` lançait `./gradlew` depuis `/tmp` inexistant en CI → `MaxRetriesExhausted`). Workflow `ingest-governance.yml` supprimé (task `:codebase-plugin:ingestGovernance` inexistante, CodebasePlugin non self-applied — fichier orphelin session 160). Fast Tests ✅ local + CI. Full Test Suite CI run 28196553990 en cours validation.
 
 === EPICs & Projects
 
