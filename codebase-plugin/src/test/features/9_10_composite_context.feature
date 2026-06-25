@@ -6,6 +6,7 @@ Feature: US-9.10 — CompositeContextBuilder assembles EAGER + RAG + Graphify + 
   Background:
     Given a pgvector container is running
 
+  @integration
   Scenario: CompositeContext built with all 3 channels populated
     When I tokenize all dataset files into sentence-level chunks
     And I insert all documents with extracted metadata into the pgvector database

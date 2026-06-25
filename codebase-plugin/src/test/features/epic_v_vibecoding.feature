@@ -73,7 +73,7 @@ Feature: Pipeline Vibecoding — koog autonomous loop
     Then the LLM decides autonomously
     And the vibecoding tracking records at least 1 prompt token
 
-  @epic_v_6
+  @epic_v_6 @integration
   Scenario: Erreur récupérable déclenche un retry avec LLM
     Given a VibecodingGraph is initialized with fake LLM for error recovery
     And the fake LLM suggests the next response "retry with different approach"
