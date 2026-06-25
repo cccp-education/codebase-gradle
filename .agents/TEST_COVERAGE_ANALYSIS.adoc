@@ -106,3 +106,14 @@
 1. Migration vers Testcontainers 2.0 (meilleure isolation)
 2. Cypress/Playwright pour tests UI Swing (Javelit)
 3. Benchmark continuous (regression detection)
+
+== Session 164 — 2026-06-25
+
+* *Modifications tests* :
+** `OllamaInstanceScannerTest.kt` : test d'intégration porté 11434 (interdit) → port CI dédié 11466 via env var `OLLAMA_TEST_PORT`. `@EnabledIf("isOllamaReady")` préserve skip hors CI. KDoc corrigé.
+** `OllamaLlmProviderTest.kt` : 3 tests d'intégration portés 11437-11438 (plage rotation) → ports CI 11466-11467 via env vars. Modèle `gpt-oss:120b-cloud` → `qwen3:0.6b` via `OLLAMA_TEST_MODEL`. `assumeTrue(isOllamaReady(port))` préserve skip hors CI. Tests unitaires (cache, pool empty, connection refused) préservés avec ports plage rotation (mocks, pas réseau).
+** `Ocr1PoolSteps.kt` : step Cucumber renommé "the pool usage is reset" → "the Gemini key pool usage is reset" (fix DuplicateStepDefinitionException).
+** `ocr.feature` : step Gherkin aligné ligne 61.
+** `epic_v_pool.feature` : assertion "5 distinct authorized models" → "2 distinct authorized models" (alignement AGENTS.adoc).
+* *Résultats* : `testFast` BUILD SUCCESSFUL (324 tests, 0 failed). Compilation verte après chaque baby step.
+* *CI GitHub Actions* : workflow `test.yml` enrichi (job `full-tests`) — cache Docker + 2 instances Ollama 11466-11467 + pull `qwen3:0.6b` + env vars. Tests d'intégration CI prêts à s'exécuter sur runner GitHub Actions.

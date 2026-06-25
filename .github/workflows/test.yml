@@ -45,10 +45,70 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Cache Docker image ollama/ollama:0.20.2
+        id: docker-image-cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/ollama-image.tar
+          key: docker-ollama-0.20.2-v1
+
+      - name: Load Docker image from cache
+        if: steps.docker-image-cache.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/ollama-image.tar
+
+      - name: Pull Docker image if not cached
+        if: steps.docker-image-cache.outputs.cache-hit != 'true'
+        run: |
+          docker pull ollama/ollama:0.20.2
+          docker save ollama/ollama:0.20.2 -o /tmp/ollama-image.tar
+
+      - name: Cache Ollama models
+        id: ollama-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.ollama-ci-11466
+            ~/.ollama-ci-11467
+          key: ollama-models-qwen3-0.6b-v1
+
+      - name: Start Ollama instances on CI ports 11466-11467
+        run: |
+          mkdir -p ~/.ollama-ci-11466 ~/.ollama-ci-11467
+          for port in 11466 11467; do
+            docker run -d \
+              --name ollama-ci-$port \
+              --restart always \
+              -p $port:11434 \
+              -v ~/.ollama-ci-$port:/root/.ollama \
+              -e OLLAMA_HOST=0.0.0.0 \
+              ollama/ollama:0.20.2
+          done
+
+      - name: Wait for Ollama readiness
+        run: |
+          for port in 11466 11467; do
+            for i in $(seq 1 60); do
+              if curl -s http://localhost:$port/api/version >/dev/null 2>&1; then
+                echo "Ollama ready on port $port"
+                break
+              fi
+              sleep 1
+            done
+          done
+
+      - name: Pull lightweight model on each instance
+        if: steps.ollama-cache.outputs.cache-hit != 'true'
+        run: |
+          for port in 11466 11467; do
+            docker exec ollama-ci-$port ollama pull qwen3:0.6b
+          done
+
       - name: Run all tests
         run: ./gradlew testAll
         env:
           CI: "true"
+          OLLAMA_TEST_PORT: "11466"
+          OLLAMA_TEST_MODEL: "qwen3:0.6b"
 
       - name: Upload test reports
         if: always()

@@ -34,6 +34,12 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 * [x] TokenTracker.trackCompletion() wired in callLLMNode
 * [x] Fix VibecodingTaskTest audit JSONL assertion
 
+// == Session 164 — CI/CD + Bugfix Cucumber (borough dormant) ==
+// Exception CI/CD Ollama documentée (ports 11466-11467 + qwen3:0.6b pour tests
+// d'intégration GitHub Actions uniquement). Fix 2 bugs Cucumber préexistants :
+// DuplicateStepDefinition Ocr1PoolSteps vs PoolSteps, assertion stale epic_v_pool
+// (5 modèles → 2). testFast vert. Aucun EPIC actif — borough reste DORMANT.
+
 == EPIC V-8 — Resume Session + Dashboard CLI (Session 069)
 **Statut** : TERMINE (audité 2026-06-14 — 5/5 codés, backlog stale)
 **Priorite** : P0

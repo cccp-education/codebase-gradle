@@ -1,0 +1,146 @@
+= Session 164 — Exception CI/CD Ollama + Fix Cucumber préexistants
+:session: 164
+:date: 2026-06-25
+:type: CI/CD + Bugfix
+:score: 9/10
+
+== Objectif
+
+Documenter l'exception CI/CD pour les tests d'intégration GitHub Actions
+(modèle léger `qwen3:0.6b` sur ports dédiés 11466-11467, hors plage rotation
+11437-11465 et hors ports protégés 11434-11436). Corriger 2 bugs Cucumber
+préexistants qui bloquaient `testFast` (PR gate CI) depuis les sessions 158/159.
+
+== Contexte
+
+Travail hérité non commité post-session 163 (README architecture). La session
+163 avait livré la réorganisation README plugin/consommateur, mais un travail
+CI/CD parallèle (cache Docker Ollama + ports CI + adaptation tests d'intégration)
+était resté en working tree non commité.
+
+Conflit identifié : la règle AGENTS.adoc « Aucun autre modèle ni port »
+interdisait `qwen3:0.6b` et ports 11466-11467. Décision utilisateur : assouplir
+la règle pour la CI/CD uniquement (tests d'intégration GitHub Actions), jamais
+pour le vibecoding local/production.
+
+== Ce qui a été fait
+
+=== 1. Exception CI/CD documentée dans les gouvernances
+
+* `codebase-plugin/AGENT.adoc` : section « Exception CI/CD — Tests d'intégration
+  GitHub Actions » ajoutée sous « Instances Ollama — Ports réservés + Rotation ».
+  Ports CI dédiés 11466-11467, modèle CI léger `qwen3:0.6b`, activation via env
+  vars `OLLAMA_TEST_PORT`/`OLLAMA_TEST_MODEL`, convention défaut local.
+* `AGENTS.adoc` (racine workspace) : section équivalente déjà présente (vérifiée
+  alignée avec la version borough).
+
+=== 2. Workflow CI GitHub Actions
+
+`.github/workflows/test.yml` (job `full-tests`) :
+* Cache Docker image `ollama/ollama:0.20.2` via `actions/cache@v4`
+* Cache models Ollama (`~/.ollama-ci-11466`, `~/.ollama-ci-11467`)
+* 2 instances Ollama Docker sur ports 11466-11467 (hors plage rotation)
+* Wait readiness 60s × 2 ports
+* Pull `qwen3:0.6b` si pas en cache
+* Env vars `OLLAMA_TEST_PORT=11466` + `OLLAMA_TEST_MODEL=qwen3:0.6b` injectées
+  sur `./gradlew testAll`
+
+=== 3. Tests d'intégration portés vers ports CI
+
+* `OllamaInstanceScannerTest.kt` : `@EnabledIf("isOllamaReady")` + port CI dédié
+  via `System.getenv("OLLAMA_TEST_PORT") ?: "11466"`. KDoc mis à jour (mention
+  11434 interdit → port CI dédié).
+* `OllamaLlmProviderTest.kt` : `assumeTrue(isOllamaReady(port))` + port + modèle
+  CI via env vars (`ciPort`, `ciModel`). Tests d'intégration se skipent proprement
+  hors CI. Tests unitaires (cache, pool empty, connection refused) préservés avec
+  ports plage rotation (mocks, pas réseau).
+
+=== 4. Fix Cucumber préexistant — DuplicateStepDefinitionException
+
+*Bug* : `Ocr1PoolSteps.poolUsageReset()` (session 159) collide avec
+`PoolSteps.\`pool usage reset\`` car `EpicY4CucumberRunner` et
+`EpicVPoolCucumberRunner` gluent tout `codebase.scenarios` (incluant
+sous-package `ocr`).
+
+*Fix* : step renommé `the pool usage is reset` →
+`the Gemini key pool usage is reset` dans `Ocr1PoolSteps.kt` + `ocr.feature`
+ligne 61. Sémantiquement plus précis (reset GeminiKeyPool, pas OllamaPool).
+
+=== 5. Fix Cucumber préexistant — Assertion stale 5 modèles
+
+*Bug* : `epic_v_pool.feature` scénario "Pool full capacity" attendait
+"5 distinct authorized models" mais `AUTHORIZED_MODELS` ne contient que 2
+modèles depuis l'alignement AGENTS.adoc session 158 (`gpt-oss:120b-cloud` +
+`gemma4:31b-cloud`).
+
+*Fix* : feature mise à jour "5 modèles" → "2 modèles" + titre scénario aligné.
+
+== Commandes exécutées
+
+* `./gradlew :codebase-plugin:compileTestKotlin` — compilation verte après chaque
+  baby step (5 exécutions)
+* `./gradlew :codebase-plugin:testFast --console=plain` — BUILD SUCCESSFUL
+  (1m 10s) — PR gate CI verte
+* `./gradlew :codebase-plugin:cucumberTestEpicVPool :codebase-plugin:cucumberTestEpicY4` —
+  BUILD SUCCESSFUL (36s) — runners précédemment échoués
+* `git stash` + test sur commit précédent — confirmé bugs préexistants (non
+  introduits par cette session)
+* `git stash pop` — restauré working tree
+
+== Résultats
+
+* `testFast` (PR gate CI) : BUILD SUCCESSFUL — 324 tests, 0 failed
+* Compilation : verte après chaque modification
+* 7 fichiers modifiés : 118 insertions, 23 suppressions
+* Zéro régression (tests unitaires préservés, mocks inchangés)
+* Exception CI/CD tracée dans 2 gouvernances (borough + global)
+
+== Fichiers modifiés
+
+|===
+| Fichier | Changement
+
+| `codebase-plugin/AGENT.adoc`
+| Section « Exception CI/CD » ajoutée (+20 lignes)
+
+| `AGENTS.adoc` (racine workspace)
+| Section équivalente vérifiée alignée (déjà présente)
+
+| `.github/workflows/test.yml`
+| Cache Docker + 2 instances Ollama 11466-11467 + pull qwen3:0.6b + env vars (+60 lignes)
+
+| `codebase-plugin/src/test/kotlin/codebase/koog/llm/pool/OllamaInstanceScannerTest.kt`
+| Port CI dédié via env var + KDoc corrigé
+
+| `codebase-plugin/src/test/kotlin/codebase/koog/llm/pool/OllamaLlmProviderTest.kt`
+| Port + modèle CI via env vars + assumeTrue skip hors CI
+
+| `codebase-plugin/src/test/kotlin/codebase/scenarios/ocr/Ocr1PoolSteps.kt`
+| Step renommé "the pool usage is reset" → "the Gemini key pool usage is reset"
+
+| `codebase-plugin/src/test/features/ocr.feature`
+| Step Gherkin aligné ligne 61
+
+| `codebase-plugin/src/test/features/epic_v_pool.feature`
+| "5 modèles" → "2 modèles" + titre scénario aligné
+|===
+
+== Leçons
+
+. *Bug préexistant non détecté* : `testFast` échouait depuis la session 159
+  (DuplicateStepDefinition) mais n'avait pas été remarqué — la CI GitHub Actions
+  n'était pas active. Importance de valider `testFast` après chaque modification
+  de steps Cucumber.
+. *Assouplissement règle CI* : la contrainte AGENTS.adoc sur les modèles/ports
+  est légitime pour le vibecoding production, mais doit céder devant la réalité
+  d'un runner CI gratuit (RAM limitée, pas d'auth cloud). L'exception documentée
+  préserve la règle générale tout en rendant la CI fonctionnelle.
+. *Baby steps DDD/TDD/BDD* : 1 fichier à la fois, compilation entre chaque,
+  test ciblé sur les runners impactés avant `testFast` complet. Méthodologie
+  respectée.
+
+== Prochaines étapes
+
+* Valider la CI sur un push réel (job `full-tests` avec Ollama Docker)
+* Vérifier que le cache Docker image + models fonctionne (2e run CI)
+* Borough reste DORMANT après cette session — aucun EPIC actif

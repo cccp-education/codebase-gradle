@@ -1,9 +1,9 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 164
-:session: 164
+= Prompt de Reprise — Codebase (Queens N1) — Session 165
+:session: 165
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 163 — Architecture README Plugin + Consommateur. Déplacement README.plugin → codebase-plugin/, README.consommateurs → racine. Liens i18n recréés (10 langues).
+:session_precedente: 164 — Exception CI/CD Ollama documentée (ports 11466-11467 + qwen3:0.6b pour tests d'intégration CI). Fix 2 bugs Cucumber préexistants (DuplicateStepDefinition Ocr1PoolSteps, assertion stale 5 modèles epic_v_pool). testFast vert.
 
-== Mission Session 164
+== Mission Session 165
 
 Codebase-gradle est DORMANT. Aucun EPIC actif.
 
@@ -11,6 +11,8 @@ Réveil sur déclencheur externe uniquement :
 . *Consommateur* — training-gradle (Newark) ou Edster SaaS MVP1 exprime un besoin
 . *V-FLYWAY* — si 5+ fichiers de migration de schéma (actuellement 4 : V1→V4)
 . *Bug critique* — régression signalée par un borough consommateur
+. *CI GitHub Actions* — valider le workflow `full-tests` sur un push réel
+  (cache Docker + Ollama 11466-11467 + qwen3:0.6b)
 
 == Backlog Restant
 
@@ -23,8 +25,9 @@ Réveil sur déclencheur externe uniquement :
 * Version : `0.0.4` (bump session 160)
 * Maven Central : `education.cccp:codebase-plugin:0.0.4` publié
 * Kover : 100% coverage (55 classes métier)
-* Tests : 74 JUnit5 + 119 Cucumber PASS
-* README i18n : architecture plugin + consommateur (session 163)
+* Tests : 74 JUnit5 + 119 Cucumber PASS (testFast vert)
+* CI : workflow `test.yml` — fast-tests (PR gate) + full-tests (Ollama Docker 11466-11467)
+* Exception CI/CD : `qwen3:0.6b` + ports 11466-11467 pour tests d'intégration CI uniquement
 
 == Méthodologie
 
@@ -35,3 +38,4 @@ Baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber. Un fichier modifié
 
 Ports 11434-11436 INTERDITS. Ports 11437-11465 autorisés (rotation).
 Modèles autorisés : `gpt-oss:120b-cloud`, `gemma4:31b-cloud`.
+Exception CI/CD : ports 11466-11467 + `qwen3:0.6b` (tests d'intégration GitHub Actions uniquement).

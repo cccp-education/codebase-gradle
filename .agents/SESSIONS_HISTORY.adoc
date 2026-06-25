@@ -205,3 +205,23 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** Double source de vérité (.agents/BACKLOG + codebase-plugin/BACKLOG) = risque de divergence — résolu par alignement
 ** L'EPIC V-9 recentré de 35 items (cadrage) à 20 items effectifs (anti-duplication avec EPIC Y)
 ** Méthodologie baby-step DDD/TDD/BDD a porté 20 items sur 73 sessions sans régression
+
+== Session 164 — 2026-06-25
+
+* **EPICs** : Aucun (borough dormant) — CI/CD + bugfix Cucumber préexistants
+* **Livrables** :
+** Exception CI/CD Ollama documentée dans `codebase-plugin/AGENT.adoc` + `AGENTS.adoc` racine (ports 11466-11467 + `qwen3:0.6b` pour tests d'intégration GitHub Actions uniquement)
+** Workflow `.github/workflows/test.yml` enrichi : cache Docker `ollama/ollama:0.20.2` + cache models + 2 instances Ollama ports 11466-11467 + pull `qwen3:0.6b` + env vars `OLLAMA_TEST_PORT`/`OLLAMA_TEST_MODEL`
+** `OllamaInstanceScannerTest.kt` + `OllamaLlmProviderTest.kt` : tests d'intégration portés vers ports CI dédiés via env vars, `assumeTrue`/`@EnabledIf` préserve skip hors CI
+** Fix `DuplicateStepDefinitionException` : `Ocr1PoolSteps.poolUsageReset()` renommé `geminiKeyPoolUsageReset()` + `ocr.feature` step aligné ("the Gemini key pool usage is reset")
+** Fix assertion stale `epic_v_pool.feature` : "5 distinct authorized models" → "2 distinct authorized models" (alignement AGENTS.adoc session 158)
+** Archive session 164 créée (`.agents/sessions/164-ci-ollama-exception-cucumber-fix.adoc`)
+* **Résultats** :
+** `testFast` (PR gate CI) BUILD SUCCESSFUL — 324 tests, 0 failed
+** Compilation verte après chaque baby step (5 vérifications)
+** 7 fichiers modifiés : 118 insertions, 23 suppressions
+** Bugs préexistants confirmés via `git stash` (non introduits par la session)
+* **Leçons** :
+** `testFast` échouait depuis session 159 (DuplicateStepDefinition) sans être remarqué — la CI GitHub Actions n'était pas active. Importance de valider `testFast` après chaque modification de steps Cucumber.
+** Contrainte AGENTS.adoc modèles/ports légitime pour vibecoding production, doit céder devant réalité runner CI gratuit (RAM limitée, pas d'auth cloud). Exception documentée préserve la règle générale.
+** Baby steps DDD/TDD/BDD : 1 fichier à la fois, compilation entre chaque, test ciblé sur runners impactés avant `testFast` complet.

@@ -43,8 +43,8 @@ class Ocr1PoolSteps {
         pool!!.markRateLimited(inst)
     }
 
-    @When("the pool usage is reset")
-    fun poolUsageReset() {
+    @When("the Gemini key pool usage is reset")
+    fun geminiKeyPoolUsageReset() {
         pool!!.resetUsage()
     }
 

@@ -122,3 +122,22 @@
 ** `./gradlew :codebase-plugin:cucumberTestEpicV920`
 ** `./gradlew :codebase-plugin:jar`
 * **Statut** : ✅ Terminé
+
+== Session 164 — 2026-06-25 — Exception CI/CD Ollama + Fix Cucumber préexistants
+
+* **EPICs** : Aucun (borough dormant) — CI/CD + bugfix
+* **Type** : CI/CD + Bugfix Cucumber
+* **Livrables** :
+** Exception CI/CD Ollama documentée dans `codebase-plugin/AGENT.adoc` + `AGENTS.adoc` racine (ports 11466-11467 + `qwen3:0.6b` pour tests d'intégration GitHub Actions uniquement, hors plage rotation 11437-11465, hors ports protégés 11434-11436)
+** Workflow `.github/workflows/test.yml` enrichi : cache Docker `ollama/ollama:0.20.2` + cache models + 2 instances Ollama ports 11466-11467 + pull `qwen3:0.6b` + env vars `OLLAMA_TEST_PORT`/`OLLAMA_TEST_MODEL`
+** `OllamaInstanceScannerTest.kt` : test d'intégration porté 11434 (interdit) → port CI dédié 11466 via env var. `@EnabledIf` préserve skip hors CI.
+** `OllamaLlmProviderTest.kt` : 3 tests d'intégration portés 11437-11438 (plage rotation) → ports CI 11466-11467 + modèle `qwen3:0.6b` via env vars. `assumeTrue` préserve skip hors CI.
+** Fix `DuplicateStepDefinitionException` : `Ocr1PoolSteps.poolUsageReset()` → `geminiKeyPoolUsageReset()` + `ocr.feature` step aligné
+** Fix assertion stale `epic_v_pool.feature` : "5 modèles" → "2 modèles" (alignement AGENTS.adoc session 158)
+** Archive session 164 créée (`.agents/sessions/164-ci-ollama-exception-cucumber-fix.adoc`)
+* **Commandes clés** :
+** `./gradlew :codebase-plugin:compileTestKotlin` (5 vérifications baby step)
+** `./gradlew :codebase-plugin:cucumberTestEpicVPool :codebase-plugin:cucumberTestEpicY4` — runners précédemment échoués
+** `./gradlew :codebase-plugin:testFast --console=plain` — BUILD SUCCESSFUL (1m 10s)
+** `git stash` + test sur commit précédent — confirmé bugs préexistants
+* **Statut** : ✅ Terminé — `testFast` vert, CI GitHub Actions prête

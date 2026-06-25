@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
  *
  * - fake HTTP : ports up/down mixtes
  * - fallback env var `OLLAMA_POOL_PORTS` prioritaire sur le scan
- * - intégration conditionnelle : ne s'exécute que si Ollama est prêt sur 11434
+ * - intégration conditionnelle : ne s'exécute que si Ollama est prêt sur le port CI dédié
  */
 class OllamaInstanceScannerTest {
 
@@ -82,24 +82,27 @@ class OllamaInstanceScannerTest {
 
     @EnabledIf("isOllamaReady")
     @Test
-    fun `scan integration probes real Ollama on localhost 11434`() {
-        val scanner = OllamaInstanceScanner(HttpInstanceScanner(), portRange = 11434..11434)
+    fun `scan integration probes real Ollama on CI port`() {
+        val ciPort = (System.getenv("OLLAMA_TEST_PORT") ?: "11466").toInt()
+        val scanner = OllamaInstanceScanner(HttpInstanceScanner(), portRange = ciPort..ciPort)
 
         val instances = runBlocking { scanner.scan() }
 
-        assertTrue(instances.isNotEmpty(), "Expected at least one live Ollama instance on 11434")
-        assertEquals("http://localhost:11434", instances.first().baseUrl)
+        assertTrue(instances.isNotEmpty(), "Expected at least one live Ollama instance on port $ciPort")
+        assertEquals("http://localhost:$ciPort", instances.first().baseUrl)
     }
 
     /**
-     * Vérifie si Ollama répond sur le port 11434 (port de test standard).
+     * Vérifie si Ollama répond sur le port CI dédié (11466 — hors plage de rotation 11437-11465,
+     * hors ports protégés 11434-11436). Exclusif aux tests d'intégration CI.
      * Utilisé par [EnabledIf] pour skipper le test d'intégration quand
      * aucune instance n'est disponible.
      */
     @Suppress("unused")
     fun isOllamaReady(): Boolean {
+        val ciPort = (System.getenv("OLLAMA_TEST_PORT") ?: "11466").toInt()
         return try {
-            java.net.URI.create("http://localhost:11434/api/tags").toURL().openStream().use { it.read() > 0 }
+            java.net.URI.create("http://localhost:$ciPort/api/tags").toURL().openStream().use { it.read() > 0 }
         } catch (_: Exception) {
             false
         }

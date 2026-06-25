@@ -14,6 +14,18 @@ class OllamaLlmProviderTest {
 
     private val defaultQuota = QuotaConfig(limitValue = 100, thresholdPercent = 80, resetPolicy = ResetPolicy.NEVER)
 
+    /**
+     * Port dédié CI (11466) — hors plage de rotation (11437-11465) et hors ports protégés (11434-11436).
+     * Exclusif aux tests d'intégration CI, jamais utilisé pour le vibecoding.
+     */
+    private val ciPort = (System.getenv("OLLAMA_TEST_PORT") ?: "11466").toInt()
+
+    /**
+     * Modèle local léger pour tests CI — pull du manifest seul, inférence sur le runner.
+     * Défaut qwen3:0.6b (~400MB), suffisamment petit pour tenir en RAM GitHub Action.
+     */
+    private val ciModel = System.getenv("OLLAMA_TEST_MODEL") ?: "qwen3:0.6b"
+
     /** Test si Ollama tourne sur ce port avec au moins 1 modèle pullé */
     private fun isOllamaReady(port: Int): Boolean {
         return try {
@@ -38,10 +50,10 @@ class OllamaLlmProviderTest {
 
     @Test
     fun `OllamaLlmProvider should build OllamaChatModel lazily on first call`() {
-        val instance = LlmInstance("a", "http://localhost:11437", "gpt-oss:120b-cloud", quota = defaultQuota)
+        val instance = LlmInstance("a", "http://localhost:$ciPort", ciModel, quota = defaultQuota)
         val pool = OllamaPool(listOf(instance))
 
-        assumeTrue(isOllamaReady(11437), "Ollama not ready on port 11437 — skipping integration test")
+        assumeTrue(isOllamaReady(ciPort), "Ollama not ready on port $ciPort — skipping integration test")
 
         val provider = OllamaLlmProvider(pool)
         // Appel réel — peut échouer si le modèle n'est pas pullé, mais ne doit pas planter
@@ -56,16 +68,16 @@ class OllamaLlmProviderTest {
 
     @Test
     fun `OllamaLlmProvider should rotate through pool instances on ModelNotFoundException`() {
-        val instances = (11437..11438).map { port ->
-            LlmInstance("ollama-$port", "http://localhost:$port", "gpt-oss:120b-cloud", quota = defaultQuota)
+        val instances = listOf(ciPort, ciPort + 1).map { port ->
+            LlmInstance("ollama-$port", "http://localhost:$port", ciModel, quota = defaultQuota)
         }
         val pool = OllamaPool(instances, rotationStrategy = RotationStrategy.ROUND_ROBIN)
 
-        assumeTrue(isOllamaReady(11437), "Ollama not ready on port 11437 — skipping integration test")
+        assumeTrue(isOllamaReady(ciPort), "Ollama not ready on port $ciPort — skipping integration test")
 
         val provider = OllamaLlmProvider(pool)
-        // Premier appel → instance a (11437)
-        val usageBeforeA = pool.instances().first { it.id == "ollama-11437" }.let { pool.isQuotaExceeded(it) }
+        // Premier appel → instance a (ciPort)
+        val usageBeforeA = pool.instances().first { it.id == "ollama-$ciPort" }.let { pool.isQuotaExceeded(it) }
 
         try {
             kotlinx.coroutines.runBlocking { provider.call("One word") }
@@ -76,7 +88,7 @@ class OllamaLlmProviderTest {
         }
 
         // Vérifie que l'instance a a bien été utilisée (usage incrémenté)
-        val firstAfterCall = pool.instances().first { it.id == "ollama-11437" }
+        val firstAfterCall = pool.instances().first { it.id == "ollama-$ciPort" }
         assertTrue(
             pool.isQuotaExceeded(firstAfterCall.copy(quota = QuotaConfig(limitValue = 1, thresholdPercent = 50, resetPolicy = ResetPolicy.NEVER))) || !usageBeforeA,
             "Pool should increment usage count even on ModelNotFoundException"
@@ -124,17 +136,17 @@ class OllamaLlmProviderTest {
     @Test
     fun `OllamaLlmProvider should rotate on quota exceeded using adapter`() {
         val instanceA = LlmInstance(
-            "a", "http://localhost:11437", "gpt-oss:120b-cloud",
+            "a", "http://localhost:$ciPort", ciModel,
             quota = QuotaConfig(limitValue = 1, thresholdPercent = 50, resetPolicy = ResetPolicy.NEVER)
         )
         val instanceB = LlmInstance(
-            "b", "http://localhost:11438", "gpt-oss:120b-cloud",
+            "b", "http://localhost:${ciPort + 1}", ciModel,
             quota = QuotaConfig(limitValue = 100, thresholdPercent = 80, resetPolicy = ResetPolicy.NEVER)
         )
         val pool = OllamaPool(listOf(instanceA, instanceB), rotationStrategy = RotationStrategy.ROUND_ROBIN)
         val provider = OllamaLlmProvider(pool)
 
-        assumeTrue(isOllamaReady(11438), "Ollama not ready on port 11438 — skipping integration test")
+        assumeTrue(isOllamaReady(ciPort + 1), "Ollama not ready on port ${ciPort + 1} — skipping integration test")
 
         // L'instance A est déjà en quota dépassé (limite 1, seuil 50% → usage 0 suffit)
         // Le provider doit donc sauter A et appeler B

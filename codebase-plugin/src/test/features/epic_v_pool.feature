@@ -37,8 +37,8 @@ Feature: Pool Ollama GPT-OSS-120B — rotation, quota, failover
     And rotation starts again from the first instance
 
   @models
-  Scenario: Pool full capacity — 29 ports, 5 modèles autorisés
+  Scenario: Pool full capacity — 29 ports, 2 modèles autorisés
     Given the Ollama pool is initialized with full 29-port configuration
     Then the pool has exactly 29 instances
     And the pool covers all ports from 11437 to 11465
-    And the pool uses exactly 5 distinct authorized models
+    And the pool uses exactly 2 distinct authorized models

@@ -56,6 +56,26 @@ Ce projet vit dans `foundry/codebase-gradle/` → *cercle 4 (public, Apache 2.0)
 * Aucun autre modele ni port ne doit etre utilise dans le code, les tests, ou l'execution
 * Si un modele manque en local : `ollama pull <modele>` avant utilisation (pull du manifest seul, inférence cloud)
 
+==== Exception CI/CD — Tests d'integration GitHub Actions
+
+*Portée* : `tests d'intégration CI/CD uniquement` (job `full-tests` du workflow
+`.github/workflows/test.yml`). *Jamais* le vibecoding local/production, *jamais*
+les tests unitaires/fonctionnels/Cucumber sans appel réseau réel.
+
+* *Ports CI dédiés* : 11466-11467 — hors plage de rotation (11437-11465) et hors
+  ports protégés (11434-11436). Exclusifs au runner GitHub Actions (ubuntu-latest).
+* *Modèle CI léger* : `qwen3:0.6b` (~400 MB, inférence locale sur runner CI RAM-limitée).
+  Les modèles cloud autorisés (`gpt-oss:120b-cloud`, `gemma4:31b-cloud`) nécessitent
+  un abonnement Ollama Pro actif + auth, et 31B+ params — incompatibles avec un
+  runner CI gratuit.
+* *Activation* : variables d'environnement `OLLAMA_TEST_PORT=11466` et
+  `OLLAMA_TEST_MODEL=qwen3:0.6b` injectées par le workflow CI. Les tests
+  d'intégration utilisent `assumeTrue(isOllamaReady(port))` pour se skipper
+  proprement hors CI.
+* *Convention* : tout test d'intégration CI doit lire ces env vars avec un défaut
+  local (`?: "11466"` / `?: "qwen3:0.6b"`) — jamais de port/modèle hardcodé
+  dans la plage rotation.
+
 === Regle d'or
 
 Mieux vaut 5 sessions de 20 minutes qu'une session de 2 heures avec debugging chaos.

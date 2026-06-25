@@ -58,7 +58,7 @@ Feature: OCR — Extraction de texte assistée IA
   Scenario: Gemini key pool reset clears rate-limited markers
     Given a Gemini key pool with 2 keys "key-A,key-B"
     When key "key-A" receives HTTP 429
-    And the pool usage is reset
+    And the Gemini key pool usage is reset
     Then the pool does not mark "key-A" as rate-limited
     And the next available key is "key-A"
 

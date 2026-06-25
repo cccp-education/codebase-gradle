@@ -3,8 +3,8 @@
 :icons: font
 
 *Date de creation* : 2026-06-16
-*Derniere mise a jour* : 2026-06-24
-*Version* : 0.0.4 (Session 163 — Architecture README Plugin + Consommateur. Déplacement README.plugin → codebase-plugin/, README.consommateurs → racine. Liens i18n recréés. Borough dormant.)
+*Derniere mise a jour* : 2026-06-25
+*Version* : 0.0.4 (Session 164 — Exception CI/CD Ollama documentée + fix 2 bugs Cucumber préexistants. testFast vert. Borough dormant.)
 
 == Regles Absolues
 
@@ -41,6 +41,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 160 — Backlog & Roadmap cleanup : 4 fichiers gouvernance mis à jour (BACKLOG/INDEX/ROADMAP), tous EPICs marqués TERMINÉ, version bump 0.0.3→0.0.4, Maven Central 0.0.4 publié (deployment f4a91bf6), Plugin Portal soumis. Borough DORMANT.
 | ✅ | Session 162 — README i18n 10 langues (consumer + plugin) : 20 fichiers créés (README.consommateurs/ + README.plugin/), badges Maven Central/Portal/CI/License, markers version 0.0.4/build/tests/coverage ≥80%, switcher i18n 10 langues, AR/UR RTL. Coordination des 9 autres boroughs (200 fichiers au total). Borough DORMANT.
 | ✅ | Session 163 — Architecture README Plugin + Consommateur : README.plugin/ déplacé vers codebase-plugin/ (master EN à racine plugin), README.consommateurs/README.md remonté racine borough, liens i18n recréés (10 langues × 2 audiences = 20 fichiers).
+| ✅ | Session 164 — Exception CI/CD Ollama documentée (ports 11466-11467 + qwen3:0.6b pour tests d'intégration GitHub Actions uniquement, hors plage rotation 11437-11465). Workflow test.yml enrichi (cache Docker + 2 instances Ollama + env vars OLLAMA_TEST_PORT/MODEL). Fix 2 bugs Cucumber préexistants : DuplicateStepDefinition Ocr1PoolSteps vs PoolSteps (step renommé "the Gemini key pool usage is reset"), assertion stale epic_v_pool.feature (5 modèles → 2). testFast vert.
 
 === EPICs & Projects
 
