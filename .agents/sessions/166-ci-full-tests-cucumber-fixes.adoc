@@ -36,7 +36,7 @@ Analyse des logs CI (job 83475092079) — 6 scénarios FAILED :
 
 === Fix #2 : checkProgressNode + executePlanTasks préservent focusLevel
 
-Deux bugs distincts dans `VibecodingGraph.kt` :
+Trois bugs distincts dans `VibecodingGraph.kt` :
 
 . **`executePlanTasks` catch (ligne 600)** : marquait `executedTasks + task.description`
   même pour les tâches échouées → `checkProgressNode` croyait le plan terminé.
@@ -44,7 +44,13 @@ Deux bugs distincts dans `VibecodingGraph.kt` :
 
 . **`checkProgressNode` (ligne 627/632)** : appelait `popFocusNode(state).finish()`
   qui dépillait l'autofocus et remettait `focusLevel` à null.
-  Fix : `state.finish()` sans `popFocusNode`.
+  Fix : remplacement par `drainAutofocusStack()` (vide la stack sans modifier
+  `focusLevel`) uniquement quand `allTasks.isNotEmpty()`. Le cas "no work remaining"
+  ne dépile plus (préserve le focus pour les tests sans plan).
+
+. **`drainAutofocusStack()`** : nouvelle méthode qui vide la stack sans modifier
+  `state.focusLevel`. Le pop du focus level reste géré par `popFocusNode` dans
+  le bloc retry (ligne 294) après un retry LLM réussi.
 
 * **Test unitaire rouge** : `Z-6 error recovery sets focusLevel to IMPLEMENTATION`
   ajouté à `VibecodingGraphAutofocusTest`
@@ -60,10 +66,10 @@ Deux bugs distincts dans `VibecodingGraph.kt` :
   Le filtre `CucumberTestRunner` (`not @integration`) l'exclut du run.
 * **Rationale** : Ce scénario teste Testcontainers, pas du code codebase.
 
-== Fichiers modifiés (5 fichiers, +53/-3 lignes)
+== Fichiers modifiés (5 fichiers, +60/-3 lignes)
 
 . `codebase-plugin/src/main/kotlin/codebase/koog/planning/TaskResultVerifier.kt` (+4)
-. `codebase-plugin/src/main/kotlin/codebase/koog/VibecodingGraph.kt` (-3, -2)
+. `codebase-plugin/src/main/kotlin/codebase/koog/VibecodingGraph.kt` (-3, +5 drainAutofocusStack)
 . `codebase-plugin/src/test/features/9_1_pgvector_container.feature` (+1)
 . `codebase-plugin/src/test/kotlin/codebase/koog/planning/TaskResultVerifierTest.kt` (+12)
 . `codebase-plugin/src/test/kotlin/codebase/koog/autofocus/VibecodingGraphAutofocusTest.kt` (+34)

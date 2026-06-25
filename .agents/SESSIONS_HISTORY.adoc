@@ -7,9 +7,9 @@
 * **EPICs** : EPIC CI/CD (déclencheur 4 — valider workflow full-tests)
 * **Livrables** :
 ** Fix #1 : `TaskResultVerifier` reconnaît `DRY RUN` comme `SUCCESS` (+2 tests unitaires JUnit5)
-** Fix #2 : `VibecodingGraph.executePlanTasks` ne marque plus tâches échouées comme exécutées + `checkProgressNode` ne dépile plus autofocus (préserve `focusLevel`)
+** Fix #2 : `VibecodingGraph.executePlanTasks` ne marque plus tâches échouées comme exécutées + `checkProgressNode` utilise `drainAutofocusStack()` (vide la stack sans écraser `focusLevel`) + cas "no work remaining" ne dépile plus
 ** Fix #3 : Scénario pgvector container stop taggé `@integration` (exclu du run CI)
-** 5 fichiers modifiés (+53/-3 lignes) : TaskResultVerifier.kt, VibecodingGraph.kt, 9_1_pgvector_container.feature, TaskResultVerifierTest.kt, VibecodingGraphAutofocusTest.kt
+** 5 fichiers modifiés (+60/-3 lignes) : TaskResultVerifier.kt, VibecodingGraph.kt, 9_1_pgvector_container.feature, TaskResultVerifierTest.kt, VibecodingGraphAutofocusTest.kt
 * **Résultats** :
 ** 12 tests JUnit5 préexistants rouges corrigés (VibecodingGraphAutofocusTest)
 ** 4/4 Cucumber Z-6 verts, 16/16 TaskResultVerifierTest verts

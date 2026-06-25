@@ -165,9 +165,9 @@
 * **Type** : Bug fix CI/CD (déclencheur 4 — valider workflow full-tests)
 * **Livrables** :
 ** Fix #1 : `TaskResultVerifier` reconnaît `DRY RUN` comme `SUCCESS` (+2 tests JUnit5)
-** Fix #2 : `VibecodingGraph.executePlanTasks` ne marque plus tâches échouées comme exécutées + `checkProgressNode` ne dépile plus autofocus
+** Fix #2 : `VibecodingGraph.executePlanTasks` ne marque plus tâches échouées comme exécutées + `checkProgressNode` utilise `drainAutofocusStack()` (vide stack sans écraser focusLevel)
 ** Fix #3 : Scénario pgvector container stop taggé `@integration` (exclu du run CI)
-** 5 fichiers modifiés (+53/-3 lignes)
+** 5 fichiers modifiés (+60/-3 lignes)
 * **Commandes clés** :
 ** `gh run watch 28182155692` — suivi run CI
 ** `gh run view --job=83475092079 --log` — analyse logs Cucumber FAILED

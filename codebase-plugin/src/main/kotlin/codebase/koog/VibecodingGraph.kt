@@ -618,11 +618,12 @@ class VibecodingGraph(
         if (state.iteration >= state.maxActions) return state.finish()
         if (state.finished) return state
 
-        // Vérifie si toutes les tâches du plan sont exécutées
+        // Vérifie si toutes les tâches du plan sont exécutées (sans erreur en cours)
         val allTasks = state.plan?.epics?.flatMap { epic ->
             epic.userStories.flatMap { story -> story.tasks }
         } ?: emptyList()
         if (allTasks.isNotEmpty() && state.executedTasks.size >= allTasks.size && state.iteration > 0) {
+            drainAutofocusStack()
             return state.finish()
         }
 
@@ -631,6 +632,12 @@ class VibecodingGraph(
         if (noWorkRemaining && state.iteration > 0) return state.finish()
 
         return state
+    }
+
+    private fun drainAutofocusStack() {
+        while (!autofocusStack.isEmpty()) {
+            autofocusStack.pop()
+        }
     }
 
     // ── Z-5 Autofocus helpers ──
