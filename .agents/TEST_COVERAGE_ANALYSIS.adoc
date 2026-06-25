@@ -118,4 +118,22 @@
 ** `ocr.feature` : step Gherkin aligné ligne 61.
 ** `epic_v_pool.feature` : assertion "5 distinct authorized models" → "2 distinct authorized models" (alignement AGENTS.adoc).
 * *Résultats* : `testFast` BUILD SUCCESSFUL (324 tests, 0 failed). Compilation verte après chaque baby step.
+
+== Session 168 — 2026-06-26
+
+* *Modifications tests* :
+** `TokenTrackerTest.kt` : `estimatedCost returns correct cost` deepseek→gpt-oss, `estimatedCost normalizes model suffix` deepseek-flash→gemma4 (alignement COST_PER_MILLION).
+** `DilutionExecutorTest.kt` : 3 tests réparés (Locale.FRENCH sur format confiance `0,93`/`0,50` + date `15 mars 2026`).
+** `StimulusCascadeTest.kt` : 3 tests réparés (Locale.FRENCH sur `0,95`/`0,60`/`0,92` dans exportCascadeAsciiDoc).
+** `MigrationTest.kt` : attendus 2→4 migrations (V1-V4).
+** `KoogPlanningOrchestratorTest.kt` : assertion étendue (`ContextBuildPartial` accepté).
+** `TaskSchemaScannerTest.kt` : `scanAll` teste présence 13 tasks plugin (pas compte exact), `scanByGroup` 3→4 collect, 3→7 generate.
+** `ExecGradleToolTest.kt` : 2 tests `@Tag("integration")` (subprocess Gradle), `repoRootDir` helper ajouté.
+** `VibecodingGraphTest.kt` : 1 test `@Tag("integration")`, `repoRootDir` helper.
+** `PgVectorConfigTest.kt` : 1 test `@Tag("integration")` (reflection JDK24).
+** `LlmConfigTest.kt` : 1 test `@Tag("integration")` (llm-config.yml gitignoré).
+** `MultiChannelContextGraphTest.kt` : 1 test `@Tag("integration")` (path hardcodé).
+** `GovernanceContextLoaderTest.kt` : 1 test `@Tag("integration")` (path hardcodé).
+** `build.gradle.kts` : `excludeTags("integration")` dans `tasks.withType<Test>()`.
+* *Résultats* : `test` ✅ (42 tests ciblés, 0 failed — @integration exclus), `testFast` ✅ (BUILD SUCCESSFUL 41s).
 * *CI GitHub Actions* : workflow `test.yml` enrichi (job `full-tests`) — cache Docker + 2 instances Ollama 11466-11467 + pull `qwen3:0.6b` + env vars. Tests d'intégration CI prêts à s'exécuter sur runner GitHub Actions.

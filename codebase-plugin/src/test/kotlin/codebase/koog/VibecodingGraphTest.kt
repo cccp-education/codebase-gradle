@@ -9,7 +9,9 @@ import contracts.agent.UserStory
 import contracts.vibecoding.registry.ToolRegistry
 import codebase.koog.state.VibecodingState
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
+import java.io.File
 import java.time.Instant
 
 /**
@@ -415,13 +417,19 @@ class VibecodingGraphTest {
     }
 
     @Test
+    @Tag("integration")
     fun `v6 retry should clear error after successful retry`() {
-        // Premier essai échoue, le retry (2ème essai) réussit → error doit être null
+        val repoRootDir = File(System.getProperty("user.dir")).let { dir ->
+            var current = dir
+            while (current.parentFile != null && !File(current, "gradlew").exists()) {
+                current = current.parentFile
+            }
+            if (File(current, "gradlew").exists()) current.absolutePath else "/tmp"
+        }
+
         val fakeLlm = FakeLlmProvider()
         fakeLlm.nextResponse = "fixed the issue"
 
-        // Le plan a 3 tâches. La première échoue (pas de gradlew),
-        // le LLM replanifie, le retry doit exécuter la 2ème tâche.
         val plan = Plan(
             title = "Multi-step",
             epics = listOf(
@@ -445,7 +453,7 @@ class VibecodingGraphTest {
 
         val state = VibecodingState(
             intention = "Multi-step with retry",
-            workspaceRoot = "/tmp",
+            workspaceRoot = repoRootDir,
             maxActions = 10,
             maxRetries = 2,
             plan = plan
@@ -453,7 +461,6 @@ class VibecodingGraphTest {
 
         val result = graph.execute(state)
 
-        // Après les retries, toutes les tâches ont dû être exécutées
         assertTrue(result.executedTasks.size >= 2,
             "Should have executed at least 2 tasks after retry, got ${result.executedTasks.size}")
     }

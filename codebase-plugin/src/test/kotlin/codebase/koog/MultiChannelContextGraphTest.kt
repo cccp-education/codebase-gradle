@@ -3,6 +3,7 @@ package codebase.koog
 import contracts.context.ChannelBudget
 import contracts.context.ChannelType
 import contracts.context.ContextChannel
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -21,6 +22,7 @@ class MultiChannelContextGraphTest {
     }
 
     @Test
+    @Tag("integration")
     fun `execute collects eager channel from test workspace`() {
         val graph = MultiChannelContextGraph()
         val state = MultiChannelState(

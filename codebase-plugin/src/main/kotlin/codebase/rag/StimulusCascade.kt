@@ -13,6 +13,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalDateTime.now
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlin.text.Charsets.UTF_8
 
 enum class TargetDocument(val path: String, val label: String) {
@@ -120,7 +121,7 @@ Pour le contenu fourni, reponds UNIQUEMENT au format JSON (sans texte avant ni a
             val record = when (result.classification) {
                 ContentClassification.VISION -> {
                     visionCount++
-                    ctx("[${section.id}] VISION (${"%.2f".format(result.confidence)}) → routage vers document cible...")
+                    ctx("[${section.id}] VISION (${String.format(Locale.FRENCH, "%.2f", result.confidence)}) → routage vers document cible...")
 
                     val target = routeSection(section)
                     dilutedCount++
@@ -152,7 +153,7 @@ Pour le contenu fourni, reponds UNIQUEMENT au format JSON (sans texte avant ni a
                 }
                 ContentClassification.OPINION -> {
                     opinionCount++
-                    ctx("[${section.id}] OPINION (${"%.2f".format(result.confidence)}) → confinement (pas de dilution)")
+                    ctx("[${section.id}] OPINION (${String.format(Locale.FRENCH, "%.2f", result.confidence)}) → confinement (pas de dilution)")
 
                     DilutionRecord(
                         sectionId = section.id,
@@ -377,7 +378,7 @@ Contenu : ${section.content.take(2000)}
         sb.appendLine("| ID | Titre | Statut | Confiance | Document Cible (si VISION) | Justification")
         for (rec in report.sections) {
             val target = if (rec.dilutionTarget != null) "${rec.dilutionTarget.targetDocument.path} / ${rec.dilutionTarget.suggestedSection}" else "—"
-            sb.appendLine("| ${rec.sectionId} | ${rec.sectionTitle} | ${rec.classification} | ${"%.2f".format(rec.confidence)} | $target | ${rec.classificationRationale}")
+            sb.appendLine("| ${rec.sectionId} | ${rec.sectionTitle} | ${rec.classification} | ${String.format(Locale.FRENCH, "%.2f", rec.confidence)} | $target | ${rec.classificationRationale}")
         }
         sb.appendLine("|===")
         sb.appendLine()
@@ -392,7 +393,7 @@ Contenu : ${section.content.take(2000)}
             sb.appendLine("|===")
             sb.appendLine("| Document cible | ${t.targetDocument.path}")
             sb.appendLine("| Section suggeree | ${t.suggestedSection}")
-            sb.appendLine("| Confiance classification | ${"%.2f".format(rec.confidence)}")
+            sb.appendLine("| Confiance classification | ${String.format(Locale.FRENCH, "%.2f", rec.confidence)}")
             sb.appendLine("| Rationale routage | ${t.rationale}")
             sb.appendLine("|===")
             sb.appendLine()
@@ -417,7 +418,7 @@ Contenu : ${section.content.take(2000)}
                 sb.appendLine(op.content.take(400))
                 sb.appendLine("____")
                 sb.appendLine()
-                sb.appendLine("Confiance classification : **${"%.2f".format(op.confidence)}** — _${op.classificationRationale}_")
+                sb.appendLine("Confiance classification : **${String.format(Locale.FRENCH, "%.2f", op.confidence)}** — _${op.classificationRationale}_")
                 sb.appendLine()
             }
         }

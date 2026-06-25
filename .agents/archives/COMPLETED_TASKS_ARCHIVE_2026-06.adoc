@@ -173,3 +173,20 @@
 ** `gh run view --job=83475092079 --log` — analyse logs Cucumber FAILED
 ** `./gradlew :codebase-plugin:testFast` — validation testFast vert
 * **Statut** : ✅ Terminé — testFast vert, CI full-tests en attente validation push
+
+== Session 168 — Fix 19 échecs JUnit5 CI full-tests
+
+* **Type** : Bug fix CI/CD (déclencheur 1 — valider CI full-tests)
+* **Livrables** :
+** Bug 1 : `TokenTracker.kt` `COST_PER_MILLION` deepseek→gpt-oss/gemma4/qwen3 (1 test)
+** Bug 2 : `DilutionExecutor.kt`+`StimulusCascade.kt` `Locale.FRENCH` sur formatages (6 tests)
+** Bug 3 : `MigrationTest` attendus 2→4 migrations V1-V4 (2 tests)
+** Bug 4 : `KoogPlanningOrchestratorTest` accepte `ContextBuildPartial` (1 test)
+** Bug 5 : `TaskSchemaScannerTest` attendus alignés 13 tasks/4 collect/7 generate (2 tests)
+** 7 tests `@integration` légitimes exclus via `excludeTags` (ExecGradleTool subprocess, PgVectorConfig reflection JDK24, LlmConfig gitignoré, paths hardcodés)
+** 14 fichiers modifiés (+69/-28 lignes)
+* **Commandes clés** :
+** `gh run view 28197805505 --log-failed` — analyse 19 échecs JUnit5
+** `./gradlew :codebase-plugin:test` — validation test vert
+** `./gradlew :codebase-plugin:testFast --offline` — validation testFast vert
+* **Statut** : ✅ Terminé — test + testFast verts, CI full-tests en attente validation push

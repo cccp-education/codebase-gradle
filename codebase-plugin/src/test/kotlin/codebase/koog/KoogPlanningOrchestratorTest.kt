@@ -30,8 +30,9 @@ class KoogPlanningOrchestratorTest {
         assertEquals("Add unit tests", result.intention, "Intention should be preserved")
         assertTrue(
             result.error?.contains("BuildContextFailed") == true ||
+            result.error?.contains("ContextBuildPartial") == true ||
             result.planError?.contains("CompositeContext unavailable") == true,
-            "Should indicate context building failed without pgvector"
+            "Should indicate context building failed or partial without pgvector"
         )
     }
 

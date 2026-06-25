@@ -257,7 +257,7 @@ _Recentrage session 141 : EPIC V-9 recentré de 35 à 20 items. Documentation r�
 
 _Tous les EPICs ci-dessous sont TERMINÉS. Gardés pour traçabilité historique._
 
-* [x] **EPIC CI/CD** : Workflow GitHub Actions `full-tests` (✅ TERMINÉ session 167 — EpicV6CucumberRunner filtre `@epic_v_6 and not @integration`, workflow `ingest-governance.yml` cassé supprimé. Fast Tests ✅. Full Test Suite CI run 28196553990 en cours validation.)
+* [x] **EPIC CI/CD** : Workflow GitHub Actions `full-tests` (✅ TERMINÉ session 168 — 19 échecs JUnit5 résolus : TokenTracker COST_PER_MILLION, Locale.FRENCH DilutionExecutor+StimulusCascade, MigrationTest attendus V1-V4, KoogPlanningOrchestratorTest, TaskSchemaScannerTest, 7 tests @integration légitimes exclus via excludeTags. test + testFast verts.)
 * [x] **EPIC 3** : Architecture Multi-Canal Convergent — Formalisation (TERMINE, session 046)
 * [x] **EPIC 4** : Benchmark de perception spatiale LLM (TERMINE, session 026)
 * [x] **EPIC 5** : Pipeline fine-tuning experts CDA/FPA (MIGRÉ vers training-gradle TRN-8)

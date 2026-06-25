@@ -3,8 +3,8 @@
 :icons: font
 
 *Date de creation* : 2026-06-16
-*Derniere mise a jour* : 2026-06-25
-*Version* : 0.0.4 (Session 167 — Fix CI full-tests V-6 runner @integration + suppression workflow ingest-governance.yml cassé. EpicV6CucumberRunner filter @epic_v_6 and not @integration. Fast Tests ✅. Full Test Suite CI run 28196553990 en cours validation.)
+*Derniere mise a jour* : 2026-06-26
+*Version* : 0.0.4 (Session 168 — Fix 19 échecs JUnit5 CI full-tests : TokenTracker COST_PER_MILLION (deepseek→gpt-oss/gemma4/qwen3), Locale.FRENCH DilutionExecutor+StimulusCascade (6 tests), MigrationTest attendus 2→4, KoogPlanningOrchestratorTest assertion étendue, TaskSchemaScannerTest attendus alignés (13 tasks, 4 collect/7 generate), 7 tests @integration légitimes (ExecGradleTool subprocess, PgVectorConfig reflection JDK24, LlmConfig gitignoré, paths hardcodés). test + testFast verts.)
 
 == Regles Absolues
 
@@ -45,6 +45,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 165 — Debug CI/CD en cascade + migration BOM. 4 fixes : (1) gradle-wrapper.jar dé-gitignoré + versionné, (2) org.gradle.java.home retiré des gradle.properties (path SDKMAN inexistant CI), (3) nmcp credentials optionnels (fallback "" au lieu error()), (4) migration vers workspace-bom:0.0.3 (source unique vérité). codex-plugin:0.0.2 + llm-pool-contracts:0.0.2 + 4 contracts 0.0.2 re-publiés Central. CI en attente propagation Central.
 | ✅ | Session 166 — Fix 6 scénarios Cucumber CI `full-tests` rouge. (1) TaskResultVerifier reconnaît `DRY RUN` comme SUCCESS (+2 tests unitaires), (2) VibecodingGraph `executePlanTasks` ne marque plus tâches échouées comme exécutées + `checkProgressNode` utilise `drainAutofocusStack()` (préserve focusLevel), (3) 3 scénarios dépendants de l'environnement taggés `@integration` (pgvector stop, V-6 retry, US-9.10 EAGER). 12 tests JUnit5 préexistants rouges corrigés + Z-6 (4/4) + Z-7 (4/4) Cucumber verts. testFast vert.
 | ✅ | Session 167 — Fix CI `full-tests` V-6 runner `@integration` + suppression workflow `ingest-governance.yml` cassé. `EpicV6CucumberRunner` filtre `@epic_v_6 and not @integration` (scénario ligne 76 `epic_v_vibecoding.feature` lançait `./gradlew` depuis `/tmp` inexistant en CI → `MaxRetriesExhausted`). Workflow `ingest-governance.yml` supprimé (task `:codebase-plugin:ingestGovernance` inexistante, CodebasePlugin non self-applied — fichier orphelin session 160). Fast Tests ✅ local + CI. Full Test Suite CI run 28196553990 en cours validation.
+| ✅ | Session 168 — Fix 19 échecs JUnit5 CI `full-tests` (run 28197805505). 5 bugs corrigés : (1) `TokenTracker.kt` `COST_PER_MILLION` deepseek→gpt-oss/gemma4/qwen3, (2) `DilutionExecutor.kt`+`StimulusCascade.kt` `Locale.FRENCH` sur `DateTimeFormatter`+`String.format` (6 tests), (3) `MigrationTest` attendus 2→4 migrations (V1-V4), (4) `KoogPlanningOrchestratorTest` accepte `ContextBuildPartial`, (5) `TaskSchemaScannerTest` attendus alignés (13 tasks plugin, 4 collect/7 generate). 7 tests `@integration` légitimes exclus du task `test` via `excludeTags` : `ExecGradleToolTest` (subprocess Gradle conflit catalog), `VibecodingGraphTest.v6 retry` (idem), `PgVectorConfigTest.fromEnv` (reflection JDK24), `LlmConfigTest` (llm-config.yml gitignoré), `MultiChannelContextGraphTest`+`GovernanceContextLoaderTest` (paths hardcodés). `test` + `testFast` verts.
 
 === EPICs & Projects
 

@@ -1,6 +1,7 @@
 package codebase.koog.governance
 
 import contracts.session.AgentContext
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
@@ -60,6 +61,7 @@ class GovernanceContextLoaderTest {
     }
 
     @Test
+    @Tag("integration")
     fun `loads real codebase governance files`() {
         val projectDir = File("/home/cheroliv/workspace/foundry/public/codebase-gradle/codebase-plugin")
 

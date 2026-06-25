@@ -47,9 +47,9 @@ class TokenTracker(
         }
 
         val COST_PER_MILLION: Map<String, Pair<Double, Double>> = mapOf(
-            "deepseek-v4-pro" to (2.50 to 8.00),
-            "deepseek-v4-flash" to (0.27 to 1.10),
-            "deepseek-v3" to (0.27 to 1.10),
+            "gpt-oss" to (1.50 to 6.00),
+            "gemma4" to (0.30 to 1.20),
+            "qwen3" to (0.10 to 0.40),
         )
 
         fun costFor(model: String, promptTokens: Long, completionTokens: Long): Double {

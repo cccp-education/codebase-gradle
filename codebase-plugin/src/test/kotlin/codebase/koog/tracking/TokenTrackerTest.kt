@@ -54,7 +54,7 @@ class TokenTrackerTest {
         val tracker = TokenTracker()
         tracker.trackPrompt("Hello, world. ".repeat(50))
         tracker.trackPromptAndCompletion("Test query. ".repeat(25)) { _ -> "Response. ".repeat(25) }
-        val cost = tracker.estimatedCost("deepseek-v4-pro")
+        val cost = tracker.estimatedCost("gpt-oss:120b-cloud")
         assertTrue(cost > 0.0, "Cost should be positive for known model")
     }
 
@@ -64,7 +64,7 @@ class TokenTrackerTest {
         tracker.trackPrompt("Hello, world. ".repeat(50))
         val cost = tracker.estimatedCost("gpt-oss:120b-cloud")
         assertTrue(cost > 0.0, "Cost should be positive for model with :cloud suffix (canonical lookup)")
-        val costFlash = tracker.estimatedCost("deepseek-v4-flash:latest")
+        val costFlash = tracker.estimatedCost("gemma4:31b-cloud:latest")
         assertTrue(costFlash > 0.0, "Cost should be positive for model with :latest suffix")
     }
 

@@ -1,5 +1,6 @@
 package codebase.rag
 
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -31,6 +32,7 @@ class PgVectorConfigTest {
     }
 
     @Test
+    @Tag("integration")
     fun `fromEnv with custom env vars returns custom values`() {
         val customJdbc = "jdbc:postgresql://prod.db:5432/prod_rag"
         val customUser = "prod_user"

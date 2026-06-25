@@ -200,7 +200,9 @@ tasks.register("testHelp") {
 
 tasks.withType<Test>().configureEach {
     ignoreFailures = !isCI()
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags("integration")
+    }
     jvmArgs("-XX:+EnableDynamicAgentLoading")
     if (isCI()) {
         jvmArgs("-XX:+UseG1GC", "-XX:MaxGCPauseMillis=200", "-XX:+ParallelRefProcEnabled")

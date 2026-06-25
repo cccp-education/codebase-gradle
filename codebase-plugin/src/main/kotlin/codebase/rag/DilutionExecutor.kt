@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 data class DilutionResult(
     val documentPath: String,
@@ -18,7 +19,7 @@ class DilutionExecutor(
     private val dryRun: Boolean = false
 ) {
     private val log = LoggerFactory.getLogger(DilutionExecutor::class.java)
-    private val dateFmt = DateTimeFormatter.ofPattern("dd MMM yyyy")
+    private val dateFmt = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.FRENCH)
 
     fun execute(record: DilutionRecord): DilutionResult {
         val target = record.dilutionTarget
@@ -146,7 +147,7 @@ class DilutionExecutor(
             "[cols=\"2,3\"]",
             "|===",
             "| Date | $date",
-            "| Classification | ${record.classification} (confiance: ${"%.2f".format(record.confidence)})",
+            "| Classification | ${record.classification} (confiance: ${String.format(Locale.FRENCH, "%.2f", record.confidence)})",
             "| Rationale classification | ${record.classificationRationale}",
             "| Rationale routage | ${record.dilutionTarget?.rationale ?: "—"}",
             "|===",

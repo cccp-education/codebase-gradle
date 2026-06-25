@@ -1,5 +1,6 @@
 package codebase.rag
 
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -70,6 +71,7 @@ class LlmConfigTest {
     }
 
     @Test
+    @Tag("integration")
     fun `should load from test resource file`() {
         val yaml = javaClass.classLoader.getResource("llm-config.yml")?.readText()
         assertNotNull(yaml, "llm-config.yml should exist in test resources")

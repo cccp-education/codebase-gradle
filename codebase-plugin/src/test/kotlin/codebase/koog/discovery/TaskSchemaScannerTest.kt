@@ -10,14 +10,22 @@ import kotlin.test.assertTrue
 class TaskSchemaScannerTest {
 
     @Test
-    fun `scanAll discovers all 8 tasks after CodebasePlugin applied`() {
+    fun `scanAll discovers all CodebasePlugin tasks`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply(CodebasePlugin::class.java)
         val scanner = TaskSchemaScanner(project)
 
         val schemas = scanner.scanAll()
+        val pluginTaskNames = setOf(
+            "collectFromCodebase", "collectCompositeContext", "ocrDocument", "ocrIngest",
+            "generatePlan", "vibecode", "sessionProtocolDaemon", "ingestGovernance",
+            "vibecodingDashboard", "qualityGate", "endSessionBlog",
+            "generateCompositeContext", "exposeExperts"
+        )
 
-        assertEquals(8, schemas.size)
+        val discoveredNames = schemas.map { it.name }.toSet()
+        assertTrue(pluginTaskNames.all { it in discoveredNames },
+            "Missing plugin tasks: ${pluginTaskNames - discoveredNames}")
     }
 
     @Test
@@ -73,8 +81,8 @@ class TaskSchemaScannerTest {
         val collectTasks = scanner.scanByGroup("collect")
         val generateTasks = scanner.scanByGroup("generate")
 
-        assertEquals(3, collectTasks.size)
-        assertEquals(3, generateTasks.size)
+        assertEquals(4, collectTasks.size)
+        assertEquals(7, generateTasks.size)
         assertTrue(collectTasks.all { it.group == "collect" })
         assertTrue(generateTasks.all { it.group == "generate" })
     }

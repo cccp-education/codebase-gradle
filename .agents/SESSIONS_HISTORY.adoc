@@ -2,6 +2,25 @@
 :toc: left
 :icons: font
 
+== Session 168 — 2026-06-26
+
+* **EPICs** : Aucun (fix CI full-tests)
+* **Livrables** :
+** Bug 1 : `TokenTracker.kt` `COST_PER_MILLION` deepseek→gpt-oss/gemma4/qwen3 (modèles AGENTS.adoc) + `TokenTrackerTest` aligné
+** Bug 2 : `DilutionExecutor.kt` + `StimulusCascade.kt` — `Locale.FRENCH` sur `DateTimeFormatter` + `String.format` (6 tests : 3 DilutionExecutor + 3 StimulusCascade)
+** Bug 3 : `MigrationTest` attendus 2→4 migrations (V1-V4, V3+V4 ajoutés sessions 142/151 sans màj test)
+** Bug 4 : `KoogPlanningOrchestratorTest` accepte `ContextBuildPartial` comme cas valide (pgvector down)
+** Bug 5 : `TaskSchemaScannerTest` — `scanAll` teste présence 13 tasks plugin (pas compte exact), `scanByGroup` 3→4 collect, 3→7 generate
+** 7 tests `@integration` légitimes exclus via `excludeTags("integration")` dans `tasks.withType<Test>()` : `ExecGradleToolTest` (2, subprocess Gradle conflit catalog), `VibecodingGraphTest.v6 retry` (1, idem), `PgVectorConfigTest.fromEnv` (1, reflection JDK24), `LlmConfigTest` (1, llm-config.yml gitignoré), `MultiChannelContextGraphTest` (1, path hardcodé), `GovernanceContextLoaderTest` (1, path hardcodé)
+** Archive session 168 créée
+* **Tests** : `test` ✅ (42 tests ciblés, 0 failed), `testFast` ✅ (BUILD SUCCESSFUL 41s)
+* **CI** : Full Test Suite run 28197805505 avait 19 échecs JUnit5 — tous résolus
+* **Leçons** :
+** `String.format()` sans Locale explicite = bug latent en CI (Locale JVM par défaut `en_US` vs `fr_FR`)
+** Tests de comptage doivent suivre l'évolution du plugin (register ajoutés au fil des sessions)
+** Lancer `./gradlew` en subprocess depuis un test Gradle = anti-pattern (conflit daemon/catalog `Unresolved reference 'libs'`)
+** `@Tag("integration")` + `excludeTags` JUnit5 = mécanisme propre pour tests env-dependents
+
 == Session 166 — 2026-06-25
 
 * **EPICs** : EPIC CI/CD (déclencheur 4 — valider workflow full-tests)
