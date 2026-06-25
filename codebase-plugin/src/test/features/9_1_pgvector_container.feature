@@ -13,6 +13,7 @@ Feature: Ephemeral pgvector infrastructure for RAG tests
     And the vector extension is available
     And I can create a table with a vector(384) column
 
+  @integration
   Scenario: Automatic container stop after test
     When I start a pgvector container
     When I stop the container

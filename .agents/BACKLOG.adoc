@@ -257,6 +257,7 @@ _Recentrage session 141 : EPIC V-9 recentré de 35 à 20 items. Documentation r�
 
 _Tous les EPICs ci-dessous sont TERMINÉS. Gardés pour traçabilité historique._
 
+* [x] **EPIC CI/CD** : Workflow GitHub Actions `full-tests` (✅ TERMINÉ session 166 — 6 scénarios Cucumber corrigés, testFast vert, full-tests en attente validation push final)
 * [x] **EPIC 3** : Architecture Multi-Canal Convergent — Formalisation (TERMINE, session 046)
 * [x] **EPIC 4** : Benchmark de perception spatiale LLM (TERMINE, session 026)
 * [x] **EPIC 5** : Pipeline fine-tuning experts CDA/FPA (MIGRÉ vers training-gradle TRN-8)

@@ -7,9 +7,9 @@
 
 | Type | nb Tests | Coverage | Status |
 |------|----------|----------|--------|
-| JUnit5 | 190+ | ~62% | EN COURS |
+| JUnit5 | 194+ | ~62% | EN COURS |
 | Cucumber | 41+ | ~52% | EN COURS |
-| Total | 231+ | — | — |
+| Total | 235+ | — | — |
 
 == Tests unitaires (JUnit5)
 
@@ -41,6 +41,8 @@
 | ChunkChangeDetectorTest | 8 | ChunkChangeDetector service (diff par id + checksum, mixed, empty) | TERMINÉ (session 156 V-9.20) |
 | ChunkStateStoreTest | 9 | JsonChunkStateStore persistance (round-trip, empty, invalid, clear, dash) | TERMINÉ (session 156 V-9.20) |
 | ChunkIncrementalReportTest | 7 | ChunkIncrementalReport DDD (hasChanges, counts, from(ChunkDiff)) | TERMINÉ (session 156 V-9.20) |
+| TaskResultVerifierTest | 16 | Verifier BUILD SUCCESSFUL/FAILED/BLOCKED/UNKNOWN + DRY RUN → SUCCESS | TERMINÉ (session 166 — +2 tests DRY RUN) |
+| VibecodingGraphAutofocusTest | 17 | Autofocus classify/zoom/stack + Z-6 error recovery focusLevel préservé | TERMINÉ (session 166 — +1 test Z-6, 12 tests préexistants rouges corrigés) |
 
 == Tests fonctionnels (Cucumber)
 

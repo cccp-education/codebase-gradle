@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-06-25
-*Version* : 0.0.4 (Session 165 — Debug CI/CD + migration BOM. 4 fixes infrastructure (wrapper jar, java.home, nmcp creds, BOM). Borough dormant en attente propagation Central.)
+*Version* : 0.0.4 (Session 166 — Fix 6 scénarios Cucumber CI rouge. TaskResultVerifier DRY RUN, VibecodingGraph focusLevel/executedTasks, pgvector @integration. testFast vert. CI full-tests en attente validation push.)
 
 == Regles Absolues
 
@@ -43,6 +43,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 163 — Architecture README Plugin + Consommateur : README.plugin/ déplacé vers codebase-plugin/ (master EN à racine plugin), README.consommateurs/README.md remonté racine borough, liens i18n recréés (10 langues × 2 audiences = 20 fichiers).
 | ✅ | Session 164 — Exception CI/CD Ollama documentée (ports 11466-11467 + qwen3:0.6b pour tests d'intégration GitHub Actions uniquement, hors plage rotation 11437-11465). Workflow test.yml enrichi (cache Docker + 2 instances Ollama + env vars OLLAMA_TEST_PORT/MODEL). Fix 2 bugs Cucumber préexistants : DuplicateStepDefinition Ocr1PoolSteps vs PoolSteps (step renommé "the Gemini key pool usage is reset"), assertion stale epic_v_pool.feature (5 modèles → 2). testFast vert.
 | ✅ | Session 165 — Debug CI/CD en cascade + migration BOM. 4 fixes : (1) gradle-wrapper.jar dé-gitignoré + versionné, (2) org.gradle.java.home retiré des gradle.properties (path SDKMAN inexistant CI), (3) nmcp credentials optionnels (fallback "" au lieu error()), (4) migration vers workspace-bom:0.0.3 (source unique vérité). codex-plugin:0.0.2 + llm-pool-contracts:0.0.2 + 4 contracts 0.0.2 re-publiés Central. CI en attente propagation Central.
+| ✅ | Session 166 — Fix 6 scénarios Cucumber CI `full-tests` rouge. (1) TaskResultVerifier reconnaît `DRY RUN` comme SUCCESS (+2 tests unitaires), (2) VibecodingGraph `executePlanTasks` ne marque plus tâches échouées comme exécutées + `checkProgressNode` ne dépile plus autofocus (préserve focusLevel), (3) scénario pgvector container stop taggé `@integration`. 12 tests JUnit5 préexistants rouges corrigés + 4 Cucumber Z-6 verts. testFast vert. CI full-tests en attente validation push.
 
 === EPICs & Projects
 

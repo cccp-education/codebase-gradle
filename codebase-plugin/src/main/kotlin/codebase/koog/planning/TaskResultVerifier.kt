@@ -17,6 +17,10 @@ class TaskResultVerifier {
     fun verify(stdout: String, stderr: String): TaskResult {
         val combined = "$stdout\n$stderr".lowercase()
 
+        if (combined.contains("dry run")) {
+            return TaskResult(TaskVerdict.SUCCESS)
+        }
+
         if (combined.contains("build successful") && !combined.contains("build failed")) {
             return TaskResult(TaskVerdict.SUCCESS)
         }

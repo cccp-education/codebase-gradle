@@ -334,4 +334,38 @@ class VibecodingGraphAutofocusTest {
         graph.execute(state)
         assertFalse(graph.autofocusStack.isEmpty(), "Stack should have at least MODULE default")
     }
+
+    @Test
+    fun `Z-6 error recovery sets focusLevel to IMPLEMENTATION with composite context`() {
+        val fakeLlm = FakeLlmProvider()
+        fakeLlm.nextResponse = "retry with different approach"
+        val graph = VibecodingGraph(
+            augmentedGraph = null,
+            toolRegistry = ToolRegistry(),
+            llmProvider = fakeLlm
+        )
+        val plan = Plan(
+            title = "Fix compilation",
+            epics = listOf(
+                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
+                    UserStory(description = "US1", tasks = listOf(
+                        PlanTask(description = "compile", gradleTask = "nonexistentTask")
+                    ))
+                ))
+            ),
+            totalPoints = 1,
+            estimatedSessions = "1"
+        )
+        val state = VibecodingState(
+            intention = "fix compilation error in VibecodingGraph.kt:42",
+            workspaceRoot = "/tmp",
+            maxActions = 5,
+            maxRetries = 2,
+            plan = plan,
+            compositeContext = sampleContext
+        )
+        val result = graph.execute(state)
+        assertEquals("IMPLEMENTATION", result.focusLevel,
+            "Focus level should be IMPLEMENTATION after error recovery, but was ${result.focusLevel} (error=${result.error}, finished=${result.finished}, executedTasks=${result.executedTasks}, retryCount=${result.retryCount}, iteration=${result.iteration})")
+    }
 }

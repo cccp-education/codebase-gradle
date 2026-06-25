@@ -92,4 +92,16 @@ class TaskResultVerifierTest {
         val result = verifier.verify("", "Project 'missing' not found")
         assertEquals(TaskVerdict.BLOCKED, result.verdict)
     }
+
+    @Test
+    fun `DRY RUN output should return SUCCESS`() {
+        val result = verifier.verify("DRY RUN: would execute gradle task: tasks", "")
+        assertEquals(TaskVerdict.SUCCESS, result.verdict)
+    }
+
+    @Test
+    fun `DRY RUN write_file output should return SUCCESS`() {
+        val result = verifier.verify("DRY RUN: would write 42 chars to /tmp/foo.txt", "")
+        assertEquals(TaskVerdict.SUCCESS, result.verdict)
+    }
 }

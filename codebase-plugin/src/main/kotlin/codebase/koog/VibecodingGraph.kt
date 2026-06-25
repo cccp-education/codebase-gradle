@@ -597,7 +597,6 @@ class VibecodingGraph(
         } catch (e: Exception) {
             log.warn("[VibecodingGraph] Task execution failed: {}", e.message)
             state.nextIteration().copy(
-                executedTasks = state.executedTasks + task.description,
                 lastToolResult = "Failed: ${e.message}",
                 currentTaskDescription = task.description,
                 // V-6: erreur récupérable — ne termine pas la session
@@ -624,12 +623,12 @@ class VibecodingGraph(
             epic.userStories.flatMap { story -> story.tasks }
         } ?: emptyList()
         if (allTasks.isNotEmpty() && state.executedTasks.size >= allTasks.size && state.iteration > 0) {
-            return popFocusNode(state).finish()
+            return state.finish()
         }
 
         // Vérifie si le plan est vide (rien à faire)
         val noWorkRemaining = state.plan?.epics?.isEmpty() ?: true
-        if (noWorkRemaining && state.iteration > 0) return popFocusNode(state).finish()
+        if (noWorkRemaining && state.iteration > 0) return state.finish()
 
         return state
     }
