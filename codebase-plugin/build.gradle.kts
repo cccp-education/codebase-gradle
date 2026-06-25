@@ -19,6 +19,7 @@ plugins {
 kotlin.jvmToolchain(24)
 
 dependencies {
+    implementation(platform(libs.workspace.bom))
     implementation(kotlin("stdlib-jdk8"))
     implementation(gradleApi())
     implementation(gradleKotlinDsl())
