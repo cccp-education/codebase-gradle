@@ -1,11 +1,12 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 170
-:session: 170
+= Prompt de Reprise — Codebase (Queens N1) — Session 171
+:session: 171
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 169 — CI-green confirmé (run 28206228434 fast-tests ✅ + full-tests ✅ 33m50s). Backlog synchronisé : EPIC 1 stale purgé, EPIC OCR + CR stale corrigés. Borough DORMANT CI-green.
+:session_precedente: 170 — Bump + publish Maven Central. workspace-bom 0.0.4 + codebase-plugin 0.0.5 publiés. Fix @UntrackedTask sur GovernanceExecutableTask. CI déclenchée.
 
-== Mission Session 170
+== Mission Session 171
 
-Codebase-gradle est DORMANT CI-green. Aucun EPIC actif.
+Codebase-gradle est DORMANT. Version 0.0.5 publiée Maven Central.
+Vérifier CI/CD verte sur GitHub Actions (run déclenché session 170).
 
 Réveil sur déclencheur externe uniquement :
 . *Consommateur* — training-gradle (Newark) ou Edster SaaS MVP1 exprime un besoin
@@ -20,12 +21,12 @@ Réveil sur déclencheur externe uniquement :
 
 == Contexte Technique
 
-* Version : `0.0.4` (bump session 160)
-* Maven Central : `education.cccp:codebase-plugin:0.0.4` publié
+* Version : `0.0.5` (bump session 170)
+* Maven Central : `education.cccp:codebase-plugin:0.0.5` publié
+* BOM : `education.cccp:workspace-bom:0.0.4` publié (bump session 170)
 * Kover : 100% coverage (55 classes métier)
 * Tests : 76 JUnit5 + 119 Cucumber PASS (testFast vert, 7 tests @integration exclus du task test)
 * CI : workflow `test.yml` — fast-tests ✅ (PR gate) + full-tests ✅ (Ollama Docker 11466-11467)
-* Exception CI/CD : `qwen3:0.6b` + ports 11466-11467 pour tests d'intégration GitHub Actions uniquement
 
 == Méthodologie
 

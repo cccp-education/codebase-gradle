@@ -1,10 +1,14 @@
 = SESSIONS_HISTORY — Codebase Gradle
-:date: 2026-06-16
+:date: 2026-06-26
 
 |===
 | Session | Date | EPIC | Résultat
 
-| 161 | 2026-06-23 | Code Review | Affinage `CODE_REVIEW_MATURITY_ANALYSIS.adoc` — 5/10 critiques déjà résolues (factory Cucumber, heap adaptatif, Kover seuil, validateDependencies, timeouts), 3 actions sûres appliquées (CVE-2015-6420→7501, README.md créé, CI split fast/full/publish), 3 concerns transverses dispatchés vers BACKLOG global (toolchain JDK, linter Kotlin, config cache). Compile OK ✅
+| 170 | 2026-06-26 | PUB | Bump + publish Maven Central. workspace-bom 0.0.4 + codebase-plugin 0.0.5 publiés (nmcp). Fix @UntrackedTask sur GovernanceExecutableTask (validation Gradle 9.5.1). CI déclenchée. Commit 8aa0104 push ✅
+| 169 | 2026-06-26 | — | CI-green confirmé (run 28206228434 fast-tests ✅ + full-tests ✅ 33m50s). Backlog synchronisé ✅
+| 168 | 2026-06-26 | CI | 19 échecs JUnit5 full-tests résolus — @integration tag + EpicV6CucumberRunner excludes ✅
+| 167 | 2026-06-26 | CI | V-6 runner @integration fix — EpicV6CucumberRunner excludes @integration ✅
+| 161 | 2026-06-23 | Code Review | Affinage `CODE_REVIEW_MATURITY_ANALYSIS.adoc` — 5/10 critiques déjà résolues, 3 actions sûres appliquées (CVE-2015-6420→7501, README.md créé, CI split fast/full/publish), 3 concerns transverses dispatchés vers BACKLOG global. Compile OK ✅
 | 160 | 2026-06-23 | Backlog Cleanup | Backlog & Roadmap cleanup — 4 fichiers gouvernance mis à jour (`.agents/BACKLOG.adoc` réécrit, `INDEX.adoc` V-9→TERMINÉ+V-LOCAL/TRAD ajoutés, `BACKLOG.adoc` root EPIC 1→STALE, `STRATEGIC_ROADMAP.adoc` phases 1-3→DELIVERED). Version bump 0.0.3→0.0.4. Borough confirmé dormant — aucun EPIC actif ✅
 | 159 | 2026-06-23 | EPIC OCR-1/OCR-2 | OCR-1/OCR-2 restants TERMINÉS (9/9 items) — HTTP 429 detection + rotation auto (`GeminiKeyPool.markRateLimited`/`isRateLimited`, `GeminiVisionProvider` catch 429), env var mapping `GEMINI_API_KEY_1..N` (`GeminiPoolFactory.fromKeys`/`fromEnvVars`), multi-compte Google (`GeminiMultiAccountPool`), Tesseract fallback harmonisé boundary codex↔codebase (`OcrEngine`+`TesseractOcrEngine` dans codex Brooklyn, `CodexOcrEngineAdapter` dans codebase Queens), 35 tests nouveaux + 11 Cucumber `@epic_ocr_1`/`@epic_ocr_2` PASS, codex publishToMavenLocal 0.0.1, EPIC OCR complet 7/7 ✅
 | 158 | 2026-06-23 | EPIC V-6-POOL | V-6-POOL terminé 4/4 : AUTHORIZED_MODELS aligné sur AGENTS.adoc (2 modèles `gpt-oss:120b-cloud` + `gemma4:31b-cloud`) dans `OllamaInstanceFactory` + `OllamaInstanceScanner`, `LlmProviderResolver` cycle les 2 modèles sur `OLLAMA_POOL_PORTS` au lieu de `DEFAULT_MODEL` statique, feature Cucumber `epic_v6_pool.feature` (3 scénarios @epic_v6_pool) + runner + step `includes model`, tous tests unitaires + Cucumber PASS, zéro régression V-6 ollama_cloud + V-6 resolver ✅

@@ -4,18 +4,18 @@
 
 _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux._
 
-== Synthèse Backlog (Session 169 — 2026-06-26)
+== Synthèse Backlog (Session 170 — 2026-06-26)
 
 [cols="1,3,1,2"]
 |===
 | EPIC | Sujet | Statut | Remarque
-| EPIC 1 | Init gouvernance | ✅ TERMINÉ | Items stale purgés (projet publié Central 0.0.4)
+| EPIC 1 | Init gouvernance | ✅ TERMINÉ | Items stale purgés (projet publié Central 0.0.5)
 | EPIC V-FLYWAY | Migration Flyway | BACKLOG P2 | Seuil déclenchement : 5+ migrations (actuellement 4 : V1→V4)
 | Tous autres EPICs | V, W, X, Y, Z, K, L, OCR, CR, TRAD, PUB, V-LOCAL, SP, V-6, V-7, V-8, V-9, 2→12 | ✅ TERMINÉ | Voir détails ci-dessous
 |===
 
 *Backlog réellement restant* : EPIC V-FLYWAY uniquement (P2 conditionnel).
-*Borough DORMANT CI-green* depuis session 169 (run 28206228434 fast-tests + full-tests PASS).
+*Borough DORMANT* depuis session 169. Version 0.0.5 publiée Maven Central.
 
 == EPIC 1 : Initialisation gouvernance agent codebase-gradle
 

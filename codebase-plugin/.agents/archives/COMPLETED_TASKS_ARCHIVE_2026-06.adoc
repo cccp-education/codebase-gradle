@@ -397,3 +397,11 @@ EPIC OCR complet 7/7 TERMINÉ.
 - Cucumber BDD (feature + steps + world + runner) — 5 Cucumber
 - Fix build (libs.versions.toml + codex-plugin version)
 - **60/60 PASS** — Package `codebase.koog.expert/`
+
+== Session 170 — 2026-06-26 — Bump + Publish Maven Central
+
+- workspace-bom 0.0.3 → 0.0.4 publié Maven Central (nmcp deployment 408465cd)
+- codebase-plugin 0.0.4 → 0.0.5 publié Maven Central (nmcp deployment 374e97bb)
+- Fix @UntrackedTask sur GovernanceExecutableTask (validation Gradle 9.5.1)
+- BOM dependency bump dans libs.versions.toml (0.0.3 → 0.0.4)
+- Commit + push (8aa0104) — CI déclenchée
