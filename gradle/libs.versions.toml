@@ -4,7 +4,7 @@ koog = "1.0.0"
 
 [libraries]
 # BOM — source unique de vérité pour toutes les versions
-workspace-bom = { module = "education.cccp:workspace-bom", version = "0.0.3" }
+workspace-bom = { module = "education.cccp:workspace-bom", version = "0.0.4" }
 
 # External deps — versions gérées par le BOM (pas de version ici)
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml" }

@@ -5,6 +5,7 @@ import org.gradle.api.Project
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.UntrackedTask
 import org.slf4j.LoggerFactory
 import java.time.Instant
 
@@ -61,6 +62,7 @@ class AgenticGradleTaskRegistrar {
         return "${prefix}_$shortId"
     }
 
+    @UntrackedTask(because = "governance executable marker — not cacheable")
     abstract class GovernanceExecutableTask : DefaultTask() {
 
         private val log = LoggerFactory.getLogger(GovernanceExecutableTask::class.java)
