@@ -4,19 +4,17 @@ import java.time.Duration
 fun isCI() = System.getenv("CI") == "true"
 
 plugins {
-    signing
     `java-library`
-    `maven-publish`
-    `java-gradle-plugin`
-    // Gradle 9.5.1 : alias(libs.plugins.kotlin.jvm) et publish hors scope dans plugins {} d'un sous-projet
-    // Workaround : versions explicites
-    id("org.jetbrains.kotlin.jvm") version "2.3.20"
     kotlin("plugin.serialization") version "2.3.20"
     id("org.jetbrains.kotlinx.kover") version "0.9.8"
+    id("education.cccp.build.gradle-plugin") version "0.0.1"
     id("com.gradle.plugin-publish") version "2.1.0"
+    id("education.cccp.build.publishing") version "0.0.1"
 }
 
-kotlin.jvmToolchain(24)
+publishingConventions {
+    publicationType = "PLUGIN"
+}
 
 dependencies {
     implementation(platform(libs.workspace.bom))
@@ -231,56 +229,6 @@ gradlePlugin {
     }
 }
 
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
-publishing {
-    publications {
-        withType<MavenPublication> {
-            pom {
-                name.set(gradlePlugin.plugins.getByName("codebase").displayName)
-                description.set(gradlePlugin.plugins.getByName("codebase").description)
-                url.set(gradlePlugin.website.get())
-                licenses {
-                    license {
-                        name.set("The Apache License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("cccp-education")
-                        name.set("CCCP Education")
-                        email.set("cccp.edu@gmail.com")
-                    }
-                }
-                scm {
-                    connection.set(gradlePlugin.vcsUrl.get())
-                    developerConnection.set(gradlePlugin.vcsUrl.get())
-                    url.set(gradlePlugin.vcsUrl.get())
-                }
-                project.findProperty("relocationGroup")?.let { targetGroup ->
-                    withXml {
-                        val pom = asElement()
-                        val doc = pom.ownerDocument
-                        val distMgmt = doc.createElement("distributionManagement")
-                        val relocation = doc.createElement("relocation")
-                        relocation.appendChild(doc.createElement("groupId")).also { it.textContent = targetGroup.toString() }
-                        relocation.appendChild(doc.createElement("artifactId")).also { it.textContent = project.name }
-                        distMgmt.appendChild(relocation)
-                        pom.appendChild(distMgmt)
-                    }
-                }
-            }
-        }
-    }
-    repositories {
-        mavenCentral()
-    }
-}
-
 tasks.register("validateDependencies") {
     description = "Validates dependency conflict resolution + CVE audit + heavy transitive report"
     group = "verification"
@@ -348,9 +296,3 @@ kover {
     }
 }
 
-signing {
-    if (System.getenv("CI") != "true" && !version.toString().endsWith("-SNAPSHOT")) {
-        sign(publishing.publications)
-    }
-    useGpgCmd()
-}
