@@ -21,7 +21,7 @@ Feature: Session Protocol — opencode↔Gradle thin client bridge
   @protocol_token_tracking
   Scenario: Token usage is tracked in response
     Given a SessionProtocolTask is configured with FakeLlmProvider
-    When I send prompt "Track my tokens" with model "deepseek-v4-pro"
+    When I send prompt "Track my tokens" with model "gpt-oss:120b-cloud"
     Then the response contains tokenUsage
     And the response has non-zero promptTokens
 

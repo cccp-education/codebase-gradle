@@ -1,0 +1,45 @@
+= Session 170 — SEC-1 : purge deepseek des features + CI anonymize.yml
+:session: 170
+:date: 2026-06-30
+:type: sécurité
+:score: 8/10
+
+== Objectif
+
+EPIC SEC-1 (workspace-bom) : purger les références deepseek résiduelles dans
+codebase-gradle (features Cucumber + CI workflow).
+
+== Ce qui a été fait
+
+=== 1. Features Cucumber — données metadata
+
+Remplacement `deepseek-v4-pro` → `gpt-oss:120b-cloud` dans :
+- `epic_sp_4_e2e.feature` (2 occurrences — model dans scénario E2E)
+- `epic_sp_1_session_protocol.feature` (1 occurrence — model dans prompt)
+- `epic_k_metadata_contract.feature` (6 occurrences — model dans JSON metadata Plans)
+
+Ces références étaient des **données de test** (strings dans JSON/scénarios),
+pas des appels réseau. Les tests Cucumber utilisent `FakeLlmProvider`/`FakeLlmTranslator`.
+
+=== 2. CI workflow anonymize.yml
+
+- `OLLAMA_HOST=0.0.0.0:11434` → `11440`
+- `curl http://localhost:11434` → `11440`
+- `ollama pull deepseek-v4-pro:cloud` → `gpt-oss:120b-cloud`
+
+=== 3. CI workflow test.yml
+
+Port `11434` dans `-p $port:11434` = port interne container Docker (11466/11467
+mappés vers l'intérieur 11434). **Non modifié** — légitime (port interne container,
+pas port hôte local).
+
+== Fichiers modifiés
+
+* `codebase-plugin/src/test/features/epic_sp_4_e2e.feature`
+* `codebase-plugin/src/test/features/epic_sp_1_session_protocol.feature`
+* `codebase-plugin/src/test/features/epic_k_metadata_contract.feature`
+* `.github/workflows/anonymize.yml`
+
+== Prochaines étapes
+
+* Maintenance — codebase-gradle 0.0.3 publié, CI-green, dormant.

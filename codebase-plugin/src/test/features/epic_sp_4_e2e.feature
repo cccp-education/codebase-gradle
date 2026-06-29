@@ -7,10 +7,10 @@ Feature: Session Protocol SP-4 — Tests E2E opencode→runner→codebase→sess
   @e2e_create_vibecode_close
   Scenario: Full lifecycle — create session, vibecode, get response, close session
     Given an E2E SessionProtocolTask with lifecycle enabled
-    When I E2E execute action "create" with prompt "Add dark mode toggle to settings" and model "deepseek-v4-pro"
+    When I E2E execute action "create" with prompt "Add dark mode toggle to settings" and model "gpt-oss:120b-cloud"
     Then the E2E lifecycle shows 1 session with status RUNNING
     And the E2E session prompt is "Add dark mode toggle to settings"
-    And the E2E session model is "deepseek-v4-pro"
+    And the E2E session model is "gpt-oss:120b-cloud"
     And the E2E session has a response with status COMPLETED
     And the E2E response contains tokenUsage
     When I E2E execute action "close" with sessionId of the created session

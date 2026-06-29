@@ -3,8 +3,8 @@
 :icons: font
 
 *Date de creation* : 2026-06-16
-*Derniere mise a jour* : 2026-06-26
-*Version* : 0.0.4 (Session 169 — CI-green confirmé : run 28206228434 fast-tests ✅ 2m31s + full-tests ✅ 33m50s. Backlog synchronisé : EPIC 1 stale purgé, EPIC OCR + CR stale corrigés. Backlog restant = EPIC V-FLYWAY uniquement (P2 conditionnel, seuil 5+ migrations, actuellement 4). Borough DORMANT CI-green.)
+*Derniere mise a jour* : 2026-06-30
+*Version* : 0.0.4 (Session 170 — SEC-1 : purge deepseek features + CI anonymize.yml. Borough DORMANT CI-green.)
 
 == Regles Absolues
 
