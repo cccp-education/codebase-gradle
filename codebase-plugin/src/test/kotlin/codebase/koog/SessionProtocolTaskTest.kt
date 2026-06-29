@@ -44,13 +44,13 @@ class SessionProtocolTaskTest {
             it.prompt.set("Fix typo in README")
             it.sessionId.set("550e8400-e29b-41d4-a716-446655440000")
             it.maxActions.set(5)
-            it.model.set("deepseek-v4-pro")
+            it.model.set("gemma4:31b-cloud")
         }.get()
 
         assertEquals("Fix typo in README", task.prompt.get())
         assertEquals("550e8400-e29b-41d4-a716-446655440000", task.sessionId.get())
         assertEquals(5, task.maxActions.get())
-        assertEquals("deepseek-v4-pro", task.model.get())
+        assertEquals("gemma4:31b-cloud", task.model.get())
     }
 
     @Test
@@ -204,7 +204,7 @@ class SessionProtocolTaskTest {
 
         val task = project.tasks.register("sessionProtocol", SessionProtocolTask::class.java) {
             it.prompt.set("Track my tokens")
-            it.model.set("deepseek-v4-pro")
+            it.model.set("gemma4:31b-cloud")
             it.maxActions.set(2)
             it.workspaceRoot.set(project.layout.projectDirectory.file("."))
         }.get()

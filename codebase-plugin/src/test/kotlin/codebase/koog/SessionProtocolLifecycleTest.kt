@@ -16,7 +16,7 @@ class SessionProtocolLifecycleTest {
     @Test
     fun `create starts a new session with CREATED status`(@TempDir tempDir: Path) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
-        val state = manager.create("Fix typo in README", "deepseek-v4-pro")
+        val state = manager.create("Fix typo in README", "gemma4:31b-cloud")
 
         assertEquals("Fix typo in README", state.prompt)
         assertEquals(LifecycleStatus.CREATED, state.status)
@@ -29,7 +29,7 @@ class SessionProtocolLifecycleTest {
     @Test
     fun `resume loads an existing session with RUNNING status`(@TempDir tempDir: Path) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
-        val created = manager.create("Add dark mode toggle", "deepseek-v4-pro")
+        val created = manager.create("Add dark mode toggle", "gemma4:31b-cloud")
         val resumed = manager.resume(created.sessionId)
 
         assertEquals(created.sessionId, resumed.parentSessionId)

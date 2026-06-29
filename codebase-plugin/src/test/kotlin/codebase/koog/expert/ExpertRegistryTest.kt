@@ -36,7 +36,7 @@ class ExpertRegistryTest {
         registry.registerAll(listOf(
             ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud"),
             ExpertRegistration(docsDomain, "gpt-oss:120b-cloud"),
-            ExpertRegistration(generalDomain, "deepseek-v4-pro")
+            ExpertRegistration(generalDomain, "gemma4:31b-cloud")
         ))
 
         assertEquals(3, registry.size())

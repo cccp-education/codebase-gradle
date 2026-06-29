@@ -535,7 +535,7 @@ class VibecodingGraph(
             runBlocking {
                 repo.updateSession(sid, state, "unknown", tracker)
             }
-            log.debug("[VibecodingGraph] Session {} updated: iteration={}, promptTokens={}, cost={}", sessionId, state.iteration, tracker.promptTokens, tracker.estimatedCost("deepseek-v4-pro"))
+            log.debug("[VibecodingGraph] Session {} updated: iteration={}, promptTokens={}, cost={}", sessionId, state.iteration, tracker.promptTokens, tracker.estimatedCost("gemma4:31b-cloud"))
             state
         } catch (e: Exception) {
             log.warn("[VibecodingGraph] persistState failed: {}", e.message)

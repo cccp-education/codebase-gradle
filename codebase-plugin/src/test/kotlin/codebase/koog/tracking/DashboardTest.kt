@@ -69,8 +69,8 @@ class DashboardTest {
 
     @Test
     fun `totalCost sums estimated costs across all sessions`() = runBlocking {
-        fakeRepo.add(session("s1", "task1", Instant.now(), Instant.now(), 1000, 500, "deepseek-v4-pro", 0.01, "public"))
-        fakeRepo.add(session("s2", "task2", Instant.now(), Instant.now(), 2000, 1000, "deepseek-v4-pro", 0.02, "public"))
+        fakeRepo.add(session("s1", "task1", Instant.now(), Instant.now(), 1000, 500, "gemma4:31b-cloud", 0.01, "public"))
+        fakeRepo.add(session("s2", "task2", Instant.now(), Instant.now(), 2000, 1000, "gemma4:31b-cloud", 0.02, "public"))
         val cost = dashboard.totalCost()
         assertTrue(cost > 0.0)
         assertEquals(0.03, cost, 0.0001)
@@ -78,9 +78,9 @@ class DashboardTest {
 
     @Test
     fun `totalSessions returns count of all sessions`() = runBlocking {
-        fakeRepo.add(session("s1", "task1", Instant.now(), Instant.now(), 100, 50, "deepseek-v4-flash", 0.0, "public"))
-        fakeRepo.add(session("s2", "task2", Instant.now(), Instant.now(), 200, 100, "deepseek-v4-flash", 0.0, "public"))
-        fakeRepo.add(session("s3", "task3", Instant.now(), Instant.now(), 300, 150, "deepseek-v4-flash", 0.0, "public"))
+        fakeRepo.add(session("s1", "task1", Instant.now(), Instant.now(), 100, 50, "gpt-oss:120b-cloud", 0.0, "public"))
+        fakeRepo.add(session("s2", "task2", Instant.now(), Instant.now(), 200, 100, "gpt-oss:120b-cloud", 0.0, "public"))
+        fakeRepo.add(session("s3", "task3", Instant.now(), Instant.now(), 300, 150, "gpt-oss:120b-cloud", 0.0, "public"))
         assertEquals(3, dashboard.totalSessions())
     }
 
@@ -96,8 +96,8 @@ class DashboardTest {
 
     @Test
     fun `averageCostPerSession computes correctly`() = runBlocking {
-        fakeRepo.add(session("s1", "t1", Instant.now(), Instant.now(), 1000, 500, "deepseek-v4-pro", 0.01, "public"))
-        fakeRepo.add(session("s2", "t2", Instant.now(), Instant.now(), 2000, 1000, "deepseek-v4-pro", 0.03, "public"))
+        fakeRepo.add(session("s1", "t1", Instant.now(), Instant.now(), 1000, 500, "gemma4:31b-cloud", 0.01, "public"))
+        fakeRepo.add(session("s2", "t2", Instant.now(), Instant.now(), 2000, 1000, "gemma4:31b-cloud", 0.03, "public"))
         val avg = dashboard.averageCostPerSession()
         assertEquals(0.02, avg, 0.0001)
     }
@@ -115,8 +115,8 @@ class DashboardTest {
 
     @Test
     fun `summary includes all aggregated fields`() = runBlocking {
-        fakeRepo.add(session("s1", "t1", Instant.now().minus(2, ChronoUnit.DAYS), Instant.now(), 1000, 500, "deepseek-v4-pro", 0.01, "public"))
-        fakeRepo.add(session("s2", "t2", Instant.now().minus(40, ChronoUnit.DAYS), Instant.now().minus(40, ChronoUnit.DAYS), 2000, 1000, "deepseek-v4-pro", 0.02, "confidential"))
+        fakeRepo.add(session("s1", "t1", Instant.now().minus(2, ChronoUnit.DAYS), Instant.now(), 1000, 500, "gemma4:31b-cloud", 0.01, "public"))
+        fakeRepo.add(session("s2", "t2", Instant.now().minus(40, ChronoUnit.DAYS), Instant.now().minus(40, ChronoUnit.DAYS), 2000, 1000, "gemma4:31b-cloud", 0.02, "confidential"))
         val summary = dashboard.summary()
         assertEquals(2, summary.totalSessions)
         assertEquals(0.03, summary.totalCost, 0.0001)

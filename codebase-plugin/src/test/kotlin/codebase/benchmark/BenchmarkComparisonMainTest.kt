@@ -151,7 +151,7 @@ class BenchmarkComparisonMainTest {
             )
         )
 
-        val adoc = BenchmarkComparisonMain.generateComparisonAsciiDoc(listOf(record), "deepseek-v4")
+        val adoc = BenchmarkComparisonMain.generateComparisonAsciiDoc(listOf(record), "gemma4-v4")
         assertTrue(adoc.contains("Matrice de Comparaison"))
         assertTrue(adoc.contains("Scénarios Exécutés"))
         assertTrue(adoc.contains("Analyse par Scénario"))

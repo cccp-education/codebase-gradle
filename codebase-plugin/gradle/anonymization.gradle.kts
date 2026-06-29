@@ -327,11 +327,11 @@ project.tasks.register("verifyCodebaseToAnonymizedYaml") {
 
         val yaml3 = with(anon) {
             CodebaseConfiguration(ai = AiProvidersConfig(ollama = LlmProviderConfig(
-                baseUrl = "http://localhost:11434", models = listOf("llama3.2", "codellama"),
+                baseUrl = "http://localhost:11444", models = listOf("llama3.2", "codellama"),
                 accounts = listOf(LlmAccount("local", "", emptyList()))
             ))).toAnonymizedYaml(mapper)
         }
-        check("http://localhost:11434" in yaml3) { "FAIL case 3" }
+        check("http://localhost:11444" in yaml3) { "FAIL case 3" }
         check("llama3.2" in yaml3) { "FAIL case 3" }
         check("codellama" in yaml3) { "FAIL case 3" }
         logger.lifecycle("✅ case 3 OK")
@@ -480,7 +480,7 @@ ai:
             expiresAt: ""
 
   ollama:
-    baseUrl: "http://localhost:11434"
+    baseUrl: "http://localhost:11444"
     models:
       - llama3.2
       - codellama

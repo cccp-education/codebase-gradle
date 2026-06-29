@@ -28,7 +28,7 @@ class SessionProtocolE2ETest {
             it.prompt.set("Add dark mode toggle to settings")
             it.action.set("create")
             it.maxActions.set(3)
-            it.model.set("deepseek-v4-pro")
+            it.model.set("gemma4:31b-cloud")
             it.workspaceRoot.set(project.layout.projectDirectory.file("."))
         }.get()
 
@@ -43,7 +43,7 @@ class SessionProtocolE2ETest {
         val created = lifecycleMgr.list()[0]
         assertEquals(LifecycleStatus.RUNNING, created.status)
         assertEquals("Add dark mode toggle to settings", created.prompt)
-        assertEquals("deepseek-v4-pro", created.model)
+        assertEquals("gemma4:31b-cloud", created.model)
         assertNotNull(created.lastResponseJson)
 
         val responseJson = created.lastResponseJson!!

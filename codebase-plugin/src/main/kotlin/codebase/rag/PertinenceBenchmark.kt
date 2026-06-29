@@ -84,7 +84,7 @@ object PertinenceQuestions {
             "Q10-stack",
             "Quelles sont les technologies utilisees dans l'ecosysteme workspace (LangChain4j, ONNX, pgvector, Ollama, LangGraph4j) et leurs roles respectifs ?",
             "Stack",
-            listOf("LangChain4j", "ONNX", "pgvector", "Ollama", "LangGraph4j", "deepseek", "embedding"),
+            listOf("LangChain4j", "ONNX", "pgvector", "Ollama", "LangGraph4j", "gemma4", "embedding"),
             150
         )
     )

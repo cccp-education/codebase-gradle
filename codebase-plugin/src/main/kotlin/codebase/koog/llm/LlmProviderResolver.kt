@@ -18,7 +18,7 @@ import kotlinx.coroutines.runBlocking
  *
  * Mapping:
  * - "gemini" → [GeminiLlmProvider]
- * - "ollama", "deepseek" → [OllamaLlmProvider] backed by Gemma4 Cloud pool
+ * - "ollama", "" → [OllamaLlmProvider] backed by Gemma4 Cloud pool
  *   (ROUND_ROBIN rotation across live ports discovered by [OllamaInstanceScanner]
  *   when `OLLAMA_POOL_PORTS` is absent, or from `OLLAMA_POOL_PORTS` when set)
  * - any other string → [OllamaLlmProvider] single-instance with that model name
@@ -42,7 +42,7 @@ object LlmProviderResolver {
     fun resolve(model: String): LlmProvider {
         return when (model.lowercase().trim()) {
             "gemini" -> GeminiLlmProvider(GeminiConfig())
-            "ollama", "deepseek", "" -> OllamaLlmProvider(
+            "ollama", "" -> OllamaLlmProvider(
                 OllamaPool(
                     resolveOllamaInstances(),
                     rotationStrategy = RotationStrategy.ROUND_ROBIN

@@ -135,7 +135,7 @@ object BenchmarkReportExporter {
         sb.appendLine("== Metrique Cle")
         sb.appendLine()
         sb.appendLine("- *Taux d'erreur de classification* = BoundaryCrossingEvents / TotalSamples")
-        sb.appendLine("- *Objectif* : Determiner le seuil de tokens a partir duquel deepseek-v4-pro")
+        sb.appendLine("- *Objectif* : Determiner le seuil de tokens a partir duquel gemma4:31b-cloud")
         sb.appendLine("  perd la notion de cercle de confiance.")
         sb.appendLine("- *Methode* : Injection de contexte de remplissage technique a N tokens,")
         sb.appendLine("  classification de 7 documents de test par cercle.")

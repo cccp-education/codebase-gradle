@@ -18,7 +18,7 @@ import kotlin.test.assertIs
  *
  * Architecture TDD : ces tests définissent le comportement attendu.
  * - "gemini" → GeminiLlmProvider (lazy, sans appel .call())
- * - "ollama", "deepseek", "" → OllamaLlmProvider avec gpt-oss:120b-cloud
+ * - "ollama", "" → OllamaLlmProvider avec gpt-oss:120b-cloud
  *   (pool alimenté par factory déterministe quand aucune env scanner n'est présente)
  * - Autre chaîne → OllamaLlmProvider avec cette chaîne comme model name
  */
@@ -48,14 +48,6 @@ class LlmProviderResolverTest {
     fun `resolve ollama returns OllamaLlmProvider from deterministic factory`() {
         LlmProviderResolver.environmentReader = { EnvironmentReader { null } }
         val provider = LlmProviderResolver.resolve("ollama")
-        assertIs<OllamaLlmProvider>(provider)
-        assertPoolHasFactoryInstances(provider, count = 29)
-    }
-
-    @Test
-    fun `resolve deepseek returns OllamaLlmProvider from deterministic factory`() {
-        LlmProviderResolver.environmentReader = { EnvironmentReader { null } }
-        val provider = LlmProviderResolver.resolve("deepseek")
         assertIs<OllamaLlmProvider>(provider)
         assertPoolHasFactoryInstances(provider, count = 29)
     }

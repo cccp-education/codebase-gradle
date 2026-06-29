@@ -193,7 +193,7 @@ object ContextFiller {
             "Le serveur JBake intégré compile les templates Thymeleaf avec données YAML pour générer des sites statiques déployables via GitHub Pages avec workflow CI/CD automatisé.",
             "La task Gradle indexCodebase scanne récursivement le workspace, extrait le contenu des fichiers .kt/.adoc/.yml/.json, anonymise les secrets, tokenize en chunks de 500 tokens avec overlap 50, et indexe dans pgvector.",
             "Le fine-tuning des experts spécialisés utilise la méthode continual pre-training avec 10% du corpus cible, validée par l'article ACL 2024 arXiv 2311.08545.",
-            "Le dispatcher deepseek-v4-pro décompose les tâches complexes en sous-tâches atomiques distribuées par batch aux experts spécialisés, avec collecte et synthèse des résultats.",
+            "Le dispatcher gemma4:31b-cloud décompose les tâches complexes en sous-tâches atomiques distribuées par batch aux experts spécialisés, avec collecte et synthèse des résultats.",
             "La boucle de qualité ONNX valide chaque output expert via analyse de sentiment, détection de hors-sujet et contrôle de cohérence avant transmission au dispatcher pour la synthèse finale.",
             "Le protocole de mesure EPIC 4 évalue la dégradation de la perception spatiale du LLM à 10K, 30K, 60K, 100K et 128K tokens avec 5 scénarios de couverture incrémentale des canaux convergents."
         )

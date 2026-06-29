@@ -40,7 +40,7 @@ import java.time.Instant
  *
  * Usage (réel avec LLM) :
  * ```
- * ./gradlew vibecode --intention="Refactor the DAG N1→N2→N3" --model=deepseek --maxActions=20
+ * ./gradlew vibecode --intention="Refactor the DAG N1→N2→N3" --model=ollama --maxActions=20
  * ```
  *
  * Usage (Gemini) :
@@ -70,7 +70,7 @@ abstract class VibecodingTask : DefaultTask() {
 
     @get:Input
     @get:Optional
-    @get:Option(option = "model", description = "Modèle LLM (gemini, deepseek, ollama, gpt-oss:120b-cloud, etc.). Défaut: ollama (gpt-oss:120b-cloud)")
+    @get:Option(option = "model", description = "Modèle LLM (gemini, ollama, gpt-oss:120b-cloud, gemma4:31b-cloud, etc.). Défaut: ollama (gpt-oss:120b-cloud)")
     abstract val model: Property<String>
 
     @get:Input
