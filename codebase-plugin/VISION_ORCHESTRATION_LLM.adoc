@@ -60,7 +60,7 @@ La solution : des **modèles spécialisés fine-tunés** sur le matériel du wor
 ----
 TÂCHE COMPLEXE
     ↓
-DISPATCHER (deepseek-v4-pro)
+DISPATCHER (gpt-oss:120b-cloud)
 ├── Décomposition en sous-tâches de complexité moindre
 ├── Distribution batch → experts spécialisés
 ├── Collecte des résultats

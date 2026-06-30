@@ -149,7 +149,7 @@ Le `CompositeContextBuilder` (déjà fait via EPIC 9) agrège ces canaux.
 
 * [x] Persistance partagee entre agents (PostgreSQL + pgvector) — ExpertCallRepository R2DBC, table expert_calls, 13/13 PASS
 * [x] API d'appel aux experts fine-tunes (via Ollama) — ExpertAgent (LangChain4j AiServices) + ExpertAgentFactory + ExpertRegistry, 14/14 PASS
-* [x] Integration avec le dispatcher deepseek-v4-pro — DispatcherAgent (decomposition + routage + synthese), 14/14 PASS
+* [x] Integration avec le dispatcher gpt-oss:120b-cloud — DispatcherAgent (decomposition + routage + synthese), 14/14 PASS
 * [x] Anonymisation pre-query automatique via EPIC 2 — ExpertCallPipeline (anonymize→dispatch→call→collect→synthesize), 7/7 PASS + 5 Cucumber
 
 Package `codebase.koog.expert/` : 7 fichiers src (ExpertContracts, ExpertRegistry, ExpertAgent, DispatcherContracts, DispatcherAgent, ExpertCallPipeline, ExpertCallRecord, ExpertCallRepository).

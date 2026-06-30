@@ -266,7 +266,7 @@ deployToGhPages (Staten)       — Déploie le site de documentation magic-stick
   "modules": ["accueil", "algorithmique", "projet"],
   "competences": ["C1", "C2", "C3"],
   "generatedAt": "2026-05-18T19:00:00Z",
-  "model": "deepseek-v4-pro",
+  "model": "gpt-oss:120b-cloud",
   "version": "1.0",
   "dependencies": ["queens", "graphify"]
 }
@@ -410,7 +410,7 @@ Nouvelles tâches : `generateSlides` (group=generate), `generatePdf` (group=gene
 // Exemple — build.gradle.kts
 planner {
     ollamaUrl.set("http://localhost:11434")
-    modelName.set("deepseek-v4-pro:cloud")
+    modelName.set("gpt-oss:120b-cloud:cloud")
 }
 
 training {

@@ -311,6 +311,6 @@ Feature: Autofocus Stack
 
 - *Version* : 1.0
 - *Date* : 2026-06-15
-- *Auteur* : cheroliv + opencode (deepseek-v4-pro)
+- *Auteur* : cheroliv + opencode (gpt-oss:120b-cloud)
 - *Statut* : Z-0 ✅, Z-1 ✅ — EN COURS
 - *Prochaine session* : 107 — Z-2 + Z-3
