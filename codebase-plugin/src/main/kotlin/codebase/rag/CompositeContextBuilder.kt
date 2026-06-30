@@ -38,7 +38,7 @@ class CompositeContextBuilder(
             }
             truncateTokens(ragContent, config.ragTokens)
         } catch (e: Exception) {
-            log.warn("RAG section unavailable (pgvector down?): {}", e.message)
+            log.debug("RAG section unavailable (pgvector down?): {}", e.message)
             "[RAG] pgvector indisponible — section non generee"
         }
 
@@ -68,7 +68,7 @@ class CompositeContextBuilder(
                 }
             }
         } catch (e: Exception) {
-            log.warn("Codex store query failed: {}", e.message)
+            log.debug("Codex store query failed: {}", e.message)
             "[Doc] CodexVectorStore indisponible — ${e.message}"
         }
     }

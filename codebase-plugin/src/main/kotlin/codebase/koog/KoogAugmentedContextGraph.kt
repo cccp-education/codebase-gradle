@@ -46,7 +46,7 @@ class KoogAugmentedContextGraph {
         var state = try {
             buildContextNode(initialState)
         } catch (e: Exception) {
-            log.warn("[KoogAugmentedContextGraph] buildContext failed (pgvector down?): {}", e.message)
+            log.debug("[KoogAugmentedContextGraph] buildContext failed (pgvector down?): {}", e.message)
             initialState.copy(compositeContext = null, error = "BuildContextFailed: ${e.message}")
         }
 
@@ -118,7 +118,7 @@ class KoogAugmentedContextGraph {
         try {
             store.initSchema()
         } catch (e: Exception) {
-            log.warn("[buildCompositeContext] pgvector schema init failed: {}", e.message)
+            log.debug("[buildCompositeContext] pgvector schema init failed: {}", e.message)
         }
 
         val pipeline = EmbeddingPipeline(store)

@@ -2,6 +2,27 @@
 :toc: left
 :icons: font
 
+== Session 171 — 2026-06-30
+
+* **EPICs** : Aucun (réduction bruit logs)
+* **Livrables** :
+** 8 `log.warn` → `log.debug` dans 4 fichiers production (CompositeContextBuilder, KoogAugmentedContextGraph, KoogPlanningOrchestrator, MultiChannelContextGraph)
+** Mode dégradé sans pgvector = nominal en test — messages passés en debug au lieu de warn
+** Bruit `Cannot connect to localhost/<unresolved>:5432` + `pgvector schema init failed` + `RAG section unavailable` éliminé de la sortie standard
+* **Tests** : `compileKotlin` BUILD SUCCESSFUL (23s) + `cucumberTestEpicVLocal` BUILD SUCCESSFUL (1m32s)
+* **Build** : Aucun changement structurel, juste niveau de log
+* **Fichiers** : 4 fichiers Kotlin (8 lignes modifiées)
+* **Score** : 9/10
+
+== Session 170 — 2026-06-29
+
+* **EPICs** : SEC-1 purge deepseek
+* **Livrables** :
+** Purge deepseek des features + CI anonymize.yml
+** Bump 0.0.4 → 0.0.5
+** workspace-bom 0.0.4 + codebase-plugin 0.0.5 publiés Maven Central
+* **Score** : 8/10
+
 == Session 169 — 2026-06-26
 
 * **EPICs** : Aucun (validation CI + synchronisation backlog)

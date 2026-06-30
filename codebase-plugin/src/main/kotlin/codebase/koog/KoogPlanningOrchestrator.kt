@@ -46,7 +46,7 @@ class KoogPlanningOrchestrator {
         var state = try {
             buildContextNode(initialState)
         } catch (e: Exception) {
-            log.warn("[KoogPlanningOrchestrator] buildContext failed (pgvector down?): {}", e.message)
+            log.debug("[KoogPlanningOrchestrator] buildContext failed (pgvector down?): {}", e.message)
             initialState.copy(compositeContext = null, error = "BuildContextFailed: ${e.message}")
         }
 
@@ -146,7 +146,7 @@ class KoogPlanningOrchestrator {
         try {
             store.initSchema()
         } catch (e: Exception) {
-            log.warn("[buildCompositeContext] pgvector schema init failed: {}", e.message)
+            log.debug("[buildCompositeContext] pgvector schema init failed: {}", e.message)
         }
 
         val pipeline = EmbeddingPipeline(store)

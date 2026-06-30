@@ -120,7 +120,7 @@ class MultiChannelContextGraph {
                 "[sim=${"%.3f".format(Locale.US, r.similarity)}] ${r.text.take(300)}"
             }
         } catch (e: Exception) {
-            log.warn("[collectRag] pgvector unavailable: {}", e.message)
+            log.debug("[collectRag] pgvector unavailable: {}", e.message)
             "[RAG] pgvector indisponible — section non generee"
         }
         val channel = ContextChannel.Rag(content).truncateToTokens(state.budget.ragTokens)
@@ -143,7 +143,7 @@ class MultiChannelContextGraph {
                 "[Docs] source=${r.sourceDocument} section=${r.sectionPath} sim=${"%.3f".format(Locale.US, r.similarity)}\n${r.chunkText.take(500)}"
             }
         } catch (e: Exception) {
-            log.warn("[collectDocs] codex store unavailable: {}", e.message)
+            log.debug("[collectDocs] codex store unavailable: {}", e.message)
             "[Docs] CodexVectorStore indisponible — ${e.message}"
         }
         val channel = ContextChannel.Docs(content).truncateToTokens(state.budget.docsTokens)

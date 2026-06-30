@@ -1,0 +1,55 @@
+= Session 171 — Réduction du bruit pgvector en logs (Queens)
+
+== Date
+2026-06-30
+
+== Contexte
+Session MEMPHIS/workspace-bom — `runAllTests` cross-boroughs. Bruit pgvector
+récurrent dans les logs de tests de codebase-gradle :
+`Cannot connect to localhost/<unresolved>:5432`,
+`pgvector schema init failed`, `RAG section unavailable`, `Codex store query failed`.
+
+== Problème
+Les tests Cucumber `epic_v_local_governance_fallback` exécutent le pipeline
+complet `buildCompositeContext` sans pgvector (mode dégradé résilient prévu).
+Le code de production logait en `WARN` chaque échec de connexion pgvector,
+alors que ce chemin est nominal en test — d'où un bruit constant dans la sortie.
+
+== Solution
+Passage de 8 `log.warn` → `log.debug` dans 4 fichiers du code de production :
+
+. `codebase/rag/CompositeContextBuilder.kt` — 2 warn (RAG section + Codex store)
+. `codebase/koog/KoogAugmentedContextGraph.kt` — 2 warn (buildContext + schema init)
+. `codebase/koog/KoogPlanningOrchestrator.kt` — 2 warn (buildContext + schema init)
+. `codebase/koog/MultiChannelContextGraph.kt` — 2 warn (collectRag + collectDocs)
+
+== Vérification
+. `./gradlew compileKotlin` — BUILD SUCCESSFUL (23s)
+. `./gradlew :codebase-plugin:cucumberTestEpicVLocal` — BUILD SUCCESSFUL (1m32s)
+. Sortie débarrassée des messages pgvector bruyants
+. Les tests `@governance_fallback_*` (5 scénarios) passent toujours en mode résilient
+
+== Analyse
+Les tests sont *explicitement conçus* pour le mode dégradé sans pgvector :
+- `VibecodingGraphTest.kt:29` : `augmentedGraph = null // pas de pgvector — mode résilient`
+- `KoogAugmentedContextGraphTest.kt:27` : `without pgvector does not crash`
+- `KoogPlanningOrchestratorTest.kt:20` : `without pgvector`
+- `PrepareContextTaskTest.kt:13` : `when pgvector is down`
+- `PlanIntentionTaskTest.kt:13` : `without pgvector`
+- Feature `governance_fallback` : utilise `FakeLlmProvider`, ne câble pas Testcontainers
+
+Les tests qui nécessitent vraiment pgvector utilisent `PostgresFixture`
+(Testcontainers `pgvector/pgvector:pg17`).
+
+Le fallback pgvector-down est prévu et testé, pas une anomalie.
+Le passage à `debug` est donc adapté : les messages restent disponibles via
+`--debug` ou config logback, mais n'apparaissent plus dans la sortie standard.
+
+== Fichiers modifiés
+. `codebase-plugin/src/main/kotlin/codebase/rag/CompositeContextBuilder.kt` (2 lignes)
+. `codebase-plugin/src/main/kotlin/codebase/koog/KoogAugmentedContextGraph.kt` (2 lignes)
+. `codebase-plugin/src/main/kotlin/codebase/koog/KoogPlanningOrchestrator.kt` (2 lignes)
+. `codebase-plugin/src/main/kotlin/codebase/koog/MultiChannelContextGraph.kt` (2 lignes)
+
+== Score
+9/10 — Solution propre, vérifiée, impact minimal, bruit éliminé.

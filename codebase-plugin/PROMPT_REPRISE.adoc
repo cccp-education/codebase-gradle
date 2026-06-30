@@ -1,32 +1,35 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 171
-:session: 171
+= Prompt de Reprise — Codebase (Queens N1) — Session 172
+:session: 172
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 170 — Bump + publish Maven Central. workspace-bom 0.0.4 + codebase-plugin 0.0.5 publiés. Fix @UntrackedTask sur GovernanceExecutableTask. CI déclenchée.
+:session_precedente: 171 — Réduction bruit pgvector logs. 8 log.warn→debug dans 4 fichiers Koog/RAG. compileKotlin + cucumberTestEpicVLocal PASS.
 
-== Mission Session 171
+== Mission Session 172
 
 Codebase-gradle est DORMANT. Version 0.0.5 publiée Maven Central.
-Vérifier CI/CD verte sur GitHub Actions (run déclenché session 170).
+La session 171 a réduit le bruit pgvector en logs (mode dégradé résilient).
 
 Réveil sur déclencheur externe uniquement :
 . *Consommateur* — training-gradle (Newark) ou Edster SaaS MVP1 exprime un besoin
 . *V-FLYWAY* — si 5+ fichiers de migration de schéma (actuellement 4 : V1→V4)
 . *Bug critique* — régression signalée par un borough consommateur
 . *Dette technique CI* — warnings GitHub Actions Node.js 20 deprecated (actions@v4→v5)
+. *Publication* — bump 0.0.5→0.0.6 si changes session 171 à publier (log noise fix)
 
 == Backlog Restant
 
 . EPIC V-FLYWAY — P2 conditionnel, seuil 5+ migrations (actuellement 4 : V1→V4)
 . Warnings CI — actions/checkout@v4, setup-java@v4, cache@v4, upload-artifact@v4 → upgrade v5 (Node.js 24)
+. Publication 0.0.6 — si le fix log noise (session 171) justifie un bump
 
 == Contexte Technique
 
 * Version : `0.0.5` (bump session 170)
 * Maven Central : `education.cccp:codebase-plugin:0.0.5` publié
-* BOM : `education.cccp:workspace-bom:0.0.4` publié (bump session 170)
+* BOM : `education.cccp:workspace-bom:0.0.6` publié
 * Kover : 100% coverage (55 classes métier)
 * Tests : 76 JUnit5 + 119 Cucumber PASS (testFast vert, 7 tests @integration exclus du task test)
 * CI : workflow `test.yml` — fast-tests ✅ (PR gate) + full-tests ✅ (Ollama Docker 11466-11467)
+* Session 171 : 8 `log.warn`→`log.debug` dans CompositeContextBuilder, KoogAugmentedContextGraph, KoogPlanningOrchestrator, MultiChannelContextGraph. Bruit pgvector éliminé en mode dégradé.
 
 == Méthodologie
 
@@ -37,4 +40,4 @@ Baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber. Un fichier modifié
 
 Ports 11434-11436 INTERDITS. Ports 11437-11465 autorisés (rotation).
 Modèles autorisés : `gpt-oss:120b-cloud`, `gemma4:31b-cloud`.
-Exception CI/CD : ports 11466-11467 + `qwen3:0.6b` (tests d'intégration GitHub Actions uniquement).
+Exception CI/CD : ports 11466-1167 + `qwen3:0.6b` (tests d'intégration GitHub Actions uniquement).

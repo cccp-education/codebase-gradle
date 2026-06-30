@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-06-30
-*Version* : 0.0.4 (Session 170 — SEC-1 : purge deepseek features + CI anonymize.yml. Borough DORMANT CI-green.)
+*Version* : 0.0.5 (Session 171 — log noise pgvector réduit. 8 log.warn→debug dans 4 fichiers Koog/RAG. Borough DORMANT CI-green.)
 
 == Regles Absolues
 
@@ -47,6 +47,8 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 167 — Fix CI `full-tests` V-6 runner `@integration` + suppression workflow `ingest-governance.yml` cassé. `EpicV6CucumberRunner` filtre `@epic_v_6 and not @integration` (scénario ligne 76 `epic_v_vibecoding.feature` lançait `./gradlew` depuis `/tmp` inexistant en CI → `MaxRetriesExhausted`). Workflow `ingest-governance.yml` supprimé (task `:codebase-plugin:ingestGovernance` inexistante, CodebasePlugin non self-applied — fichier orphelin session 160). Fast Tests ✅ local + CI. Full Test Suite CI run 28196553990 en cours validation.
 | ✅ | Session 168 — Fix 19 échecs JUnit5 CI `full-tests` (run 28197805505). 5 bugs corrigés : (1) `TokenTracker.kt` `COST_PER_MILLION` deepseek→gpt-oss/gemma4/qwen3, (2) `DilutionExecutor.kt`+`StimulusCascade.kt` `Locale.FRENCH` sur `DateTimeFormatter`+`String.format` (6 tests), (3) `MigrationTest` attendus 2→4 migrations (V1-V4), (4) `KoogPlanningOrchestratorTest` accepte `ContextBuildPartial`, (5) `TaskSchemaScannerTest` attendus alignés (13 tasks plugin, 4 collect/7 generate). 7 tests `@integration` légitimes exclus du task `test` via `excludeTags` : `ExecGradleToolTest` (subprocess Gradle conflit catalog), `VibecodingGraphTest.v6 retry` (idem), `PgVectorConfigTest.fromEnv` (reflection JDK24), `LlmConfigTest` (llm-config.yml gitignoré), `MultiChannelContextGraphTest`+`GovernanceContextLoaderTest` (paths hardcodés). `test` + `testFast` verts.
 | ✅ | Session 169 — CI-green confirmé + synchronisation backlog. Run CI 28206228434 : fast-tests ✅ 2m31s + full-tests ✅ 33m50s (19 fixes session 168 validés). Backlog synchronisé : EPIC 1 stale purgé (8/8 TERMINÉ), EPIC OCR stale corrigé (✅ TERMINÉ), EPIC CR stale corrigé (✅ TERMINÉ 14/14). Backlog restant = EPIC V-FLYWAY uniquement (P2 conditionnel, seuil 5+ migrations, actuellement 4). Borough DORMANT CI-green.
+| ✅ | Session 170 — SEC-1 purge deepseek features + CI anonymize.yml. Bump 0.0.4→0.0.5. workspace-bom 0.0.4 + codebase-plugin 0.0.5 publiés Maven Central.
+| ✅ | Session 171 — Réduction bruit pgvector logs. 8 `log.warn`→`log.debug` dans 4 fichiers (CompositeContextBuilder, KoogAugmentedContextGraph, KoogPlanningOrchestrator, MultiChannelContextGraph). Mode dégradé sans pgvector = nominal en test, messages passés en debug. compileKotlin + cucumberTestEpicVLocal PASS.
 
 === EPICs & Projects
 
