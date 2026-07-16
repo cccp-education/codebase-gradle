@@ -14,10 +14,70 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 | Tous autres EPICs | V, W, X, Y, Z, K, L, OCR, CR, TRAD, PUB, V-LOCAL, SP, V-6, V-7, V-8, V-9, 2→12 | ✅ TERMINÉ | Voir détails ci-dessous
 |===
 
-*Backlog réellement restant* : EPIC V-FLYWAY uniquement (P2 conditionnel).
-*Borough DORMANT* depuis session 169. Version 0.0.5 publiée Maven Central.
+*Backlog réellement restant* : EPIC V-FLYWAY (P2 conditionnel) + Publication Maven Central 0.0.6 (si besoin).
 
-== EPIC 1 : Initialisation gouvernance agent codebase-gradle
+== EPIC C-BOM-FIX — POM transitif codebase-plugin versions manquantes
+
+**Statut** : ✅ TERMINÉ (3/3 US, 8/8 pts — Session 172, 2026-07-16)
+
+_Résolution_ : Versions explicites pour 6 artefacts `education.cccp` + 27 deps externes
+dans `libs.versions.toml`. Bump 0.0.5→0.0.6. `publishToMavenLocal` OK.
+22/22 UT bakery LangSwitch GREEN. Zéro régression codebase.
+
+=== User Stories
+
+[cols="1,4,2,2"]
+|===
+| US | Description | Tests | Pts
+
+| C-BOM-FIX-1
+| *Versionner les 3 deps transitives dans le POM codebase* — ajouter les versions
+  explicites pour `agent-contracts:0.0.2`, `llm-pool-contracts:0.0.2`,
+  `opencode-session-contracts:0.0.2` dans le `build.gradle.kts` de codebase-plugin
+  (soit en `implementation` direct avec version, soit via
+  `dependencyManagement` import BOM dans le POM généré). Vérifier le POM publié
+  contient les versions.
+| UT : assert POM publié contient `<version>` pour les 3 artefacts
+| 3
+
+| C-BOM-FIX-2
+| *Publier codebase-plugin:0.0.6 sur Maven Local* — `publishToMavenLocal`,
+  valider le POM dans `~/.m2/repository/education/cccp/codebase-plugin/0.0.6/`.
+| — (validation manuelle + UT C-BOM-FIX-1 sur 0.0.6)
+| 2
+
+| C-BOM-FIX-3
+| *Bumper version consommateur bakery* — `codebase = "0.0.6"` dans
+  `bakery-plugin/gradle/libs.versions.toml`, `codebase-plugin = "0.0.6"`.
+  Lancer `./gradlew test --tests "bakery.langswitch.*"` → 22 UT GREEN.
+| FT : bakery testRuntimeClasspath résout les 3 deps, 22 UT GREEN
+| 3
+|===
+
+_Total_ : ~8 pts, 3 US.
+
+=== Dépendances
+
+----
+C-BOM-FIX-1 (versionner POM) → C-BOM-FIX-2 (publier 0.0.6) → C-BOM-FIX-3 (bump bakery + valider)
+----
+
+*C-BOM-FIX-1* est racine.
+*C-BOM-FIX-3* débloque bakery EPIC BKY-LANG-SWITCH (testRuntimeClasspath résolu).
+
+=== Risques
+
+[cols="3,5]
+|===
+| Risque | Mitigation
+| BOM consommateur surcharge les versions | Backward compat — si BOM présent,
+  sa version gagne. Ajout de version dans POM est un fallback pour consommateurs
+  sans BOM.
+| Version 0.0.6 casse autres consommateurs | Aucun autre borough consomme
+  codebase-plugin en testRuntime directement. Bakery est le seul impacté.
+|===
+
+'''
 
 **Statut** : ✅ TERMINÉ (8/8 — items stale purgés session 169, projet publié Maven Central 0.0.4)
 **Priorite** : N/A — backlog historique

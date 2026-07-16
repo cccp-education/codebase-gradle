@@ -1,0 +1,58 @@
+= Session 172 — EPIC C-BOM-FIX (P0 critique, débloque bakery BKY-LANG-SWITCH)
+
+== Contexte
+
+Borough Queens (codebase-gradle) était DORMANT depuis session 171 (v0.0.5).
+Session 177 bakery (2026-07-16) a cadré EPIC C-BOM-FIX : le POM de
+`codebase-plugin:0.0.5` déclare les deps `education.cccp` et externes **sans
+version** car le BOM en `implementation(platform(...))` ne propage pas ses
+contraintes aux consommateurs transitifs. Bakery ne peut pas résoudre
+`testRuntimeClasspath` pour les 22 UT `LangSwitch`.
+
+== Actions
+
+. **Baby-step TDD** — UT rouge `VersionCatalogTransitiveVersionsTest` (3 tests)
+  assert que `libs.versions.toml` déclare des versions explicites pour les 6
+  artefacts `education.cccp` sans version.
+. **Fix TOML** — ajout versions explicites pour 6 artefacts `education.cccp`
+  (`agent-contracts:0.0.2`, `codebase-contracts:0.0.2`, `llm-pool-contracts:0.0.2`,
+  `opencode-session-contracts:0.0.2`, `i18n-contracts:0.0.2`, `codex-plugin:0.0.2`)
+  + 27 deps externes (langchain4j, r2dbc, arrow, jackson, koog, etc.).
+. **Bump version** — `0.0.5 → 0.0.6` dans `build.gradle.kts` racine.
+. **Publication Maven Local** — `publishToMavenLocal` validé. POM 0.0.6 contient
+  les `<version>` pour les 6 artefacts `education.cccp` + 27 deps externes.
+  `.module` Gradle metadata ne contient plus que `kotlin-stdlib-jdk8` sans
+  version (géré par plugin Kotlin côté consommateur — OK).
+. **Bakery bump** — `codebase = "0.0.6"`, `codebase-contracts = "0.0.2"`,
+  `codebase-plugin = "0.0.6"` dans `bakery-plugin/gradle/libs.versions.toml`.
+. **Validation FT** — 22/22 UT `LangSwitch` (LangSwitchUrlTest + LangSwitchMenuTest)
+  GREEN. `testRuntimeClasspath` résout toutes les deps transitives.
+. **Tests codebase** — `./gradlew :codebase-plugin:test` BUILD SUCCESSFUL
+  (tous UT passent, zéro régression).
+
+== Commandes
+
+----
+./gradlew :codebase-plugin:test --tests "codebase.publishing.VersionCatalogTransitiveVersionsTest"
+./gradlew :codebase-plugin:publishToMavenLocal
+cd ../bakery-gradle/bakery-plugin && ./gradlew test --tests "bakery.langswitch.*"
+./gradlew :codebase-plugin:test
+----
+
+== Résultats
+
+* EPIC C-BOM-FIX TERMINÉ : 3/3 US (8/8 pts)
+* 3 nouveaux UT `VersionCatalogTransitiveVersionsTest`
+* 22/22 UT bakery LangSwitch GREEN
+* Zéro régression codebase (tous UT PASS)
+* Version 0.0.6 publiée sur Maven Local
+
+== Leçons
+
+. `implementation(platform(...))` ne propage PAS les contraintes du BOM aux
+  consommateurs transitifs — c'est un comportement Gradle documenté. La solution
+  est de versionner explicitement toutes les deps dans le TOML.
+. `api(platform(...))` ne change rien au `.module` non plus — le BOM reste
+  invisible aux consommateurs transitifs.
+. Le pattern `codex-plugin:0.0.2` (publié Central) confirme : versionner
+  explicitement toutes les deps externes dans le TOML est la bonne approche.

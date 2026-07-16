@@ -6,44 +6,46 @@ koog = "1.0.0"
 # BOM — source unique de vérité pour toutes les versions
 workspace-bom = { module = "education.cccp:workspace-bom", version = "0.0.4" }
 
-# External deps — versions gérées par le BOM (pas de version ici)
-jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml" }
-jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
-jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
-langchain4j = { module = "dev.langchain4j:langchain4j" }
-langchain4j-pgvector = { module = "dev.langchain4j:langchain4j-pgvector" }
-langchain4j-minilm = { module = "dev.langchain4j:langchain4j-embeddings-all-minilm-l6-v2" }
-langchain4j-ollama = { module = "dev.langchain4j:langchain4j-ollama" }
-googleAiGemini = { module = "dev.langchain4j:langchain4j-google-ai-gemini" }
-testcontainers-postgresql = { module = "org.testcontainers:postgresql" }
-testcontainers-junit5 = { module = "org.testcontainers:junit-jupiter" }
-cucumber-java = { module = "io.cucumber:cucumber-java" }
-cucumber-junit-platform-engine = { module = "io.cucumber:cucumber-junit-platform-engine" }
-cucumber-picocontainer = { module = "io.cucumber:cucumber-picocontainer" }
-junit-platform-suite = { module = "org.junit.platform:junit-platform-suite" }
-logback-classic = { module = "ch.qos.logback:logback-classic" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core" }
-kotlinx-coroutines-reactive = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactive" }
-r2dbc-postgresql = { module = "org.postgresql:r2dbc-postgresql" }
-r2dbc-pool = { module = "io.r2dbc:r2dbc-pool" }
-r2dbc-spi = { module = "io.r2dbc:r2dbc-spi" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json" }
-arrow-core = { module = "io.arrow-kt:arrow-core" }
-arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines" }
-koog-agents = { module = "ai.koog:koog-agents" }
-assertj-core = { module = "org.assertj:assertj-core" }
-junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test" }
+# External deps — versions explicites pour propagation POM transitive
+# (le BOM en implementation(platform()) ne propage pas ses contraintes aux consommateurs transitifs)
+jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version = "2.21.2" }
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version = "2.21.2" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version = "2.21.2" }
+langchain4j = { module = "dev.langchain4j:langchain4j", version = "1.16.3" }
+langchain4j-pgvector = { module = "dev.langchain4j:langchain4j-pgvector", version = "1.16.3-beta26" }
+langchain4j-minilm = { module = "dev.langchain4j:langchain4j-embeddings-all-minilm-l6-v2", version = "1.16.3-beta26" }
+langchain4j-ollama = { module = "dev.langchain4j:langchain4j-ollama", version = "1.16.3" }
+googleAiGemini = { module = "dev.langchain4j:langchain4j-google-ai-gemini", version = "1.16.3" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version = "1.21.4" }
+testcontainers-junit5 = { module = "org.testcontainers:junit-jupiter", version = "1.21.4" }
+cucumber-java = { module = "io.cucumber:cucumber-java", version = "7.34.3" }
+cucumber-junit-platform-engine = { module = "io.cucumber:cucumber-junit-platform-engine", version = "7.34.3" }
+cucumber-picocontainer = { module = "io.cucumber:cucumber-picocontainer", version = "7.34.3" }
+junit-platform-suite = { module = "org.junit.platform:junit-platform-suite", version = "1.14.3" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version = "1.5.32" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.2" }
+kotlinx-coroutines-reactive = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactive", version = "1.10.2" }
+r2dbc-postgresql = { module = "org.postgresql:r2dbc-postgresql", version = "1.0.7.RELEASE" }
+r2dbc-pool = { module = "io.r2dbc:r2dbc-pool", version = "1.0.2.RELEASE" }
+r2dbc-spi = { module = "io.r2dbc:r2dbc-spi", version = "1.0.0.RELEASE" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.7.3" }
+arrow-core = { module = "io.arrow-kt:arrow-core", version = "2.2.2" }
+arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines", version = "2.2.2" }
+koog-agents = { module = "ai.koog:koog-agents", version = "1.0.0" }
+assertj-core = { module = "org.assertj:assertj-core", version = "3.25.3" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.14.3" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = "1.10.2" }
 
-# Internal education.cccp deps — versions gérées par le BOM
-codex-plugin = { module = "education.cccp:codex-plugin" }
+# Internal education.cccp deps — versions explicites pour propagation POM transitive
+# (le BOM en implementation(platform()) ne propage pas ses contraintes aux consommateurs transitifs)
+codex-plugin = { module = "education.cccp:codex-plugin", version = "0.0.2" }
 planner-plugin = { module = "education.cccp:planner-plugin", version = "0.0.1" }
-codebase-contracts = { module = "education.cccp:codebase-contracts" }
-agent-contracts = { module = "education.cccp:agent-contracts" }
+codebase-contracts = { module = "education.cccp:codebase-contracts", version = "0.0.2" }
+agent-contracts = { module = "education.cccp:agent-contracts", version = "0.0.2" }
 vibecoding-contracts = { module = "education.cccp:vibecoding-contracts", version = "0.0.1" }
-llm-pool-contracts = { module = "education.cccp:llm-pool-contracts" }
-opencode-session-contracts = { module = "education.cccp:opencode-session-contracts" }
-i18n-contracts = { module = "education.cccp:i18n-contracts" }
+llm-pool-contracts = { module = "education.cccp:llm-pool-contracts", version = "0.0.2" }
+opencode-session-contracts = { module = "education.cccp:opencode-session-contracts", version = "0.0.2" }
+i18n-contracts = { module = "education.cccp:i18n-contracts", version = "0.0.2" }
 
 [bundles]
 cucumber = [

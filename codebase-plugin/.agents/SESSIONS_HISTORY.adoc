@@ -1,10 +1,11 @@
 = SESSIONS_HISTORY — Codebase Gradle
-:date: 2026-06-26
+:date: 2026-07-16
 
 |===
 | Session | Date | EPIC | Résultat
 
-| 170 | 2026-06-26 | PUB | Bump + publish Maven Central. workspace-bom 0.0.4 + codebase-plugin 0.0.5 publiés (nmcp). Fix @UntrackedTask sur GovernanceExecutableTask (validation Gradle 9.5.1). CI déclenchée. Commit 8aa0104 push ✅
+| 172 | 2026-07-16 | EPIC C-BOM-FIX | C-BOM-FIX TERMINÉ 3/3 US (8/8 pts) — Versions explicites pour 6 artefacts `education.cccp` + 27 deps externes dans `libs.versions.toml` (le BOM en `implementation(platform(...))` ne propage pas ses contraintes aux consommateurs transitifs). Bump 0.0.5→0.0.6. `publishToMavenLocal` OK. POM 0.0.6 + `.module` contiennent les versions. 3 nouveaux UT `VersionCatalogTransitiveVersionsTest`. 22/22 UT bakery LangSwitch GREEN. Zéro régression codebase. Débloque bakery BKY-LANG-SWITCH ✅
+| 171 | 2026-06-30 | — | Réduction bruit pgvector logs. 8 log.warn→debug dans 4 fichiers Koog/RAG. compileKotlin + cucumberTestEpicVLocal PASS ✅
 | 169 | 2026-06-26 | — | CI-green confirmé (run 28206228434 fast-tests ✅ + full-tests ✅ 33m50s). Backlog synchronisé ✅
 | 168 | 2026-06-26 | CI | 19 échecs JUnit5 full-tests résolus — @integration tag + EpicV6CucumberRunner excludes ✅
 | 167 | 2026-06-26 | CI | V-6 runner @integration fix — EpicV6CucumberRunner excludes @integration ✅

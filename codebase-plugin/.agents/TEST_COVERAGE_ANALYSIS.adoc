@@ -1,69 +1,30 @@
-= TEST_COVERAGE_ANALYSIS — Session 159
-:date: 2026-06-23
-:epic: EPIC OCR-1/OCR-2 restants — HTTP 429 + env var + multi-compte + Tesseract
+= Test Coverage Analysis — Codebase Gradle
+:date: 2026-07-16
 
-== Contexte
+== Session 172
 
-PROMPT_REPRISE 159 demandait d'attaquer les items OCR-1/OCR-2 restants
-(P2, PENDING) du BACKLOG.adoc lignes 591-607, en baby-step DDD/TDD/BDD.
+=== Nouveaux tests
 
-== Fichiers source modifiés / créés
+. *VersionCatalogTransitiveVersionsTest* (3 UT) — `codebase-plugin/src/test/kotlin/codebase/publishing/`
+  ** `version catalog file exists()` — assert le TOML existe
+  ** `all transitive education cccp artifacts have explicit versions()` — assert les 6 artefacts education.cccp ont une version explicite
+  ** (3e test fusionné dans le 2e après refactor)
 
-=== codebase-gradle (Queens N1)
+=== Tests modifiés
 
-[cols="2,3"]
-|===
-| Fichier | Changement
+Aucun test existant modifié. Zéro régression.
 
-| `main/kotlin/codebase/koog/llm/pool/GeminiKeyPool.kt` | `markRateLimited`/`isRateLimited`/`rateLimitedIds` set + fallback best-effort non rate-limited
-| `main/kotlin/codebase/koog/llm/pool/GeminiPoolFactory.kt` | NOUVEAU — `fromKeys`/`fromEnvVars` + `idPrefix` param
-| `main/kotlin/codebase/koog/llm/pool/GeminiMultiAccountPool.kt` | NOUVEAU — multi-comptes + `fromEnvVars` multi `GEMINI_ACCOUNT_N_API_KEY_M`
-| `main/kotlin/codebase/koog/llm/GeminiVisionProvider.kt` | `open class`, `keyPool` param, détection 429 dans catch
-| `main/kotlin/codebase/koog/llm/CodexOcrEngineAdapter.kt` | NOUVEAU — adapter `codex.ocr.OcrEngine` → `VisionProvider`
-| `main/kotlin/codebase/ocr/OcrTask.kt` | `geminiApiKeys`, `tesseractOcrProvider`, `resolveGeminiProvider`/`resolveGeminiPool`, fallback Tesseract via adapter
-| `test/kotlin/codebase/koog/llm/pool/GeminiKeyPoolTest.kt` | 4 tests `markRateLimited`/`isRateLimited`/`resetUsage`/`best-effort`
-| `test/kotlin/codebase/koog/llm/pool/GeminiPoolFactoryTest.kt` | NOUVEAU — 11 tests factory
-| `test/kotlin/codebase/koog/llm/pool/GeminiMultiAccountPoolTest.kt` | NOUVEAU — 8 tests multi-compte
-| `test/kotlin/codebase/koog/llm/GeminiVisionProvider429Test.kt` | NOUVEAU — 2 tests 429 detection
-| `test/kotlin/codebase/ocr/OcrTaskPoolTest.kt` | NOUVEAU — 3 tests fonctionnels pool
-| `test/kotlin/codebase/ocr/OcrTaskTesseractFallbackTest.kt` | NOUVEAU — 2 tests fonctionnels Tesseract
-| `test/kotlin/codebase/scenarios/ocr/Ocr1PoolSteps.kt` | NOUVEAU — steps Cucumber `@epic_ocr_1` (HTTP 429 + env var + multi-compte)
-| `test/kotlin/codebase/scenarios/ocr/OcrSteps.kt` | steps Tesseract + `CodexOcrEngineAdapter` imports
-| `test/features/ocr.feature` | 9 scénarios `@epic_ocr_1` + 2 scénarios `@epic_ocr_2` ajoutés
-|===
+=== Couverture
 
-=== codex-gradle (Brooklyn N2)
+* JUnit5 : tous UT PASS (incluant les 3 nouveaux)
+* Cucumber : non lancé (pas de modification de production impactant les features)
+* Bakery FT : 22/22 UT LangSwitch GREEN (validation cross-borough)
 
-[cols="2,3"]
-|===
-| Fichier | Changement
+=== Stats
 
-| `main/kotlin/codex/ocr/OcrEngine.kt` | NOUVEAU — interface `process(OcrRequest): OcrResult`
-| `main/kotlin/codex/ocr/TesseractOcrEngine.kt` | NOUVEAU — CLI tesseract wrapper, best-effort
-| `test/kotlin/codex/ocr/TesseractOcrEngineTest.kt` | NOUVEAU — 5 tests JUnit5
-|===
-
-== Tests exécutés
-
-[cols="3,2,2"]
-|===
-| Suite | Scénarios/tests | Résultat
-
-| GeminiKeyPoolTest | 4 unitaires | ✅ PASS
-| GeminiPoolFactoryTest | 11 unitaires | ✅ PASS
-| GeminiMultiAccountPoolTest | 8 unitaires | ✅ PASS
-| GeminiVisionProvider429Test | 2 unitaires | ✅ PASS
-| OcrTaskPoolTest | 3 fonctionnels | ✅ PASS
-| OcrTaskTesseractFallbackTest | 2 fonctionnels | ✅ PASS
-| OcrCucumberRunner (@epic_ocr_1) | 9 scénarios | ✅ PASS
-| OcrCucumberRunner (@epic_ocr_2) | 2 scénarios | ✅ PASS
-| TesseractOcrEngineTest (codex) | 5 unitaires | ✅ PASS
-|===
-
-Total : 35 tests nouveaux + régressions OCR existantes vertes.
-
-== Boundary architecturale
-
-* **codex-gradle (Brooklyn N2, READ+RAG)** : détient les engines OCR documentaires (sans IA) — `OcrEngine` + `TesseractOcrEngine`
-* **codebase-gradle (Queens N1, LLM)** : orchestre la fallback chain LLM via `CodexOcrEngineAdapter` — Gemini → Ollama → Tesseract
-* Le boundary est strict : codex expose les engines OCR purs, codebase les adapte dans `VisionProvider`
+| Métrique | Valeur |
+|---|---|
+| Nouveaux UT | 3 |
+| Tests modifiés | 0 |
+| Régressions | 0 |
+| Coverage Kover | inchangée (≥80%, minBound 79) |

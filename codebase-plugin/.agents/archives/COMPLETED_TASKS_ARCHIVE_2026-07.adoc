@@ -1,0 +1,43 @@
+= COMPLETED_TASKS_ARCHIVE — Juillet 2026
+
+== Session 172 — EPIC C-BOM-FIX (P0 critique, débloque bakery BKY-LANG-SWITCH)
+
+=== Problème
+
+Le POM de `codebase-plugin:0.0.5` déclare les deps `education.cccp` et externes
+**sans version** car le BOM en `implementation(platform(...))` ne propage pas ses
+contraintes aux consommateurs transitifs. Bakery ne peut pas résoudre
+`testRuntimeClasspath` pour les 22 UT `LangSwitch`.
+
+=== Solution
+
+Versionner explicitement toutes les deps dans `libs.versions.toml` :
+. 6 artefacts `education.cccp` : `agent-contracts:0.0.2`, `codebase-contracts:0.0.2`,
+  `llm-pool-contracts:0.0.2`, `opencode-session-contracts:0.0.2`, `i18n-contracts:0.0.2`,
+  `codex-plugin:0.0.2`
+. 27 deps externes : langchain4j, r2dbc, arrow, jackson, koog, testcontainers, etc.
+. Bump version `0.0.5 → 0.0.6`
+
+=== Fichiers modifiés
+
+. `gradle/libs.versions.toml` — versions explicites pour 33 deps (6 education.cccp + 27 externes)
+. `build.gradle.kts` — bump 0.0.5 → 0.0.6
+. `codebase-plugin/src/test/kotlin/codebase/publishing/VersionCatalogTransitiveVersionsTest.kt` — nouveau UT (3 tests)
+. `codebase-plugin/BACKLOG.adoc` — EPIC C-BOM-FIX cadré (session 177 bakery)
+. `bakery-plugin/gradle/libs.versions.toml` (côté Bushwick) — bump codebase 0.0.6 + contracts 0.0.2
+
+=== Validation
+
+. 3/3 UT `VersionCatalogTransitiveVersionsTest` PASS
+. `publishToMavenLocal` OK — POM 0.0.6 contient les `<version>` pour les 6 artefacts + 27 deps externes
+. `.module` Gradle metadata ne contient plus que `kotlin-stdlib-jdk8` sans version (géré par plugin Kotlin côté consommateur)
+. 22/22 UT bakery LangSwitch GREEN (validation cross-borough)
+. `./gradlew :codebase-plugin:test` BUILD SUCCESSFUL (zéro régression)
+
+=== Leçons
+
+. `implementation(platform(...))` ne propage PAS les contraintes du BOM aux
+  consommateurs transitifs — c'est un comportement Gradle documenté.
+. `api(platform(...))` ne change rien au `.module` non plus.
+. Le pattern `codex-plugin:0.0.2` (publié Central) confirme : versionner
+  explicitement toutes les deps dans le TOML est la bonne approche.
