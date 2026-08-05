@@ -4,9 +4,12 @@ import java.time.Duration
 
 fun isCI() = System.getenv("CI") == "true"
 
+group = "education.cccp"
+version = "0.0.5"
+
 plugins {
     `java-library`
-    kotlin("plugin.serialization") version libs.versions.kotlin.get()
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.10"
     id("org.jetbrains.kotlinx.kover") version "0.9.8"
     id("education.cccp.build.gradle-plugin") version "0.0.2"
     id("com.gradle.plugin-publish") version "2.1.0"
@@ -162,6 +165,7 @@ val cucumberTaskSpecs = listOf(
     CucumberTaskSpec("cucumberTestEpicV918", "Runs Cucumber BDD tests — EPIC V-9.18 (Compile governance chunks to Gradle tasks) only", "codebase.scenarios.EpicV918CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicV919", "Runs Cucumber BDD tests — EPIC V-9.19 (Auto-detection of new governance files) only", "codebase.scenarios.EpicV919CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicV920", "Runs Cucumber BDD tests — EPIC V-9.20 (Chunk diff incremental between sessions) only", "codebase.scenarios.EpicV920CucumberRunner"),
+    CucumberTaskSpec("cucumberTestEpicSld8", "Runs Cucumber BDD tests — EPIC SLD-8 US-8.1 (LlmBuildService Gradle bridge) only", "codebase.scenarios.EpicSld8LlmServiceCucumberRunner"),
 )
 
 val cucumberTasks = cucumberTaskSpecs.map { registerCucumberTask(it) }

@@ -1,45 +1,41 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 176
-:session: 176
+= Prompt de Reprise — Codebase (Queens N1) — Session 177
+:session: 177
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 175 — Clôture code review vibecoding CR-GLOBALE-004. 10 findings (S1-S3 sécurité, C1-C7) archivés GLOBAL_CODE_REVIEW.adoc. Gate tests koog verds (5m44s, Kotlin 2.4.10). Commit b12a092. Borough DORMANT maintenu.
+:session_precedente: 176 — SLD-8 US-8.1 LlmBuildService Gradle bridge + corrections architecture. Pattern « Plugin Indépendant + Racine Consommateur » restauré (article 0124). codebase-plugin/ autonome avec son catalog. BOM 0.0.16 + codebase 0.0.5 mavenLocal. plugin.serialization fix (codebase + planner). US-8.1 livrée TDD/BDD 3 niveaux (5 unit + 3 functional + 4 cucumber = 12 tests, 0 FAIL).
 
-== Mission Session 176
+== Mission Session 177
 
-Codebase-gradle est DORMANT. Version 0.0.6 publiée sur Maven Central.
-La session 175 a clôturé la revue vibecoding (CR-GLOBALE-004 archivée, commit b12a092).
+SLD-8 continue : US-8.2 côté slider. `AssistantManager` (648 lignes, 4
+factories LLM) réduit à du câblage — injection `Provider<LlmBuildService>`
+depuis codebase. Adaptateur `LlmProviderChatModelAdapter` (côté slider)
+adapte `LlmProvider` (suspend fun `call(prompt): String`) → `ChatModel`
+langchain4j (concat system+user en prompt string). Préserve le code de
+consommation existant (`RagTasks`, `TranslateDeckTask`).
 
-Réveil sur déclencheur externe uniquement :
-. *Consommateur* — training-gradle (Newark) ou Edster SaaS MVP1 exprime un besoin
-. *V-FLYWAY* — si 5+ fichiers de migration de schéma (actuellement 4 : V1→V4)
-. *Bug critique* — régression signalée par un borough consommateur
-. *Dette technique CI* — warnings GitHub Actions Node.js 20 deprecated (actions@v4→v5)
-. *Conventions-gradle* — enrichir PublishingConventionsPlugin avec pom.name+description
-  (fix manuel session 173, à généraliser pour éviter le fix dans chaque borough)
-. *VIBE-HARDENING* — durcissement vibecoding (CR-GLOBALE-004), P1 : S1 allowlist
-  deny-by-default, C2 retry un seul compteur, C5 timeout LLM
+== État actuel
 
-== Backlog Restant
+- Version codebase-plugin : `0.0.5` (hardcodé build.gradle.kts, mavenLocal)
+- BOM workspace-bom : `0.0.16` (mavenLocal, codebase constraint 0.0.5)
+- US-8.1 ✅ TERMINÉ : `LlmBuildService` + `LlmServiceResolver` (codebase)
+- US-8.2 🟡 À CÂBLER : `AssistantManager` slider → 4 factories supprimées
+- US-8.3 🟡 À PLANIFIER : `DeckPipelineGraph` sur services codebase
+- BOM 0.0.16 + codebase 0.0.5 non publiés sur Central (mavenLocal only)
 
-. EPIC VIBE-HARDENING — durcissement vibecoding issu CR-GLOBALE-004 (P1 : S1/C2/C5)
-. EPIC V-FLYWAY — P2 conditionnel, seuil 5+ migrations (actuellement 4 : V1→V4)
-. Warnings CI — actions/checkout@v4, setup-java@v4, cache@v4, upload-artifact@v4 → upgrade v5 (Node.js 24)
-. PublishingConventionsPlugin — ajouter pom.name + pom.description par défaut (conventions-gradle)
+== Rappels
 
-== Contexte Technique
+- GroupId : `education.cccp`
+- Pattern architecture : « Plugin Indépendant + Racine Consommateur » (article 0124)
+- `codebase-plugin/` est un build autonome (son propre settings, catalog, wrapper)
+- `codebase-gradle/` est racine consommateur (catalog minimal, dogfooding)
+- DI native Gradle (Decision 001 slider) : `BuildService` + `Provider<T>`
+- `LlmProvider` (fun interface) : `suspend fun call(prompt: String): String`
+- `LlmProviderResolver.resolve(model): LlmProvider` — factory `gemini`/`ollama`/custom
+- `LlmBuildService` : `BuildService<Params>` avec `provider(): LlmProvider`
+- Baby-step TDD/BDD 3 niveaux : unit → functional → cucumber
+- English only : code, Gherkin, comments
+- `./gradlew compileKotlin` côté codebase ; `./gradlew :slider:check` côté slider
 
-* Version : `0.0.6` (publié Maven Central session 173)
-* Maven Central : `education.cccp:codebase-plugin:0.0.6` HTTP 200 (après propagation)
-* BOM : `education.cccp:workspace-bom:0.0.4` publié
-* Tests : koog + vibecoding contracts verds (session 175, 5m44s, Kotlin 2.4.10)
-* Git : HEAD `b12a092` (main, propre), à push sur cccp-education/codebase-gradle
+== Décisions architecture (DECISIONS_ARCHITECTURE.adoc slider)
 
-== Méthodologie
-
-Baby-step DDD/TDD/BDD : unit → fonctionnel → Cucumber. Un fichier modifié
-à la fois, compilation entre chaque étape.
-
-== Contrainte Ollama (rappel AGENTS.adoc)
-
-Ports 11434-11436 INTERDITS. Ports 11437-11465 autorisés (rotation).
-Modèles autorisés : `gpt-oss:120b-cloud`, `gemma4:31b-cloud`.
-Exception CI/CD : ports 11466-11467 + `qwen3:0.6b` (tests d'intégration GitHub Actions uniquement).
+- Decision 001 : rejet PicoContainer, DI native Gradle
+- Decision 002 : slider consomme codebase (N1) comme socle LLM unifié

@@ -1,0 +1,56 @@
+= COMPLETED_TASKS_ARCHIVE — Août 2026 — Codebase Gradle (Queens)
+
+== Session 176 — SLD-8 US-8.1 LlmBuildService Gradle bridge
+
+[cols="2,3"]
+|===
+| Tâche | Statut
+
+| Remise en conformité architecture « Plugin Indépendant + Racine Consommateur »
+| ✅ TERMINÉ
+
+| Suppression `include(":codebase-plugin")` du settings racine
+| ✅ TERMINÉ
+
+| Suppression nmcp du settings racine (reste côté plugin)
+| ✅ TERMINÉ
+
+| Catalog racine minimal (1 plugin au lieu de 30+ deps)
+| ✅ TERMINÉ
+
+| build.gradle.kts racine consommateur (dogfooding natif)
+| ✅ TERMINÉ
+
+| Copie catalog complet vers codebase-plugin/gradle/libs.versions.toml
+| ✅ TERMINÉ
+
+| Hardcodage version 0.0.5 dans codebase-plugin/build.gradle.kts
+| ✅ TERMINÉ
+
+| BOM 0.0.16 + codebase constraint 0.0.3 → 0.0.5
+| ✅ TERMINÉ
+
+| publishToMavenLocal codebase 0.0.5 + BOM 0.0.16
+| ✅ TERMINÉ
+
+| Fix plugin.serialization (codebase + planner) — IntelliJ accessors
+| ✅ TERMINÉ
+
+| US-8.1 LlmServiceResolver.kt (pure resolver)
+| ✅ TERMINÉ
+
+| US-8.1 LlmBuildService.kt (BuildService Gradle bridge)
+| ✅ TERMINÉ
+
+| US-8.1 Tests unit (5 tests)
+| ✅ TERMINÉ
+
+| US-8.1 Tests functional (3 tests)
+| ✅ TERMINÉ
+
+| US-8.1 Cucumber BDD (4 scénarios)
+| ✅ TERMINÉ
+
+| Non-régression LlmProviderResolverTest (10/10 PASS)
+| ✅ TERMINÉ
+|===

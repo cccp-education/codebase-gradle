@@ -1,12 +1,9 @@
-// readme plugin retiré temporairement — réintégration ultérieure
+plugins {
+    alias(libs.plugins.codebase)
+}
 
-allprojects {
-    group = "education.cccp"
-    version = "0.0.6"
-
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        gradlePluginPortal()
-    }
+repositories {
+    mavenLocal()
+    mavenCentral()
+    gradlePluginPortal()
 }

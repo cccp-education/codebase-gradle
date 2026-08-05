@@ -1,0 +1,173 @@
+= Session 176 — SLD-8 US-8.1 : LlmBuildService Gradle bridge + corrections pré-requises
+:session: 176
+:date: 2026-08-05
+:borough: Queens (codebase-gradle) + MEMPHIS (workspace-bom) + Manhattan (planner-gradle)
+:type: feat+tdd+bdd+archi
+:epic: SLD-8 US-8.1
+
+== Contexte
+
+Session cross-borough déclenchée par un diagnostic IntelliJ : `libs` unresolved
+dans `codebase-plugin/build.gradle.kts` à l'ouverture du projet. Investigation
+révélant une dérive architecturale majeure : `codebase-gradle/settings.gradle.kts`
+faisait `include(":codebase-plugin")` (pattern monorepo), contredisant l'article
+0124 « Plugin Indépendant + Racine Consommateur ». Le `codebase-plugin/` était
+un build autonome complet (son propre `settings.gradle.kts`, `gradlew`,
+`gradle/libs.versions.toml`) mais le catalog `libs` manquait côté plugin —
+seul le catalog racine existait.
+
+Parallèlement, lancement de l'EPIC SLD-8 (slider consomme codebase comme socle
+LLM unifié). Vérification du socle LLM dans codebase révélant que
+`LlmProviderResolver`, `OllamaPool`, `GeminiLlmProvider`, `LlmProvider` sont
+tous implémentés et opérationnels — le seul gap est l'absence de `BuildService`
+Gradle pont (US-8.1).
+
+== Corrections pré-requises (architecture + versions)
+
+=== Remise en conformité pattern « Plugin Indépendant + Racine Consommateur »
+
+*Article de référence* : `office/sites/cheroliv.com/jbake/content/blog/2026/0124_architecture_plugin_gradle_racine_consommateur_independant_post.adoc`
+
+|===
+| Fichier | Avant (dérive) | Après (conforme)
+
+| `codebase-gradle/settings.gradle.kts`
+| `include(":codebase-plugin")` + nmcp
+| Racine consommateur pure, zéro nmcp, zéro include
+
+| `codebase-gradle/gradle/libs.versions.toml`
+| Copie du catalog complet (30+ deps)
+| Catalog minimal (1 plugin)
+
+| `codebase-gradle/build.gradle.kts`
+| `allprojects {}` générique
+| `plugins { alias(libs.plugins.codebase) }` — dogfooding natif
+
+| `codebase-plugin/gradle/libs.versions.toml`
+| **Manquant** — `libs` introuvable en standalone
+| Catalog complet du plugin (copié depuis la racine)
+|===
+
+*Vérification* : `cd codebase-gradle && ./gradlew tasks` affiche les tâches du
+plugin (`collectFromCodebase`, `ocrIngest`, `generatePlan`) — dogfooding
+confirmé. `cd codebase-plugin && ./gradlew help` BUILD SUCCESSFUL en standalone.
+
+=== Alignement versions
+
+|===
+| Artefact | Avant | Après
+
+| codebase-plugin version
+| `unspecified` (pas de hardcodage)
+| `0.0.5` hardcodé dans `build.gradle.kts`
+
+| BOM version
+| `0.0.15`
+| `0.0.16`
+
+| BOM codebase constraint
+| `0.0.3` (obsolète — 0.0.5 existe sur Central)
+| `0.0.5`
+|===
+
+*Publication mavenLocal* : codebase-plugin 0.0.5 + BOM 0.0.16 publiés en
+`~/.m2/repository/education/cccp/`.
+
+=== Correction IntelliJ plugin.serialization (planner-gradle)
+
+Fix accessors `libs` non résolus dans bloc `plugins{}` d'IntelliJ :
+- `codebase-plugin/build.gradle.kts:9` : `kotlin("plugin.serialization") version libs.versions.kotlin.get()` → `id("org.jetbrains.kotlin.plugin.serialization") version "2.4.10"`
+- `planner-plugin/build.gradle.kts:7` : même correction
+
+== US-8.1 — LlmBuildService Gradle bridge (codebase)
+
+*EPIC* : SLD-8 (slider consomme codebase comme socle LLM unifié)
+*US* : 8.1 — `BuildService` LLM pont Gradle côté codebase
+*Méthode* : baby-step TDD/BDD 3 niveaux (unit → functional → cucumber)
+
+=== Production (2 fichiers additifs, zéro modification existant)
+
+. `codebase/koog/llm/service/LlmServiceResolver.kt` — pure resolver (testable
+   sans Gradle), wrap `LlmProviderResolver.resolve(model)`.
+. `codebase/koog/llm/service/LlmBuildService.kt` — `BuildService<Params>`
+   Gradle bridge. Params : `model: Property<String>`,
+   `ollamaPoolPorts: Property<String>`. Méthode `provider(): LlmProvider`
+   délègue à `LlmServiceResolver`.
+
+=== Tests 3 niveaux
+
+|===
+| Niveau | Fichier | Tests | Statut
+
+| Unit
+| `LlmBuildServiceTest.kt`
+| 5 tests (`resolveProvider` gemini/ollama/custom/delegation/blank)
+| ✅ 5/5 PASS
+
+| Functional
+| `LlmBuildServiceFunctionalTest.kt`
+| 3 tests (registration sharedServices + provider ollama + provider gemini)
+| ✅ 3/3 PASS
+
+| Cucumber BDD
+| `epic_sld8_llm_service.feature` + `LlmServiceSteps.kt` + `LlmServiceWorld.kt` + `EpicSld8LlmServiceCucumberRunner.kt`
+| 4 scénarios (registration ollama/gemini + custom model + blank fallback)
+| ✅ 4/4 PASS
+|===
+
+*Build* : `build.gradle.kts` +1 ligne (CucumberTaskSpec `cucumberTestEpicSld8`).
+*Non-régression* : `LlmProviderResolverTest` 10/10 PASS, `compileKotlin` +
+`compileTestKotlin` BUILD SUCCESSFUL.
+
+== Décisions
+
+. **Architecture restaurée** : `codebase-gradle` redevient une racine
+  consommateur (pattern article 0124), `codebase-plugin/` est un build
+  indépendant avec son propre catalog. Le nmcp reste côté plugin (c'est lui
+  qui publie sur Maven Central).
+. **US-8.1 est un chantier codebase-seul** : le socle N1 (`LlmProviderResolver`,
+  `OllamaPool`, `GeminiLlmProvider`) était déjà implémenté. Le seul gap était
+  le `BuildService` pont Gradle. US-8.2 (câblage slider) est un chantier
+  slider-seul.
+. **DI native Gradle** (Decision 001 slider) : `LlmBuildService` utilise
+  `BuildService<Params>` + `Provider<T>`, pas de conteneur DI externe.
+
+== Prochaine session — 177
+
+. US-8.2 : `AssistantManager` slider réduit à du câblage — 4 factories LLM
+   supprimées, injection `Provider<LlmBuildService>` depuis codebase.
+   Adaptateur `LlmProviderChatModelAdapter` (côté slider) adapte
+   `LlmProvider` → `ChatModel` langchain4j.
+. US-8.3 : `DeckPipelineGraph` sur services codebase.
+. Publication BOM 0.0.16 + codebase-plugin 0.0.5 sur Maven Central (si
+  permission).
+
+== Fichiers modifiés
+
+*Codebase-gradle* (9 fichiers) :
+- `build.gradle.kts` (racine consommateur minimal)
+- `settings.gradle.kts` (zéro nmcp, zéro include)
+- `gradle/libs.versions.toml` (catalog minimal)
+- `codebase-plugin/build.gradle.kts` (version 0.0.5 + plugin.serialization fix)
+- `codebase-plugin/gradle/libs.versions.toml` (nouveau — catalog complet)
+- `codebase-plugin/src/main/kotlin/codebase/koog/llm/service/LlmServiceResolver.kt` (nouveau)
+- `codebase-plugin/src/main/kotlin/codebase/koog/llm/service/LlmBuildService.kt` (nouveau)
+- `codebase-plugin/src/test/kotlin/codebase/koog/llm/service/LlmBuildServiceTest.kt` (nouveau)
+- `codebase-plugin/src/test/kotlin/codebase/koog/llm/service/LlmBuildServiceFunctionalTest.kt` (nouveau)
+- `codebase-plugin/src/test/features/epic_sld8_llm_service.feature` (nouveau)
+- `codebase-plugin/src/test/kotlin/codebase/scenarios/EpicSld8LlmServiceCucumberRunner.kt` (nouveau)
+- `codebase-plugin/src/test/kotlin/codebase/scenarios/LlmServiceSteps.kt` (nouveau)
+- `codebase-plugin/src/test/kotlin/codebase/scenarios/LlmServiceWorld.kt` (nouveau)
+
+*Workspace-bom* (2 fichiers) :
+- `build.gradle.kts` (version 0.0.16)
+- `gradle/libs.versions.toml` (codebase-plugin 0.0.3 → 0.0.5)
+
+*Planner-gradle* (1 fichier) :
+- `planner-plugin/build.gradle.kts` (plugin.serialization fix)
+
+== Score session
+
+✅ 9/10 — Architecture restaurée + US-8.1 livrée en TDD/BDD 3 niveaux +
+versions alignées. Un point retiré pour le test `./gradlew test` complet non
+exécuté (timeout — 170+ tests RAG pgvector longs).

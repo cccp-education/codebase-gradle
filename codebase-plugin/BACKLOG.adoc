@@ -4,18 +4,21 @@
 
 _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux._
 
-== Synthèse Backlog (Session 175 — 2026-08-05)
+== Synthèse Backlog (Session 176 — 2026-08-05)
 
 [cols="1,3,1,2"]
 |===
 | EPIC | Sujet | Statut | Remarque
+| SLD-8 US-8.1 | LlmBuildService Gradle bridge | ✅ TERMINÉ | Session 176 — 12 tests TDD/BDD 3 niveaux
+| SLD-8 US-8.2 | AssistantManager slider → injection Provider<LlmBuildService> | 🟡 À CÂBLER | Côté slider — adaptateur LlmProviderChatModelAdapter
+| SLD-8 US-8.3 | DeckPipelineGraph sur services codebase | 🟡 À PLANIFIER | Côté slider
 | EPIC 1 | Init gouvernance | ✅ TERMINÉ | Items stale purgés (projet publié Central 0.0.5)
 | EPIC V-FLYWAY | Migration Flyway | BACKLOG P2 | Seuil déclenchement : 5+ migrations (actuellement 4 : V1→V4)
 | EPIC VIBE-HARDENING | Durcissement vibecoding (CR-GLOBALE-004) | BACKLOG P1 | S1 allowlist deny-by-default, C2 retry un seul compteur, C5 timeout LLM
 | Tous autres EPICs | V, W, X, Y, Z, K, L, OCR, CR, TRAD, PUB, V-LOCAL, SP, V-6, V-7, V-8, V-9, 2→12 | ✅ TERMINÉ | Voir détails ci-dessous
 |===
 
-*Backlog réellement restant* : EPIC VIBE-HARDENING (P1 — durcissement vibecoding issu CR-GLOBALE-004, réveil sur déclencheur externe) + EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5.
+*Backlog réellement restant* : SLD-8 US-8.2/8.3 (côté slider), EPIC VIBE-HARDENING (P1 — durcissement vibecoding, réveil sur déclencheur externe) + EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5.
 
 == EPIC VIBE-HARDENING — Durcissement vibecoding (CR-GLOBALE-004)
 

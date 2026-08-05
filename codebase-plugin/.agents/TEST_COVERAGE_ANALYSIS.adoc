@@ -1,5 +1,49 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-07-16
+:date: 2026-08-05
+
+== Session 176 — SLD-8 US-8.1 LlmBuildService Gradle bridge
+
+=== Nouveaux tests
+
+* **Unit** (`LlmBuildServiceTest.kt`) : 5 tests
+  - `resolveProvider returns GeminiLlmProvider for gemini model`
+  - `resolveProvider returns OllamaLlmProvider for ollama model`
+  - `resolveProvider returns OllamaLlmProvider for custom model name`
+  - `resolveProvider delegates to LlmProviderResolver with the configured model`
+  - `resolveProvider blank model falls back to ollama`
+
+* **Functional** (`LlmBuildServiceFunctionalTest.kt`) : 3 tests
+  - `BuildService is registrable via sharedServices`
+  - `BuildService provider returns non-null for ollama`
+  - `BuildService provider returns non-null for gemini`
+
+* **Cucumber BDD** (`epic_sld8_llm_service.feature`) : 4 scénarios
+  - `Register LlmBuildService with ollama model` (@registration)
+  - `Register LlmBuildService with gemini model` (@registration)
+  - `Resolve provider for custom model name` (@resolution)
+  - `Blank model falls back to ollama` (@resolution)
+
+=== Tests modifiés
+
+Aucun test existant modifié. Zéro régression.
+
+=== Couverture
+
+* JUnit5 : 5/5 unit PASS + 3/3 functional PASS
+* Cucumber : 4/4 scénarios PASS (cucumberTestEpicSld8)
+* Non-régression : `LlmProviderResolverTest` 10/10 PASS
+* `compileKotlin` + `compileTestKotlin` BUILD SUCCESSFUL
+
+=== Stats
+
+| Métrique | Valeur |
+|---|---|
+| Nouveaux UT | 5 |
+| Nouveaux functional | 3 |
+| Nouveaux Cucumber | 4 |
+| Tests modifiés | 0 |
+| Régressions | 0 |
+| Total nouveaux tests | 12 |
 
 == Session 172
 

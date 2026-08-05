@@ -1,7 +1,9 @@
 = INDEX.adoc — Codebase Gradle (Queens N1)
-:date: 2026-06-26
-:session_en_cours: 171
-:session_precedente: 170 — Bump + publish Maven Central. workspace-bom 0.0.4 + codebase-plugin 0.0.5 publiés. Fix @UntrackedTask sur GovernanceExecutableTask. CI déclenchée.
+:date: 2026-08-05
+:session_en_cours: 176
+:session_precedente: 175 — Clôture code review vibecoding CR-GLOBALE-004. 10 findings archivés. Borough DORMANT.
+:derniere_session: 176 — SLD-8 US-8.1 LlmBuildService Gradle bridge + corrections architecture. Pattern « Plugin Indépendant + Racine Consommateur » restauré (article 0124). codebase-plugin/ autonome avec son catalog. BOM 0.0.16 + codebase 0.0.5 mavenLocal. plugin.serialization fix. US-8.1 livrée TDD/BDD 3 niveaux (5 unit + 3 functional + 4 cucumber = 12 tests, 0 FAIL).
+:prochaine_session: 177 — SLD-8 US-8.2 côté slider. AssistantManager 4 factories → injection Provider<LlmBuildService>. Adaptateur LlmProviderChatModelAdapter.
 
 == Roadmap EPICs
 
@@ -121,6 +123,8 @@
 == Sessions Récentes
 
 | Session | Date | EPIC | Résultat
+| 176 | 2026-08-05 | SLD-8 US-8.1 | LlmBuildService Gradle bridge + corrections architecture. Pattern « Plugin Indépendant + Racine Consommateur » restauré (article 0124). codebase-plugin/ autonome avec son catalog. BOM 0.0.16 + codebase 0.0.5 mavenLocal. plugin.serialization fix (codebase + planner). US-8.1 livrée TDD/BDD 3 niveaux (5 unit + 3 functional + 4 cucumber = 12 tests, 0 FAIL). 2 fichiers prod additifs (LlmServiceResolver + LlmBuildService), zéro modification existant.
+| 175 | 2026-06-26 | CR | Clôture code review vibecoding CR-GLOBALE-004. 10 findings (S1-S3 sécurité, C1-C7) archivés GLOBAL_CODE_REVIEW.adoc. Gate tests koog verds (5m44s, Kotlin 2.4.10). Commit b12a092. Borough DORMANT maintenu.
 | 170 | 2026-06-26 | PUB | Bump + publish Maven Central. workspace-bom 0.0.4 + codebase-plugin 0.0.5 publiés (nmcp). Fix @UntrackedTask sur GovernanceExecutableTask (validation Gradle 9.5.1). CI déclenchée sur les deux repos. Commit 8aa0104 push.
 | 169 | 2026-06-26 | — | CI-green confirmé (run 28206228434 fast-tests ✅ + full-tests ✅ 33m50s). Backlog synchronisé : EPIC 1 stale purgé, EPIC OCR + CR stale corrigés. Borough DORMANT CI-green.
 | 168 | 2026-06-26 | CI | 19 échecs JUnit5 full-tests résolus — @integration tag + EpicV6CucumberRunner excludes

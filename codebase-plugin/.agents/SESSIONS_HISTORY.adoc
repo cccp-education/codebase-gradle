@@ -1,9 +1,11 @@
 = SESSIONS_HISTORY — Codebase Gradle
-:date: 2026-07-16
+:date: 2026-08-05
 
 |===
 | Session | Date | EPIC | Résultat
 
+| 176 | 2026-08-05 | SLD-8 US-8.1 | LlmBuildService Gradle bridge + corrections architecture. Pattern « Plugin Indépendant + Racine Consommateur » restauré (article 0124). codebase-plugin/ autonome avec son catalog. BOM 0.0.16 + codebase 0.0.5 mavenLocal. plugin.serialization fix (codebase + planner). US-8.1 livrée TDD/BDD 3 niveaux (5 unit + 3 functional + 4 cucumber = 12 tests, 0 FAIL). 2 fichiers prod additifs (LlmServiceResolver + LlmBuildService), zéro modification existant ✅
+| 175 | 2026-06-26 | CR | Clôture code review vibecoding CR-GLOBALE-004. 10 findings archivés. Borough DORMANT ✅
 | 172 | 2026-07-16 | EPIC C-BOM-FIX | C-BOM-FIX TERMINÉ 3/3 US (8/8 pts) — Versions explicites pour 6 artefacts `education.cccp` + 27 deps externes dans `libs.versions.toml` (le BOM en `implementation(platform(...))` ne propage pas ses contraintes aux consommateurs transitifs). Bump 0.0.5→0.0.6. `publishToMavenLocal` OK. POM 0.0.6 + `.module` contiennent les versions. 3 nouveaux UT `VersionCatalogTransitiveVersionsTest`. 22/22 UT bakery LangSwitch GREEN. Zéro régression codebase. Débloque bakery BKY-LANG-SWITCH ✅
 | 171 | 2026-06-30 | — | Réduction bruit pgvector logs. 8 log.warn→debug dans 4 fichiers Koog/RAG. compileKotlin + cucumberTestEpicVLocal PASS ✅
 | 169 | 2026-06-26 | — | CI-green confirmé (run 28206228434 fast-tests ✅ + full-tests ✅ 33m50s). Backlog synchronisé ✅
