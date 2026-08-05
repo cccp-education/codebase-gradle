@@ -43,7 +43,12 @@ class LlmTranslator(private val llm: LlmProvider) : TranslationService {
     }
 
     private fun buildPrompt(request: TranslationRequest): String =
-        "Translate from ${request.sourceLanguage} to ${request.targetLanguage}:\n${request.sourceText}"
+        """Translate from ${request.sourceLanguage} to ${request.targetLanguage}.
+Preserve ALL backtick code spans (`...`) exactly as-is — never modify backtick content, spacing, or position.
+This text may be a fragment of a larger sentence — translate the fragment without requesting more context.
+Output ONLY the translated text with zero explanation or commentary.
+
+${request.sourceText}"""
 
     /** Retire les quotes/guillemets qu'un LLM ajoute souvent autour de la traduction. */
     private fun sanitize(raw: String): String = raw.trim().trim('"', '«', '»', '`', '\n')

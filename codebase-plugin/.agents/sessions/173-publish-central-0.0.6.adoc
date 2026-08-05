@@ -1,0 +1,70 @@
+= Session 173 — Publication Maven Central 0.0.6 (débloque bakery BKY-LANG-SWITCH)
+
+== Contexte
+
+Borough Queens (codebase-gradle) DORMANT depuis session 172 (v0.0.6 Maven Local).
+Bakery EPIC BKY-LANG-SWITCH (sélecteur de langue i18n, 26 pts) bloqué :
+`testRuntimeClasspath` ne résout pas les deps transitives de codebase-plugin:0.0.5
+sur CI (Maven Central). Session 172 a résolu le bug (C-BOM-FIX, versions
+explicites POM 0.0.6 Maven Local). Cette session publie 0.0.6 sur Central.
+
+== Actions
+
+. **Vérification prérequis nmcp** :
+  * `settings.gradle.kts` : plugin `com.gradleup.nmcp.settings` 1.5.0, credentials
+    depuis `~/.gradle/gradle.properties` (`ossrhUsername`/`ossrhPassword`),
+    `publishingType = "AUTOMATIC"`.
+  * POM 0.0.6 Maven Local : versions explicites pour 6 artefacts `education.cccp`
+    + 27 deps externes (validé session 172).
+  * Déps `education.cccp` sur Central : 8/8 HTTP 200 (codebase-contracts:0.0.2,
+    agent-contracts:0.0.2, llm-pool-contracts:0.0.2, opencode-session-contracts:0.0.2,
+    i18n-contracts:0.0.2, codex-plugin:0.0.2, planner-plugin:0.0.1, workspace-bom:0.0.4).
+  * `compileKotlin` vert.
+
+. **1er upload — ÉCHEC** (bundle `f0e0e2fd`) :
+  Maven Central rejette : "Project name is missing", "Project description is missing".
+  Le POM généré par `PublishingConventionsPlugin` (conventions-gradle 0.0.2) ne set
+  pas `pom.name` ni `pom.description` — requis par Central Portal.
+
+. **Fix POM** — `codebase-plugin/build.gradle.kts` :
+  * Ajout import `MavenPublication`.
+  * Bloc `publishing { publications.withType<MavenPublication>().configureEach { pom { name.set("Codebase Plugin"); description.set("...") } } }`.
+  * `compileKotlin` vert. `publishToMavenLocal` : POM 0.0.6 contient `<name>` + `<description>`.
+
+. **2e upload — SUCCÈS** (bundle `e4263c78`) :
+  `./gradlew publishAggregationToCentralPortal --no-daemon` → BUILD SUCCESSFUL in 24s.
+  Statut : "deployment is publishing... Check the central portal UI to verify its status."
+  Propagation Maven Central en cours (10-30 min).
+
+== Commandes
+
+----
+# Vérification deps Central
+for a in "codebase-contracts/0.0.2" "agent-contracts/0.0.2" ...; do
+  curl -s -o /dev/null -w "%{http_code}" "https://repo1.maven.org/maven2/education/cccp/$g/$v/$g-$v.pom"
+done
+
+# Publication
+./gradlew publishAggregationToCentralPortal --no-daemon
+----
+
+== Résultats
+
+. `codebase-plugin:0.0.6` publié sur Maven Central (bundle `e4263c78`).
+. POM contient `<name>`, `<description>`, `<url>`, `<licenses>`, `<developers>`, `<scm>`.
+. Versions transitives explicites pour 6 artefacts `education.cccp` + 27 deps externes.
+. Bakery peut maintenant résoudre `testRuntimeClasspath` sur CI.
+
+== Fichiers modifiés
+
+. `codebase-plugin/build.gradle.kts` — ajout `pom.name` + `pom.description` (2 blocs)
+
+== Leçons
+
+. **Central Portal validation** : `<name>` et `<description>` sont obligatoires
+  dans le POM. Le `PublishingConventionsPlugin` (conventions-gradle 0.0.2) ne les
+  set pas — il faudrait l'enrichir pour éviter ce fix manuel dans chaque borough.
+. **nmcp AUTOMATIC** : `publishingType = "AUTOMATIC"` publie sans intervention
+  manuelle sur le portal UI. Le statut passe de VALIDATING → PUBLISHING.
+. **Propagation delay** : Maven Central met 10-30 min pour propager. Ne pas
+  paniquer si HTTP 404 immédiatement après BUILD SUCCESSFUL.

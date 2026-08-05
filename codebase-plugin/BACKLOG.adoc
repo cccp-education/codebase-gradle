@@ -14,7 +14,7 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 | Tous autres EPICs | V, W, X, Y, Z, K, L, OCR, CR, TRAD, PUB, V-LOCAL, SP, V-6, V-7, V-8, V-9, 2→12 | ✅ TERMINÉ | Voir détails ci-dessous
 |===
 
-*Backlog réellement restant* : EPIC V-FLYWAY (P2 conditionnel) + Publication Maven Central 0.0.6 (si besoin).
+*Backlog réellement restant* : EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5.
 
 == EPIC C-BOM-FIX — POM transitif codebase-plugin versions manquantes
 

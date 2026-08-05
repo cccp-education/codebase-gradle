@@ -1,0 +1,64 @@
+= Session 174 — Code Review du Vibecoding + état du working tree
+
+== Contexte
+
+Borough Queens (codebase-gradle) DORMANT depuis session 173 (v0.0.6 Maven Central,
+débloque bakery BKY-LANG-SWITCH). Session 174 = code review du vibecoding + audit
+du working tree. Aucun code modifié — lecture seule + `compileKotlin`.
+
+== État du working tree (non committé, depuis le 16/07)
+
+Dernier commit : `3d8985d` (16/07, C-BOM-FIX session 172). Travail en cours :
+
+. Kotlin `2.3.20 → 2.4.10` — `gradle/libs.versions.toml` + `kotlin("plugin.serialization")` dans `codebase-plugin/build.gradle.kts`
+. `LlmTranslator.buildPrompt` renforcé (préservation spans backtick, anti-commentaire LLM, "translate the fragment")
+. Fix POM `pom.name`/`pom.description` (session 173) — `codebase-plugin/build.gradle.kts`
+. Gouvernance : `.agents/INDEX.adoc`, `.agents/SESSIONS_HISTORY.adoc`, `codebase-plugin/BACKLOG.adoc`, `codebase-plugin/PROMPT_REPRISE.adoc`
+. Fichier NON SUIVI : `codebase-plugin/gradle/libs.versions.toml` (octet-identique au catalog racine — dupliqué suspect)
+. Fichiers NON SUIVIS : `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-07.adoc`, `codebase-plugin/.agents/sessions/173-publish-central-0.0.6.adoc`
+
+== Commandes
+
+----
+./gradlew :codebase-plugin:compileKotlin --offline -q   # ✅ BUILD OK avec Kotlin 2.4.10
+git status / git diff / git log --oneline -15           # audit working tree
+rg -i "deepseek|11434|11435|11436" codebase-plugin/src   # SEC-1 : 0 occurrence code prod
+rg "TODO|FIXME|XXX|HACK" codebase-plugin/src/main        # 1 occurrence (commentaire BenchmarkRunner)
+rg "ghp_|sk-|AIza|-----BEGIN" codebase-plugin/src        # 0 secret réel (fixtures tests anonymizer/quality gate)
+----
+
+== Résultats — Bilan vibecoding
+
+=== Points sains
+. SEC-1 propre : zéro deepseek/ports 11434-11436 en prod. `OllamaInstanceFactory`/`Scanner` cyclent les 2 modèles autorisés (gpt-oss:120b-cloud + gemma4:31b-cloud) sur 11437-11465.
+. Résilience : chaque nœud du graphe catch ses erreurs (`VibecodingGraph.kt:177-397`). Mode dégradé sans pgvector = nominal.
+. Contrats N0 bien consommés (vibecoding/agent/llm-pool/opencode-session/i18n-contracts via workspace-bom).
+
+=== Findings code review (10)
+[cols="1,4,3"]
+|===
+| # | Finding | Fichier
+| 1 | Heuristique détection d'échec fragile : `result.contains("FAILED")` — double heuristique divergente avec TaskResultVerifier | `VibecodingGraph.kt:580`
+| 2 | `expectedOutput = "BUILD SUCCESSFUL"` hardcodé — le plan LLM ne transporte jamais de sortie attendue réelle → verify→adapt superficiel (gap INSERT-X2 non résolu) | `VibecodingGraph.kt:716`
+| 3 | `addStep` dead code + bind `$4::jsonb` sur texte arbitraire → planterait sur Postgres si câblé | `SessionRepository.kt:150-178`
+| 4 | Coût dashboard trompeur : `estimatedCost("gemma4:31b-cloud")` hardcodé quel que soit le modèle réel | `VibecodingGraph.kt:538`
+| 5 | JSONL d'audit bricolé : `jsonlEscape` manuel, `classification` non échappé → peut casser l'audit | `VibecodingTask.kt:204-233`
+| 6 | Version catalog dupliqué non suivi (octet-identique au racine, jamais lu par Gradle) → à supprimer | `codebase-plugin/gradle/libs.versions.toml`
+| 7 | Bump Kotlin 2.4.10 compile OK mais suite de tests (307 fichiers) non exécutée | — |
+| 8 | Timeout vérifié entre itérations, pas pendant un `exec_gradle` long | `VibecodingGraph.kt:764-770`
+| 9 | `resumeSession` préfixe `[Resume <uuid>]` dans l'intention → remonte dans prompts/classification | `VibecodingGraph.kt:345`
+| 10 | `sanitize` trim les backticks de tête/fin — en conflit avec le nouveau prompt de préservation | `LlmTranslator.kt:54`
+|===
+
+== Leçons
+
+. Le borough est DORMANT mais le working tree n'a PAS été committé après session 173 (fix POM + gouvernance) — il y a du travail de publication à verrouiller.
+. Le bump Kotlin 2.4.10 est non validé par les tests : à faire passer `testFast`/`test` avant tout commit.
+. Le catalog dupliqué non suivi est un risque de dérive silencieuse — à nettoyer.
+. Prochaine étape : brainstorm sur les findings (priorisation + plan d'action), puis éventuellement baby-steps de correction.
+
+== Prochaines actions suggérées
+
+. Prioriser les 10 findings avec l'utilisateur (brainstorm)
+. Valider Kotlin 2.4.10 via `./gradlew :codebase-plugin:test` (permission requise)
+. Committer la session 173 (POM fix) + session 174 (analyse) si l'utilisateur donne le feu vert

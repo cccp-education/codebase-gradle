@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-07-16
-*Version* : 0.0.6 (Session 172 — EPIC C-BOM-FIX TERMINÉ. Versions explicites pour 6 artefacts education.cccp + 27 deps externes dans libs.versions.toml. Bump 0.0.5→0.0.6. publishToMavenLocal OK. 22/22 UT bakery LangSwitch GREEN. Zéro régression codebase. Borough DORMANT Maven Local.)
+*Version* : 0.0.6 (Session 173 — Publication Maven Central 0.0.6 (bundle e4263c78). POM enrichi name+description. Débloque bakery BKY-LANG-SWITCH sur CI. Borough DORMANT Maven Central.)
 
 == Regles Absolues
 
@@ -50,6 +50,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 170 — SEC-1 purge deepseek features + CI anonymize.yml. Bump 0.0.4→0.0.5. workspace-bom 0.0.4 + codebase-plugin 0.0.5 publiés Maven Central.
 | ✅ | Session 171 — Réduction bruit pgvector logs. 8 `log.warn`→`log.debug` dans 4 fichiers (CompositeContextBuilder, KoogAugmentedContextGraph, KoogPlanningOrchestrator, MultiChannelContextGraph). Mode dégradé sans pgvector = nominal en test, messages passés en debug. compileKotlin + cucumberTestEpicVLocal PASS.
 | ✅ | Session 172 — EPIC C-BOM-FIX TERMINÉ (P0 critique, débloque bakery BKY-LANG-SWITCH). Versions explicites pour 6 artefacts `education.cccp` + 27 deps externes dans `libs.versions.toml` (le BOM en `implementation(platform(...))` ne propage pas ses contraintes aux consommateurs transitifs). Bump 0.0.5→0.0.6. `publishToMavenLocal` OK. POM 0.0.6 contient les `<version>` pour les 6 artefacts + 27 deps externes. 3 nouveaux UT `VersionCatalogTransitiveVersionsTest`. 22/22 UT bakery LangSwitch GREEN. Zéro régression codebase. Borough DORMANT Maven Local.
+| ✅ | Session 173 — Publication Maven Central 0.0.6 (bundle `e4263c78`). Fix POM `<name>`+`<description>` manquants (rejeté par Central Portal 1er upload `f0e0e2fd`). Ajout bloc `publishing { pom { name.set / description.set } }` dans `codebase-plugin/build.gradle.kts`. `publishAggregationToCentralPortal --no-daemon` BUILD SUCCESSFUL. Débloque bakery BKY-LANG-SWITCH sur CI (testRuntimeClasspath résolu). Borough DORMANT Maven Central.
 
 === EPICs & Projects
 

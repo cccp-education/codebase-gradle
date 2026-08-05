@@ -1,36 +1,35 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 173
-:session: 173
+= Prompt de Reprise — Codebase (Queens N1) — Session 174
+:session: 174
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 172 — EPIC C-BOM-FIX TERMINÉ. Versions explicites pour 6 artefacts education.cccp + 27 deps externes dans libs.versions.toml. Bump 0.0.5→0.0.6. publishToMavenLocal OK. 22/22 UT bakery LangSwitch GREEN. Zéro régression codebase.
+:session_precedente: 173 — Publication Maven Central 0.0.6 (bundle e4263c78). POM enrichi name+description. Débloque bakery BKY-LANG-SWITCH sur CI.
 
-== Mission Session 173
+== Mission Session 174
 
-Codebase-gradle est DORMANT. Version 0.0.6 publiée sur Maven Local.
-La session 172 a résolu le bug bloquant EPIC C-BOM-FIX (débloque bakery BKY-LANG-SWITCH).
+Codebase-gradle est DORMANT. Version 0.0.6 publiée sur Maven Central.
+La session 173 a publié 0.0.6 (fix POM name+description + versions transitives).
+Bakery BKY-LANG-SWITCH est débloqué côté codebase.
 
 Réveil sur déclencheur externe uniquement :
-. *Publication* — publier `codebase-plugin:0.0.6` sur Maven Central via nmcp
-  (`publishAggregationToCentralPortal`). Le POM 0.0.6 contient les versions
-  explicites, la propagation transitives est résolue.
 . *Consommateur* — training-gradle (Newark) ou Edster SaaS MVP1 exprime un besoin
 . *V-FLYWAY* — si 5+ fichiers de migration de schéma (actuellement 4 : V1→V4)
 . *Bug critique* — régression signalée par un borough consommateur
 . *Dette technique CI* — warnings GitHub Actions Node.js 20 deprecated (actions@v4→v5)
+. *Conventions-gradle* — enrichir PublishingConventionsPlugin avec pom.name+description
+  (fix manuel session 173, à généraliser pour éviter le fix dans chaque borough)
 
 == Backlog Restant
 
 . EPIC V-FLYWAY — P2 conditionnel, seuil 5+ migrations (actuellement 4 : V1→V4)
-. Publication Maven Central 0.0.6 — si bakery confirme que 0.0.6 Maven Local suffit
 . Warnings CI — actions/checkout@v4, setup-java@v4, cache@v4, upload-artifact@v4 → upgrade v5 (Node.js 24)
+. PublishingConventionsPlugin — ajouter pom.name + pom.description par défaut (conventions-gradle)
 
 == Contexte Technique
 
-* Version : `0.0.6` (bump session 172)
-* Maven Local : `education.cccp:codebase-plugin:0.0.6` publié (POM + .module avec versions)
-* Maven Central : `0.0.5` publié (POM sans versions — bug C-BOM-FIX résolu en 0.0.6)
+* Version : `0.0.6` (publié Maven Central session 173)
+* Maven Central : `education.cccp:codebase-plugin:0.0.6` HTTP 200 (après propagation)
 * BOM : `education.cccp:workspace-bom:0.0.4` publié
-* Tests : tous UT PASS (zéro régression), 3 nouveaux UT publishing
-* Bakery : 22/22 UT LangSwitch GREEN avec codebase-plugin:0.0.6
+* Tests : tous UT PASS (zéro régression), 3 UT publishing + 22 UT bakery LangSwitch
+* Bakery : BKY-LANG-SWITCH débloqué, testRuntimeClasspath résolu
 
 == Méthodologie
 

@@ -2,6 +2,15 @@
 :toc: left
 :icons: font
 
+== Session 173 — 2026-07-16
+
+* **EPICs** : EPIC PUB (publication Maven Central 0.0.6)
+* **Livrables** :
+** `codebase-plugin:0.0.6` publié sur Maven Central (bundle `e4263c78`)
+** Fix POM `<name>`+`<description>` manquants (rejet Central Portal 1er upload)
+** Ajout bloc `publishing { pom { name.set / description.set } }` dans `codebase-plugin/build.gradle.kts`
+** Débloque bakery BKY-LANG-SWITCH sur CI (testRuntimeClasspath résolu)
+
 == Session 171 — 2026-06-30
 
 * **EPICs** : Aucun (réduction bruit logs)

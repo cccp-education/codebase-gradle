@@ -1,11 +1,12 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+import org.gradle.api.publish.maven.MavenPublication
 import java.time.Duration
 
 fun isCI() = System.getenv("CI") == "true"
 
 plugins {
     `java-library`
-    kotlin("plugin.serialization") version "2.3.20"
+    kotlin("plugin.serialization") version libs.versions.kotlin.get()
     id("org.jetbrains.kotlinx.kover") version "0.9.8"
     id("education.cccp.build.gradle-plugin") version "0.0.2"
     id("com.gradle.plugin-publish") version "2.1.0"
@@ -14,6 +15,15 @@ plugins {
 
 publishingConventions {
     publicationType = "PLUGIN"
+}
+
+publishing {
+    publications.withType<MavenPublication>().configureEach {
+        pom {
+            name.set("Codebase Plugin")
+            description.set("Codebase RAG — indexes project source files into pgvector, exposes composite context augmentation, anonymization, benchmark, and STIMULUS cascade tasks.")
+        }
+    }
 }
 
 dependencies {
