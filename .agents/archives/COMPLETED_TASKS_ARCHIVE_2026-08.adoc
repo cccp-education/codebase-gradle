@@ -1,0 +1,24 @@
+= Completed Tasks Archive — 2026-08
+
+== Session 175 — Clôture code review vibecoding + CR-GLOBALE-004
+
+* **Date** : 2026-08-05
+* **EPIC** : Aucun (code review + clôture)
+* **Statut** : ✅ TERMINÉ
+* **Actions** :
+  * Gate tests `codebase.koog.*` + `contracts.vibecoding.*` BUILD SUCCESSFUL (5m44s, Kotlin 2.4.10)
+  * Commit atomique `b12a092` (Kotlin 2.4.10 centralisé + POM publishing + LlmTranslator prompt)
+  * CR-GLOBALE-004 archivée dans `GLOBAL_CODE_REVIEW.adoc` racine (10 findings S1-S3/C1-C7)
+  * Backlog EPIC VIBE-HARDENING ajouté (P1 : S1 allowlist deny-by-default, C2 retry, C5 timeout LLM)
+* **Impact** : Working tree propre, borough DORMANT maintenu, backlog durcissement tracé
+
+== Session 174 — Code review vibecoding (lecture seule)
+
+* **Date** : 2026-08-05
+* **EPIC** : Aucun
+* **Statut** : ✅ TERMINÉ
+* **Actions** :
+  * Code review 3 interfaces (vibecode, sessionProtocol, sessionProtocolDaemon) + pipeline koog 5 nœuds
+  * 10 findings : S1-S3 sécurité (blacklists bypassables, pas d'allowlist Gradle, edit/write sans garde taille) + C1-C7 correctifs
+  * Audit working tree (bump Kotlin 2.4.10, catalog dupliqué non suivi, archives non suivies)
+* **Impact** : Socle des décisions de la session 175

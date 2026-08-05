@@ -2,6 +2,28 @@
 :toc: left
 :icons: font
 
+== Session 175 — 2026-08-05
+
+* **EPICs** : Aucun (code review + clôture)
+* **Livrables** :
+** Gate tests `codebase.koog.*` + `contracts.vibecoding.*` BUILD SUCCESSFUL (5m44s, Kotlin 2.4.10)
+** Commit atomique `b12a092` — libs.versions.toml Kotlin 2.4.10 centralisé (version.ref), doublon non suivi purgé, plugin.serialization via catalog, bloc publishing pom name+description, LlmTranslator.buildPrompt préservation backticks
+** CR-GLOBALE-004 archivée dans GLOBAL_CODE_REVIEW.adoc racine (10 findings S1-S3/C1-C7), CR-GLOBALE-003 rétrogradée *(historique)*
+** Backlog EPIC VIBE-HARDENING ajouté (P1 : S1 allowlist deny-by-default, C2 retry, C5 timeout LLM)
+* **Tests** : koog + vibecoding contracts verts, suite complète non exécutée (borough dormant)
+* **Build** : zéro changement structurel
+* **Score** : 9/10
+
+== Session 174 — 2026-08-05
+
+* **EPICs** : Aucun (code review lecture seule)
+* **Livrables** :
+** Code review du vibecoding agent autonome : 3 interfaces (vibecode, sessionProtocol, sessionProtocolDaemon), pipeline koog 5 nœuds, ToolRegistry, outils exec
+** 10 findings : S1-S3 sécurité (blacklists bypassables, pas d'allowlist Gradle, edit/write sans garde taille) + C1-C7 correctifs (heuristique `contains("failed")`, retry double-compté, VibecodingPlan dead code, flags Gradle cassés, LLM sans timeout, duplication, compteur négatif)
+** Audit working tree : bump Kotlin 2.4.10 non validé, catalog dupliqué non suivi, fichiers non suivis archives/sessions
+* **Tests** : compileKotlin BUILD OK Kotlin 2.4.10
+* **Score** : 8/10
+
 == Session 173 — 2026-07-16
 
 * **EPICs** : EPIC PUB (publication Maven Central 0.0.6)

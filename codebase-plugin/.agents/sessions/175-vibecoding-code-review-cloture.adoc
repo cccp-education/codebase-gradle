@@ -1,0 +1,62 @@
+= Session 175 — Clôture code review vibecoding + CR-GLOBALE-004
+
+== Contexte
+
+Session 174 = code review du vibecoding + audit du working tree (10 findings, lecture
+seule). Session 175 = clôture : gate tests verds, commit atomique du working tree
+non committé depuis le 16/07, archivage de la revue dans le GLOBAL_CODE_REVIEW.adoc
+racine workspace (CR-GLOBALE-004). Aucun code de production nouveau — le contenu
+du commit est le travail accumulé sessions 173-174.
+
+== Commandes
+
+----
+./gradlew :codebase-plugin:compileTestKotlin --offline              # ✅ BUILD OK Kotlin 2.4.10
+./gradlew :codebase-plugin:testFast --tests "codebase.koog.*" \
+  --tests "contracts.vibecoding.*"                                  # ✅ 5m44s BUILD SUCCESSFUL
+rg -i "deepseek|11434|11435|11436" codebase-plugin/src              # SEC-1 : 0 occurrence code prod
+rg "ghp_|sk-|AIza|-----BEGIN" codebase-plugin/src                   # 0 secret réel
+git status / git diff / git log --oneline -15
+----
+
+== Gate tests
+
+Suite `codebase.koog.*` + `contracts.vibecoding.*` BUILD SUCCESSFUL sous Kotlin
+2.4.10 (5m44s). La suite complète (307 fichiers de test) n'est pas exécutée —
+borough DORMANT, pas de permission `./gradlew test` en fin de session.
+
+== Commit atomique b12a092
+
+`b12a092 fix(queens): kotlin 2.4.10 singleton + POM name/description + LlmTranslator prompt`
+
+. libs.versions.toml — version Kotlin centralisée (version.ref), doublon
+  `codebase-plugin/gradle/libs.versions.toml` (non suivi, octet-identique) purgé
+. build.gradle.kts — plugin.serialization via catalog, bloc publishing pom
+  name+description (requis Central Portal, session 173)
+. LlmTranslator.buildPrompt — préservation spans backtick + fragment sans contexte
+  + sortie brute (corrige finding #10 de la revue)
+. Gouvernance — sessions 173 (publication 0.0.6) et 174 (code review) archivées,
+  PROMPT_REPRISE, INDEX, SESSIONS_HISTORY, BACKLOG
+
+== CR-GLOBALE-004 archivée
+
+La revue complète (10 findings S1-S3 sécurité + C1-C7 correctifs) est archivée dans
+le `GLOBAL_CODE_REVIEW.adoc` racine workspace (en-tête `:date: 2026-08-05`,
+`:session: CR-GLOBALE-004`, author `opencode` — sans modèle, purge SEC-1).
+Section `Revue CR-GLOBALE-004 — Queens (codebase-gradle) — Vibecoding Agent koog`
+placée en tête, CR-GLOBALE-003 rétrogradée en *(historique)*, note cumulative
+conservée. La copie `configuration/GLOBAL_CODE_REVIEW.adoc` (version juin) reste
+stale — le snapshot workspace documentera la vraie revue.
+
+== Verdict
+
+Borough DORMANT maintenu, CI-green. Working tree propre après commit.
+Prochaine étape : durcissement des findings P1 si un déclencheur externe survient
+(backlog EPIC VIBE-HARDENING) — S1 (allowlist deny-by-default), C2 (retry un seul
+compteur), C5 (timeout LLM).
+
+== Prochaines actions suggérées
+
+. Push du commit b12a092 sur main cccp-education/codebase-gradle
+. Snapshot workspace (vision-archive 2026-08-05) + symlink latest + push configuration
+. Aucun réveil prévu — borough DORMANT, réveil sur déclencheur externe uniquement

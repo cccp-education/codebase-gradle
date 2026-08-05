@@ -3,8 +3,8 @@
 :icons: font
 
 *Date de creation* : 2026-06-16
-*Derniere mise a jour* : 2026-07-16
-*Version* : 0.0.6 (Session 173 — Publication Maven Central 0.0.6 (bundle e4263c78). POM enrichi name+description. Débloque bakery BKY-LANG-SWITCH sur CI. Borough DORMANT Maven Central.)
+*Derniere mise a jour* : 2026-08-05
+*Version* : 0.0.6 (Session 175 — Clôture code review vibecoding CR-GLOBALE-004. Gate tests koog verts (5m44s, Kotlin 2.4.10). Commit b12a092 (Kotlin 2.4.10 + POM + LlmTranslator). Revues 173/174/175 archivées. Borough DORMANT Maven Central.)
 
 == Regles Absolues
 
@@ -51,6 +51,8 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 171 — Réduction bruit pgvector logs. 8 `log.warn`→`log.debug` dans 4 fichiers (CompositeContextBuilder, KoogAugmentedContextGraph, KoogPlanningOrchestrator, MultiChannelContextGraph). Mode dégradé sans pgvector = nominal en test, messages passés en debug. compileKotlin + cucumberTestEpicVLocal PASS.
 | ✅ | Session 172 — EPIC C-BOM-FIX TERMINÉ (P0 critique, débloque bakery BKY-LANG-SWITCH). Versions explicites pour 6 artefacts `education.cccp` + 27 deps externes dans `libs.versions.toml` (le BOM en `implementation(platform(...))` ne propage pas ses contraintes aux consommateurs transitifs). Bump 0.0.5→0.0.6. `publishToMavenLocal` OK. POM 0.0.6 contient les `<version>` pour les 6 artefacts + 27 deps externes. 3 nouveaux UT `VersionCatalogTransitiveVersionsTest`. 22/22 UT bakery LangSwitch GREEN. Zéro régression codebase. Borough DORMANT Maven Local.
 | ✅ | Session 173 — Publication Maven Central 0.0.6 (bundle `e4263c78`). Fix POM `<name>`+`<description>` manquants (rejeté par Central Portal 1er upload `f0e0e2fd`). Ajout bloc `publishing { pom { name.set / description.set } }` dans `codebase-plugin/build.gradle.kts`. `publishAggregationToCentralPortal --no-daemon` BUILD SUCCESSFUL. Débloque bakery BKY-LANG-SWITCH sur CI (testRuntimeClasspath résolu). Borough DORMANT Maven Central.
+| ✅ | Session 174 — Code review du vibecoding + audit working tree. 10 findings (S1-S3 sécurité : blacklists bypassables, pas d'allowlist Gradle, edit/write sans garde taille ; C1-C7 : heuristique `contains("failed")`, retry double-compté, VibecodingPlan dead code, flags Gradle cassés, LLM sans timeout, duplication, compteur négatif). SEC-1 propre. Suite tests non exécutée (borough dormant). Session lecture seule.
+| ✅ | Session 175 — Clôture code review vibecoding + CR-GLOBALE-004. Gate tests `codebase.koog.*` + `contracts.vibecoding.*` verds (5m44s, Kotlin 2.4.10). Commit atomique `b12a092` (Kotlin 2.4.10 centralisé + POM publishing + LlmTranslator prompt). CR-GLOBALE-004 archivée dans GLOBAL_CODE_REVIEW.adoc racine. Working tree propre. Borough DORMANT maintenu. Backlog EPIC VIBE-HARDENING ajouté.
 
 === EPICs & Projects
 
@@ -76,5 +78,6 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | EPIC TRAD | TranslationService cross-borough (contrat N0 + impl N1) | N1 | ✅ TERMINÉ (baby-step, débloque bakery US-4) | 133
 | EPIC V-6-POOL | Adaptation Ollama Cloud Pool pour Vibecoding | N1 | ✅ TERMINÉ (4/4 items — AUTHORIZED_MODELS aligné sur AGENTS.adoc 2 modèles, LlmProviderResolver cycling, Cucumber epic_v6_pool) | 077, 158
 | EPIC C-BOM-FIX | POM transitif versions manquantes | NX | ✅ TERMINÉ (3/3 US, 8/8 pts — versions explicites dans libs.versions.toml, bump 0.0.6, 22/22 UT bakery LangSwitch GREEN) | 172
+| EPIC VIBE-HARDENING | Durcissement vibecoding (CR-GLOBALE-004) | N1 | BACKLOG (P1 : S1 allowlist deny-by-default, C2 retry un seul compteur, C5 timeout LLM ; P2 : C3/C4, S2/S3) | 175
 | EPIC 1 | Init gouvernance agent | NX | ✅ TERMINÉ (items stale purgés session 169) | 001
 |===

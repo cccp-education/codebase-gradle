@@ -1,20 +1,40 @@
 = Backlog — Codebase Gradle
 :sectnums:
-:date: 2026-06-26
+:date: 2026-08-05
 
 _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux._
 
-== Synthèse Backlog (Session 170 — 2026-06-26)
+== Synthèse Backlog (Session 175 — 2026-08-05)
 
 [cols="1,3,1,2"]
 |===
 | EPIC | Sujet | Statut | Remarque
 | EPIC 1 | Init gouvernance | ✅ TERMINÉ | Items stale purgés (projet publié Central 0.0.5)
 | EPIC V-FLYWAY | Migration Flyway | BACKLOG P2 | Seuil déclenchement : 5+ migrations (actuellement 4 : V1→V4)
+| EPIC VIBE-HARDENING | Durcissement vibecoding (CR-GLOBALE-004) | BACKLOG P1 | S1 allowlist deny-by-default, C2 retry un seul compteur, C5 timeout LLM
 | Tous autres EPICs | V, W, X, Y, Z, K, L, OCR, CR, TRAD, PUB, V-LOCAL, SP, V-6, V-7, V-8, V-9, 2→12 | ✅ TERMINÉ | Voir détails ci-dessous
 |===
 
-*Backlog réellement restant* : EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5.
+*Backlog réellement restant* : EPIC VIBE-HARDENING (P1 — durcissement vibecoding issu CR-GLOBALE-004, réveil sur déclencheur externe) + EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5.
+
+== EPIC VIBE-HARDENING — Durcissement vibecoding (CR-GLOBALE-004)
+
+**Statut** : BACKLOG (Session 175, 2026-08-05 — findings archivés GLOBAL_CODE_REVIEW.adoc CR-GLOBALE-004)
+**Priorité** : P1 (aucun déclencheur actif — borough DORMANT, réveil si consommateur ou CI rouge)
+**Origine** : Code review session 174 (10 findings)
+
+_Durcissement recommandé de la couche outils d'exécution de l'agent autonome_ :
+
+* **S1** (P1) — allowlist deny-by-default pour `ExecShellTool`/`ExecGradleTool` (regex blacklists bypassables)
+* **C2** (P1) — retry compté une seule fois (actuellement double-compté → maxRetries épuisé prématurément)
+* **C5** (P1) — timeout sur appels LLM (`callLLM`/`replan`)
+* **S2** (P2) — allowlist de tâches Gradle (`gradle_*` auto-registration libre)
+* **S3** (P2) — garde de taille edit_file/write_file (anti-OOM)
+* **C3** (P2) — VibecodingPlan dead code (javadoc INSERT-X1..X6 stale) : implémenter ou purger
+* **C4** (P2) — GradleTaskArgsMapper flags cassés (un seul argument ProcessBuilder)
+* **C6** (P3) — duplication SessionProtocolServer/Task
+* **C7** (P3) — compteur remaining tasks négatif possible
+* **C1** (P1) — heuristique `contains("failed")` + expectedOutput jamais comparé (verify→adapt superficiel)
 
 == EPIC C-BOM-FIX — POM transitif codebase-plugin versions manquantes
 
