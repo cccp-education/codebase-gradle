@@ -2,7 +2,7 @@ package codebase.koog.llm
 
 import codex.ocr.OcrEngine
 import codex.ocr.OcrRequest
-import org.slf4j.LoggerFactory
+import org.slf4j.LoggerFactory.getLogger
 
 /**
  * Adapter qui wrap un [OcrEngine] de codex (Brooklyn) dans un [VisionProvider]
@@ -17,7 +17,7 @@ class CodexOcrEngineAdapter(
     private val engine: OcrEngine
 ) : VisionProvider {
 
-    private val log = LoggerFactory.getLogger(CodexOcrEngineAdapter::class.java)
+    private val log = getLogger(CodexOcrEngineAdapter::class.java)
 
     override suspend fun processImage(
         imageBytes: ByteArray,
@@ -30,12 +30,12 @@ class CodexOcrEngineAdapter(
             "[CodexOcrAdapter] Delegating to {} — mimeType={}, language={}, size={}bytes",
             engine::class.simpleName, mimeType, language, imageBytes.size
         )
-        val request = OcrRequest(
-            imageData = imageBytes,
-            format = mimeType,
-            language = language
-        )
-        val result = engine.process(request)
-        return result.structuredText
+        return engine.process(
+            OcrRequest(
+                imageData = imageBytes,
+                format = mimeType,
+                language = language
+            )
+        ).structuredText
     }
 }

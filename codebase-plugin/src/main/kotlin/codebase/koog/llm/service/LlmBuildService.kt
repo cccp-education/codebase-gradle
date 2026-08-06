@@ -1,6 +1,7 @@
 package codebase.koog.llm.service
 
 import codebase.koog.llm.LlmProvider
+import codebase.koog.llm.service.LlmServiceResolver.resolveProvider
 import org.gradle.api.provider.Property
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
@@ -49,6 +50,5 @@ abstract class LlmBuildService : BuildService<LlmBuildService.Params> {
      * BuildService only reads its Gradle parameters — no resolution logic
      * lives here.
      */
-    fun provider(): LlmProvider =
-        LlmServiceResolver.resolveProvider(parameters.model.get())
+    fun provider(): LlmProvider = resolveProvider(parameters.model.get())
 }

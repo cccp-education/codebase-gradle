@@ -2,6 +2,7 @@ package codebase.koog.llm.service
 
 import codebase.koog.llm.LlmProvider
 import codebase.koog.llm.LlmProviderResolver
+import codebase.koog.llm.LlmProviderResolver.resolve
 
 /**
  * Pure resolver wrapping [LlmProviderResolver] so it can be unit-tested
@@ -21,6 +22,5 @@ object LlmServiceResolver {
      * Blank model falls back to Ollama (matches [LlmProviderResolver]
      * semantics — "ollama", "" → pool-backed Gemma4 Cloud).
      */
-    fun resolveProvider(model: String): LlmProvider =
-        LlmProviderResolver.resolve(model)
+    fun resolveProvider(model: String): LlmProvider = resolve(model)
 }
