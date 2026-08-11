@@ -3,7 +3,7 @@ package codebase.koog.autofocus
 import codebase.koog.VibecodingGraph
 import codebase.koog.llm.FakeLlmProvider
 import contracts.agent.Epic
-import codebase.koog.planning.Plan
+import contracts.agent.Plan
 import contracts.agent.GradleTask as PlanTask
 import contracts.agent.UserStory
 import contracts.context.CompositeContext

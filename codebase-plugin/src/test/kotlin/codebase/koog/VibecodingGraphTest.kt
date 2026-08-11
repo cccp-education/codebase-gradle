@@ -3,7 +3,7 @@ package codebase.koog
 import codebase.koog.session.SessionRecord
 import codebase.koog.llm.FakeLlmProvider
 import contracts.agent.Epic
-import codebase.koog.planning.Plan
+import contracts.agent.Plan
 import contracts.agent.GradleTask as PlanTask
 import contracts.agent.UserStory
 import contracts.vibecoding.registry.ToolRegistry

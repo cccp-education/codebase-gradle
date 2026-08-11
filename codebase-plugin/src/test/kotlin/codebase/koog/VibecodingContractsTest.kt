@@ -1,6 +1,6 @@
 package codebase.koog
 
-import codebase.koog.planning.Plan
+import contracts.agent.Plan
 import codebase.koog.state.VibecodingState
 import contracts.agent.Epic
 import contracts.agent.GradleTask

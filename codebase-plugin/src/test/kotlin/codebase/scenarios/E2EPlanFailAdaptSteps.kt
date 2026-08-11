@@ -7,7 +7,7 @@ import contracts.agent.Epic
 import contracts.agent.GradleTask as PlanTask
 import contracts.agent.UserStory
 import contracts.vibecoding.registry.ToolRegistry
-import codebase.koog.planning.Plan
+import contracts.agent.Plan
 import codebase.koog.state.VibecodingState
 import io.cucumber.java.Before
 import io.cucumber.java.en.Given

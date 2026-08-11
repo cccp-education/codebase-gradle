@@ -1,7 +1,7 @@
 package codebase.koog.state
 
+import contracts.agent.Plan
 import contracts.context.CompositeContext
-import codebase.koog.planning.Plan
 
 /**
  * État mutable du vibecoding agent.

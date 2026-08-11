@@ -1,22 +1,14 @@
 package codebase.koog.planning
 
-import contracts.agent.Epic
+import contracts.agent.Plan
 import contracts.context.CompositeContext
 
 /**
- * Plan de décomposition — structure de données pure.
- * Utilise les types Epic/UserStory/GradleTask du N0 (agent-contracts).
- * Extraite de codebase.koog.KoogPlanningGraph dans N0 pour partage N1→N2 sans violation DAG.
- */
-data class Plan(
-    val title: String,
-    val epics: List<Epic>,
-    val totalPoints: Int,
-    val estimatedSessions: String
-)
-
-/**
  * État du graphe de planification.
+ *
+ * The plan itself is the N0 shared kernel type [contracts.agent.Plan]
+ * (agent-contracts). codebase no longer re-declares a local Plan — the
+ * split-brain was eliminated by PLN-CONTRACTS-4 (fusion).
  */
 data class PlanState(
     val intention: String = "",

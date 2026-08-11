@@ -1,10 +1,7 @@
 package codebase.rag
 
-import contracts.agent.Epic
-import contracts.agent.GradleTask
-import contracts.agent.UserStory
+import contracts.agent.Plan
 import contracts.context.CompositeContext
-import codebase.koog.planning.Plan
 import codebase.koog.planning.PlanState
 import codebase.koog.state.AugmentedState
 import org.slf4j.LoggerFactory
@@ -25,7 +22,7 @@ object PlannerIntegration {
 
         return try {
             val ctx = PlanningContext(intention = intention)
-            val planningPlan = IntentionPlanner.plan(
+            val plan: Plan = IntentionPlanner.plan(
                 intention = intention,
                 context = ctx,
                 specContents = emptyList(),
@@ -34,7 +31,6 @@ object PlannerIntegration {
                 graphifyContext = compositeContext.graphifySection,
                 docsContext = compositeContext.docsSection
             )
-            val plan = planningPlan.toContractPlan()
             log.info("PlannerIntegration: plan OK — {} EPICs, {} pts, {} sessions",
                 plan.epics.size, plan.totalPoints, plan.estimatedSessions)
             PlanState(
@@ -87,28 +83,3 @@ fun AugmentedState.toPlanMetadata(source: String = "codebase"): PlanMetadata? {
         estimatedSessions = p.estimatedSessions
     )
 }
-
-private fun planning.Plan.toContractPlan(): Plan =
-    Plan(
-        title = title,
-        epics = epics.map { e ->
-            Epic(
-                name = e.name,
-                description = e.description,
-                points = e.points,
-                userStories = e.userStories.map { us ->
-                    UserStory(
-                        description = us.description,
-                        tasks = us.tasks.map { t ->
-                            GradleTask(
-                                description = t.description,
-                                gradleTask = t.gradleTask
-                            )
-                        }
-                    )
-                }
-            )
-        },
-        totalPoints = totalPoints,
-        estimatedSessions = estimatedSessions
-    )

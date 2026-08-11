@@ -3,7 +3,7 @@ package codebase.scenarios
 import codebase.koog.llm.FakeLlmProvider
 import codebase.koog.session.SessionRecord
 import contracts.agent.Epic
-import codebase.koog.planning.Plan
+import contracts.agent.Plan
 import contracts.agent.GradleTask as PlanTask
 import contracts.agent.UserStory
 import codebase.koog.state.VibecodingState
