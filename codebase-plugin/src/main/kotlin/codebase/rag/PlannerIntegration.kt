@@ -54,7 +54,7 @@ object PlannerIntegration {
 
 fun PlanState.toPlanMetadata(source: String = "codebase"): PlanMetadata? {
     if (error != null || plan == null) return null
-    val p = plan ?: return null
+    val p = plan
     return PlanMetadata(
         source = source,
         version = "1.0",
@@ -70,7 +70,7 @@ fun PlanState.toPlanMetadata(source: String = "codebase"): PlanMetadata? {
 
 fun AugmentedState.toPlanMetadata(source: String = "codebase"): PlanMetadata? {
     if (error != null || plan == null) return null
-    val p = plan ?: return null
+    val p = plan
     return PlanMetadata(
         source = source,
         version = "1.0",
