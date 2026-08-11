@@ -1,9 +1,9 @@
 = INDEX.adoc — Codebase Gradle (Queens N1)
-:date: 2026-08-05
-:session_en_cours: 176
-:session_precedente: 175 — Clôture code review vibecoding CR-GLOBALE-004. 10 findings archivés. Borough DORMANT.
-:derniere_session: 176 — SLD-8 US-8.1 LlmBuildService Gradle bridge + corrections architecture. Pattern « Plugin Indépendant + Racine Consommateur » restauré (article 0124). codebase-plugin/ autonome avec son catalog. BOM 0.0.16 + codebase 0.0.5 mavenLocal. plugin.serialization fix. US-8.1 livrée TDD/BDD 3 niveaux (5 unit + 3 functional + 4 cucumber = 12 tests, 0 FAIL).
-:prochaine_session: 177 — SLD-8 US-8.2 côté slider. AssistantManager 4 factories → injection Provider<LlmBuildService>. Adaptateur LlmProviderChatModelAdapter.
+:date: 2026-08-11
+:session_en_cours: 177
+:session_precedente: 176 — SLD-8 US-8.1 LlmBuildService Gradle bridge + corrections architecture. Pattern « Plugin Indépendant + Racine Consommateur » restauré (article 0124). codebase-plugin/ autonome avec son catalog. BOM 0.0.16 + codebase 0.0.5 mavenLocal. plugin.serialization fix. US-8.1 livrée TDD/BDD 3 niveaux (5 unit + 3 functional + 4 cucumber = 12 tests, 0 FAIL).
+:derniere_session: 177 — PLN-VERIFY US-3 cross-borough (planner Manhattan S-066 pilote). Bridge `VibecodingGraph.extractCurrentStep` rendu `internal` + consomme `task.expectedOutput`/`maxRetries`/`verifyHook` du `GradleTask` N0 (0.0.3) au lieu de hardcoder `"BUILD SUCCESSFUL"`. Bump `agent-contracts` codebase 0.0.2 → 0.0.3. 9 unit `VibecodingGraphVerifyStepTest`. 881 tests 0 failures. `publishToMavenLocal` VERT. Borough reste DORMANT — modif cross-borough, gouvernance portée par planner.
+:prochaine_session: 178 — SLD-8 US-8.2 côté slider (reporté S-176). AssistantManager 4 factories → injection Provider<LlmBuildService>. Adaptateur LlmProviderChatModelAdapter.
 
 == Roadmap EPICs
 

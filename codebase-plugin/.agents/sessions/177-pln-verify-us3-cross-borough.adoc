@@ -1,0 +1,53 @@
+= Session 177 — PLN-VERIFY US-3 cross-borough (planner Manhattan)
+:date: 2026-08-11
+:type: cross-borough
+:score: 9/10
+:pilot: planner-gradle (Manhattan, session 066)
+:epic: PLN-VERIFY (planner)
+
+== Objectif
+
+Cross-borough piloté par planner-gradle (Manhattan S-066). US-3 de
+l'EPIC PLN-VERIFY : bridge codebase `VibecodingGraph.extractCurrentStep`
+hardcodait `expectedOutput = "BUILD SUCCESSFUL"` au lieu de consommer
+les métadonnées du `GradleTask` N0 (0.0.3).
+
+== Exécution
+
+Baby-step TDD strict (RED → GREEN → REFACTOR).
+
+=== RED
+
+Nouveau fichier `VibecodingGraphVerifyStepTest.kt` (9 unit) dans
+codebase-plugin. Compile fail : `extractCurrentStep` private.
+
+=== GREEN
+
+- `VibecodingGraph.kt` : `extractCurrentStep` private → internal + 
+  consomme `task.expectedOutput`/`task.maxRetries`/`task.verifyHook`
+  (site 1, ligne 713). Site 2 rollback (ligne 741) clarifié : fallback
+  conserve default N0 (pas de `GradleTask` disponible, backward compat).
+- `libs.versions.toml` : `agent-contracts` 0.0.2 → 0.0.3.
+- 9/9 PASSED.
+
+=== REFACTOR
+
+- `./gradlew test` (codebase-plugin) : 881 tests, 0 failures, 0 errors.
+- `./gradlew publishToMavenLocal` VERT (règle 2).
+- Non-régression planner : UP-TO-DATE (consomme
+  `agent-contracts:0.0.3` + `codebase-contracts:0.0.1`, pas de
+  dépendance directe `codebase-plugin`).
+
+== Artefacts
+
+- `codebase-plugin/src/main/kotlin/codebase/koog/VibecodingGraph.kt`
+- `codebase-plugin/gradle/libs.versions.toml`
+- `codebase-plugin/src/test/kotlin/codebase/koog/VibecodingGraphVerifyStepTest.kt` (9 unit)
+
+== Note
+
+Borough codebase DORMANT — cette modif est un cross-borough piloté par
+planner (Manhattan). L'EPIC PLN-VERIFY est porté par planner. Codebase
+reçoit la modif du bridge car `VibecodingGraph` vit dans Queens. Pas de
+rouverture du borough : planner porte la gouvernance complète
+(rapport S-066, INDEX, BACKLOG, PROMPT_REPRISE côté planner-gradle).

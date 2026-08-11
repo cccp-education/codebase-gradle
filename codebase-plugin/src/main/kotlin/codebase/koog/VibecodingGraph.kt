@@ -701,8 +701,13 @@ class VibecodingGraph(
     /**
      * Extrait le [VibecodingStep] correspondant à la tâche courante du plan.
      * Retourne null si pas de plan ou toutes les tâches sont faites.
+     *
+     * PLN-VERIFY US-3 : consomme les métadonnées de vérification du [GradleTask]
+     * (`expectedOutput` / `maxRetries` / `verifyHook`) au lieu de hardcoder
+     * `"BUILD SUCCESSFUL"` / `3` / `null`. Backward compat : les defaults du
+     * N0 produisent le même comportement qu'avant si planner omet les champs.
      */
-    private fun extractCurrentStep(state: VibecodingState): VibecodingStep? {
+    internal fun extractCurrentStep(state: VibecodingState): VibecodingStep? {
         val plan = state.plan ?: return null
         val allTasks = plan.epics.flatMap { epic ->
             epic.userStories.flatMap { story -> story.tasks }
@@ -713,7 +718,9 @@ class VibecodingGraph(
         return VibecodingStep(
             description = task.description,
             gradleTask = task.gradleTask,
-            expectedOutput = "BUILD SUCCESSFUL"
+            expectedOutput = task.expectedOutput,
+            maxRetries = task.maxRetries,
+            verifyHook = task.verifyHook
         )
     }
 
@@ -738,11 +745,15 @@ class VibecodingGraph(
             )
         }
 
-        val step = extractCurrentStep(state) ?: VibecodingStep(
-            description = state.currentTaskDescription.ifBlank { "unknown" },
-            gradleTask = "unknown",
-            expectedOutput = "BUILD SUCCESSFUL"
-        )
+        val step = extractCurrentStep(state) ?: run {
+            val task = state.currentTaskDescription.ifBlank { "unknown" }
+            log.warn("[VibecodingGraph] No current step for rollback — using fallback defaults for '{}'", task)
+            VibecodingStep(
+                description = task,
+                gradleTask = "unknown",
+                expectedOutput = "BUILD SUCCESSFUL"
+            )
+        }
 
         val strategy = try {
             RollbackStrategy.valueOf(state.rollbackStrategy)
