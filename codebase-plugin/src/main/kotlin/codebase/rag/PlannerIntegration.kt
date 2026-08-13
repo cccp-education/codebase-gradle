@@ -2,6 +2,8 @@ package codebase.rag
 
 import contracts.agent.Plan
 import contracts.context.CompositeContext
+import codebase.koog.llm.adapter.LlmProviderChatModelAdapter
+import codebase.koog.llm.service.LlmServiceResolver
 import codebase.koog.planning.PlanState
 import codebase.koog.state.AugmentedState
 import org.slf4j.LoggerFactory
@@ -22,6 +24,8 @@ object PlannerIntegration {
 
         return try {
             val ctx = PlanningContext(intention = intention)
+            val provider = LlmServiceResolver.resolveProvider(System.getenv("OLLAMA_MODEL") ?: "")
+            val model = LlmProviderChatModelAdapter(provider)
             val plan: Plan = IntentionPlanner.plan(
                 intention = intention,
                 context = ctx,
@@ -29,7 +33,8 @@ object PlannerIntegration {
                 eagerContext = compositeContext.eagerSection,
                 ragContext = compositeContext.ragSection,
                 graphifyContext = compositeContext.graphifySection,
-                docsContext = compositeContext.docsSection
+                docsContext = compositeContext.docsSection,
+                model = model
             )
             log.info("PlannerIntegration: plan OK — {} EPICs, {} pts, {} sessions",
                 plan.epics.size, plan.totalPoints, plan.estimatedSessions)

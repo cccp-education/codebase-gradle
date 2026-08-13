@@ -5,7 +5,7 @@ import java.time.Duration
 fun isCI() = System.getenv("CI") == "true"
 
 group = "education.cccp"
-version = "0.0.5"
+version = "0.0.7"
 
 plugins {
     `java-library`
@@ -34,7 +34,10 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(gradleApi())
     implementation(gradleKotlinDsl())
-    implementation(libs.bundles.langchain4j.rag)
+    api(libs.langchain4j)
+    implementation(libs.langchain4j.pgvector)
+    implementation(libs.langchain4j.minilm)
+    implementation(libs.langchain4j.ollama)
     implementation(libs.googleAiGemini)
     implementation(libs.bundles.r2dbc)
     implementation(libs.codex.plugin)
@@ -73,6 +76,9 @@ dependencies {
     testImplementation(libs.testcontainers.junit5)
     testImplementation(libs.bundles.cucumber)
 }
+
+tasks.named("pluginUnderTestMetadata").configure { dependsOn("jar") }
+tasks.named("validatePlugins").configure { dependsOn("jar") }
 
 data class CucumberTaskSpec(
     val taskName: String,
