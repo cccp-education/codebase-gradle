@@ -1,5 +1,38 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026 — Codebase Gradle (Queens)
 
+== Session 181 — Audit version + EPIC PUB (bump 0.0.8, gouvernance pure)
+
+[cols="2,3"]
+|===
+| Tâche | Statut
+
+| Audit deltas versions Maven Central vs code local (15 boroughs publics, source vérité repo1.maven.org maven-metadata.xml)
+| ✅ TERMINÉ
+
+| Constat codebase : `codebase-plugin/build.gradle.kts:8` version 0.0.7 vs Central 0.0.7 (bundle e08acb47 S-073) + commits post-publication non propagés (`f840b93` SUBGRAPH US-1+US-2)
+| ✅ TERMINÉ
+
+| Décision : bump 0.0.7→0.0.8 reporté fin d'EPIC SUBGRAPH (S179) → cadré EPIC PUB dédié (3 US PUB-0.0.8-1/2/3) ajouté au BACKLOG (session 181)
+| ✅ TERMINÉ
+
+| Zéro code modifié (gouvernance pure)
+| ✅ TERMINÉ
+|===
+
+**Fichiers modifies** :
+- `BACKLOG.adoc` — EPIC PUB bump 0.0.8 (3 US) + `:last_update` session 181
+- `.agents/INDEX.adoc` — session 181 (prochaine 182)
+- `.agents/SESSIONS_HISTORY.adoc` — entrée session 181
+- `.agents/TEST_COVERAGE_ANALYSIS.adoc` — mention session 181 (aucun test modifié)
+- `.agents/sessions/181-version-bump-0.0.8.adoc` — rapport de session
+- `PROMPT_REPRISE.adoc` — session 182, mission SUBGRAPH US-3
+
+**Tests** : aucun test modifié (gouvernance pure) — baseline inchangée.
+
+**Prochaine session (182)** : EPIC SUBGRAPH US-3 — `graphRelations` alimenté
+depuis le sous-graphe (GovernanceContextLoader.kt:68 + ContextChannel.Resource,
+~8 unit).
+
 == Session 179 — SUBGRAPH US-1 (domaine codebase.graph, portage bakery → N1)
 
 [cols="2,3"]

@@ -1,7 +1,7 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 181
-:session: 181
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 182
+:session: 182
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 180 — SUBGRAPH US-2 TERMINÉ (canal Graphify alimenté par le sous-graphe réel : GraphContextRenderer + GraphifyContextProvider + câblage CompositeContextBuilder/MultiChannelContextGraph, 11 unit + 4 functional GREEN, gate ciblé VERT 24s)
+:session_precedente: 181 — Audit version + EPIC PUB (gouvernance pure, zéro code) : delta codebase-plugin 0.0.7 vs Central 0.0.7 + commits post-publication `f840b93` → EPIC PUB bump 0.0.8 ajouté au BACKLOG (3 US). Zéro code modifié.
 
 == Contexte
 
@@ -9,10 +9,10 @@
 - Domaine `codebase.graph` prêt : `LensConfig` + `SubgraphExtractor` + `SiteSubgraph` (US-1) + `GraphContextRenderer` + `GraphifyContextProvider` (US-2), dépendance `education.cccp:graphify-plugin:0.0.2` (WORKAROUND package `com.cheroliv.graphify.model`)
 - Canal `ContextChannel.Graphify` réel : `CompositeContextBuilder` + `MultiChannelContextGraph.collectGraphifyNode` consomment le sous-graphe réel tronqué au `graphifyTokens` (budget 0.20)
 - Reste du faux positif : `GovernanceContextLoader.graphRelations` hardcodé `""` (GovernanceContextLoader.kt:68) — `ContextChannel.Resource` vide (MultiChannelContextGraph.kt:154)
-- Version : codebase-plugin 0.0.7 Central. Bump 0.0.8 + publication reportés en fin d'EPIC (décision S179)
+- Version : codebase-plugin 0.0.7 Central. **EPIC PUB (bump 0.0.8) cadré au BACKLOG (S181)** — 3 US à exécuter après fin d'EPIC SUBGRAPH
 - ⚠️ Incident environnemental : racine `codebase-gradle` ne configure plus (conflit strict kotlin-stdlib 2.3.21 embedded vs workspace-bom 0.0.4 requires 2.3.20 sur le classpath buildscript) — valider via le build autonome `codebase-plugin/` (settings.gradle.kts propre) : `./gradlew test --tests "<cible>"`
 
-== Mission Session 181
+== Mission Session 182
 
 EPIC SUBGRAPH US-3 — `graphRelations` alimenté depuis le sous-graphe :
 
@@ -26,6 +26,6 @@ EPIC SUBGRAPH US-3 — `graphRelations` alimenté depuis le sous-graphe :
 
 - BABY-STEP TDD strict — jamais de code sans test rouge d'abord
 - Anglais uniquement dans le code (OSS Apache 2.0)
-- Zéro bump BOM ; bump codebase-plugin 0.0.7 → 0.0.8 à la FIN de l'EPIC (après US-3/4)
+- Zéro bump BOM ; bump codebase-plugin 0.0.7 → 0.0.8 via EPIC PUB (S181) à la fin de l'EPIC SUBGRAPH (après US-3/4)
 - Gate tests ciblé, JAMAIS `./gradlew test` global (Cucumber interminable)
 - Ports Ollama 11437-11465 (jamais 11434-11436)

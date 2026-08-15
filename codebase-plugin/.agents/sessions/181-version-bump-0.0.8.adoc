@@ -1,0 +1,61 @@
+= Rapport de Session 181 — Codebase Gradle (Queens N1)
+
+*Date* : 2026-08-15
+*Type* : gouvernance pure (audit version + EPIC PUB) — zéro code modifié
+*Pattern* : S-057/S-063 (gouvernance pure), bakery S-199 (audit version)
+
+== Mission
+
+Audit des deltas versions Maven Central vs code local sur les boroughs publics
+et ajout du bump codebase-plugin 0.0.8 au backlog (sans exécution de publication).
+
+== Contexte / Constat
+
+* Source vérité versions : `https://repo1.maven.org/maven2/education/cccp/<artifact>/maven-metadata.xml`
+* codebase : `codebase-plugin/build.gradle.kts:8` → `version = "0.0.7"` (code local)
+* Central 0.0.7 publié (bundle `e08acb47`, S-073 LLM-ADAPTER-EXTRACT)
+* Commits post-publication non propagés : `f840b93` (SUBGRAPH US-1+US-2, domaine
+  `codebase.graph` + canal Graphify réel), `7026c44` (LLM-ADAPTER-EXTRACT US-1)
+* Bump 0.0.7→0.0.8 reporté fin d'EPIC SUBGRAPH (décision S179) — désormais cadré
+  comme EPIC PUB dédié
+
+== Tâches livrées
+
+* Audit des deltas versions (15 boroughs publics audités)
+* EPIC PUB « Publication Maven Central codebase-plugin 0.0.8 » ajouté au BACKLOG
+  (`codebase-plugin/.agents/BACKLOG.adoc`) — 3 US : PUB-0.0.8-1 (POM/signing
+  vérifiés), PUB-0.0.8-2 (`publishAggregationToCentralPortal`), PUB-0.0.8-3
+  (tags cleanup + BOM si nécessaire)
+* `:last_update` BACKLOG → Session 181
+* INDEX.adoc — session 181 ✅ (prochaine 182 — SUBGRAPH US-3)
+* SESSIONS_HISTORY.adoc — entrée session 181
+* TEST_COVERAGE_ANALYSIS.adoc — mention session 181 (aucun test modifié)
+* PROMPT_REPRISE.adoc — session 182, mission SUBGRAPH US-3
+
+== Fichiers créés
+
+* `codebase-plugin/.agents/sessions/181-version-bump-0.0.8.adoc` (ce rapport)
+
+== Fichiers modifiés
+
+* `codebase-plugin/.agents/BACKLOG.adoc` — EPIC PUB bump 0.0.8 (3 US)
+* `codebase-plugin/.agents/INDEX.adoc` — session 181 (prochaine 182)
+* `codebase-plugin/.agents/SESSIONS_HISTORY.adoc` — entrée session 181
+* `codebase-plugin/.agents/TEST_COVERAGE_ANALYSIS.adoc` — mention session 181
+* `codebase-plugin/.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-08.adoc` — entrée session 181
+* `codebase-plugin/PROMPT_REPRISE.adoc` — session 182, mission SUBGRAPH US-3
+
+== Tests
+
+Aucun test modifié (gouvernance pure) — baseline inchangée
+(`codebase.graph.*` 37 tests 0 FAIL, gate ciblé VERT S180).
+
+== Prochaine session (182)
+
+EPIC SUBGRAPH US-3 — `graphRelations` alimenté depuis le sous-graphe :
+remplacer le `""` hardcodé de `GovernanceContextLoader.kt:68` +
+`ContextChannel.Resource` (MultiChannelContextGraph.kt:154), ~8 unit.
+
+== Score
+
+8/10 (gouvernance pure, zéro risque, zéro code)

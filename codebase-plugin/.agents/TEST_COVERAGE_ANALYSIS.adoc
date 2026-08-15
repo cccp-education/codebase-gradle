@@ -1,6 +1,12 @@
 = Test Coverage Analysis — Codebase Gradle
 :date: 2026-08-15
 
+== Session 181 — Audit version + EPIC PUB (gouvernance pure)
+
+Aucun test modifié (gouvernance pure, zéro code). Baseline inchangée :
+`codebase.graph.*` 37 tests 0 FAIL (S180), gate ciblé VERT. Bump
+0.0.7→0.0.8 cadré EPIC PUB (BACKLOG S181) — exécution hors session de code.
+
 == Session 180 — SUBGRAPH US-2 (canal Graphify réel)
 
 === Nouveaux tests
