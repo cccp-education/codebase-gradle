@@ -3,6 +3,7 @@ package codebase.koog
 import contracts.context.ChannelBudget
 import contracts.context.CompositeContextConfig
 import contracts.context.ContextChannel
+import codebase.graph.GraphifyContextProvider
 import ai.koog.agents.core.agent.asMermaidDiagram
 import ai.koog.agents.core.agent.entity.AIAgentGraphStrategy
 import ai.koog.agents.core.agent.entity.ToolSelectionStrategy
@@ -129,7 +130,7 @@ class MultiChannelContextGraph {
 
     private fun collectGraphifyNode(state: MultiChannelState): MultiChannelState {
         val rootDir = File(state.workspaceRoot)
-        val content = loadGraphifyStats(rootDir)
+        val content = GraphifyContextProvider(rootDir.resolve("office/graph.json")).provide()
         val channel = ContextChannel.Graphify(content).truncateToTokens(state.budget.graphifyTokens)
         return state.copy(channels = state.channels + channel)
     }
@@ -186,20 +187,5 @@ class MultiChannelContextGraph {
             }
         }
         return sb.toString()
-    }
-
-    private fun loadGraphifyStats(rootDir: File): String {
-        val graphFile = rootDir.resolve("office/graph.json")
-        if (!graphFile.isFile) return "[Graphify] graph.json non trouve dans office/"
-
-        val content = try {
-            graphFile.readText()
-        } catch (e: Exception) {
-            return "[Graphify] graph.json illisible: ${e.message}"
-        }
-
-        val nodeCount = Regex(""""name":""").findAll(content).count()
-        val edgeCount = Regex(""""source":""").findAll(content).count()
-        return "[Graphify] global graph: ~$nodeCount nodes, ~$edgeCount edges"
     }
 }

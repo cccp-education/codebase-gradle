@@ -1,0 +1,73 @@
+= Session 179 — SUBGRAPH US-1 TERMINÉ (domaine codebase.graph, portage bakery → N1)
+
+:date: 2026-08-15
+:epic: SUBGRAPH — Contexte Augmenté Graphify (graphe + sous-graphes réels)
+:session: 179
+:statut: ✅ US-1 TERMINÉ — domaine `codebase.graph` ouvert, 26/26 unit GREEN, gate non-régression VERT (912 tests, 0 FAIL)
+
+## Récapitulatif
+
+US-1 : dépendance `graphify-plugin:0.0.2` + nouveau domaine DDD `codebase.graph`
+(`LensConfig` + `SubgraphExtractor` + `SiteSubgraph`) portés depuis bakery
+(N2 LENTILLE) vers codebase (N1 socle partagé). TDD strict RED → GREEN →
+REFACTOR.
+
+## Baby-steps
+
+### 1. RED — tests portés d'abord (26 unit)
+
+- `src/test/kotlin/codebase/graph/SubgraphExtractorTest.kt` — 26 unit portés
+  depuis bakery `SubgraphExtractorTest` (GraphModel synthétique, package
+  `codebase.graph`, imports `com.cheroliv.graphify.model.*` — WORKAROUND
+  package relocalisé).
+- Vérification : `./gradlew test --tests "codebase.graph.*"` →
+  compileTestKotlin FAILED (`Unresolved reference 'SubgraphExtractor'/
+  'LensConfig'/'extract'`). RED confirmé.
+
+### 2. GREEN — 2 fichiers prod + dépendance
+
+- `gradle/libs.versions.toml` : `graphify = "0.0.2"` +
+  `graphify-plugin = { module = "education.cccp:graphify-plugin", version.ref = "graphify" }`.
+- `build.gradle.kts` : `implementation(libs.graphify.plugin)`.
+- `src/main/kotlin/codebase/graph/LensConfig.kt` — data class immuable
+  (scope/communities/nodeTypes/edgeTypes/maxDepth/fileExtensions, defaults
+  identiques bakery) + enum `LensScope` (SUBGRAPH/FULL/SEMANTIC_ONLY). DSL
+  Gradle `Action` + `rules`/`rag` (LENS-2) NON portés — YAGNI.
+- `src/main/kotlin/codebase/graph/SubgraphExtractor.kt` — `loadGraph`/
+  `extract`/`extractFromPath`/`expandBfs` + `SiteSubgraph` (nodeCount/
+  edgeCount/communityCount/nodeIds/communityIds/nodesByCommunity/edgesByType/
+  nodesInCommunity/edgesOfType/neighbors).
+
+Vérification : `./gradlew test --tests "codebase.graph.*"` → 26/26 PASSED,
+BUILD SUCCESSFUL 13s.
+
+### 3. REFACTOR / non-régression
+
+Gate ciblé : `./gradlew test --tests "codebase.graph.*" --tests "codebase.koog.*"
+--tests "contracts.vibecoding.*"` → BUILD SUCCESSFUL (912 tests, 105 classes,
+0 FAIL). Suite complète NON relancée (embarque Cucumber, interminable —
+pratique canonique S175).
+
+## Décision versionnage
+
+Pas de bump/publish pour US-1 seul : bump `0.0.7 → 0.0.8` + publication
+Central reportés en fin d'EPIC (après US-2/3/4), évite 3 publications
+intermédiaires. Zéro bump BOM (graphify-plugin 0.0.2 déjà Central).
+
+## Fichiers
+
+Créés :
+- `src/main/kotlin/codebase/graph/LensConfig.kt`
+- `src/main/kotlin/codebase/graph/SubgraphExtractor.kt`
+- `src/test/kotlin/codebase/graph/SubgraphExtractorTest.kt` (26 unit)
+
+Modifié :
+- `gradle/libs.versions.toml` (+ graphify 0.0.2)
+- `build.gradle.kts` (+ implementation graphify-plugin)
+
+## Prochaine session (180)
+
+US-2 — Câblage canal Graphify réel : remplacer `loadGraphifyStats`
+(CompositeContextBuilder.kt:138 + MultiChannelContextGraph.kt:130) par
+`SubgraphExtractor`, tronquer au `graphifyTokens` existant (budget 0.20),
+format texte structuré. ~8 unit + 2 functional.

@@ -42,6 +42,7 @@ dependencies {
     implementation(libs.bundles.r2dbc)
     implementation(libs.codex.plugin)
     implementation(libs.planner.plugin)
+    implementation(libs.graphify.plugin)
 
     // N0 codebase contracts — source unique de vérité (ContextChannel, ChannelBudget, CompositeContext, CompositeContextConfig)
     implementation(libs.codebase.contracts)

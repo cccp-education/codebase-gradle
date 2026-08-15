@@ -1,10 +1,18 @@
 package codebase.koog
 
+import com.cheroliv.graphify.model.GraphCommunity
+import com.cheroliv.graphify.model.GraphEdge
+import com.cheroliv.graphify.model.GraphModel
+import com.cheroliv.graphify.model.GraphNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import contracts.context.ChannelBudget
 import contracts.context.ChannelType
 import contracts.context.ContextChannel
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -122,5 +130,41 @@ class MultiChannelContextGraphTest {
         assertTrue(result.channels.isNotEmpty(), "Should not crash on invalid path")
         assertTrue(result.channels.any { it.content.isBlank() || it.content.contains("non trouve") || it.content.contains("indisponible") },
             "Should gracefully handle missing resources")
+    }
+
+    @Test
+    fun `graphify channel contains real subgraph content when graph json exists`(@TempDir tempDir: File) {
+        val office = tempDir.resolve("office").apply { mkdirs() }
+        val mapper = ObjectMapper().registerKotlinModule()
+        val model =
+            GraphModel(
+                nodes =
+                    listOf(
+                        GraphNode("bakery/BakeryPlugin.adoc", "BakeryPlugin.adoc", "file", "bakery-gradle"),
+                        GraphNode("bakery/SiteManager.adoc", "SiteManager.adoc", "file", "bakery-gradle"),
+                        GraphNode("bakery-gradle", "bakery-gradle", "module", "bakery-gradle"),
+                    ),
+                edges =
+                    listOf(
+                        GraphEdge("bakery/BakeryPlugin.adoc", "bakery/SiteManager.adoc", "reference"),
+                    ),
+                communities =
+                    listOf(
+                        GraphCommunity("bakery-gradle", "Bakery Gradle Plugin", 2),
+                    ),
+            )
+        office.resolve("graph.json").writeText(mapper.writeValueAsString(model))
+
+        val graph = MultiChannelContextGraph()
+        val state = MultiChannelState(
+            intention = "test",
+            workspaceRoot = tempDir.absolutePath,
+            budget = ChannelBudget(totalTokenBudget = 3000)
+        )
+        val result = graph.execute(state)
+
+        assertNotNull(result.graphify, "Graphify channel should be present")
+        assertTrue(result.graphify!!.content.contains("[Graphify] subgraph:"), "Should render real subgraph header")
+        assertTrue(result.graphify!!.content.contains("bakery/BakeryPlugin.adoc"), "Should contain real node from graph.json")
     }
 }

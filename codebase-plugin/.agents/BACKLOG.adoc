@@ -1,13 +1,12 @@
 = BACKLOG — Codebase Gradle
 :toc:
-:last_update: 2026-06-23 (Session 160 — liquidation backlog)
+:last_update: 2026-08-15 (Session 180 — EPIC SUBGRAPH US-2 canal Graphify réel câblé)
 
 == Statut Global
 
-**TOUS LES EPICs SONT TERMINÉS.** Codebase-gradle est dormant.
+**EPIC SUBGRAPH ajouté (P1)** — contexte augmenté Graphify réel. Le reste du backlog est dormant :
 
-Le backlog restant se réduit à :
-
+. *EPIC SUBGRAPH* (P1, nouveau) — graphe + sous-graphes réels dans le contexte augmenté (remplace les stats regex).
 . *EPIC 1* (2 items stale — snapshot + commit initial) — à purger, le projet est déjà publié Maven Central 0.0.3.
 . *EPIC V-FLYWAY* (P2, conditionnel) — ne se déclenchera que quand 5+ fichiers de migration de schéma existeront (actuellement 4 : V1→V4).
 . *EPIC 5* — migré vers training-gradle TRN-8, plus dans le scope codebase.
@@ -148,6 +147,57 @@ Wrapper à 9.5.1.
 | ✅ TERMINÉ
 | 128
 |===
+
+== EPIC SUBGRAPH — Contexte Augmenté Graphify (graphe + sous-graphes réels)
+
+**Statut** : 🟡 EN COURS (US-0 cadrage ✅ session 178, **US-1 ✅ session 179**, **US-2 ✅ session 180**, US-3→4 TODO)
+**Priorité** : P1
+**Sessions** : 178 (cadrage) → 179 (US-1) → 180 (US-2) → 181+
+
+=== Problème (constat audité)
+
+Le canal `ContextChannel.Graphify` (N0, budget 0.20) n'est **jamais alimenté avec du contenu réel** :
+
+. `CompositeContextBuilder.loadGraphifyStats` (CompositeContextBuilder.kt:138) — ne fait que des *stats regex* sur `office/graph.json` brut (`"name":`/`"source":` comptés) → `"[Graphify] global graph: ~N nodes, ~M edges"`. Zéro contenu structurel.
+. `MultiChannelContextGraph.collectGraphifyNode` (MultiChannelContextGraph.kt:130) — appelle la même `loadGraphifyStats` (même faux positif).
+. `GovernanceContextLoader.graphRelations` (GovernanceContextLoader.kt:68) — hardcodé `""`, jamais alimenté (le canal existe dans `LiveContextInjector` mais reste vide).
+. `ContextChannel.Resource` (MultiChannelContextGraph.kt:154) — hardcodé `""`.
+. Aucune dépendance codebase → graphify-plugin dans `build.gradle.kts`/`libs.versions.toml` (grep vide).
+. Contrats N0 (`codebase-contracts`) : `ContextChannel.Graphify` est un simple type de canal — aucun contrat de graphe (GraphModel/communities/edges).
+
+=== Pattern existant à copier (precedent bakery)
+
+`bakery-gradle` (N2, LENTILLE) est le **seul consommateur structuré du graphe** — le standard de fait du workspace :
+
+. Dépendance réelle : `education.cccp:graphify-plugin:0.0.2` (bakery-plugin/build.gradle.kts:38 + catalog).
+. `SubgraphExtractor.loadGraph` (bakery/lens/SubgraphExtractor.kt:37) — parse réel du graph.json (11 MB, 203k nœuds) en `GraphModel` via Jackson.
+. `LensConfig` (communautés/type nœuds/type edges/profondeur max/extensions) → sous-graphe ciblé ~200 nœuds.
+. `BfsProximityCache` + `AugmentedArticlesService` (β = 0.30) — scoring de proximité structurelle.
+. Contrat DAG documenté : bakery (N2) importe graphify-plugin (N0).
+
+=== Décisions architecturales (US-0 cadrage)
+
+. **Dépendance** : codebase → `education.cccp:graphify-plugin:0.0.2` (déjà Central, pattern bakery). Attention WORKAROUND bakery : 0.0.2 publié avec package relocalisé `com.cheroliv.graphify.model` au lieu de `graphify.model` — consommer le package réel, revoir si 0.0.3 corrigé.
+. **Domaine** : nouveau domaine DDD `codebase.graph` (6ème domaine de contexte, pattern `codebase.rag`).
+. **Portage** : `SubgraphExtractor` + `LensConfig` portés depuis bakery vers codebase (N1 socle partagé — bakery doit ensuite consommer codebase au lieu de dupliquer). Source de vérité unique N1.
+. **Câblage** : `loadGraphifyStats` remplacé par le vrai extracteur dans `CompositeContextBuilder` ET `MultiChannelContextGraph.collectGraphifyNode` — le canal `Graphify` reçoit le sous-graphe réel (nodes/edges/communities, format texte structuré, tronqué au `graphifyTokens` existant).
+. **`graphRelations`** : alimenté depuis le sous-graphe (au lieu de `""`) — `GovernanceContextLoader` + `LiveContextInjector` deviennent effectifs.
+. **Budget** : respecter `budgetGraphify = 0.20` (`graphifyTokens`) — le sous-graphe est tronqué au budget existant, zéro changement de contrat.
+. **Source graph.json** : défaut `office/graph.json` (11 MB), surchargeable via extension DSL.
+. **Testabilité** : `GraphModel` synthétique en tests (pattern `SiteContextCollectorTest`/`SubgraphExtractorTest` bakery), `LensConfig` scope FULL/SEMANTIC_ONLY/ciblé.
+. **Bump** : version 0.0.6 (après 0.0.5 publié). Zéro bump BOM si graphify-plugin 0.0.2 déjà sur Central.
+
+=== Bénéfice
+
+Chaque projet consommant codebase (planner, slider, capsule, training, plantuml...) obtient la capacité de construire **son graphe et ses sous-graphes** — le contexte augmenté devient complet : EAGER + RAG + GRAPHIFY réel + Docs + Resource.
+
+=== US découpées (~5 US)
+
+. US-0 — Cadrage EPIC (✅ session 178, ce document)
+. US-1 — Dépendance graphify-plugin + domaine `codebase.graph` (✅ session 179 : `LensConfig` + `SubgraphExtractor` + `SiteSubgraph` portés de bakery, 26 unit, gate non-régression VERT 912 tests/0 FAIL, WORKAROUND package `com.cheroliv.graphify.model` confirmé, bump 0.0.7→0.0.8 reporté en fin d'EPIC)
+. US-2 — Câblage `CompositeContextBuilder` + `MultiChannelContextGraph` (canal Graphify réel, ~8 unit + 2 functional) — ✅ session 180 : `GraphContextRenderer` (6 unit) + `GraphifyContextProvider` (5 unit) + câblage `CompositeContextBuilder` (param `graphFile` + `graphifyProvider`) + `MultiChannelContextGraph.collectGraphifyNode` (provider `office/graph.json`), `loadGraphifyStats` regex supprimé × 2, 3 functional `CompositeContextBuilderGraphifyTest` + 1 test graphify `MultiChannelContextGraphTest`, gate ciblé VERT 24s 0 FAIL, `codebase.graph.*` 37 tests 0 FAIL
+. US-3 — `graphRelations` alimenté (GovernanceContextLoader + LiveContextInjector, ~8 unit)
+. US-4 — Cucumber BDD (`codebase_subgraph.feature`, ~4 scénarios @subgraph)
 
 == EPIC V-FLYWAY — Migration Flyway (BACKLOG CONDITIONNEL)
 

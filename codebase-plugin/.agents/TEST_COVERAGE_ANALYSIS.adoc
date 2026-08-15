@@ -1,5 +1,64 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-08-05
+:date: 2026-08-15
+
+== Session 180 — SUBGRAPH US-2 (canal Graphify réel)
+
+=== Nouveaux tests
+
+* **Unit** (`codebase/graph/GraphContextRendererTest.kt`) : 6 tests
+  - header `[Graphify] subgraph: N nodes, M edges, C communities`
+  - une ligne par nœud (`- node <id> [type=<type>, community=<community>]`)
+  - une ligne par arête (`- edge <src> -> <dst> [type=<type>]`)
+  - une ligne par communauté (`- community <id> (N nodes)`)
+  - format déterministe, sous-graphe vide OK
+
+* **Unit** (`codebase/graph/GraphifyContextProviderTest.kt`) : 5 tests
+  - contenu réel du sous-graphe sur graph.json synthétique
+  - fallback fichier absent (`"[Graphify] graph.json non trouve dans office/"`)
+  - fallback illisible (JSON malformé → `"[Graphify] graph.json illisible: ..."`)
+  - `File` + `LensConfig` injectables
+  - (fixture initiale `.kt` corrigée → `.adoc` : défaut `fileExtensions`)
+
+* **Functional** (`codebase/rag/CompositeContextBuilderGraphifyTest.kt`) : 3 tests
+  - section graphify contient le sous-graphe réel quand graph.json existe
+  - fallback conservé quand graph.json absent
+  - troncature au budget `graphifyTokens` (en-tête conservé)
+
+* **Functional** (`codebase/koog/MultiChannelContextGraphTest.kt`) : +1 test
+  - `graphify channel contains real subgraph content when graph json exists`
+    (graph.json réel dans @TempDir) — 7 tests au total
+
+=== Gate de non-régression (pratique canonique S175/S179)
+
+Gate ciblé `codebase.rag.CompositeContextBuilderGraphifyTest +
+codebase.koog.MultiChannelContextGraphTest + codebase.graph.* +
+codebase.scenarios.PrepareContextUnitTest + codebase.scenarios.CompositeContextSteps`
+→ BUILD SUCCESSFUL 24s, 0 FAIL. `codebase.graph.*` : 37 tests / 0 FAIL.
+
+Suite complète `codebase.koog.*` interminable (2 timeouts 420s/720s) — gates
+ciblés. ⚠️ Validation via build autonome `codebase-plugin/` (racine
+`codebase-gradle` ne configure plus — incident environnemental strict
+kotlin-stdlib, hors S180).
+
+== Session 179 — SUBGRAPH US-1 (domaine codebase.graph, portage bakery → N1)
+
+=== Nouveaux tests
+
+* **Unit** (`codebase/graph/SubgraphExtractorTest.kt`) : 26 tests portés de
+  bakery (GraphModel synthétique via `com.cheroliv.graphify.model`, package
+  `codebase.graph`)
+  - `LensConfig` : defaults, scope, filtres communautés/types
+  - `SubgraphExtractor.loadGraph` : parsing GraphModel valide/invalide
+  - `extract` : sous-graphe ciblé, communautés, profondeur max (BFS)
+  - `expandBfs` : expansion proximité
+  - `SiteSubgraph` : nodeCount/edgeCount/communityCount, utilitaires
+    (nodesByCommunity/edgesByType/neighbors)
+
+=== Gate de non-régression (pratique canonique S175)
+
+`./gradlew test --tests "codebase.graph.*" --tests "codebase.koog.*"
+--tests "contracts.vibecoding.*"` → BUILD SUCCESSFUL, 912 tests / 105 classes
+/ 0 FAIL. Suite complète non relancée (embarque Cucumber, interminable).
 
 == Session 176 — SLD-8 US-8.1 LlmBuildService Gradle bridge
 

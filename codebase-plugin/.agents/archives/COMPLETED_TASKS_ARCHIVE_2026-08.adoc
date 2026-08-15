@@ -1,5 +1,80 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026 — Codebase Gradle (Queens)
 
+== Session 179 — SUBGRAPH US-1 (domaine codebase.graph, portage bakery → N1)
+
+[cols="2,3"]
+|===
+| Tâche | Statut
+
+| Dépendance `education.cccp:graphify-plugin:0.0.2` (catalog + implementation, pattern bakery)
+| ✅ TERMINÉ
+
+| Domaine DDD `codebase.graph` (6ème) — `LensConfig` (scope/communities/nodeTypes/edgeTypes/maxDepth/fileExtensions + enum LensScope SUBGRAPH/FULL/SEMANTIC_ONLY)
+| ✅ TERMINÉ
+
+| `SubgraphExtractor` porté (loadGraph/extract/extractFromPath/expandBfs + SiteSubgraph utilitaires)
+| ✅ TERMINÉ
+
+| DSL Gradle `Action` + rules/rag (LENS-2) NON portés — YAGNI
+| ✅ CADUQUE
+
+| 26 unit portés de bakery (GraphModel synthétique, WORKAROUND package `com.cheroliv.graphify.model` confirmé)
+| ✅ TERMINÉ
+
+| Gate non-régression VERT (912 tests / 105 classes / 0 FAIL)
+| ✅ TERMINÉ
+
+| Bump 0.0.7→0.0.8 + publication Central
+| ⏳ REPORTÉ en fin d'EPIC (après US-2/3/4)
+|===
+
+== Session 180 — SUBGRAPH US-2 (câblage canal Graphify réel)
+
+[cols="2,3"]
+|===
+| Tâche | Statut
+
+| US-2a `GraphContextRenderer` (object pur, domaine `codebase.graph`, format texte structuré ligne par ligne compatible troncature — header + node/edge/community lines)
+| ✅ TERMINÉ
+
+| US-2a Tests unit (6 tests `GraphContextRendererTest`)
+| ✅ TERMINÉ
+
+| US-2b `GraphifyContextProvider` (File + LensConfig injectables, pipeline load→extract→render, fallbacks conservés contrat backward-compat)
+| ✅ TERMINÉ
+
+| US-2b Tests unit (5 tests `GraphifyContextProviderTest` — fixture `.kt`→`.adoc`, défaut fileExtensions)
+| ✅ TERMINÉ
+
+| US-2c câblage `CompositeContextBuilder` (param `graphFile: File? = null` + `graphifyProvider` constructeur, `loadGraphifyStats` regex supprimé)
+| ✅ TERMINÉ
+
+| US-2c câblage `MultiChannelContextGraph.collectGraphifyNode` (provider `rootDir/office/graph.json`, `loadGraphifyStats` regex supprimé)
+| ✅ TERMINÉ
+
+| US-2c Tests functional (3 `CompositeContextBuilderGraphifyTest` : contenu réel / fallback absent / troncature budget)
+| ✅ TERMINÉ
+
+| US-2c Tests functional `MultiChannelContextGraphTest` (+1 test graphify channel graph.json réel @TempDir, 7 total)
+| ✅ TERMINÉ
+
+| Gate ciblé VERT (24s, 0 FAIL — `codebase.graph.*` 37 tests 0 FAIL)
+| ✅ TERMINÉ
+
+| Suite complète `codebase.koog.*` (2 timeouts 420s/720s) — canon S175/S179 gates ciblés
+| ✅ CADUQUE
+
+| Incident environnemental racine `codebase-gradle` (strict kotlin-stdlib 2.3.21 embedded vs workspace-bom 0.0.4) — validation via build autonome `codebase-plugin/`
+| ✅ CONTOURNÉ
+
+| Bump 0.0.7→0.0.8 + publication Central
+| ⏳ REPORTÉ en fin d'EPIC (après US-3/4)
+|===
+
+**Prochaine session (180)** : US-2 — câblage canal Graphify réel (remplacer
+`loadGraphifyStats` par `SubgraphExtractor` dans `CompositeContextBuilder` +
+`MultiChannelContextGraph`, tronquer au `graphifyTokens` budget 0.20).
+
 == Session 176 — SLD-8 US-8.1 LlmBuildService Gradle bridge
 
 [cols="2,3"]

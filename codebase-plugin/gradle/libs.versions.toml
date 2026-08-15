@@ -2,6 +2,7 @@
 codebase-plugin = "0.0.3"
 koog = "1.0.0"
 kotlin = "2.4.10"
+graphify = "0.0.2"
 
 [libraries]
 # BOM — source unique de vérité pour toutes les versions
@@ -41,6 +42,7 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 # (le BOM en implementation(platform()) ne propage pas ses contraintes aux consommateurs transitifs)
 codex-plugin = { module = "education.cccp:codex-plugin", version = "0.0.2" }
 planner-plugin = { module = "education.cccp:planner-plugin", version = "0.0.1" }
+graphify-plugin = { module = "education.cccp:graphify-plugin", version.ref = "graphify" }
 codebase-contracts = { module = "education.cccp:codebase-contracts", version = "0.0.2" }
 agent-contracts = { module = "education.cccp:agent-contracts", version = "0.0.3" }
 vibecoding-contracts = { module = "education.cccp:vibecoding-contracts", version = "0.0.1" }

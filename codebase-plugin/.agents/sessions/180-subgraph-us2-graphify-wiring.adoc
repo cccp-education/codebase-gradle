@@ -1,0 +1,104 @@
+= Session 180 — SUBGRAPH US-2 TERMINÉ (câblage canal Graphify réel)
+
+:date: 2026-08-15
+:epic: SUBGRAPH — Contexte Augmenté Graphify (graphe + sous-graphes réels)
+:session: 180
+:statut: ✅ US-2 TERMINÉ — canal Graphify alimenté par le sous-graphe réel, 11 unit + 4 functional GREEN, gate ciblé VERT (0 FAIL)
+
+## Récapitulatif
+
+US-2 : remplacement des stats regex `loadGraphifyStats` (faux positif) par le
+vrai extracteur `SubgraphExtractor` dans les deux points de consommation du
+canal Graphify (`CompositeContextBuilder` + `MultiChannelContextGraph`), avec
+rendu texte structuré et troncature au budget existant. TDD strict
+RED → GREEN → REFACTOR.
+
+## Baby-steps
+
+### 1. US-2a — RED (6 unit) → GREEN `GraphContextRenderer`
+
+- `src/test/kotlin/codebase/graph/GraphContextRendererTest.kt` — 6 unit sur le
+  rendu texte structuré (header nodes/edges/communities, une ligne par nœud/
+  arête/communauté, format déterministe, vide OK).
+- Vérification : `Unresolved reference 'GraphContextRenderer'` → RED.
+- `src/main/kotlin/codebase/graph/GraphContextRenderer.kt` — object pur,
+  domaine `codebase.graph`, zéro I/O/Gradle. Format ligne par ligne :
+  `[Graphify] subgraph: N nodes, M edges, C communities` + une ligne
+  `- node <id> [type=<type>, community=<community>]` / `- edge <src> -> <dst>`
+  / `- community <id> (N nodes)` — compatible troncature par lignes
+  (l'en-tête toujours conservé).
+- 6/6 PASSED.
+
+### 2. US-2b — RED (5 unit) → GREEN `GraphifyContextProvider`
+
+- `src/test/kotlin/codebase/graph/GraphifyContextProviderTest.kt` — 5 unit
+  (contenu réel sur graph.json synthétique, fallback fichier absent,
+  fallback illisible, budget, `File`/`LensConfig` injectables).
+- 2 premiers RED corrigés : fixture initiale en `.kt` filtrée par défaut
+  `fileExtensions=["adoc","md","html"]` → switch en `.adoc` ; cas
+  « illisible » via JSON malformé (pas fichier inexistant).
+- `src/main/kotlin/codebase/graph/GraphifyContextProvider.kt` — classe
+  File + LensConfig injectables, pipeline load → extract → render.
+  Fallbacks conservés (contrat backward-compat asserté par tests existants) :
+  `"[Graphify] graph.json non trouve dans office/"` et
+  `"[Graphify] graph.json illisible: <message>"`.
+- 5/5 PASSED.
+
+### 3. US-2c — RED (functional) → GREEN câblage
+
+- `src/main/kotlin/codebase/rag/CompositeContextBuilder.kt` — nouveau param
+  `graphFile: File? = null` (défaut `workspaceRoot/office/graph.json`),
+  `graphifyProvider` créé en constructeur, `loadGraphifyStats()` (regex)
+  supprimé.
+- `src/main/kotlin/codebase/koog/MultiChannelContextGraph.kt` —
+  `collectGraphifyNode` consomme `GraphifyContextProvider(rootDir/office/graph.json)`,
+  `loadGraphifyStats(rootDir)` (regex) supprimé.
+- `src/test/kotlin/codebase/rag/CompositeContextBuilderGraphifyTest.kt` — 3
+  functional (contenu réel du sous-graphe, fallback absent, troncature au
+  budget `graphifyTokens`). URL jdbc bogus `localhost:1` → RAG tombe dans le
+  fallback `pgvector indisponible` (hors docker, pattern existant).
+- `src/test/kotlin/codebase/koog/MultiChannelContextGraphTest.kt` — +1 test
+  `graphify channel contains real subgraph content when graph json exists`
+  (graph.json réel dans @TempDir), 7 au total.
+
+### 4. REFACTOR / non-régression
+
+Gate ciblé : `codebase.rag.CompositeContextBuilderGraphifyTest +
+codebase.koog.MultiChannelContextGraphTest + codebase.graph.* +
+codebase.scenarios.PrepareContextUnitTest + codebase.scenarios.CompositeContextSteps`
+→ BUILD SUCCESSFUL 24s, 0 FAIL. `codebase.graph.*` : 37 tests (26 préexistants
+SubgraphExtractor + 6 renderer + 5 provider), 0 FAIL.
+
+Suite complète `codebase.koog.*` interminable (2 timeouts : 420s + 720s) —
+pratique canonique S175/S179 = gates ciblés.
+
+## Incident environnemental (non lié au code)
+
+Racine `codebase-gradle` ne configure plus (même `:help` FAILED) :
+`Could not resolve org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.3.21}` sur le
+`classpath` du buildscript — pin Gradle 9.6.1 « embedded Kotlin » (strict 2.3.21)
+en conflit avec `workspace-bom:0.0.4` (requires 2.3.20) tiré par le plugin publié
+`education.cccp.codebase.gradle.plugin:0.0.3` → `codebase-plugin:0.0.5`
+(mavenLocal, artefacts inchangés depuis 2026-08-11/06-26). Indépendant de US-2
+(zéro impact des modifs locales — elles ne touchent que le sous-projet autonome).
+Validation S180 effectuée via le build autonome `codebase-plugin/`
+(settings.gradle.kts propre) : `./gradlew test --tests ...` → BUILD SUCCESSFUL.
+
+## Fichiers
+
+Créés :
+- `src/main/kotlin/codebase/graph/GraphContextRenderer.kt`
+- `src/main/kotlin/codebase/graph/GraphifyContextProvider.kt`
+- `src/test/kotlin/codebase/graph/GraphContextRendererTest.kt` (6 unit)
+- `src/test/kotlin/codebase/graph/GraphifyContextProviderTest.kt` (5 unit)
+- `src/test/kotlin/codebase/rag/CompositeContextBuilderGraphifyTest.kt` (3 functional)
+
+Modifié :
+- `src/main/kotlin/codebase/rag/CompositeContextBuilder.kt` (+ graphFile/graphifyProvider, − loadGraphifyStats regex)
+- `src/main/kotlin/codebase/koog/MultiChannelContextGraph.kt` (+ GraphifyContextProvider, − loadGraphifyStats regex)
+- `src/test/kotlin/codebase/koog/MultiChannelContextGraphTest.kt` (+1 test graphify, 7 total)
+
+## Prochaine session (181)
+
+US-3 — `graphRelations` alimenté depuis le sous-graphe (GovernanceContextLoader
++ LiveContextInjector, remplacer le `""` hardcodé, ~8 unit).

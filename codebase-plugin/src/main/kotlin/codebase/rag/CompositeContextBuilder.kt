@@ -2,6 +2,7 @@ package codebase.rag
 
 import contracts.context.CompositeContext
 import contracts.context.CompositeContextConfig
+import codebase.graph.GraphifyContextProvider
 import codebase.walker.WorkspaceWalker
 import codex.store.CodexVectorStore
 import org.slf4j.LoggerFactory
@@ -13,10 +14,12 @@ class CompositeContextBuilder(
     private val vectorStore: VectorStore,
     private val embeddingPipeline: EmbeddingPipeline,
     private val config: CompositeContextConfig = CompositeContextConfig(),
-    private val codexStore: CodexVectorStore? = null
+    private val codexStore: CodexVectorStore? = null,
+    graphFile: File? = null,
 ) {
     private val log = LoggerFactory.getLogger(CompositeContextBuilder::class.java)
     private val queryService = VectorQueryService(vectorStore, embeddingPipeline)
+    private val graphifyProvider = GraphifyContextProvider(graphFile ?: workspaceRoot.resolve("office/graph.json"))
 
     fun build(ragQuestion: String): CompositeContext {
         val eagerContent = collectEagerFiles()
@@ -42,7 +45,7 @@ class CompositeContextBuilder(
             "[RAG] pgvector indisponible — section non generee"
         }
 
-        val graphifyContent = loadGraphifyStats()
+        val graphifyContent = graphifyProvider.provide()
         val truncatedGraphify = truncateTokens(graphifyContent, config.graphifyTokens)
 
         val truncatedDocs = loadDocsContext(ragQuestion)
@@ -133,21 +136,6 @@ class CompositeContextBuilder(
             }
         }
         return sb.toString()
-    }
-
-    private fun loadGraphifyStats(): String {
-        val graphFile = workspaceRoot.resolve("office/graph.json")
-        if (!graphFile.isFile) return "[Graphify] graph.json non trouve dans office/"
-
-        val content = try {
-            graphFile.readText()
-        } catch (e: Exception) {
-            return "[Graphify] graph.json illisible: ${e.message}"
-        }
-
-        val nodeCount = Regex(""""name":""").findAll(content).count()
-        val edgeCount = Regex(""""source":""").findAll(content).count()
-        return "[Graphify] global graph: ~$nodeCount nodes, ~$edgeCount edges"
     }
 
     private fun truncateTokens(text: String, maxTokens: Int): String {
