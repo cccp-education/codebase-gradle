@@ -1,0 +1,55 @@
+= Session 183 — EPIC PUB TERMINÉ (publication Maven Central codebase-plugin 0.0.8)
+:date: 2026-08-16
+:type: publication (gouvernance + nmcp)
+:epic: EPIC PUB
+:score: 9/10
+
+== Contexte
+
+Mission S183 (PROMPT_REPRISE) : EPIC PUB — bump codebase-plugin 0.0.7 → 0.0.8
++ publication Maven Central. Delta : commits post-0.0.7 non propagés
+(SUBGRAPH US-1→4 : domaine `codebase.graph`, canal Graphify réel). Bump
+0.0.8 déjà commité (f9e29a4). Validation via build autonome `codebase-plugin/`
+(incident environnemental racine S180).
+
+== Actions
+
+. US-0.0.8-1 — Vérification POM/signing/release deps :
+   POM `withType<MavenPublication>` (name/description) ✅,
+   signing `useGpgCmd` via conventions-gradle publishing 0.0.2 (ligne 112) ✅,
+   zéro SNAPSHOT dans libs.versions.toml + 12 artefacts education.cccp
+   en release Central ✅, nmcpSettings AUTOMATIC (ossrhUsername/Password
+   depuis ~/.gradle/gradle.properties) ✅
+. US-0.0.8-2 — `./gradlew publishAggregationToCentralPortal --no-daemon`
+   BUILD SUCCESSFUL 28s, bundle `4ae55e92-a116-4a25-8edf-b1f7cc9a56d4`
+   AUTOMATIC. Propagation repo1 : 404 à 90s/5min → HTTP 200 (codebase-
+   plugin-0.0.8.pom) après ~20 min.
+. US-0.0.8-3 — Tags : zéro tag local et origin (ls-remote vide) → cleanup
+   néant. BOM : constraint codebase 0.0.5 dans BOM Central 0.0.18 → bump
+   BOM hors scope Queens (MEMPHIS), pratique canonique zéro bump BOM
+   (S073/S179/S182).
+
+== Commandes
+
+----
+./gradlew publishAggregationToCentralPortal --no-daemon   # depuis codebase-plugin/
+curl -s -o /dev/null -w "%{http_code}" https://repo1.maven.org/maven2/education/cccp/codebase-plugin/0.0.8/codebase-plugin-0.0.8.pom
+git ls-remote --tags origin
+----
+
+== Résultats
+
+. Publication Maven Central 0.0.8 : ✅ bundle `4ae55e92` + HTTP 200 repo1.
+. EPIC PUB TERMINÉ 3/3 US (S181 audit → S183 exécution).
+. Aucun fichier source modifié — publication pure.
+
+== Leçons
+
+. Propagation Central AUTOMATIC : compter ~10-20 min avant HTTP 200 (ne pas
+   conclure 404 prématurément).
+. BOM constraint stale (codebase 0.0.5) : la version explicite du catalogue
+   prime à la résolution — pas bloquant pour les consommateurs.
+
+== Fichiers
+
+- gouvernance : BACKLOG (EPIC PUB ✅), PROMPT_REPRISE (S184), INDEX, SESSIONS_HISTORY, archive

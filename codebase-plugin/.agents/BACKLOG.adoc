@@ -150,9 +150,9 @@ Wrapper à 9.5.1.
 
 == EPIC PUB — Publication Maven Central codebase-plugin 0.0.8
 
-**Statut** : 🟡 À FAIRE (bump ajouté Session 181 — audit version, zéro code modifié)
+**Statut** : ✅ TERMINÉ (3/3 US — session 183)
 **Priorité** : P1
-**Session d'audit** : 181 — audit des deltas versions Maven Central vs code local (source vérité : repo1.maven.org maven-metadata.xml)
+**Sessions** : 181 (audit, gouvernance pure) → 183 (exécution)
 
 === Constat (audité S181)
 
@@ -167,9 +167,9 @@ Bump + publication Maven Central codebase-plugin **0.0.7 → 0.0.8** au backlog 
 
 === US découpées (~3 US)
 
-. US-0.0.8-1 — Vérifier POM (`withType<MavenPublication>`) + signing GPG + release deps (pattern nmcp, `publishAggregationToCentralPortal`)
-. US-0.0.8-2 — Exécuter la publication Maven Central (méthode nmcp, `--no-daemon`)
-. US-0.0.8-3 — Aligner les tags locaux sur l'origin (cleanup) + MàJ BOM si nécessaire
+. US-0.0.8-1 — ✅ S183 : POM `withType<MavenPublication>` (name/description codebase-plugin) + signing `useGpgCmd` (conventions-gradle publishing 0.0.2) + release deps vérifiées (zéro SNAPSHOT, 12 artefacts education.cccp en release Central)
+. US-0.0.8-2 — ✅ S183 : `publishAggregationToCentralPortal --no-daemon` BUILD SUCCESSFUL 28s, bundle `4ae55e92-a116-4a25-8edf-b1f7cc9a56d4` AUTOMATIC, HTTP 200 repo1 `codebase-plugin-0.0.8.pom`
+. US-0.0.8-3 — ✅ S183 : zéro tag local/origin à aligner (cleanup néant) + BOM non bumpé (constraint codebase 0.0.5 dans BOM 0.0.18 Central — géré MEMPHIS, pratique canonique zéro bump BOM)
 
 == EPIC SUBGRAPH — Contexte Augmenté Graphify (graphe + sous-graphes réels)
 

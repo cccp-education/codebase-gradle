@@ -1,5 +1,21 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026 — Codebase Gradle (Queens)
 
+== Session 183 — EPIC PUB (codebase-plugin 0.0.8 Central)
+
+[cols="2,3"]
+|===
+| Tâche | Statut
+
+| US-0.0.8-1 — POM `withType<MavenPublication>` + signing `useGpgCmd` (conventions 0.0.2) + release deps vérifiées (zéro SNAPSHOT)
+| ✅ TERMINÉ
+
+| US-0.0.8-2 — `publishAggregationToCentralPortal --no-daemon` — bundle `4ae55e92` AUTOMATIC, HTTP 200 repo1 (propagation ~20 min)
+| ✅ TERMINÉ
+
+| US-0.0.8-3 — tags : zéro à aligner (cleanup néant) ; BOM : non bumpé (MEMPHIS, hors scope)
+| ✅ TERMINÉ
+|===
+
 == Session 182 — EPIC SUBGRAPH US-3 + US-4 (TERMINÉ 4/4 US)
 
 [cols="2,3"]

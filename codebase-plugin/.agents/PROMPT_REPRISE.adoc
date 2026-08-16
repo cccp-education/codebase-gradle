@@ -1,23 +1,23 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 183
-:session: 183
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 184
+:session: 184
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 182 — EPIC SUBGRAPH TERMINÉ 4/4 US : US-3 graphRelations + canal Resource alimentés depuis le sous-graphe réel (GovernanceContextLoader graphFile+lensConfig, MultiChannelContextGraph graphFile, câblage SessionProtocolTask/Server → LiveContextInjector effectif, 6 unit) + US-4 Cucumber BDD codebase_subgraph.feature 4 scénarios @subgraph (runner cucumberTestSubgraph, 4/4 PASSED, 21s).
+:session_precedente: 183 — EPIC PUB TERMINÉ 3/3 US : publication Maven Central codebase-plugin 0.0.8 (nmcp AUTOMATIC, bundle `4ae55e92`, HTTP 200 repo1). US-0.0.8-1 POM/signing/release deps vérifiés (zéro SNAPSHOT). US-0.0.8-2 `publishAggregationToCentralPortal --no-daemon` BUILD SUCCESSFUL 28s. US-0.0.8-3 tags néant + BOM non bumpé (MEMPHIS). EPIC SUBGRAPH ✅ (S178-182) — contexte augmenté Graphify réel partout.
 
 == Contexte
 
-- ✅ EPIC SUBGRAPH TERMINÉ 4/4 US (S178 cadrage, S179 domaine codebase.graph, S180 canal Graphify, S182 US-3+US-4) — contexte augmenté Graphify réel partout : canal Graphify + canal Resource + graphRelations
+- ✅ EPIC SUBGRAPH TERMINÉ 4/4 US (S178 cadrage, S179 domaine codebase.graph, S180 canal Graphify, S182 US-3+US-4) — contexte augmenté Graphify réel : canal Graphify + canal Resource + graphRelations
+- ✅ EPIC PUB TERMINÉ 3/3 US (S183) — codebase-plugin 0.0.8 publié Maven Central (bundle 4ae55e92, HTTP 200)
 - Domaine `codebase.graph` : LensConfig + SubgraphExtractor + SiteSubgraph + GraphContextRenderer + GraphifyContextProvider (graphFile/lensConfig injectables), dépendance `education.cccp:graphify-plugin:0.0.2` (WORKAROUND package `com.cheroliv.graphify.model`)
-- EPIC PUB (bump 0.0.7 → 0.0.8 + Central) au BACKLOG (S181) — 3 US (POM/signing/release deps vérifiés, publication nmcp `publishAggregationToCentralPortal`, alignement tags). À exécuter après clôture SUBGRAPH — **prochaine mission recommandée**
-- Version : codebase-plugin 0.0.7 Central. Working tree : bump 0.0.8 + repo `GradlePluginPortal` non commités (diff pré-session S182, à inclure dans EPIC PUB)
-- ⚠️ Incident environnemental : racine `codebase-gradle` ne configure plus (conflit strict kotlin-stdlib 2.3.21 embedded vs workspace-bom 0.0.4 requires 2.3.20 sur le classpath buildscript) — valider via le build autonome `codebase-plugin/` (settings.gradle.kts propre) : `./gradlew test --tests "<cible>"`
+- Version : codebase-plugin 0.0.8 Central (0.0.7 → 0.0.8, commits post-0.0.7 propagés : SUBGRAPH US-1→4)
+- BOM Central 0.0.18 contient constraint codebase-plugin 0.0.5 — bump BOM à la discrétion MEMPHIS (hors scope Queens)
+- ⚠️ Incident environnemental : racine `codebase-gradle` ne configure plus (conflit strict kotlin-stdlib 2.3.21 embedded vs workspace-bom) — valider via le build autonome `codebase-plugin/`
 
-== Mission Session 183
+== Mission Session 184
 
-EPIC PUB — bump codebase-plugin 0.0.7 → 0.0.8 + publication Maven Central :
-
-. US-0.0.8-1 — Vérifier POM (`withType<MavenPublication>`) + signing GPG + release deps (pattern nmcp)
-. US-0.0.8-2 — Exécuter la publication Maven Central (méthode nmcp, `--no-daemon`)
-. US-0.0.8-3 — Aligner les tags locaux sur l'origin (cleanup) + MàJ BOM si nécessaire
+Backlog : EPIC VIBE-HARDENING (P1, issu CR-GLOBALE-004) — durcissement vibecoding :
+. P1 : S1 allowlist deny-by-default, C2 retry un seul compteur, C5 timeout LLM
+. P2 : C3/C4, S2/S3
+Ou retour borough DORMANT (maintenance uniquement) si non priorisé.
 
 ## Rappels
 
