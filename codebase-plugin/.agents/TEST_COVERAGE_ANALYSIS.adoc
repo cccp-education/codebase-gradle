@@ -1,5 +1,36 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-08-15
+:date: 2026-08-16
+
+== Session 182 — SUBGRAPH US-3 + US-4 (graphRelations + Resource + Cucumber)
+
+=== Nouveaux tests
+
+* **Unit** (`codebase/koog/governance/GovernanceContextLoaderTest.kt`) : +4 tests
+  - `graphRelations` vide sans graphFile (backward compat)
+  - `graphRelations` contient le sous-graphe réel avec graphFile (header + node)
+  - fallback message fichier manquant
+  - fallback message illisible
+
+* **Unit** (`codebase/koog/MultiChannelContextGraphTest.kt`) : +2 tests
+  - canal `Resource` alimenté depuis le sous-graphe réel (budget resource 0.10)
+  - canal `Resource` vide sans graphFile
+
+* **Cucumber** (`codebase_subgraph.feature`) : 4 scénarios @subgraph
+  - Graphify channel contient le sous-graphe réel
+  - Resource channel contient le sous-graphe réel
+  - `graphRelations` peuplé via GovernanceContextLoader avec graphFile
+  - fallback fichier manquant (Graphify + Resource)
+
+=== Gates
+
+* Gate ciblé 4 classes VERT 0 FAIL (~4min) : GovernanceContextLoaderTest + MultiChannelContextGraphTest + SessionProtocolTaskTest + SessionProtocolServerTest
+* Non-régression `codebase.graph.*` 37/37 PASS (S180 baseline préservée)
+* `cucumberTestSubgraph` 4/4 PASSED 21s (runner dédié, câblé build.gradle.kts)
+* Glob `codebase.koog.*` timeout — pratique canonique gates ciblés
+
+=== Baseline
+
+`codebase.graph.*` 37 tests + 6 unit US-3 + 4 cucumber US-4 — zéro régression constatée.
 
 == Session 181 — Audit version + EPIC PUB (gouvernance pure)
 

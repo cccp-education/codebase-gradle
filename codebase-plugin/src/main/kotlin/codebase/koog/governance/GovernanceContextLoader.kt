@@ -1,5 +1,7 @@
 package codebase.koog.governance
 
+import codebase.graph.GraphifyContextProvider
+import codebase.graph.LensConfig
 import contracts.session.AgentContext
 import java.io.File
 
@@ -17,8 +19,15 @@ import java.io.File
  *
  * Le loader cherche à la racine du projet puis dans le premier niveau
  * de sous-répertoires (ex: codebase-plugin/ pour les plugins Gradle).
+ *
+ * EPIC SUBGRAPH US-3 : un [graphFile] optionnel alimente `graphRelations`
+ * avec le sous-graphe réel (rendu par [GraphifyContextProvider]) au lieu
+ * d'une chaîne vide. Absent → `""` (backward compat).
  */
-class GovernanceContextLoader {
+class GovernanceContextLoader(
+    private val graphFile: File? = null,
+    private val lensConfig: LensConfig = LensConfig(),
+) {
 
     companion object {
         val EAGER_FILE_NAMES = listOf(
@@ -65,7 +74,7 @@ class GovernanceContextLoader {
         return AgentContext(
             eagerRules = eagerRules,
             backlogItems = backlogItems,
-            graphRelations = "",
+            graphRelations = graphFile?.let { GraphifyContextProvider(it, lensConfig).provide() } ?: "",
             ragChunks = emptyList()
         )
     }

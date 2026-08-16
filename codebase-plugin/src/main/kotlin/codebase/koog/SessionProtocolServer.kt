@@ -131,7 +131,8 @@ class SessionProtocolServer(
     private fun resolveAgentContext(sessionPrompt: SessionPrompt): contracts.session.AgentContext {
         return sessionPrompt.context ?: try {
             log.info("[SessionProtocolServer] No context provided — auto-loading governance from {}", workspaceRoot)
-            val ctx = GovernanceContextLoader().load(File(workspaceRoot))
+            val root = File(workspaceRoot)
+            val ctx = GovernanceContextLoader(graphFile = root.resolve("office/graph.json")).load(root)
             lastAgentContext = ctx
             ctx
         } catch (e: Exception) {

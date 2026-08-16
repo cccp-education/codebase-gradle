@@ -1,31 +1,27 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 182
-:session: 182
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 183
+:session: 183
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 181 — Audit version + EPIC PUB (gouvernance pure, zéro code) : delta codebase-plugin 0.0.7 vs Central 0.0.7 + commits post-publication `f840b93` → EPIC PUB bump 0.0.8 ajouté au BACKLOG (3 US). Zéro code modifié.
+:session_precedente: 182 — EPIC SUBGRAPH TERMINÉ 4/4 US : US-3 graphRelations + canal Resource alimentés depuis le sous-graphe réel (GovernanceContextLoader graphFile+lensConfig, MultiChannelContextGraph graphFile, câblage SessionProtocolTask/Server → LiveContextInjector effectif, 6 unit) + US-4 Cucumber BDD codebase_subgraph.feature 4 scénarios @subgraph (runner cucumberTestSubgraph, 4/4 PASSED, 21s).
 
 == Contexte
 
-- EPIC SUBGRAPH (P1) EN COURS — US-0 cadrage ✅ S178, US-1 ✅ S179, **US-2 ✅ S180**, US-3→4 TODO
-- Domaine `codebase.graph` prêt : `LensConfig` + `SubgraphExtractor` + `SiteSubgraph` (US-1) + `GraphContextRenderer` + `GraphifyContextProvider` (US-2), dépendance `education.cccp:graphify-plugin:0.0.2` (WORKAROUND package `com.cheroliv.graphify.model`)
-- Canal `ContextChannel.Graphify` réel : `CompositeContextBuilder` + `MultiChannelContextGraph.collectGraphifyNode` consomment le sous-graphe réel tronqué au `graphifyTokens` (budget 0.20)
-- Reste du faux positif : `GovernanceContextLoader.graphRelations` hardcodé `""` (GovernanceContextLoader.kt:68) — `ContextChannel.Resource` vide (MultiChannelContextGraph.kt:154)
-- Version : codebase-plugin 0.0.7 Central. **EPIC PUB (bump 0.0.8) cadré au BACKLOG (S181)** — 3 US à exécuter après fin d'EPIC SUBGRAPH
+- ✅ EPIC SUBGRAPH TERMINÉ 4/4 US (S178 cadrage, S179 domaine codebase.graph, S180 canal Graphify, S182 US-3+US-4) — contexte augmenté Graphify réel partout : canal Graphify + canal Resource + graphRelations
+- Domaine `codebase.graph` : LensConfig + SubgraphExtractor + SiteSubgraph + GraphContextRenderer + GraphifyContextProvider (graphFile/lensConfig injectables), dépendance `education.cccp:graphify-plugin:0.0.2` (WORKAROUND package `com.cheroliv.graphify.model`)
+- EPIC PUB (bump 0.0.7 → 0.0.8 + Central) au BACKLOG (S181) — 3 US (POM/signing/release deps vérifiés, publication nmcp `publishAggregationToCentralPortal`, alignement tags). À exécuter après clôture SUBGRAPH — **prochaine mission recommandée**
+- Version : codebase-plugin 0.0.7 Central. Working tree : bump 0.0.8 + repo `GradlePluginPortal` non commités (diff pré-session S182, à inclure dans EPIC PUB)
 - ⚠️ Incident environnemental : racine `codebase-gradle` ne configure plus (conflit strict kotlin-stdlib 2.3.21 embedded vs workspace-bom 0.0.4 requires 2.3.20 sur le classpath buildscript) — valider via le build autonome `codebase-plugin/` (settings.gradle.kts propre) : `./gradlew test --tests "<cible>"`
 
-== Mission Session 182
+== Mission Session 183
 
-EPIC SUBGRAPH US-3 — `graphRelations` alimenté depuis le sous-graphe :
+EPIC PUB — bump codebase-plugin 0.0.7 → 0.0.8 + publication Maven Central :
 
-. Remplacer le `""` hardcodé de `GovernanceContextLoader.graphRelations` (GovernanceContextLoader.kt:68) par le contenu réel du sous-graphe — `LiveContextInjector` devient effectif
-. `ContextChannel.Resource` alimenté (MultiChannelContextGraph.kt:154)
-. Tronquer au budget existant — zéro changement de contrat
-. GraphModel synthétique en tests (pattern S179/S180)
-. Baby-step TDD strict RED → GREEN → REFACTOR (~8 unit)
+. US-0.0.8-1 — Vérifier POM (`withType<MavenPublication>`) + signing GPG + release deps (pattern nmcp)
+. US-0.0.8-2 — Exécuter la publication Maven Central (méthode nmcp, `--no-daemon`)
+. US-0.0.8-3 — Aligner les tags locaux sur l'origin (cleanup) + MàJ BOM si nécessaire
 
-== Rappels
+## Rappels
 
 - BABY-STEP TDD strict — jamais de code sans test rouge d'abord
 - Anglais uniquement dans le code (OSS Apache 2.0)
-- Zéro bump BOM ; bump codebase-plugin 0.0.7 → 0.0.8 via EPIC PUB (S181) à la fin de l'EPIC SUBGRAPH (après US-3/4)
 - Gate tests ciblé, JAMAIS `./gradlew test` global (Cucumber interminable)
 - Ports Ollama 11437-11465 (jamais 11434-11436)

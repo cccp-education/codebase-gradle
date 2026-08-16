@@ -1,5 +1,44 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026 — Codebase Gradle (Queens)
 
+== Session 182 — EPIC SUBGRAPH US-3 + US-4 (TERMINÉ 4/4 US)
+
+[cols="2,3"]
+|===
+| Tâche | Statut
+
+| US-3 — `GovernanceContextLoader(graphFile, lensConfig)` + `graphRelations` alimenté depuis le sous-graphe (fallbacks conservés)
+| ✅ TERMINÉ
+
+| US-3 — `MultiChannelContextGraph(graphFile)` + canal `ContextChannel.Resource` alimenté depuis le sous-graphe (budget resource 0.10)
+| ✅ TERMINÉ
+
+| US-3 — Câblage `SessionProtocolTask.loadGovernanceContext()` + `SessionProtocolServer.resolveAgentContext()` (`root.resolve("office/graph.json")`) → `LiveContextInjector` effectif
+| ✅ TERMINÉ
+
+| US-3 — 6 unit (4 GovernanceContextLoaderTest + 2 MultiChannelContextGraphTest), TDD strict RED → GREEN → REFACTOR
+| ✅ TERMINÉ
+
+| US-4 — `codebase_subgraph.feature` 4 scénarios @subgraph + `SubgraphWorld`/`SubgraphSteps` (14 step defs)
+| ✅ TERMINÉ
+
+| US-4 — `SubgraphCucumberRunner` + `CucumberTaskSpec("cucumberTestSubgraph")` câblé build.gradle.kts, 4/4 PASSED 21s
+| ✅ TERMINÉ
+
+| EPIC SUBGRAPH clôturé 4/4 US (S178 cadrage, S179 domaine, S180 canal Graphify, S182 US-3+US-4)
+| ✅ TERMINÉ
+
+| Gates ciblés VERT (4 classes + codebase.graph.* 37/37 + cucumber 4/4) — zéro régression, zéro bump BOM
+| ✅ TERMINÉ
+|===
+
+**Fichiers modifies** :
+- `src/main/kotlin/codebase/koog/governance/GovernanceContextLoader.kt` — graphFile + lensConfig + graphRelations réel
+- `src/main/kotlin/codebase/koog/MultiChannelContextGraph.kt` — graphFile + canal Resource réel
+- `src/main/kotlin/codebase/koog/SessionProtocolTask.kt` + `SessionProtocolServer.kt` — câblage office/graph.json
+- `src/test/.../GovernanceContextLoaderTest.kt` + `MultiChannelContextGraphTest.kt` — +6 unit
+- `src/test/features/codebase_subgraph.feature` + `scenarios/SubgraphWorld.kt` + `SubgraphSteps.kt` + `SubgraphCucumberRunner.kt` — US-4
+- `build.gradle.kts` — CucumberTaskSpec cucumberTestSubgraph
+
 == Session 181 — Audit version + EPIC PUB (bump 0.0.8, gouvernance pure)
 
 [cols="2,3"]

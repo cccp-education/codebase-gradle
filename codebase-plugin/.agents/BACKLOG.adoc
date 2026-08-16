@@ -4,9 +4,9 @@
 
 == Statut Global
 
-**EPIC PUB (bump 0.0.8) ajouté (P1)** — delta code 0.0.7 vs Central 0.0.7, commits post-publication à propager. **EPIC SUBGRAPH (P1)** — contexte augmenté Graphify réel. Le reste du backlog est dormant :
+**EPIC PUB (bump 0.0.8) ajouté (P1)** — delta code 0.0.7 vs Central 0.0.7, commits post-publication à propager. **EPIC SUBGRAPH ✅ TERMINÉ (4/4 — session 182)** — contexte augmenté Graphify réel. Le reste du backlog est dormant :
 
-. *EPIC SUBGRAPH* (P1, nouveau) — graphe + sous-graphes réels dans le contexte augmenté (remplace les stats regex).
+. *EPIC SUBGRAPH* (P1) — ✅ TERMINÉ 4/4 US (S178 cadrage, S179 domaine `codebase.graph`, S180 canal Graphify réel, S182 US-3 graphRelations+Resource + US-4 Cucumber 4 scénarios @subgraph). Contexte augmenté complet : EAGER + RAG + GRAPHIFY réel + Docs + Resource.
 . *EPIC 1* (2 items stale — snapshot + commit initial) — à purger, le projet est déjà publié Maven Central 0.0.3.
 . *EPIC V-FLYWAY* (P2, conditionnel) — ne se déclenchera que quand 5+ fichiers de migration de schéma existeront (actuellement 4 : V1→V4).
 . *EPIC 5* — migré vers training-gradle TRN-8, plus dans le scope codebase.
@@ -173,9 +173,9 @@ Bump + publication Maven Central codebase-plugin **0.0.7 → 0.0.8** au backlog 
 
 == EPIC SUBGRAPH — Contexte Augmenté Graphify (graphe + sous-graphes réels)
 
-**Statut** : 🟡 EN COURS (US-0 cadrage ✅ session 178, **US-1 ✅ session 179**, **US-2 ✅ session 180**, US-3→4 TODO)
+**Statut** : ✅ TERMINÉ (4/4 US — session 182)
 **Priorité** : P1
-**Sessions** : 178 (cadrage) → 179 (US-1) → 180 (US-2) → 181+
+**Sessions** : 178 (cadrage) → 179 (US-1) → 180 (US-2) → 182 (US-3+US-4)
 
 === Problème (constat audité)
 
@@ -219,8 +219,8 @@ Chaque projet consommant codebase (planner, slider, capsule, training, plantuml.
 . US-0 — Cadrage EPIC (✅ session 178, ce document)
 . US-1 — Dépendance graphify-plugin + domaine `codebase.graph` (✅ session 179 : `LensConfig` + `SubgraphExtractor` + `SiteSubgraph` portés de bakery, 26 unit, gate non-régression VERT 912 tests/0 FAIL, WORKAROUND package `com.cheroliv.graphify.model` confirmé, bump 0.0.7→0.0.8 reporté en fin d'EPIC)
 . US-2 — Câblage `CompositeContextBuilder` + `MultiChannelContextGraph` (canal Graphify réel, ~8 unit + 2 functional) — ✅ session 180 : `GraphContextRenderer` (6 unit) + `GraphifyContextProvider` (5 unit) + câblage `CompositeContextBuilder` (param `graphFile` + `graphifyProvider`) + `MultiChannelContextGraph.collectGraphifyNode` (provider `office/graph.json`), `loadGraphifyStats` regex supprimé × 2, 3 functional `CompositeContextBuilderGraphifyTest` + 1 test graphify `MultiChannelContextGraphTest`, gate ciblé VERT 24s 0 FAIL, `codebase.graph.*` 37 tests 0 FAIL
-. US-3 — `graphRelations` alimenté (GovernanceContextLoader + LiveContextInjector, ~8 unit)
-. US-4 — Cucumber BDD (`codebase_subgraph.feature`, ~4 scénarios @subgraph)
+. US-3 — `graphRelations` alimenté (GovernanceContextLoader + LiveContextInjector, ~8 unit) — ✅ session 182 : `GovernanceContextLoader(graphFile: File? = null, lensConfig: LensConfig = LensConfig())` + `graphRelations = graphFile?.let { GraphifyContextProvider(it, lensConfig).provide() } ?: ""` (fallbacks conservés) + `MultiChannelContextGraph(graphFile: File? = null)` + canal `ContextChannel.Resource` alimenté depuis le sous-graphe (budget resource 0.10) + câblage `SessionProtocolTask`/`SessionProtocolServer` (`root.resolve("office/graph.json")`) → `LiveContextInjector` effectif. 6 unit, TDD strict RED → GREEN → REFACTOR, gates ciblés VERT
+. US-4 — Cucumber BDD (`codebase_subgraph.feature`, ~4 scénarios @subgraph) — ✅ session 182 : feature 4 scénarios @subgraph + `SubgraphWorld`/`SubgraphSteps` (14 step defs) + `SubgraphCucumberRunner` + `CucumberTaskSpec("cucumberTestSubgraph")`, 4/4 PASSED 21s, zéro production modifié — pure BDD
 
 == EPIC V-FLYWAY — Migration Flyway (BACKLOG CONDITIONNEL)
 

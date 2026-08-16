@@ -167,4 +167,57 @@ class MultiChannelContextGraphTest {
         assertTrue(result.graphify!!.content.contains("[Graphify] subgraph:"), "Should render real subgraph header")
         assertTrue(result.graphify!!.content.contains("bakery/BakeryPlugin.adoc"), "Should contain real node from graph.json")
     }
+
+    @Test
+    fun `resource channel is fed from the real subgraph when graph json exists`(@TempDir tempDir: File) {
+        val office = tempDir.resolve("office").apply { mkdirs() }
+        val mapper = ObjectMapper().registerKotlinModule()
+        val model =
+            GraphModel(
+                nodes =
+                    listOf(
+                        GraphNode("bakery/BakeryPlugin.adoc", "BakeryPlugin.adoc", "file", "bakery-gradle"),
+                        GraphNode("bakery/SiteManager.adoc", "SiteManager.adoc", "file", "bakery-gradle"),
+                        GraphNode("bakery-gradle", "bakery-gradle", "module", "bakery-gradle"),
+                    ),
+                edges =
+                    listOf(
+                        GraphEdge("bakery/BakeryPlugin.adoc", "bakery/SiteManager.adoc", "reference"),
+                    ),
+                communities =
+                    listOf(
+                        GraphCommunity("bakery-gradle", "Bakery Gradle Plugin", 2),
+                    ),
+            )
+        office.resolve("graph.json").writeText(mapper.writeValueAsString(model))
+
+        val graph = MultiChannelContextGraph()
+        val state = MultiChannelState(
+            intention = "test",
+            workspaceRoot = tempDir.absolutePath,
+            budget = ChannelBudget(totalTokenBudget = 3000, budgetEager = 0.35, budgetRag = 0.25, budgetGraphify = 0.15, budgetDocs = 0.15, budgetResource = 0.10)
+        )
+        val result = graph.execute(state)
+
+        assertNotNull(result.resource, "Resource channel should be present")
+        assertTrue(result.resource!!.content.contains("[Graphify] subgraph:"), "Should render real subgraph header")
+        assertTrue(result.resource!!.content.contains("bakery/BakeryPlugin.adoc"), "Should contain real node from graph.json")
+    }
+
+    @Test
+    fun `resource channel is empty when no graph file exists`(@TempDir tempDir: File) {
+        val graph = MultiChannelContextGraph()
+        val state = MultiChannelState(
+            intention = "test",
+            workspaceRoot = tempDir.absolutePath,
+            budget = ChannelBudget(totalTokenBudget = 3000, budgetEager = 0.35, budgetRag = 0.25, budgetGraphify = 0.15, budgetDocs = 0.15, budgetResource = 0.10)
+        )
+        val result = graph.execute(state)
+
+        assertNotNull(result.resource, "Resource channel should be present")
+        assertTrue(
+            result.resource!!.content.isBlank() || result.resource!!.content.contains("non trouve"),
+            "Should gracefully handle missing graph file"
+        )
+    }
 }

@@ -35,7 +35,9 @@ data class MultiChannelState(
     val docs: ContextChannel? get() = channels.find { it is ContextChannel.Docs }
 }
 
-class MultiChannelContextGraph {
+class MultiChannelContextGraph(
+    private val graphFile: File? = null,
+) {
 
     private val log = LoggerFactory.getLogger(MultiChannelContextGraph::class.java)
 
@@ -130,7 +132,7 @@ class MultiChannelContextGraph {
 
     private fun collectGraphifyNode(state: MultiChannelState): MultiChannelState {
         val rootDir = File(state.workspaceRoot)
-        val content = GraphifyContextProvider(rootDir.resolve("office/graph.json")).provide()
+        val content = GraphifyContextProvider(graphFile ?: rootDir.resolve("office/graph.json")).provide()
         val channel = ContextChannel.Graphify(content).truncateToTokens(state.budget.graphifyTokens)
         return state.copy(channels = state.channels + channel)
     }
@@ -152,7 +154,9 @@ class MultiChannelContextGraph {
     }
 
     private fun assembleNode(state: MultiChannelState): MultiChannelState {
-        val resourceChannel = ContextChannel.Resource("").truncateToTokens(state.budget.resourceTokens)
+        val rootDir = File(state.workspaceRoot)
+        val resourceContent = GraphifyContextProvider(graphFile ?: rootDir.resolve("office/graph.json")).provide()
+        val resourceChannel = ContextChannel.Resource(resourceContent).truncateToTokens(state.budget.resourceTokens)
         val allChannels = state.channels + resourceChannel
         val injector = OpencodeInjector()
         val assembled = injector.injectChannels(allChannels)

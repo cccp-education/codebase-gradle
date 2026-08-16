@@ -1,0 +1,56 @@
+= Session 182 — EPIC SUBGRAPH US-3 + US-4 (contexte Graphify réel)
+:date: 2026-08-16
+:session: 182
+:borough: Queens — codebase-gradle (N1)
+:epic: SUBGRAPH
+
+== Résumé
+
+EPIC SUBGRAPH **TERMINÉ 4/4 US**. US-3 : `graphRelations` alimenté depuis le sous-graphe réel + `ContextChannel.Resource` alimenté — `LiveContextInjector` devient effectif. US-4 : Cucumber BDD `codebase_subgraph.feature` 4 scénarios `@subgraph` + runner dédié `cucumberTestSubgraph`.
+
+== US-3 — graphRelations + canal Resource alimentés
+
+=== RED
+
+- `GovernanceContextLoaderTest.kt` : +4 tests (graphRelations empty sans graphFile, contient le sous-graphe avec graphFile, fallback message manquant, fallback message illisible) — fixture `syntheticGraph` réutilisée (3 nodes/1 edge/1 community).
+- `MultiChannelContextGraphTest.kt` : +2 tests (canal Resource alimenté depuis le sous-graphe, canal Resource vide sans graphFile) — budget explicite `budgetResource = 0.10`.
+- `./gradlew compileTestKotlin` → RED confirmé : `No parameter with name 'graphFile' found` (3 sites).
+
+=== GREEN
+
+- `GovernanceContextLoader.kt` : constructeur `(graphFile: File? = null, lensConfig: LensConfig = LensConfig())`, `graphRelations = graphFile?.let { GraphifyContextProvider(it, lensConfig).provide() } ?: ""` + imports + KDoc.
+- `MultiChannelContextGraph.kt` : constructeur `graphFile: File? = null`, `collectGraphifyNode` passe `graphFile ?: rootDir.resolve("office/graph.json")`, `assembleNode` alimente `ContextChannel.Resource` depuis le même provider (tronqué au `resourceTokens`).
+- Câblage effectif : `SessionProtocolTask.loadGovernanceContext()` + `SessionProtocolServer.resolveAgentContext()` passent `root.resolve("office/graph.json")` → `LiveContextInjector` effectif.
+
+=== REFACTOR / Vérification
+
+- Gate ciblé 4 classes VERT (0 FAIL, ~4 min) : GovernanceContextLoaderTest + MultiChannelContextGraphTest + SessionProtocolTaskTest + SessionProtocolServerTest.
+- Non-régression `codebase.graph.*` 37/37 PASS + gouvernance + LiveContextInjector VERT.
+- Le glob `codebase.koog.*` timeout (2×420s) — pratique canonique gates ciblés (S175/S179/S180).
+
+== US-4 — Cucumber BDD
+
+- `src/test/features/codebase_subgraph.feature` : 4 scénarios `@subgraph` (Graphify channel réel, Resource channel réel, graphRelations peuplé, fallback fichier manquant).
+- `SubgraphWorld.kt` (world picocontainer, graph.json synthétique @TempDir, budget resource 0.10) + `SubgraphSteps.kt` (14 step defs).
+- `SubgraphCucumberRunner.kt` (pattern EpicSld8LlmServiceCucumberRunner) + `CucumberTaskSpec("cucumberTestSubgraph")` dans `build.gradle.kts`.
+- RED : `UndefinedStepException` 4 scénarios + `CucumberExpressionException createAlternativeMayNotBeEmpty` (slash `/` final dans l'expression → alternation vide) — corrigé en retirant `in office/` / `office/graph.json` des expressions.
+- GREEN : 4/4 scénarios PASSED en 21s. Zéro production modifié — pure BDD.
+
+== Bilan EPIC SUBGRAPH (4/4 US)
+
+| US | Contenu | Session | Tests
+| US-0 | Cadrage (4 constats, 10 décisions) | 178 | —
+| US-1 | Domaine `codebase.graph` (LensConfig + SubgraphExtractor + SiteSubgraph) | 179 | 26 unit
+| US-2 | GraphContextRenderer + GraphifyContextProvider + câblage canal Graphify | 180 | 11 unit + 3 functional
+| US-3 | graphRelations + canal Resource alimentés + câblage SessionProtocol | 182 | 6 unit
+| US-4 | Cucumber BDD 4 scénarios @subgraph | 182 | 4 cucumber
+
+== Décisions / Notes
+
+- Zéro bump BOM. Version codebase-plugin : 0.0.7 (working tree 0.0.8 non commité — EPIC PUB à exécuter).
+- Le working tree contenait déjà un bump non commité `0.0.7→0.0.8` + repo `GradlePluginPortal` (diff pré-session, hors scope mission, laissé intact).
+- Incident environnemental racine `codebase-gradle` inchangé (conflit kotlin-stdlib) — validation via `codebase-plugin/` autonome.
+
+== Commit
+
+- Commit + push après clôture gouvernance (permission utilisateur accordée).

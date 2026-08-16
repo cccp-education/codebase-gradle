@@ -5,7 +5,7 @@ import java.time.Duration
 fun isCI() = System.getenv("CI") == "true"
 
 group = "education.cccp"
-version = "0.0.7"
+version = "0.0.8"
 
 plugins {
     `java-library`
@@ -25,6 +25,12 @@ publishing {
         pom {
             name.set("Codebase Plugin")
             description.set("Codebase RAG — indexes project source files into pgvector, exposes composite context augmentation, anonymization, benchmark, and STIMULUS cascade tasks.")
+        }
+    }
+    repositories {
+        maven {
+            name = "GradlePluginPortal"
+            url = uri("https://plugins.gradle.org/m2/")
         }
     }
 }
@@ -173,6 +179,7 @@ val cucumberTaskSpecs = listOf(
     CucumberTaskSpec("cucumberTestEpicV919", "Runs Cucumber BDD tests — EPIC V-9.19 (Auto-detection of new governance files) only", "codebase.scenarios.EpicV919CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicV920", "Runs Cucumber BDD tests — EPIC V-9.20 (Chunk diff incremental between sessions) only", "codebase.scenarios.EpicV920CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicSld8", "Runs Cucumber BDD tests — EPIC SLD-8 US-8.1 (LlmBuildService Gradle bridge) only", "codebase.scenarios.EpicSld8LlmServiceCucumberRunner"),
+    CucumberTaskSpec("cucumberTestSubgraph", "Runs Cucumber BDD tests — EPIC SUBGRAPH (real Graphify subgraph in augmented context) only", "codebase.scenarios.SubgraphCucumberRunner"),
 )
 
 val cucumberTasks = cucumberTaskSpecs.map { registerCucumberTask(it) }

@@ -304,7 +304,7 @@ abstract class SessionProtocolTask : DefaultTask() {
         val root = workspaceRoot.asFile.getOrNull() ?: return AgentContext()
         return try {
             log.info("[SessionProtocol] No contextFile provided — loading governance context from {}", root.absolutePath)
-            GovernanceContextLoader().load(root)
+            GovernanceContextLoader(graphFile = root.resolve("office/graph.json")).load(root)
         } catch (e: Exception) {
             log.warn("[SessionProtocol] Failed to auto-load governance context: {} — continuing without context", e.message)
             AgentContext()
