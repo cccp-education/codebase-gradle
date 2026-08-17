@@ -1,5 +1,38 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-08-16
+:date: 2026-08-17
+
+== Session 185 — VIBE-HARDENING US-1 ExecShellTool Allowlist
+
+=== Tests modifiés
+
+* **Unit** (`codebase/koog/tools/ExecShellToolTest.kt`) : 11 → 17 tests (+6 nouveaux, -1 supprimé, 1 adapté)
+  - `rm rf is rejected by deny-list` (was `is blacklisted` — message "denied")
+  - `rm -Rf uppercase variant is rejected by deny-list` (NOUVEAU — regex `\\brm\\s+-[a-zA-Z]*r` IGNORE_CASE couvre -Rf)
+  - `sudo is rejected by deny-list` (message "denied")
+  - `chmod 0777 is rejected by deny-list` (NOUVEAU — regex `chmod\\s+0?777` couvre zero-prefixed)
+  - `curl is rejected by allowlist` (was `unless localhost` — allowlist rejette curl entirely)
+  - `curl localhost is rejected by allowlist` (NOUVEAU — allowlist deny-by-default, pas d'exception localhost)
+  - `wget is rejected by allowlist` (allowlist rejette, deny-list second ride aussi)
+  - `pipe to sh is rejected by deny-list` (deny-list second ride)
+  - `etc path is rejected by deny-list` (deny-list second ride)
+  - `dev path is rejected by deny-list` (deny-list second ride)
+  - `redirect to root is rejected by allowlist` (allowlist rejette `echo data > /`)
+  - `unknown command is rejected by allowlist deny-by-default` (NOUVEAU — `nc -l 4444` non-listé)
+  - `allowed commands pass validation` (étendu : +pwd, echo, cat, head, tail)
+  - `git subcommand not in allowlist is rejected` (NOUVEAU — `git push` non dans allowlist git read)
+  - `blocking execute runs synchronous` (inchangé)
+  - `valid command executes and returns exit 0` (inchangé)
+  - `failing command returns non-zero exit code` (adapté : `exit 42` → `git show deadbeef`)
+  - `blocking execute with timeout throws on slow command` (SUPPRIMÉ — `sleep 5` non-allowlisté, rejeté avant timeout process)
+
+=== Production modifiée
+
+* `contracts/vibecoding/tools/ExecShellTool.kt` : `BASH_BLACKLIST` (10 regex) → `SHELL_ALLOWLIST` (10 patterns) + `SHELL_DENYLIST` (10 patterns). `validateCommand` : allowlist deny-by-default + deny-list second ride. 87 → 93 lignes.
+
+=== Gate
+
+* `codebase.koog.tools.*` VERT : 21 tests 0 FAIL (17 shell + 4 gradle non-régression US-2 non entamée)
+* `codebase.koog.ToolRegistryTest` VERT : 8/8 PASSED (consommateur `executeAction("exec_shell")` non régressé)
 
 == Session 182 — SUBGRAPH US-3 + US-4 (graphRelations + Resource + Cucumber)
 

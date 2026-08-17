@@ -14,30 +14,105 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 | SLD-8 US-8.3 | DeckPipelineGraph sur services codebase | 🟡 À PLANIFIER | Côté slider
 | EPIC 1 | Init gouvernance | ✅ TERMINÉ | Items stale purgés (projet publié Central 0.0.5)
 | EPIC V-FLYWAY | Migration Flyway | BACKLOG P2 | Seuil déclenchement : 5+ migrations (actuellement 4 : V1→V4)
-| EPIC VIBE-HARDENING | Durcissement vibecoding (CR-GLOBALE-004) | BACKLOG P1 | S1 allowlist deny-by-default, C2 retry un seul compteur, C5 timeout LLM
+| EPIC VIBE-HARDENING | Durcissement vibecoding (CR-GLOBALE-004) | 🟡 EN COURS (US-0 ✅ S-184, US-1 ✅ S-185, US-2→5 À FAIRE) | 3 risques P1 : S1 allowlist, C2 retry, C5 timeout
 | Tous autres EPICs | V, W, X, Y, Z, K, L, OCR, CR, TRAD, PUB, V-LOCAL, SP, V-6, V-7, V-8, V-9, 2→12 | ✅ TERMINÉ | Voir détails ci-dessous
 |===
 
-*Backlog réellement restant* : SLD-8 US-8.2/8.3 (côté slider), EPIC VIBE-HARDENING (P1 — durcissement vibecoding, réveil sur déclencheur externe) + EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5.
+*Backlog réellement restant* : EPIC VIBE-HARDENING (🟡 EN COURS — US-0 ✅ S-184, US-1 ✅ S-185, US-2→5 À FAIRE ~9 pts) + SLD-8 US-8.2/8.3 (côté slider) + EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5.
 
 == EPIC VIBE-HARDENING — Durcissement vibecoding (CR-GLOBALE-004)
 
-**Statut** : BACKLOG (Session 175, 2026-08-05 — findings archivés GLOBAL_CODE_REVIEW.adoc CR-GLOBALE-004)
-**Priorité** : P1 (aucun déclencheur actif — borough DORMANT, réveil si consommateur ou CI rouge)
-**Origine** : Code review session 174 (10 findings)
+**Statut** : 🟡 EN COURS (US-0 ✅ S-184 cadrage, US-1 ✅ S-185 shell allowlist — 4 US restantes US-2→US-5)
+**Priorité** : P1 (3 risques P1 : S1 sécurité, C2 correction, C5 résilience)
+**Origine** : Code review session 174/175 (10 findings S1-S3/C1-C7 archivés GLOBAL_CODE_REVIEW.adoc)
+**Document** : link:.agents/CADRAGE_EPIC_VIBE_HARDENING.adoc[CADRAGE_EPIC_VIBE_HARDENING.adoc]
 
-_Durcissement recommandé de la couche outils d'exécution de l'agent autonome_ :
+_Durcissement de la couche outils d'exécution de l'agent autonome (première itération P1)_ :
 
-* **S1** (P1) — allowlist deny-by-default pour `ExecShellTool`/`ExecGradleTool` (regex blacklists bypassables)
-* **C2** (P1) — retry compté une seule fois (actuellement double-compté → maxRetries épuisé prématurément)
-* **C5** (P1) — timeout sur appels LLM (`callLLM`/`replan`)
+* **S1** (P1) — ✅ US-1/US-2 : allowlist deny-by-default pour `ExecShellTool`/`ExecGradleTool` (regex blacklists bypassables)
+* **C2** (P1) — ✅ US-4 : retry compté une seule fois (actuellement double-compté → maxRetries épuisé prématurément)
+* **C5** (P1) — ✅ US-3 : timeout sur appels LLM (`callLLM`/`replan`) via `withTimeout`
+* **Cucumber** — ✅ US-5 : `codebase_vibe_hardening.feature` 4 scénarios `@vibe-hardening`
+
+_Reportés EPIC VIBE-HARDENING-2 (P2/P3, hors scope cette itération)_ :
+
 * **S2** (P2) — allowlist de tâches Gradle (`gradle_*` auto-registration libre)
 * **S3** (P2) — garde de taille edit_file/write_file (anti-OOM)
+* **C1** (P1 mais reporté) — heuristique `contains("failed")` + expectedOutput jamais comparé (refonte TaskResultVerifier)
 * **C3** (P2) — VibecodingPlan dead code (javadoc INSERT-X1..X6 stale) : implémenter ou purger
 * **C4** (P2) — GradleTaskArgsMapper flags cassés (un seul argument ProcessBuilder)
 * **C6** (P3) — duplication SessionProtocolServer/Task
 * **C7** (P3) — compteur remaining tasks négatif possible
-* **C1** (P1) — heuristique `contains("failed")` + expectedOutput jamais comparé (verify→adapt superficiel)
+
+=== User Stories
+
+[cols="1,4,2,1]
+|===
+| US | Description | Tests | Pts
+
+| US-0
+| ✅ TERMINÉ (S-184) — Cadrage EPIC (gouvernance pure, zéro code). 3 constats P1
+  audités + 7 rappels P2/P3 + 10 décisions architecturales. Document
+  `CADRAGE_EPIC_VIBE_HARDENING.adoc`. Pattern S-057/S-063.
+| —
+| 0
+
+| US-1
+| ✅ TERMINÉ (S-185) — S1 ExecShellTool allowlist. `BASH_BLACKLIST` (10 regex)
+  remplacé par `SHELL_ALLOWLIST` (10 patterns : git read, rg, ls, find ., mkdir /tmp,
+  echo, cat, head/tail, ./gradlew, pwd) + `SHELL_DENYLIST` second ride (10 patterns :
+  rm -[rR], sudo, curl, wget, chmod 0?777, pipe sh/bash, /etc/, /dev/, redirect /).
+  `validateCommand` allowlist deny-by-default + deny-list second ride. `ExecShellToolTest`
+  11→17 tests (baby-step TDD strict RED → GREEN → REFACTOR). Gate `codebase.koog.tools.*`
+  VERT 21 tests 0 FAIL + `ToolRegistryTest` 8/8 non-régression.
+| 17 unit
+| 3
+
+| US-2
+| 🟡 À FAIRE — S1 ExecGradleTool allowlist. Remplacer 4 regex `GRADLE_BLACKLIST` par
+  allowlist deny-by-default (8 patterns). Refactor `validateGradleTask`. MàJ
+  `ExecGradleToolTest` (6 tests).
+| ~6 unit
+| 2
+
+| US-3
+| 🟡 À FAIRE — C5 Timeout LLM. Wrapper `withTimeout(llmTimeoutMs)` sur 3 sites
+  `runBlocking { llmProvider.call(...) }` (callLLMNode L413, replan L288, StepVerifier
+  L44). Constructor param `llmTimeoutMs: Long = 30_000L`. Catch
+  `TimeoutCancellationException` → `withError("LLMTimeout")`.
+| ~8 unit
+| 3
+
+| US-4
+| 🟡 À FAIRE — C2 Retry un seul compteur. Supprimer `retryCount = state.retryCount +
+  1` dans `executePlanTasks` (L587, L604) + `incrementRetry()` dans bloc error (L291,
+  L298, L302). Utiliser `withRecoverableError` (déjà correct). MàJ
+  `VibecodingGraphTest` + `StepVerifierTest`.
+| ~6 unit
+| 2
+
+| US-5
+| 🟡 À FAIRE — Cucumber BDD. `codebase_vibe_hardening.feature` 4 scénarios
+  `@vibe-hardening` (allowlist shell, allowlist gradle, timeout LLM, retry un seul
+  compteur) + `VibeHardeningCucumberRunner` + `CucumberTaskSpec("cucumberTestVibeHardening")`.
+| ~4 cucumber
+| 2
+|===
+
+_Total_ : ~12 pts, 6 US (US-0 ✅, US-1 ✅, US-2→US-5 🟡 À FAIRE).
+
+=== Dépendances
+
+----
+US-0 (cadrage ✅) → US-1 (shell allowlist ✅) → US-2 (gradle allowlist)
+                                     ↘
+                                      US-3 (timeout LLM) → US-5 (cucumber)
+                                     ↗
+US-4 (retry un seul compteur) ──┘
+----
+
+US-1 et US-2 indépendants (2 tools). US-3 et US-4 indépendants (timeout vs retry).
+US-5 dépend de US-1→US-4.
 
 == EPIC C-BOM-FIX — POM transitif codebase-plugin versions manquantes
 

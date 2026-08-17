@@ -1,0 +1,103 @@
+= Session 184 — EPIC VIBE-HARDENING US-0 Cadrage
+
+== Contexte
+
+Borough Queens (codebase-gradle N1) réveillé du DORMANT sur déclencheur pilote.
+EPIC VIBE-HARDENING (P1, issu CR-GLOBALE-004 session 175) — durcissement vibecoding
+3 risques P1 : S1 (blacklists bypassables), C2 (retryCount double-compté),
+C5 (LLM sans timeout). Session de gouvernance pure (pattern S-057/S-063) — zéro
+code modifié, cadrage formel de l'EPIC avant implémentation US-1→5.
+
+== Commandes
+
+----
+git status / git log --oneline -5                      # working tree propre, main
+./gradlew compileKotlin --offline                      # ✅ BUILD SUCCESSFUL 13s (build autonome)
+----
+
+== Audit code cible (3 findings P1)
+
+=== S1 — Blacklists shell/gradle bypassables
+
+`ExecShellTool.kt:10-21` — 10 regex `BASH_BLACKLIST` :
+* `rm -rf` → `rm -Rf` (case-insensitive ne couvre pas `-Rf`)
+* `chmod 777` → `chmod 0777` (regex `chmod\\s+777` ne matche pas `0777`)
+* `curl 127.0.0.1` = faux positif (localhost IP bloqué par regex curl)
+
+`ExecGradleTool.kt:10-15` — 4 regex `GRADLE_BLACKLIST` :
+* `clean  build` (double espace) passe `clean\\s+build` (exige 1 séparateur exact)
+
+=== C2 — retryCount double-compté
+
+`VibecodingGraph.kt:580-607` — `executePlanTasks` incrémente `retryCount` (L587, L604).
+`VibecodingGraph.kt:277-313` — bloc error recovery incrémente encore (L291, L298, L302).
+= 2 incréments/essai → maxRetries=3 épuisé en 2 essais.
+
+`VibecodingState.withRecoverableError` (L46-47) incrémente déjà — doublon.
+
+=== C5 — LLM sans timeout
+
+3 sites `runBlocking { llmProvider.call(...) }` sans `withTimeout` :
+* `VibecodingGraph.kt:413` (callLLMNode)
+* `VibecodingGraph.kt:288` (replan error recovery)
+* `StepVerifier.kt:44` (replan verifyAndAdapt)
+
+Ollama gelé = build bloqué indéfiniment (timeout session vérifié entre itérations seulement).
+
+== 10 décisions architecturales
+
+. Allowlist deny-by-default (S1) — 10 patterns shell + 8 gradle, deny-list explicite
+  en second ride (defense in depth)
+. Domaine `contracts.vibecoding.tools` conservé (pas de nouveau domaine, 2 tools YAGNI)
+. Un seul compteur retry (C2) — `withRecoverableError` source unique, bloc error ne
+  réincrémente plus
+. Timeout LLM via `withTimeout(llmTimeoutMs=30_000L)` configurable (C5) — catch
+  `TimeoutCancellationException` → `withError("LLMTimeout")` récupérable
+. Backward compat préservée — tests existants mis à jour allowlist, signatures inchangées
+. Baby-step TDD strict — RED → GREEN → REFACTOR, 1 fichier à la fois
+. Zéro bump BOM — EPIC local, artefact `contracts.vibecoding.tools` dans codebase-plugin
+. Cucumber BDD US-5 — `codebase_vibe_hardening.feature` 4 scénarios `@vibe-hardening`,
+  runner dédié `VibeHardeningCucumberRunner` (pattern S-082)
+. Pas de nouvelle tâche Gradle — durcissement interne consommé par VibecodingGraph
+. P2/P3 reportés EPIC VIBE-HARDENING-2 (S2/S3/C1/C3/C4/C6/C7)
+
+== 6 US découpees (~12 pts)
+
+[cols="1,4,2,1]
+|===
+| US | Description | Tests | Pts
+
+| US-0 | ✅ Cadrage (ce document) | — | 0
+| US-1 | S1 ExecShellTool allowlist | ~14 unit | 3
+| US-2 | S1 ExecGradleTool allowlist | ~6 unit | 2
+| US-3 | C5 Timeout LLM | ~8 unit | 3
+| US-4 | C2 Retry un seul compteur | ~6 unit | 2
+| US-5 | Cucumber BDD | ~4 cucumber | 2
+|===
+
+== Livrables
+
+* `.agents/CADRAGE_EPIC_VIBE_HARDENING.adoc` créé (180 lignes, 10 décisions archi)
+* `BACKLOG.adoc` mis à jour — EPIC VIBE-HARDENING 🟡 EN COURS (US-0 ✅, US-1→5 À FAIRE)
+* `.agents/INDEX.adoc` mis à jour — session 184, roadmap EPIC VIBE-HARDENING ajoutée
+* `.agents/PROMPT_REPRISE.adoc` mis à jour — session 185 mission US-1
+* `.agents/SESSIONS_HISTORY.adoc` mis à jour — entrée 184
+* `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-08.adoc` mis à jour — entrée 184
+
+== Leçons
+
+* Cadrage gouvernance pure efficace : audit code ciblé (3 fichiers `ExecShellTool.kt`,
+  `ExecGradleTool.kt`, `VibecodingGraph.kt` + `StepVerifier.kt` + `VibecodingState.kt`)
+  avant implémentation — évite le split-brain en US-1→5
+* Allowlist deny-by-default = trade-off sécurité vs flexibilité assumé (l'agent produit
+  des commandes dans l'allowlist — git/rg/gradlew — sinon il adapte)
+* `withRecoverableError` déjà correct (L46-47) — le bug C2 est dans `executePlanTasks`
+  qui réincrémente, pas dans `VibecodingState` → fix minimal (supprimer doublon)
+* Timeout 30s = compromis (Ollama cloud <10s sur gpt-oss:120b-cloud) — configurable
+  pour éviter les faux timeouts
+
+== Prochaine session (185)
+
+EPIC VIBE-HARDENING US-1 : S1 ExecShellTool allowlist deny-by-default. Refactor
+`ExecShellTool.kt` (10 regex → allowlist 10 patterns + deny-list second ride) + MàJ
+`ExecShellToolTest.kt` (14 tests). Baby-step TDD strict.

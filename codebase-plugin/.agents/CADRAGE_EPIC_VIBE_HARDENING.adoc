@@ -1,0 +1,301 @@
+= CADRAGE_EPIC_VIBE_HARDENING.adoc — EPIC VIBE-HARDENING (Session 184)
+:sectnums:
+:date: 2026-08-17
+:session: 184
+:borough: Queens — codebase-gradle (N1)
+:epic: VIBE-HARDENING
+:origine: CR-GLOBALE-004 (session 175, 2026-08-05 — 10 findings S1-S3/C1-C7)
+:methode: Baby-step TDD/BDD strict — unit → functional → cucumber, RED → GREEN → REFACTOR
+:pattern: S-057/S-063 (gouvernance pure, zéro code modifié en US-0)
+
+== Contexte
+
+CR-GLOBALE-004 (session 175) a audité la couche outils d'exécution du vibecoding
+agent autonome. Le verdict : architecture koog saine, bien testée, mais **la couche
+outils d'exécution** présente 3 risques P1 pour un agent qui peut écrire/modifier/exécuter
+dans le workspace sans surveillance. L'EPIC VIBE-HARDENING durcit ces 3 risques P1
+en première itération.
+
+Borough DORMANT réveillé sur déclencheur pilote (session 184).
+
+== Constats audités (3 findings P1 + rappel 7 P2/P3)
+
+=== P1 — S1 : Blacklists shell/gradle bypassables (sécurité)
+
+`ExecShellTool.validateCommand` (`contracts/vibecoding/tools/ExecShellTool.kt:78-86`) :
+10 regex `BASH_BLACKLIST` — contournables :
+* `rm -rf` → `rm -Rf` (case-insensitive ne couvre pas `-Rf` vs `-rf`)
+* `chmod 777` → `chmod 0777` (regex `chmod\\s+777` ne matche pas `0777`)
+* `curl 127.0.0.1` = faux positif (regex `curl(?![^\\s]*\\s+localhost)` bloque IP localhost)
+
+`ExecGradleTool.validateGradleTask` (`contracts/vibecoding/tools/ExecGradleTool.kt:53-61`) :
+4 regex `GRADLE_BLACKLIST` — `clean  build` (double espace) passe la blacklist
+(`clean\\s+build` exige exactement un séparateur whitespace).
+
+**Pattern regex sur un tool dont le rôle est d'exécuter = surface d'attaque réelle.**
+Un agent LLM peut produire des variantes lexicale que les regex ne couvrent pas.
+
+=== P1 — C2 : retryCount double-compté (correction)
+
+`VibecodingGraph.executePlanTasks` (`VibecodingGraph.kt:580-607`) : sur échec tâche,
+`retryCount = state.retryCount + 1` (L587 et L604) — incrémentation #1.
+
+Puis le bloc error recovery (`VibecodingGraph.kt:277-313`) : `state.clearError().incrementRetry()`
+(L291, L298, L302) — incrémentation #2.
+
+Résultat : **2 incréments par essai** → `maxRetries=3` épuisé en 2 essais au lieu de 3.
+Incohérent avec le chemin `StepVerifier` (`error=null` en retry → bloc error sauté).
+
+`VibecodingState.withRecoverableError` (`VibecodingState.kt:46-47`) incrémente déjà
+`retryCount` — doublon avec `executePlanTasks` L587/L604.
+
+=== P1 — C5 : Pas de timeout sur appels LLM (résilience)
+
+3 sites `runBlocking { llmProvider.call(...) }` sans timeout :
+* `VibecodingGraph.callLLMNode` (`VibecodingGraph.kt:413`) — appel LLM principal
+* `VibecodingGraph` error recovery replan (`VibecodingGraph.kt:288`) — replan après échec
+* `StepVerifier.verifyAndAdapt` (`StepVerifier.kt:44`) — replan StepVerifier
+
+Une instance Ollama gelée bloque indéfiniment (`runBlocking` sans borne). Le timeout
+session est vérifié entre itérations seulement — pas pendant l'appel LLM lui-même.
+
+=== Rappel P2/P3 (hors scope cette itération)
+
+* **S2** (P2) — auto-registration libre `gradle_*` (TaskDiscoveryRegistrar)
+* **S3** (P2) — `edit_file`/`write_file` sans garde de taille (OOM potentiel)
+* **C1** (P1 mais hors scope) — `contains("failed")` faux FAILED + `expectedOutput` jamais comparé
+  → C1 nécessite refonte `TaskResultVerifier` (scoring sémantique) — reporté EPIC futur
+* **C3** (P2) — `VibecodingPlan` dead code + javadoc INSERT-X1..X6 stale
+* **C4** (P2) — `GradleTaskArgsMapper` flags cassés (un seul argument ProcessBuilder)
+* **C6** (P3) — duplication `SessionProtocolServer`/`Task`
+* **C7** (P3) — `Plan remaining tasks` négatif possible (L445)
+
+== Décisions architecturales
+
+=== Décision 1 — Allowlist deny-by-default (S1)
+
+Remplacer les 10 regex `BASH_BLACKLIST` + 4 regex `GRADLE_BLACKLIST` par une
+**allowlist** : seules les commandes/tâches matching un pattern autorisé sont exécutées,
+tout le reste est rejeté.
+
+Allowlist shell (10 patterns) :
+* `git\\s+(status|diff|log|show|branch|ls-files|check-ignore)` (lecture git)
+* `rg\\s+` (ripgrep lecture)
+* `ls(\\s+-[a-zA-Z]+)?\\s+` (list)
+* `find\\s+\\.\\s` (find relatif)
+* `mkdir\\s+/tmp/` (mkdir tmp only)
+* `echo\\s+` (echo)
+* `cat\\s+` (cat — lecture)
+* `head\\s+|tail\\s+` (head/tail)
+* `\\./gradlew\\s+` (gradle wrapper)
+* `pwd` (print working dir)
+
+Allowlist gradle (8 patterns) :
+* `^(build|compileKotlin|compileTestKotlin|test|testFast|check|assemble|jar|publishToMavenLocal)$`
+* `^\\w+:\\w+$` (project:task form)
+* `^\\w+:build$`, `^\\w+:test$`, `^\\w+:check$` (qualified tasks)
+* `^-P\\w+=\\S+$` (property override — validated separately)
+* `^--\\w+$` (long flag — validated separately)
+
+Deny-list explicite conservée **en second ride** (defense in depth) :
+`rm`, `sudo`, `curl`, `wget`, `chmod 777`, `| sh`, `| bash`, `/etc/`, `/dev/` —
+si allowlist passe mais deny-list matche → rejeté (ceinture+bretelles).
+
+=== Décision 2 — Domaine `contracts.vibecoding.tools` (S1)
+
+Pas de nouveau domaine. `ExecShellTool`/`ExecGradleTool` restent dans
+`contracts.vibecoding.tools` (N0 contrats). L'allowlist est une constante
+`private val` dans chaque tool — pas de classe externe (YAGNI, 2 tools seulement).
+
+Si un 3e tool `exec_*` apparaît → extraction `ToolAllowlist` partagée.
+
+=== Décision 3 — Un seul compteur de retry (C2)
+
+**Source de vérité unique** : `VibecodingState.retryCount` est incrémenté **une seule fois
+par essai**, au point d'échec. Le bloc error recovery **n'incrémente plus** — il lit
+seulement `retryCount` pour logger et décider replan/rollback.
+
+Refactor :
+* `executePlanTasks` (L580-607) : supprimer `retryCount = state.retryCount + 1` (L587, L604).
+  Utiliser `state.withRecoverableError(...)` qui incrémente déjà (L46-47).
+* Bloc error recovery (L277-313) : supprimer `incrementRetry()` (L291, L298, L302).
+  Remplacer par `state.clearError().nextIteration()` — le retryCount a été incrémenté
+  par `withRecoverableError` au point d'échec.
+* `checkProgressNode` (L614-617) : logique inchangée (lit `retryCount`).
+
+Invariant : `retryCount` n'est incrémenté que par `withRecoverableError` ou
+`incrementRetry` — jamais par `copy(retryCount = ...)` direct.
+
+=== Décision 4 — Timeout LLM via coroutine `withTimeout` (C5)
+
+Wrapper `withTimeout` sur les 3 sites `runBlocking { llmProvider.call(...) }` :
+* `callLLMNode` (L413) : `withTimeout(llmTimeoutMs) { llmProvider.call(prompt) }`
+* error recovery replan (L288) : idem
+* `StepVerifier.verifyAndAdapt` (L44) : idem
+
+Constante : `private const val LLM_TIMEOUT_MS = 30_000L` (30s, configurable via
+`VibecodingGraph` constructor param `llmTimeoutMs: Long = 30_000L`).
+
+Exception : `kotlinx.coroutines.TimeoutCancellationException` catchée →
+`state.withError("LLMTimeout: ${timeout}ms exceeded")` (récupérable, retry).
+
+Pas de nouveau domaine — timeout est un cross-cutting concern du graphe.
+
+=== Décision 5 — Backward compat préservée
+
+* `executeBlocking(command, workingDir, timeoutMs)` (ExecShellTool L60-76) inchangé —
+  déjà timeout via `waitFor`.
+* `validateCommand`/`validateGradleTask` signature inchangée — interne refactor allowlist.
+* Tests existants `ExecShellToolTest`/`ExecGradleToolTest` **mis à jour** : les assertions
+  `assertFailsWith<SecurityException> { validateCommand("git diff") }` deviennent
+  `validateCommand("git diff")` (passe allowlist). Tests blacklist → tests allowlist.
+* `VibecodingState.withRecoverableError` inchangé (déjà correct).
+* `StepVerifier` signature inchangée — timeout interne.
+
+=== Décision 6 — Baby-step TDD strict (US-1→US-5)
+
+Chaque US suit RED → GREEN → REFACTOR :
+1. **RED** : test échoue (allowlist absente / timeout absent / retry double)
+2. **GREEN** : code minimal pour passer le test
+3. **REFACTOR** : nettoyage, inline, extraction constante
+
+1 fichier à la fois. Validation `compileTestKotlin` après chaque modification.
+Gate ciblé en fin d'US (pas de `./gradlew test` global — Cucumber interminable).
+
+=== Décision 7 — Pas de bump BOM
+
+L'EPIC VIBE-HARDENING est local à codebase-plugin (N1). Les contrats
+`contracts.vibecoding.tools` (ExecShellTool/ExecGradleTool) sont dans le même
+artefact que le code — pas de dépendance externe ajoutée. Pas de bump BOM
+(pratique S073/S179/S182). `kotlinx-coroutines-core` déjà dans le classpath
+(`withTimeout` available).
+
+=== Décision 8 — Cucumber BDD (US-5)
+
+Feature `codebase_vibe_hardening.feature` — 4 scénarios `@vibe-hardening` :
+. Allowlist shell — command autorisée passe, commande non-listée rejetée
+. Allowlist gradle — tâche autorisée passe, tâche non-listée rejetée
+. Timeout LLM — appel LLM gelé → LLMTimeout après 30s (FakeLlmProvider qui sleep)
+. Retry un seul compteur — échec tâche → retryCount incrémenté une seule fois
+
+Runner dédié `VibeHardeningCucumberRunner` + `CucumberTaskSpec("cucumberTestVibeHardening")`.
+Pattern S-082 (runner dédié).
+
+=== Décision 9 — Pas de nouvelle tâche Gradle
+
+L'EPIC VIBE-HARDENING est un durcissement interne — pas de nouvelle tâche Gradle
+exposée. Les outils `ExecShellTool`/`ExecGradleTool` sont consommés par
+`VibecodingGraph` (interne), pas par l'utilisateur.
+
+=== Décision 10 — Zéro modification P2/P3 cette itération
+
+S2/S3/C1/C3/C4/C6/C7 restent au backlog. L'EPIC VIBE-HARDENING P1 cloture
+les 3 risques les plus critiques (sécurité S1 + correction C2 + résilience C5).
+Le reste sera cadré dans un EPIC VIBE-HARDENING-2 si un déclencheur survient.
+
+== User Stories découpees (6 US ~12 pts)
+
+[cols="1,4,2,1"]
+|===
+| US | Description | Tests | Pts
+
+| US-0
+| *Cadrage* (ce document) — gouvernance pure, zéro code modifié. Audit 3 constats
+  P1 + 7 rappels P2/P3 + 10 décisions architecturales. Pattern S-057/S-063.
+| — (gouvernance)
+| 0
+
+| US-1
+| *S1 ExecShellTool allowlist* — remplacer 10 regex `BASH_BLACKLIST` par allowlist
+  deny-by-default (10 patterns autorisés) + deny-list explicite en second ride.
+  Refactor `validateCommand`. MàJ `ExecShellToolTest` (14 tests existants → tests
+  allowlist). Baby-step TDD RED (assertion allowlist échoue) → GREEN → REFACTOR.
+| ~14 unit
+| 3
+
+| US-2
+| *S1 ExecGradleTool allowlist* — remplacer 4 regex `GRADLE_BLACKLIST` par allowlist
+  deny-by-default (8 patterns). Refactor `validateGradleTask`. MàJ `ExecGradleToolTest`.
+| ~6 unit
+| 2
+
+| US-3
+| *C5 Timeout LLM* — wrapper `withTimeout(llmTimeoutMs)` sur 3 sites
+  `runBlocking { llmProvider.call(...) }` (callLLMNode, replan, StepVerifier).
+  Constructor param `llmTimeoutMs: Long = 30_000L`. Catch
+  `TimeoutCancellationException` → `withError("LLMTimeout: ${ms}ms")`.
+| ~8 unit
+| 3
+
+| US-4
+| *C2 Retry un seul compteur* — supprimer `retryCount = state.retryCount + 1` dans
+  `executePlanTasks` (L587, L604) + `incrementRetry()` dans bloc error (L291, L298, L302).
+  Utiliser `withRecoverableError` (déjà correct). MàJ `VibecodingGraphTest` + `StepVerifierTest`.
+| ~6 unit
+| 2
+
+| US-5
+| *Cucumber BDD* — `codebase_vibe_hardening.feature` 4 scénarios `@vibe-hardening`
+  (allowlist shell, allowlist gradle, timeout LLM, retry un seul compteur) +
+  `VibeHardeningCucumberRunner` + `CucumberTaskSpec("cucumberTestVibeHardening")`.
+| ~4 cucumber
+| 2
+|===
+
+_Total_ : ~12 pts, 6 US.
+
+== Dépendances
+
+----
+US-0 (cadrage) → US-1 (shell allowlist) → US-2 (gradle allowlist)
+                                    ↘
+                                     US-3 (timeout LLM) → US-5 (cucumber)
+                                    ↗
+US-4 (retry un seul compteur) ──┘
+----
+
+*US-0* est racine (ce document).
+*US-1* et *US-2* sont indépendantes (2 tools séparés).
+*US-3* et *US-4* sont indépendantes (timeout vs retry).
+*US-5* dépend de US-1→US-4 (cucumber valide les 4 durcissements).
+
+== Risques
+
+[cols="3,5]
+|===
+| Risque | Mitigation
+| Allowlist trop restrictive (casse commandes légitimes) | Allowlist couvre les
+  commandes réellement utilisées par l'agent (git, rg, ls, find, gradlew, echo, cat).
+  Tests existants `ExecShellToolTest.whitelisted commands pass validation` garantissent
+  backward compat.
+| Timeout 30s trop court (LLM cloud lent) | Constructor param configurable.
+  Default 30s = compromis (Ollama cloud répond en <10s sur gpt-oss:120b-cloud).
+| Refactor retry casse la boucle V-6 | `VibecodingGraphTest` couvre retry/replan/rollback.
+  Gate ciblé `codebase.koog.*` en fin d'US-4.
+| Allowlist deny-by-default bloque l'agent en production | L'agent produit des
+  commandes dans l'allowlist (git/rg/gradlew) — si hors allowlist, l'agent adapte.
+  C'est le trade-off sécurité vs flexibilité, assumé.
+|===
+
+== Bénéfice attendu
+
+L'agent vibecoding devient exécutable sur un workspace réel **sans surveillance manuelle** :
+* **S1** : impossible d'exécuter `rm -rf`, `sudo`, `curl evil.com` même si le LLM produit
+  ces commandes (allowlist deny-by-default + deny-list second ride)
+* **C2** : `maxRetries=3` = 3 essais réels (pas 2) — cohérent avec le contrat `VibecodingStep`
+* **C5** : Ollama gelé → timeout 30s + retry, pas de build bloqué indéfiniment
+
+C'est la première itération du durcissement. Les P2/P3 (S2/S3/C1/C3/C4/C6/C7) seront
+cadrés dans un EPIC VIBE-HARDENING-2 si un déclencheur externe survient.
+
+== Références
+
+* `GLOBAL_CODE_REVIEW.adoc` racine — section `Revue CR-GLOBALE-004` (session 175)
+* `ExecShellTool.kt` — `contracts/vibecoding/tools/ExecShellTool.kt`
+* `ExecGradleTool.kt` — `contracts/vibecoding/tools/ExecGradleTool.kt`
+* `VibecodingGraph.kt` — `codebase/koog/VibecodingGraph.kt` (L277-313, L413, L580-607)
+* `VibecodingState.kt` — `codebase/koog/state/VibecodingState.kt` (L46-53)
+* `StepVerifier.kt` — `codebase/koog/planning/StepVerifier.kt` (L44)
+* `TaskResultVerifier.kt` — `codebase/koog/planning/TaskResultVerifier.kt`
+* `ExecShellToolTest.kt` — `codebase/koog/tools/ExecShellToolTest.kt` (14 tests)
+* `ExecGradleToolTest.kt` — `codebase/koog/tools/ExecGradleToolTest.kt` (6 tests)

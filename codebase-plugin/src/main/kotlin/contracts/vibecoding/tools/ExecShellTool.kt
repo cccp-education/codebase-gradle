@@ -7,17 +7,30 @@ import kotlinx.serialization.Serializable
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-private val BASH_BLACKLIST = listOf(
-    Regex("rm\\s+-rf", RegexOption.IGNORE_CASE),
-    Regex("sudo", RegexOption.IGNORE_CASE),
-    Regex("chmod\\s+777"),
-    Regex("curl(?![^\\s]*\\s+localhost)", RegexOption.IGNORE_CASE),
-    Regex("wget", RegexOption.IGNORE_CASE),
+private val SHELL_ALLOWLIST = listOf(
+    Regex("git\\s+(status|diff|log|show|branch|ls-files|check-ignore)\\b"),
+    Regex("rg\\s+\\S"),
+    Regex("ls(\\s+-[a-zA-Z]+)?\\s+\\S"),
+    Regex("find\\s+\\.\\s"),
+    Regex("mkdir\\s+/tmp/\\S"),
+    Regex("echo\\s+\\S"),
+    Regex("cat\\s+\\S"),
+    Regex("(head|tail)\\s+\\S"),
+    Regex("\\./gradlew\\s+\\S"),
+    Regex("\\bpwd\\b")
+)
+
+private val SHELL_DENYLIST = listOf(
+    Regex("\\brm\\s+-[a-zA-Z]*r", RegexOption.IGNORE_CASE),
+    Regex("\\bsudo\\b", RegexOption.IGNORE_CASE),
+    Regex("\\bcurl\\b", RegexOption.IGNORE_CASE),
+    Regex("\\bwget\\b", RegexOption.IGNORE_CASE),
+    Regex("chmod\\s+0?777\\b", RegexOption.IGNORE_CASE),
+    Regex("\\|\\s*sh\\b"),
+    Regex("\\|\\s*bash\\b"),
     Regex("/etc/"),
     Regex("/dev/"),
-    Regex(">\\s*/"),
-    Regex("\\|\\s*sh"),
-    Regex("\\|\\s*bash")
+    Regex(">\\s*/")
 )
 
 object ExecShellTool : SimpleTool<ExecShellTool.Args>(
@@ -26,7 +39,8 @@ object ExecShellTool : SimpleTool<ExecShellTool.Args>(
     description = "Execute a shell command via bash -c. " +
         "Returns EXIT code + stdout (max 8000 chars). " +
         "Working directory defaults to workspaceRoot. " +
-        "DANGEROUS commands (rm -rf, sudo, curl, wget, etc.) are blocked."
+        "Allowlist deny-by-default: only listed commands (git read, rg, ls, find, mkdir /tmp, echo, cat, head, tail, ./gradlew, pwd) pass; " +
+        "deny-list second ride rejects rm, sudo, curl, wget, chmod 777, pipe to sh/bash, /etc/, /dev/, redirect to /."
 ) {
     @Serializable
     data class Args(
@@ -76,10 +90,16 @@ object ExecShellTool : SimpleTool<ExecShellTool.Args>(
     }
 
     fun validateCommand(command: String) {
-        for (pattern in BASH_BLACKLIST) {
+        val allowed = SHELL_ALLOWLIST.any { it.containsMatchIn(command) }
+        if (!allowed) {
+            throw SecurityException(
+                "Shell command denied: not in allowlist (deny-by-default)"
+            )
+        }
+        for (pattern in SHELL_DENYLIST) {
             if (pattern.containsMatchIn(command)) {
                 throw SecurityException(
-                    "Shell command rejected: contains blacklisted pattern '${pattern.pattern}'"
+                    "Shell command denied: matches denied pattern '${pattern.pattern}'"
                 )
             }
         }

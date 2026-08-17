@@ -1,0 +1,79 @@
+= Session 185 — EPIC VIBE-HARDENING US-1 ExecShellTool Allowlist
+:session: 185
+:date: 2026-08-17
+:epic: VIBE-HARDENING
+:us: US-1
+:borough: Queens — codebase-gradle (N1)
+:methode: Baby-step TDD strict — RED → GREEN → REFACTOR
+
+== Contexte
+
+EPIC VIBE-HARDENING US-1 (P1 sécurité — finding S1 de CR-GLOBALE-004).
+`ExecShellTool.validateCommand` utilisait 10 regex `BASH_BLACKLIST` bypassables
+(case-insensitive ne couvre pas `-Rf` vs `-rf`, `chmod 0777` non matché,
+faux positif `curl 127.0.0.1`). US-0 cadrage session 184 a décidé allowlist
+deny-by-default + deny-list second ride (defense in depth).
+
+== Actions
+
+. **RED** — `ExecShellToolTest.kt` réécrit (11 → 17 tests) : assertions blacklist
+  remplacées par assertions allowlist/deny-list. Nouveaux tests : `rm -Rf`
+  uppercase, `chmod 0777` (zero-prefixed), `curl localhost` rejeté par allowlist,
+  `unknown command` rejeté par allowlist (deny-by-default), `git subcommand not
+  in allowlist` (`git push` rejeté). Test `exit 42` (commande non allowlistée)
+  remplacé par `git show deadbeef` (allowed, non-zero exit). Test `sleep 5`
+  timeout supprimé (`sleep` non allowlisté → rejeté avant timeout process).
+  `assertEquals` import inutilisé retiré.
+. **RED vérifié** — 6 tests FAILED (allowlist non implémentée en production).
+. **GREEN** — `ExecShellTool.kt` refactoré : `BASH_BLACKLIST` (10 regex) remplacé
+  par `SHELL_ALLOWLIST` (10 patterns : git read, rg, ls, find ., mkdir /tmp, echo,
+  cat, head/tail, ./gradlew, pwd) + `SHELL_DENYLIST` second ride (10 patterns :
+  rm -[rR], sudo, curl, wget, chmod 0?777, pipe sh/bash, /etc/, /dev/, redirect /).
+  `validateCommand` : allowlist passe d'abord (deny-by-default), deny-list en
+  second ride. Messages d'exception : "denied" au lieu de "blacklisted".
+  Description tool mise à jour (allowlist + deny-list documentées).
+. **GREEN vérifié** — 17/17 ExecShellToolTest PASSED.
+. **REFACTOR** — imports nettoyés, code minimal.
+. **Gate ciblé** — `codebase.koog.tools.*` VERT : ExecShellToolTest 17/17 +
+  ExecGradleToolTest 4/4 (non-régression US-2 non entamée). `ToolRegistryTest`
+  8/8 PASSED (consommateur `ToolRegistry.executeAction("exec_shell")` non
+  régressé). Zéro FAIL.
+
+== Commandes exécutées
+
+----
+./gradlew compileKotlin compileTestKotlin --console=plain
+./gradlew test --tests "codebase.koog.tools.ExecShellToolTest" --console=plain
+./gradlew test --tests "codebase.koog.tools.*" --console=plain
+./gradlew test --tests "codebase.koog.ToolRegistryTest" --console=plain
+----
+
+== Résultats
+
+. 2 fichiers modifiés :
+  * `src/main/kotlin/contracts/vibecoding/tools/ExecShellTool.kt` (87 → 93 lignes)
+  * `src/test/kotlin/codebase/koog/tools/ExecShellToolTest.kt` (123 → 139 lignes)
+. 17 unit tests (was 11) — 6 nouveaux + 1 supprimé (sleep timeout)
+. Gate `codebase.koog.tools.*` VERT 21 tests 0 FAIL (17 shell + 4 gradle)
+. Consommateur `ToolRegistry` non régressé (8/8 PASSED)
+. Zéro bump BOM (artefact local `contracts.vibecoding.tools`)
+. Zéro secret
+
+== Leçons
+
+. Allowlist deny-by-default supprime le test de timeout process (toute commande
+  non-allowlistée est rejetée avant exécution). Le timeout process devient
+  defense-in-depth non testable unitairement — trade-off assumé (sécurité >
+  coverage).
+. `exit 42` n'est plus testable (non allowlisté). Remplacé par `git show
+  deadbeef` (commande git read allowlistée qui retourne non-zero sur hash
+  inexistant).
+. Baby-step TDD strict respecté : RED (6 failures) → GREEN (0 failures) →
+  REFACTOR (imports). 1 fichier production + 1 fichier test modifiés.
+
+== Prochaine session
+
+EPIC VIBE-HARDENING US-2 : S1 ExecGradleTool allowlist deny-by-default —
+remplacer 4 regex `GRADLE_BLACKLIST` par allowlist 8 patterns + deny-list
+second ride, MàJ `ExecGradleToolTest` (4 tests existants → ~6 unit), baby-step
+TDD strict. Gate ciblé `codebase.koog.tools.*` VERT.

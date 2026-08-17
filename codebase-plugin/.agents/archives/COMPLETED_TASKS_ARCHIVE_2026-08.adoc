@@ -1,5 +1,52 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026 — Codebase Gradle (Queens)
 
+== Session 185 — EPIC VIBE-HARDENING US-1 ExecShellTool Allowlist
+
+[cols="2,3]
+|===
+| Tâche | Statut
+
+| US-1 — `BASH_BLACKLIST` (10 regex) remplacé par `SHELL_ALLOWLIST` (10 patterns : git read, rg, ls, find ., mkdir /tmp, echo, cat, head/tail, ./gradlew, pwd)
+| ✅ TERMINÉ
+
+| US-1 — `SHELL_DENYLIST` second ride (10 patterns : rm -[rR], sudo, curl, wget, chmod 0?777, pipe sh/bash, /etc/, /dev/, redirect /)
+| ✅ TERMINÉ
+
+| US-1 — `validateCommand` allowlist deny-by-default + deny-list second ride (defense in depth), messages "denied"
+| ✅ TERMINÉ
+
+| US-1 — `ExecShellToolTest` 11→17 tests (+6 nouveaux, -1 supprimé sleep timeout, 1 adapté exit 42→git show deadbeef)
+| ✅ TERMINÉ
+
+| US-1 — Baby-step TDD strict RED (6 failures) → GREEN (0 failures) → REFACTOR (imports nettoyés)
+| ✅ TERMINÉ
+
+| Gate `codebase.koog.tools.*` VERT 21 tests 0 FAIL (17 shell + 4 gradle non-régression US-2)
+| ✅ TERMINÉ
+
+| `ToolRegistryTest` 8/8 PASSED (consommateur `executeAction("exec_shell")` non régressé)
+| ✅ TERMINÉ
+
+| Zéro bump BOM (artefact local `contracts.vibecoding.tools`), zéro secret
+| ✅ TERMINÉ
+|===
+
+**Fichiers modifies** :
+- `src/main/kotlin/contracts/vibecoding/tools/ExecShellTool.kt` — `BASH_BLACKLIST` → `SHELL_ALLOWLIST` + `SHELL_DENYLIST`, `validateCommand` refactor (87 → 93 lignes)
+- `src/test/kotlin/codebase/koog/tools/ExecShellToolTest.kt` — 11 → 17 tests, assertions blacklist → allowlist/deny-list (123 → 139 lignes)
+
+**Prochaine session (186)** : EPIC VIBE-HARDENING US-2 — S1 ExecGradleTool allowlist deny-by-default (4 regex `GRADLE_BLACKLIST` → allowlist 8 patterns + deny-list second ride, pattern US-1 shell à copier).
+
+== Session 184 — EPIC VIBE-HARDENING US-0 Cadrage
+
+[cols="2,3]
+|===
+| Tâche | Statut
+
+| US-0 — Cadrage EPIC VIBE-HARDENING (gouvernance pure, zéro code) — 3 constats P1 + 7 rappels P2/P3 + 10 décisions archi + 6 US ~12 pts + document `CADRAGE_EPIC_VIBE_HARDENING.adoc`
+| ✅ TERMINÉ
+|===
+
 == Session 183 — EPIC PUB (codebase-plugin 0.0.8 Central)
 
 [cols="2,3"]
