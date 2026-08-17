@@ -3,12 +3,15 @@ package codebase.koog.planning
 import codebase.koog.llm.LlmProvider
 import codebase.koog.state.VibecodingState
 import codebase.koog.tracking.TokenTracker
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.slf4j.LoggerFactory
 
 class StepVerifier(
     private val llmProvider: LlmProvider? = null,
-    private val tokenTracker: TokenTracker = TokenTracker()
+    private val tokenTracker: TokenTracker = TokenTracker(),
+    private val llmTimeoutMs: Long = DEFAULT_LLM_TIMEOUT_MS
 ) {
 
     private val log = LoggerFactory.getLogger(StepVerifier::class.java)
@@ -41,11 +44,18 @@ class StepVerifier(
                         val replanPrompt = buildReplanPrompt(state, step, taskResult)
                         tokenTracker.trackPrompt(replanPrompt)
                         try {
-                            val replanResponse = runBlocking { llmProvider.call(replanPrompt) }
+                            val replanResponse = runBlocking {
+                                withTimeout(llmTimeoutMs) { llmProvider.call(replanPrompt) }
+                            }
                             tokenTracker.trackCompletion(replanResponse)
                             log.info("[StepVerifier] Replan response: {} chars", replanResponse.length)
                             state.copy(
                                 lastToolResult = "Replan: $replanResponse"
+                            )
+                        } catch (e: TimeoutCancellationException) {
+                            log.warn("[StepVerifier] Replan LLM call timed out after {}ms", llmTimeoutMs)
+                            state.copy(
+                                lastToolResult = "LLMTimeout: ${llmTimeoutMs}ms exceeded"
                             )
                         } catch (e: Exception) {
                             log.warn("[StepVerifier] Replan LLM call failed: {}", e.message)
@@ -95,5 +105,9 @@ class StepVerifier(
             appendLine("The step failed. Propose an alternative approach to recover.")
             appendLine("Suggest a different Gradle task, file edit, or approach. Keep it short.")
         }
+    }
+
+    companion object {
+        const val DEFAULT_LLM_TIMEOUT_MS: Long = 30_000L
     }
 }

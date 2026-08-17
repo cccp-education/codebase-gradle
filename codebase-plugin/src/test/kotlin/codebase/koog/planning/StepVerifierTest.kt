@@ -2,6 +2,7 @@ package codebase.koog.planning
 
 import codebase.koog.llm.LlmProvider
 import codebase.koog.state.VibecodingState
+import kotlinx.coroutines.delay
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -91,6 +92,57 @@ class StepVerifierTest {
         val result = verifier.verifyAndAdapt(state, step)
         assertEquals(1, result.retryCount)
         assertNull(result.error)
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // EPIC VIBE-HARDENING US-3 — C5 Timeout LLM
+    // ═══════════════════════════════════════════════════════════
+
+    @Test
+    fun `StepVerifier should timeout when LLM call exceeds llmTimeoutMs`() {
+        val slowLlm = LlmProvider { delay(10_000); "late response" }
+        val verifierWithTimeout = StepVerifier(
+            llmProvider = slowLlm,
+            llmTimeoutMs = 50L
+        )
+        val state = vibecodingState(
+            lastToolResult = "BUILD FAILED",
+            retryCount = 0,
+            maxRetries = 3
+        )
+        val step = VibecodingStep("compile", "build", "BUILD SUCCESSFUL", maxRetries = 3)
+        val result = verifierWithTimeout.verifyAndAdapt(state, step)
+        assertNotNull(result.lastToolResult)
+        assertTrue(
+            result.lastToolResult.contains("LLMTimeout") || result.lastToolResult.contains("Timeout"),
+            "LastToolResult should mention timeout, got: ${result.lastToolResult}"
+        )
+    }
+
+    @Test
+    fun `StepVerifier should succeed when LLM call completes within llmTimeoutMs`() {
+        val fastLlm = LlmProvider { "Try ./gradlew compileKotlin" }
+        val verifierWithTimeout = StepVerifier(
+            llmProvider = fastLlm,
+            llmTimeoutMs = 5_000L
+        )
+        val state = vibecodingState(
+            lastToolResult = "BUILD FAILED",
+            retryCount = 0,
+            maxRetries = 3
+        )
+        val step = VibecodingStep("compile", "build", "BUILD SUCCESSFUL", maxRetries = 3)
+        val result = verifierWithTimeout.verifyAndAdapt(state, step)
+        assertEquals(1, result.retryCount)
+        assertNull(result.error)
+        assertTrue(result.lastToolResult.contains("Replan"))
+    }
+
+    @Test
+    fun `StepVerifier should use default 30s timeout when llmTimeoutMs not provided`() {
+        val verifierDefault = StepVerifier(llmProvider = LlmProvider { "ok" })
+        val defaultTimeoutMs = StepVerifier.DEFAULT_LLM_TIMEOUT_MS
+        assertEquals(30_000L, defaultTimeoutMs)
     }
 
     private fun vibecodingState(

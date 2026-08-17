@@ -264,3 +264,32 @@ depuis le sous-graphe (GovernanceContextLoader.kt:68 + ContextChannel.Resource,
 | Non-régression LlmProviderResolverTest (10/10 PASS)
 | ✅ TERMINÉ
 |===
+
+== EPIC VIBE-HARDENING — Durcissement vibecoding (CR-GLOBALE-004)
+
+*Sessions* : 184-187 (2026-08-17)
+*Origine* : CR-GLOBALE-004 (session 175, 10 findings S1-S3/C1-C7)
+*Statut* : ✅ TERMINÉ 6/6 US
+
+[cols="3,2"]
+|===
+| Tâche | Statut
+
+| US-0 Cadrage (gouvernance pure, 3 constats P1 + 10 décisions archi)
+| ✅ TERMINÉ (S-184)
+
+| US-1 ExecShellTool allowlist deny-by-default (10 patterns + 10 deny-list)
+| ✅ TERMINÉ (S-185)
+
+| US-2 ExecGradleTool allowlist deny-by-default (4 patterns + 8 deny-list)
+| ✅ TERMINÉ (S-186)
+
+| US-3 C5 Timeout LLM withTimeout 30s sur 3 sites
+| ✅ TERMINÉ (S-187)
+
+| US-4 C2 Retry single counter (suppression double incrémentation)
+| ✅ TERMINÉ (S-187)
+
+| US-5 Cucumber BDD (4 scénarios @vibe-hardening)
+| ✅ TERMINÉ (S-187)
+|===

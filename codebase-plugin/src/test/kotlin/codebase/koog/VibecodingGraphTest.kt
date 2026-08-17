@@ -2,12 +2,14 @@ package codebase.koog
 
 import codebase.koog.session.SessionRecord
 import codebase.koog.llm.FakeLlmProvider
+import codebase.koog.llm.LlmProvider
 import contracts.agent.Epic
 import contracts.agent.Plan
 import contracts.agent.GradleTask as PlanTask
 import contracts.agent.UserStory
 import contracts.vibecoding.registry.ToolRegistry
 import codebase.koog.state.VibecodingState
+import kotlinx.coroutines.delay
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
@@ -463,5 +465,144 @@ class VibecodingGraphTest {
 
         assertTrue(result.executedTasks.size >= 2,
             "Should have executed at least 2 tasks after retry, got ${result.executedTasks.size}")
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // EPIC VIBE-HARDENING US-3 — C5 Timeout LLM
+    // ═══════════════════════════════════════════════════════════
+
+    @Test
+    fun `VibecodingGraph should expose llmTimeoutMs constructor param with 30s default`() {
+        val graph = VibecodingGraph(
+            augmentedGraph = null,
+            toolRegistry = ToolRegistry()
+        )
+        assertEquals(30_000L, graph.llmTimeoutMs)
+    }
+
+    @Test
+    fun `VibecodingGraph should accept custom llmTimeoutMs`() {
+        val graph = VibecodingGraph(
+            augmentedGraph = null,
+            toolRegistry = ToolRegistry(),
+            llmTimeoutMs = 5_000L
+        )
+        assertEquals(5_000L, graph.llmTimeoutMs)
+    }
+
+    @Test
+    fun `callLLMNode should timeout when LLM exceeds llmTimeoutMs`() {
+        val slowLlm = LlmProvider { delay(10_000); "late" }
+        val graph = VibecodingGraph(
+            augmentedGraph = null,
+            toolRegistry = ToolRegistry(),
+            llmProvider = slowLlm,
+            llmTimeoutMs = 50L
+        )
+        val state = VibecodingState(
+            intention = "test timeout",
+            workspaceRoot = "/tmp",
+            maxActions = 3
+        )
+        val result = graph.execute(state)
+        assertNotNull(result.error, "Should have error after LLM timeout")
+        val error = result.error!!
+        assertTrue(
+            error.contains("LLMTimeout") || error.contains("Timeout"),
+            "Error should mention timeout, got: $error"
+        )
+    }
+
+    @Test
+    fun `callLLMNode should succeed when LLM completes within llmTimeoutMs`() {
+        val fastLlm = LlmProvider { "DONE" }
+        val graph = VibecodingGraph(
+            augmentedGraph = null,
+            toolRegistry = ToolRegistry(),
+            llmProvider = fastLlm,
+            llmTimeoutMs = 5_000L
+        )
+        val state = VibecodingState(
+            intention = "test fast LLM",
+            workspaceRoot = "/tmp",
+            maxActions = 1
+        )
+        val result = graph.execute(state)
+        assertNull(result.error, "Should not error when LLM is fast: ${result.error}")
+    }
+
+    @Test
+    fun `error recovery replan should not hang when LLM is slow`() {
+        val slowLlm = LlmProvider { delay(10_000); "late replan" }
+        val plan = Plan(
+            title = "Force error path",
+            epics = listOf(
+                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
+                    UserStory(description = "US1", tasks = listOf(
+                        PlanTask(description = "compile", gradleTask = "compileKotlin")
+                    ))
+                ))
+            ),
+            totalPoints = 1,
+            estimatedSessions = "1"
+        )
+        val graph = VibecodingGraph(
+            augmentedGraph = null,
+            toolRegistry = ToolRegistry(),
+            llmProvider = slowLlm,
+            llmTimeoutMs = 50L
+        )
+        val state = VibecodingState(
+            intention = "trigger replan timeout",
+            workspaceRoot = "/tmp",
+            maxActions = 5,
+            maxRetries = 2,
+            plan = plan
+        )
+        val result = graph.execute(state)
+        assertTrue(result.finished || result.error != null,
+            "Should terminate (not hang) when replan LLM times out: finished=${result.finished}, error=${result.error}")
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // EPIC VIBE-HARDENING US-4 — C2 Retry un seul compteur
+    // ═══════════════════════════════════════════════════════════
+
+    @Test
+    fun `v6 retryCount should be incremented once per retry not twice`() {
+        val fakeLlm = FakeLlmProvider()
+        fakeLlm.nextResponse = "try again"
+
+        val plan = Plan(
+            title = "Always fails",
+            epics = listOf(
+                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
+                    UserStory(description = "US1", tasks = listOf(
+                        PlanTask(description = "run tests", gradleTask = "test")
+                    ))
+                ))
+            ),
+            totalPoints = 1,
+            estimatedSessions = "1"
+        )
+
+        val graph = VibecodingGraph(
+            augmentedGraph = null,
+            toolRegistry = ToolRegistry(),
+            llmProvider = fakeLlm
+        )
+
+        val state = VibecodingState(
+            intention = "Run failing tests",
+            workspaceRoot = "/tmp",
+            maxActions = 10,
+            maxRetries = 2,
+            plan = plan
+        )
+
+        val result = graph.execute(state)
+
+        assertTrue(result.retryCount <= 2,
+            "retryCount should not exceed maxRetries=2 (one increment per retry), got ${result.retryCount} — double-increment bug if >2")
     }
 }

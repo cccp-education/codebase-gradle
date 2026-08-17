@@ -25,6 +25,8 @@ import ai.koog.agents.core.agent.entity.ToolSelectionStrategy
 import ai.koog.agents.core.dsl.builder.node
 import ai.koog.agents.core.dsl.builder.strategy
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.TimeoutCancellationException
 import org.slf4j.LoggerFactory
 
 /**
@@ -89,7 +91,8 @@ class VibecodingGraph(
     val sessionRepository: SessionRepository? = null,
     val connectionFactory: ConnectionFactory? = null,
     val tokenTracker: TokenTracker = TokenTracker(),
-    val stepVerifier: StepVerifier = StepVerifier(llmProvider, tokenTracker),
+    val llmTimeoutMs: Long = DEFAULT_LLM_TIMEOUT_MS,
+    val stepVerifier: StepVerifier = StepVerifier(llmProvider, tokenTracker, llmTimeoutMs),
     val rollbackExecutor: RollbackStrategyExecutor? = null,
     val taskSchemas: List<TaskSchema> = emptyList(),
     val autofocusClassifier: AutofocusClassifier = AutofocusClassifier,
@@ -278,30 +281,39 @@ class VibecodingGraph(
                     eventStream?.error(state.iteration, state.error)
                     // Z-5 Autofocus : zoom-in sur erreur pour contexte chirurgical
                     state = zoomInOnError(state)
-                    if (state.retryCount < state.maxRetries) {
+                    state = state.incrementRetry()
+                    if (state.retryCount <= state.maxRetries) {
                         log.info("[VibecodingGraph] Retry ${state.retryCount}/${state.maxRetries} after: {}", state.error)
                         eventStream?.thinking(state.iteration, "Replanning after error (retry ${state.retryCount}/${state.maxRetries})")
                         if (llmProvider != null) {
                             val replanPrompt = buildReplanPrompt(state)
                             tokenTracker.trackPrompt(replanPrompt)
                             try {
-                                val replanResponse = runBlocking { llmProvider.call(replanPrompt) }
+                                val replanResponse = runBlocking {
+                                    withTimeout(llmTimeoutMs) { llmProvider.call(replanPrompt) }
+                                }
                                 tokenTracker.trackCompletion(replanResponse)
                                 log.info("[VibecodingGraph] Replan response: {} chars", replanResponse.length)
-                                state = state.clearError().incrementRetry().nextIteration().copy(
+                                state = state.clearError().nextIteration().copy(
                                     lastToolResult = "Replan: $replanResponse"
                                 )
                                 state = popFocusNode(state)
+                            } catch (e: TimeoutCancellationException) {
+                                log.warn("[VibecodingGraph] Replan LLM call timed out after {}ms", llmTimeoutMs)
+                                eventStream?.error(state.iteration, "Replan LLM timeout: ${llmTimeoutMs}ms")
+                                state = state.clearError().nextIteration().copy(
+                                    lastToolResult = "LLMTimeout: ${llmTimeoutMs}ms exceeded"
+                                )
                             } catch (e: Exception) {
                                 log.warn("[VibecodingGraph] Replan LLM call failed: {}", e.message)
                                 eventStream?.error(state.iteration, "Replan failed: ${e.message}")
-                                state = state.incrementRetry()
+                                state = state.clearError().nextIteration()
                             }
                         } else {
                             log.info("[VibecodingGraph] No LLM — retry ${state.retryCount}/${state.maxRetries}, continuing")
-                            state = state.clearError().incrementRetry().nextIteration()
+                            state = state.clearError().nextIteration()
                         }
-                        if (state.error != null && state.retryCount >= state.maxRetries) {
+                        if (state.retryCount >= state.maxRetries) {
                             log.warn("[VibecodingGraph] maxRetries (${state.maxRetries}) exhausted")
                             state = executeRollbackStrategy(state)
                             if (state.finished || state.error != null) return state
@@ -333,6 +345,8 @@ class VibecodingGraph(
     // === Companion — helpers statiques ===
 
     companion object {
+        const val DEFAULT_LLM_TIMEOUT_MS: Long = 30_000L
+
         /**
          * Reconstruit un [VibecodingState] depuis un [SessionRecord]
          * pour reprendre une session interrompue (--resume).
@@ -410,13 +424,18 @@ class VibecodingGraph(
         tokenTracker.trackPrompt(prompt)
 
         return try {
-            val response = runBlocking { llmProvider.call(prompt) }
+            val response = runBlocking {
+                withTimeout(llmTimeoutMs) { llmProvider.call(prompt) }
+            }
             tokenTracker.trackCompletion(response)
             log.info("[VibecodingGraph] LLM response: {} chars, first 80: {}", response.length, response.take(80))
 
             state.nextIteration().copy(
                 lastToolResult = "LLM decided: $response"
             )
+        } catch (e: TimeoutCancellationException) {
+            log.warn("[VibecodingGraph] LLM call timed out after {}ms", llmTimeoutMs)
+            state.withError("LLMTimeout: ${llmTimeoutMs}ms exceeded")
         } catch (e: Exception) {
             log.warn("[VibecodingGraph] LLM call failed: {}", e.message)
             state.withError("LLMCallFailed: ${e.message}")
@@ -584,7 +603,6 @@ class VibecodingGraph(
                     lastToolResult = result,
                     currentTaskDescription = task.description,
                     error = "TaskFailed: ${result.take(200)}",
-                    retryCount = state.retryCount + 1,
                     finished = false
                 )
             } else {
@@ -599,9 +617,7 @@ class VibecodingGraph(
             state.nextIteration().copy(
                 lastToolResult = "Failed: ${e.message}",
                 currentTaskDescription = task.description,
-                // V-6: erreur récupérable — ne termine pas la session
                 error = "TaskFailed: ${e.message}",
-                retryCount = state.retryCount + 1,
                 finished = false
             )
         }

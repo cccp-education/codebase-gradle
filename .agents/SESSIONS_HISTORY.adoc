@@ -2,6 +2,17 @@
 :toc: left
 :icons: font
 
+== Session 187 — 2026-08-17
+
+* **EPICs** : EPIC VIBE-HARDENING (US-3+US-4+US-5 — clôture EPIC 6/6 US)
+* **Livrables** :
+** US-3 C5 Timeout LLM : `withTimeout(llmTimeoutMs)` sur 3 sites `runBlocking { llmProvider.call }` (callLLMNode L413, error recovery replan L288, StepVerifier L44) + constructor param `llmTimeoutMs: Long = DEFAULT_LLM_TIMEOUT_MS = 30_000L` (VibecodingGraph + StepVerifier, propagation via default param — `llmTimeoutMs` déplacé AVANT `stepVerifier` pour résoudre référence circulaire) + catch `TimeoutCancellationException` → `withError("LLMTimeout: ${ms}ms exceeded")` (callLLMNode terminal) / `clearError().nextIteration().copy(lastToolResult="LLMTimeout...")` (replan récupérable) / `lastToolResult="LLMTimeout..."` (StepVerifier). Imports `kotlinx.coroutines.withTimeout` + `TimeoutCancellationException`.
+** US-4 C2 Retry single counter : supprimé `retryCount = state.retryCount + 1` dans `executePlanTasks` (2 sites L587 isFailure + L604 catch) + `incrementRetry()` consolidé en début de bloc error recovery (après zoomInOnError, avant vérification `retryCount <= maxRetries`) + supprimé 3 `incrementRetry()` dans branches replan (L291, L298, L302). Source de vérité unique : retryCount incrémenté une seule fois par essai.
+** US-5 Cucumber BDD : `codebase_vibe_hardening.feature` 4 scénarios `@vibe-hardening` (shell allowlist deny, gradle allowlist allow, LLM timeout, retry single counter) + `VibeHardeningWorld` (PicoContainer world) + `VibeHardeningSteps` (14 step defs préfixés "vibe hardening" — bug S-088 DuplicateStepDefinition évité) + `VibeHardeningCucumberRunner` (pattern S-082, filter `@vibe-hardening and not @integration`) + `CucumberTaskSpec("cucumberTestVibeHardening")` 37e cucumber dédié.
+* **Tests** : gate `codebase.koog.tools.*` + VibecodingGraph + StepVerifier VERT 64 tests 0 FAIL (17 ExecShellTool + 15 ExecGradleTool + 22 VibecodingGraph + 10 StepVerifier) + 4/4 cucumber `cucumberTestVibeHardening` PASSED en 47s. +7 unit (3 StepVerifier timeout + 4 VibecodingGraph timeout) + 1 unit US-4 retry counter.
+* **Build** : `compileTestKotlin` VERT, zéro bump BOM, zéro secret, zéro régression
+* **Score** : 9/10
+
 == Session 186 — 2026-08-17
 
 * **EPICs** : EPIC VIBE-HARDENING (US-2 ExecGradleTool allowlist)

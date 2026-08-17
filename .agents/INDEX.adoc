@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-08-17
-*Version* : 0.0.8 (Maven Central, S-183). EPIC VIBE-HARDENING 2/6 US (US-0 ✅ S-184, US-1 ✅ S-185, US-2 ✅ S-186 ExecGradleTool allowlist — gate `codebase.koog.tools.*` VERT 32 tests). Borough DORMANT (réveillé sur déclencheur pilote EPIC VIBE-HARDENING).
+*Version* : 0.0.8 (Maven Central, S-183). EPIC VIBE-HARDENING TERMINÉ 6/6 US (US-0 ✅ S-184, US-1 ✅ S-185, US-2 ✅ S-186, US-3 ✅ S-187 timeout LLM withTimeout 30s, US-4 ✅ S-187 retry single counter, US-5 ✅ S-187 Cucumber BDD 4 scénarios). Gate `codebase.koog.tools.*` VERT 64 tests + 4/4 cucumber PASSED. Borough DORMANT.
 
 == Regles Absolues
 
@@ -56,6 +56,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 184 — EPIC VIBE-HARDENING US-0 cadrage (gouvernance pure, zéro code). 3 constats P1 audités (S1 blacklists bypassables, C2 retry double-compté, C5 LLM sans timeout) + 7 rappels P2/P3 + 10 décisions architecturales. Document `CADRAGE_EPIC_VIBE_HARDENING.adoc`. 6 US ~12 pts découpees. Pattern S-057/S-063.
 | ✅ | Session 185 — EPIC VIBE-HARDENING US-1 ExecShellTool allowlist. 10 regex `BASH_BLACKLIST` remplacées par `SHELL_ALLOWLIST` (10 patterns) + `SHELL_DENYLIST` (10 patterns second ride). `validateCommand` allowlist deny-by-default + deny-list second ride. `ExecShellToolTest` 11→17 tests. Gate `codebase.koog.tools.*` VERT 21 tests + `ToolRegistryTest` 8/8 non-régression. Zéro bump BOM.
 | ✅ | Session 186 — EPIC VIBE-HARDENING US-2 ExecGradleTool allowlist. 4 regex `GRADLE_BLACKLIST` remplacées par `GRADLE_TASK_ALLOWLIST` (bare tasks + project:task) + `GRADLE_ARG_ALLOWLIST` (-Pprop + --flag) + `GRADLE_DENYLIST` (8 patterns second ride : clean build, --refresh-dependencies, rm, delete, sudo, curl, ;, |). `validateGradleTask` split tokens + allowlist par position. `ExecGradleToolTest` 6→17 tests (15/15 PASSED). Gate `codebase.koog.tools.*` VERT 32 tests + `ToolRegistryTest` 8/8 non-régression. Zéro bump BOM.
+| ✅ | Session 187 — EPIC VIBE-HARDENING TERMINÉ 6/6 US (US-3+US-4+US-5 en 1 session, pattern S-113). US-3 C5 Timeout LLM : `withTimeout(llmTimeoutMs)` sur 3 sites `runBlocking { llmProvider.call }` (callLLMNode, error recovery replan, StepVerifier) + constructor param `llmTimeoutMs: Long = 30_000L` (VibecodingGraph + StepVerifier, propagation via default param) + catch `TimeoutCancellationException` → error/lastToolResult "LLMTimeout: ${ms}ms exceeded". US-4 C2 Retry single counter : supprimé `retryCount = state.retryCount + 1` dans executePlanTasks (2 sites) + `incrementRetry()` consolidé en début de bloc error recovery (1 incrément par essai au lieu de 2). US-5 Cucumber BDD : `codebase_vibe_hardening.feature` 4 scénarios `@vibe-hardening` + `VibeHardeningWorld` + `VibeHardeningSteps` (14 step defs préfixés "vibe hardening", bug S-088) + `VibeHardeningCucumberRunner` (pattern S-082) + `CucumberTaskSpec("cucumberTestVibeHardening")` 37e. Gate `codebase.koog.tools.*` + VibecodingGraph + StepVerifier VERT 64 tests 0 FAIL (17 ExecShellTool + 15 ExecGradleTool + 22 VibecodingGraph + 10 StepVerifier) + 4/4 cucumber PASSED. Zéro bump BOM, zéro secret, zéro régression.
 
 === EPICs & Projects
 
@@ -81,6 +82,6 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | EPIC TRAD | TranslationService cross-borough (contrat N0 + impl N1) | N1 | ✅ TERMINÉ (baby-step, débloque bakery US-4) | 133
 | EPIC V-6-POOL | Adaptation Ollama Cloud Pool pour Vibecoding | N1 | ✅ TERMINÉ (4/4 items — AUTHORIZED_MODELS aligné sur AGENTS.adoc 2 modèles, LlmProviderResolver cycling, Cucumber epic_v6_pool) | 077, 158
 | EPIC C-BOM-FIX | POM transitif versions manquantes | NX | ✅ TERMINÉ (3/3 US, 8/8 pts — versions explicites dans libs.versions.toml, bump 0.0.6, 22/22 UT bakery LangSwitch GREEN) | 172
-| EPIC VIBE-HARDENING | Durcissement vibecoding (CR-GLOBALE-004) | N1 | 🟡 EN COURS (US-0 ✅ S-184, US-1 ✅ S-185, US-2 ✅ S-186, US-3→5 À FAIRE ~7 pts) | 184-186
+| EPIC VIBE-HARDENING | Durcissement vibecoding (CR-GLOBALE-004) | N1 | ✅ TERMINÉ (6/6 US — US-0 cadrage S-184, US-1 shell allowlist S-185, US-2 gradle allowlist S-186, US-3 timeout LLM S-187, US-4 retry single counter S-187, US-5 cucumber BDD S-187) | 184-187
 | EPIC 1 | Init gouvernance agent | NX | ✅ TERMINÉ (items stale purgés session 169) | 001
 |===

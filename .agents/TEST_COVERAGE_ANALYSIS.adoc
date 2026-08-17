@@ -145,3 +145,19 @@
 ** `ExecGradleToolTest.kt` (6→17 tests) : 5 allowlist pass + 9 deny-list/deny-by-default + 2 @integration préservés + 1 backward compat.
 * *Résultats* : 15/15 ExecGradleToolTest PASSED (2 @integration exclus). Gate `codebase.koog.tools.*` VERT 32 tests (ExecShellToolTest 17 + ExecGradleToolTest 15). `ToolRegistryTest` 8/8 non-régression.
 * *Pattern* : US-1 mirroré (allowlist deny-by-default + deny-list second ride, YAGNI 2 tools).
+
+=== Session 187 — EPIC VIBE-HARDENING US-3+US-4+US-5 (clôture EPIC 6/6 US)
+
+* *Fichiers modifiés* :
+** `StepVerifier.kt` (99→115 lignes) : constructor param `llmTimeoutMs: Long = DEFAULT_LLM_TIMEOUT_MS` + companion `DEFAULT_LLM_TIMEOUT_MS = 30_000L` + `withTimeout(llmTimeoutMs)` sur site replan L44 + catch `TimeoutCancellationException` → `lastToolResult = "LLMTimeout: ${ms}ms exceeded"`. Imports `withTimeout` + `TimeoutCancellationException`.
+** `VibecodingGraph.kt` (782→795 lignes) : constructor param `llmTimeoutMs: Long = DEFAULT_LLM_TIMEOUT_MS` (déplacé AVANT `stepVerifier` pour default param propagation) + companion `DEFAULT_LLM_TIMEOUT_MS = 30_000L` + `withTimeout(llmTimeoutMs)` sur 2 sites (callLLMNode L413 → `withError("LLMTimeout...")` terminal, error recovery replan L288 → `clearError().nextIteration().copy(lastToolResult="LLMTimeout...")` récupérable) + catch `TimeoutCancellationException`. US-4 : supprimé `retryCount = state.retryCount + 1` dans `executePlanTasks` (2 sites) + `incrementRetry()` consolidé en début de bloc error recovery + supprimé 3 `incrementRetry()` dans branches replan. Imports `withTimeout` + `TimeoutCancellationException`.
+** `StepVerifierTest.kt` (109→165 lignes) : +3 tests (timeout 50ms avec slowLlm delay 10s, fast LLM within 5s, default 30s constant). Import `kotlinx.coroutines.delay`.
+** `VibecodingGraphTest.kt` (467→612 lignes) : +6 tests (constructor param default 30s, custom 5s, callLLMNode timeout → error LLMTimeout, fast LLM OK, replan ne hang pas, retryCount single increment maxRetries=2). Imports `LlmProvider` + `delay`.
+* *Fichiers créés* :
+** `codebase_vibe_hardening.feature` (28 lignes) : 4 scénarios `@vibe-hardening` (shell allowlist deny, gradle allowlist allow, LLM timeout, retry single counter) + Background.
+** `VibeHardeningWorld.kt` (25 lignes) : world PicoContainer (resultState, graph, shell/gradle validation exceptions, slowLlmProvider, fakeLlmProvider).
+** `VibeHardeningSteps.kt` (131 lignes) : 14 step defs préfixés "vibe hardening" (bug S-088 DuplicateStepDefinition évité avec VibecodingSteps glue partagée `codebase.scenarios`).
+** `VibeHardeningCucumberRunner.kt` (17 lignes) : runner dédié pattern S-082 (filter `@vibe-hardening and not @integration`).
+** `build.gradle.kts` : `CucumberTaskSpec("cucumberTestVibeHardening")` 37e cucumber dédié câblé.
+* *Résultats* : gate `codebase.koog.tools.*` + VibecodingGraph + StepVerifier VERT 64 tests 0 FAIL (17 ExecShellTool + 15 ExecGradleTool + 22 VibecodingGraph + 10 StepVerifier) + 4/4 cucumber `cucumberTestVibeHardening` PASSED en 47s. +8 unit (3 StepVerifier + 5 VibecodingGraph) + 1 unit US-4 retry counter.
+* *Pattern* : 3 US en 1 session (pattern S-113 capsule), baby-step TDD/BDD strict RED → GREEN → REFACTOR, gate ciblé (pas de `./gradlew test` global).

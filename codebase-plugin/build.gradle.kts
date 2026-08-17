@@ -180,6 +180,7 @@ val cucumberTaskSpecs = listOf(
     CucumberTaskSpec("cucumberTestEpicV920", "Runs Cucumber BDD tests — EPIC V-9.20 (Chunk diff incremental between sessions) only", "codebase.scenarios.EpicV920CucumberRunner"),
     CucumberTaskSpec("cucumberTestEpicSld8", "Runs Cucumber BDD tests — EPIC SLD-8 US-8.1 (LlmBuildService Gradle bridge) only", "codebase.scenarios.EpicSld8LlmServiceCucumberRunner"),
     CucumberTaskSpec("cucumberTestSubgraph", "Runs Cucumber BDD tests — EPIC SUBGRAPH (real Graphify subgraph in augmented context) only", "codebase.scenarios.SubgraphCucumberRunner"),
+    CucumberTaskSpec("cucumberTestVibeHardening", "Runs Cucumber BDD tests — EPIC VIBE-HARDENING (allowlist deny-by-default, LLM timeout, single retry counter) only", "codebase.scenarios.VibeHardeningCucumberRunner"),
 )
 
 val cucumberTasks = cucumberTaskSpecs.map { registerCucumberTask(it) }
