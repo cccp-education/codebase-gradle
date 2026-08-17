@@ -1,4 +1,4 @@
-= Session 188 — Maintenance + Cross-borough Audit + Cadrage EPIC VIBE-HARDENING-2
+= Session 188 — Maintenance + Cross-borough + Cadrage 2 EPICs (VIBE-HARDENING-2 + FT-PIPELINE) + Propagation 5 boroughs
 :sectnums:
 :date: 2026-08-17
 :borough: Queens — codebase-gradle (N1)
@@ -180,6 +180,39 @@ Découvertes hors scope codebase (signalées, non corrigées) :
 * **Bug capsule** : référençait `codebase-contracts:0.1.0` (version locale
   ~/.m2 jamais publiée Central) — corrigé vers 0.0.2 (Central latest).
 
+=== Phase 5 — Cadrage EPIC FT-PIPELINE (gouvernance pure)
+
+Pilote a demandé de vérifier l'alignement backlog/roadmap codebase avec la
+vision globale `~/workspace`. Audit révélé : la vision
+`WORKSPACE_AS_PRODUCT.adoc:642-658` assigne à codebase la propriété du
+**pipeline de fine-tuning** des experts CDA/FPA. Or EPIC 5 a été migré vers
+training-gradle TRN-8 (`❌ À FAIRE`) qui mélange pipeline N1 (générique) et
+experts N2 (métier). Pilote a confirmé : le pipeline de fine-tuning doit
+être inclus dans codebase (N1 générique), training-gradle garde les recettes
+spécifiques CDA/FPA (N2 métier).
+
+Pilote a suggéré récupérer le travail de notebook-gradle (LA HAVANA, vestige).
+Audit notebook-gradle : cadrage 424 lignes (`ARCHITECTURE.adoc`), backlog
+8 EPICs, zéro code source. Récupérable :
+
+* Vision fine-tuning (ARCHITECTURE.adoc:319) — contrat fonctionnel exact
+* Cycle TDD IA (décision/génération/évaluation) — pattern koog
+* Contexte augmenté persistant — déjà implémenté (EPIC SUBGRAPH)
+* Ollama décideur + gros modèle API — déjà implémenté (LlmBuildService)
+* BYOK — déjà implémenté (api-key-pool N0)
+
+Non récupérable : runtime Colab (client), cockpit Sheets/GAS (observabilité).
+
+Audit codebase existant : domaine `codebase.koog.expert` (13 fichiers) gère
+déjà l'**exposition** des experts (`ExpertExposureTask`, `ExpertRegistry`,
+`ExpertAgent`, `ExpertManifestReader`). Ce qui manque : la **fabrication**
+du modèle fine-tuné (dataset prep + continual pre-training + export GGUF +
+push Ollama). Le pipeline FT-PIPELINE boucle fabrication→exposition.
+
+Document `CADRAGE_EPIC_FT_PIPELINE.adoc` créé : 16 décisions archi,
+7 US ~18 pts. EPIC ajouté au BACKLOG (section détaillée) et à l'INDEX
+(table EPICs + ligne session 188 mise à jour).
+
 == Commandes exécutées
 
 ----
@@ -199,14 +232,17 @@ cd codebase-plugin && ./gradlew compileKotlin --offline -q
 
 * 4 fichiers gouvernance mis à jour (INDEX, BACKLOG, SESSIONS_HISTORY,
   PROMPT_REPRISE).
-* 1 document de cadrage créé (`CADRAGE_EPIC_VIBE_HARDENING_2.adoc`).
+* 2 documents de cadrage créés (`CADRAGE_EPIC_VIBE_HARDENING_2.adoc` +
+  `CADRAGE_EPIC_FT_PIPELINE.adoc`).
 * 5 boroughs consommateurs bumpés (planner, slider, capsule, codex,
   training) — 4 compilent VERT, codex fail préexistant hors scope.
 * 3 bugs découverts signalés (MEMPHIS slider 0.0.8, ABIDJAN codex
   kotlin-stdlib, capsule codebase-contracts 0.1.0).
+* 2 EPICs cadrés : VIBE-HARDENING-2 (8 US ~21 pts) + FT-PIPELINE
+  (7 US ~18 pts, source notebook-gradle récupérée).
+* Audit alignement vision globale : gap fine-tuning identifié et cadré.
 * Zéro fichier de production codebase modifié — gouvernance pure + bump
   catalogues consommateurs.
-* EPIC VIBE-HARDENING-2 cadré (8 US ~21 pts, prêt à démarrer).
 * Borough DORMANT maintenu.
 
 == Leçons
@@ -214,35 +250,49 @@ cd codebase-plugin && ./gradlew compileKotlin --offline -q
 * La gouvernance interne `codebase-plugin/.agents/` se désynchronise
   facilement de l'INDEX racine `codebase-gradle/.agents/INDEX.adoc` quand
   les sessions s'enchaînent (S-186/187 non propagées). Double source de
-  vérité = risque de drift. L'INDEX racine était à jour (S-187), l'INDEX
-  plugin en retard (S-185).
+  vérité = risque de drift.
+* **Vision vs réalité** : `WORKSPACE_AS_PRODUCT.adoc:642-658` assigne à
+  codebase le pipeline de fine-tuning, mais l'EPIC 5 a été migré vers
+  training-gradle TRN-8 qui mélange pipeline N1 (générique) et experts N2
+  (métier). La coupure DDD propre est : codebase possède le pipeline
+  générique (fabrication), training possède les recettes spécifiques
+  (CDA/FPA). Cadré EPIC FT-PIPELINE pour corriger.
+* **Récupération vestige notebook-gradle** : un borough vestige (cadrage
+  sans code) peut servir de source de conception pour un EPIC d'un autre
+  borough. La conception est récupérable, pas le périmètre produit.
+  Pattern : auditer le vestige → identifier briques déjà implémentées
+  ailleurs → composer une spécification nouvelle.
+* **Domaine `codebase.koog.expert` déjà existant** (13 fichiers) gère
+  l'exposition des experts. Le pipeline FT-PIPELINE boucle
+  fabrication→exposition — réutilise l'existant au lieu de dupliquer.
 * Stale cosmétique dans les catalogues (alias `agent-contracts = "0.0.2"`
   dans BOM `libs.versions.toml` non référencé) est inoffensif mais
-  trompeur pour un audit futur. À nettoyer côté MEMPHIS si déclencheur.
+  trompeur pour un audit futur.
 * **BOM 0.0.19 référence slider:0.0.18 non publié** — bug MEMPHIS critique.
   Une BOM publiée Central ne doit pas référencer des artefacts non
-  publiés. Capsule protégé en gardant BOM 0.0.16, mais les boroughs qui
-  bumpent BOM 0.0.19 sans consommer slider sont OK (constraints BOM ne
-  résolvent que les deps effectivement demandées).
+  publiés.
 * **codex fail compile préexistant** — conflit kotlin-stdlib entre embedded
   Gradle (2.3.21) et conventions-plugin 0.0.2 (2.4.10). Hors scope bump
-  codebase. À traiter côté ABIDJAN (conventions-gradle).
+  codebase.
 * **capsule codebase-contracts 0.1.0** — version locale ~/.m2 jamais
-  publiée Central. Capsule ne buildait pas depuis un état propre. Corrigé
-  vers 0.0.2. Lesson : ne jamais dépendre d'une version non publiée.
+  publiée Central. Lesson : ne jamais dépendre d'une version non publiée.
 * C4 (flags GradleTaskArgsMapper) est un bug induit par US-2 (S-186) —
   l'allowlist deny-by-default a durci mais cassé les flags avec valeur.
   Pattern : durcissement → régression fonctionnelle → EPIC correctif.
 
 == Next steps
 
-* EPIC VIBE-HARDENING-2 CADRÉ, 8 US ~21 pts. Démarrage sur déclencheur pilote.
-* P2 prioritaires : US-1 (S2 allowlist tasks), US-2 (S3 garde taille),
-  US-3 (C4 flags cassés).
+* 2 EPICs CADRÉS prêts à démarrer sur déclencheur pilote :
+  - FT-PIPELINE (P0 vision, 7 US ~18 pts) — pipeline fine-tuning N1
+  - VIBE-HARDENING-2 (P2/P3, 8 US ~21 pts) — durcissement vibecoding
+* FT-PIPELINE US-1 : domaine `codebase.finetuning` (FineTuningRequest/
+  Result/Pipeline port/FakeFineTuner, ~8 unit 3 pts).
 * Cross-borough bugs à signaler :
   - MEMPHIS : BOM 0.0.19 référence slider 0.0.18 non publié (publier slider
     0.0.18 ou corriger BOM).
   - ABIDJAN : conventions-plugin 0.0.2 tire kotlin-stdlib 2.4.10 cassant
     codex (aligner sur embedded Gradle 2.3.21 ou monter Gradle).
+* TRN-8 training-gradle à reformuler en recettes N2 consommant FT-PIPELINE
+  (US-6 cross-borough, après US-1→5).
 * Pas de publication codebase requise (0.0.8 aligné Central).
 * Borough DORMANT.

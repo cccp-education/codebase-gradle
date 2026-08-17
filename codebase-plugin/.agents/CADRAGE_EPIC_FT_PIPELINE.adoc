@@ -1,0 +1,315 @@
+= CADRAGE EPIC FT-PIPELINE — Pipeline de Fine-Tuning N1 (Codebase Gradle)
+:sectnums:
+:date: 2026-08-17
+:borough: Queens — codebase-gradle (N1)
+:epic: FT-PIPELINE
+:methode: Cadrage (gouvernance pure, zéro code)
+:pattern: S-057/S-063/S-184 (cadrage pur)
+:source_conception: foundry/public/notebook-gradle/ARCHITECTURE.adoc (vestige — conception récupérée, zéro code)
+
+== Contexte
+
+La vision globale (`WORKSPACE_AS_PRODUCT.adoc:642-658`) assigne à
+codebase-gradle la propriété du **pipeline de fine-tuning** des experts
+spécialisés (CDA/FPA). Or l'EPIC 5 "Fine-tuning" historique a été migré vers
+training-gradle TRN-8 (`❌ À FAIRE`) — mais TRN-8 mélange deux natures
+distinctes :
+
+* **Pipeline N1** (générique, infrastructure) — la machinerie réutilisable
+  qui prend `(dataset, baseModel, outputModelName)` et produit un modèle
+  fine-tuné exposé via Ollama. Continual pre-training, validation,
+  publishing. Indépendante du domaine métier (CDA, FPA, ou autre).
+* **Experts N2** (métier, training-gradle) — les recettes spécifiques :
+  quels datasets (corpus AFNOR/REAC), quels modèles de base, quels noms
+  d'expert, la curation pédagogique Bloom/Qualiopi. Le "quoi" et "pourquoi".
+
+Cette séparation suit le pattern DDD déjà en place pour LLM/RAG/anonymisation :
+codebase possède `LlmBuildService` (pool générique N1), training/slider/codex
+l'appellent pour leurs besoins métier N2. Le pipeline de fine-tuning suit la
+même ligne — socle N1 générique, recettes métier N2.
+
+== Source de conception — notebook-gradle (récupération vestige)
+
+Le borough LA HAVANA (`notebook-gradle`) est un vestige jamais implémenté
+(cadrage 424 lignes, backlog 8 EPICs, zéro code source). Sa conception
+`ARCHITECTURE.adoc` contient la spécification fonctionnelle du pipeline FT,
+récupérable pour codebase.
+
+[cols="2,3,2]
+|===
+| Élément notebook-gradle | Récupérable pour FT-PIPELINE ? | Statut
+
+| Vision fine-tuning (ARCHITECTURE.adoc:319) — "Dataset → Fine-tune → GGUF → Ollama Cloud"
+| ✅ OUI — contrat fonctionnel exact du pipeline FT
+| Spécification
+
+| Cycle TDD IA (ARCHITECTURE.adoc:225-263) — décision/génération/évaluation via graphe itératif
+| ✅ OUI — pattern koog (KoogPlanningGraph déjà implémenté EPIC L)
+| Pattern
+
+| Contexte augmenté persistant (ARCHITECTURE.adoc:372-398) — conversation qui s'enrichit
+| ✅ DÉJÀ implémenté — EPIC SUBGRAPH TERMINÉ S-182 (AugmentedContext)
+| Briques existantes
+
+| Ollama décideur local + gros modèle API générateur (ARCHITECTURE.adoc:209-224)
+| ✅ DÉJÀ implémenté — LlmBuildService + pool rotation 11437-11465
+| Briques existantes
+
+| BYOK — Bring Your Own Key (ARCHITECTURE.adoc:282-290)
+| ✅ DÉJÀ implémenté — api-key-pool-gradle N0 (liquidé/published)
+| Briques existantes
+
+| Runtime Notebook Expert (Colab, ARCHITECTURE.adoc:157-162)
+| ❌ NON — runtime client, pas pipeline Gradle. Hors scope codebase
+| Non récupérable
+
+| Cockpit Google Sheets + GAS (ARCHITECTURE.adoc:164-182)
+| ❌ NON — métier observabilité dashboard, pas pipeline FT
+| Non récupérable
+
+| EPIC 2 logging Colab→Sheets / EPIC 3 GAS / EPIC 6 CSV / EPIC 8 dashboard
+| ❌ NON — métier observabilité, pas FT
+| Non récupérable
+|===
+
+**Conclusion récupération** : la *conception* du pipeline FT est récupérable
+depuis notebook-gradle, mais pas le *code* (zéro code existe — vestige).
+Les briques techniques sous-jacentes existent déjà dans codebase (koog,
+LlmBuildService, AugmentedContext, api-key-pool, domaine expert).
+Le pipeline FT-PIPELINE est une **composition nouvelle** de ces briques
+existantes, spécifiée par la vision notebook.
+
+== Audit — Briques existantes réutilisables
+
+=== Domaine `codebase.koog.expert` (13 fichiers)
+
+Le pipeline FT s'interface naturellement avec ce domaine. Il gère
+l'**exposition** des experts fine-tunés (modèle déjà enregistré dans Ollama,
+manifest JSON consommé par slider/plantuml/bakery).
+
+* `ExpertExposureTask` — tâche Gradle `exposeExperts`, génère manifest JSON
+* `ExpertRegistry` — registre runtime des experts (domain, modelName, baseUrl)
+* `ExpertAgent` — wrapper `OllamaChatModel` pour appels experts
+* `ExpertManifestReader` — lecture manifest côté consommateurs
+* `ExpertCallPipeline` / `ExpertCallRecord` / `ExpertCallRepository` —
+  pipeline d'appel + traçabilité
+* `ExpertContracts` / `ExpertDomain` / `ExpertExposureContracts` —
+  contrats N1
+
+**Ce qui manque** pour boucler le pipeline FT : la **création** du modèle
+fine-tuné (dataset prep + continual pre-training + export GGUF + push Ollama).
+L'exposition est déjà là, la fabrication non.
+
+=== Briques techniques existantes
+
+[cols="3,5,2]
+|===
+| Brique | Rôle dans FT-PIPELINE | Statut
+
+| `KoogPlanningGraph` (EPIC L TERMINÉ)
+| Pattern graphe itératif décision/génération/évaluation pour fine-tuning
+| ✅ Existant
+
+| `LlmBuildService` + pool rotation 11437-11465
+| Pool LLM — Ollama local décideur + gros modèle API générateur
+| ✅ Existant
+
+| `AugmentedContext` / `CompositeContext` (EPIC SUBGRAPH TERMINÉ S-182)
+| Contexte augmenté persistant — enrichissement itérations fine-tuning
+| ✅ Existant
+
+| `api-key-pool-gradle` (N0, liquidé/published)
+| BYOK — pool de clés API LLM avec rotation
+| ✅ Existant (N0)
+
+| `BenchmarkRunner.kt:195`
+| Référence méthode continual pre-training 10% corpus (ACL 2024 arXiv 2311.08545)
+| ✅ Existant (référence doc)
+
+| Domaine `codebase.koog.expert` (13 fichiers)
+| Exposition experts fine-tunés (manifest JSON, registre, appels)
+| ✅ Existant — moitié exposition
+
+| `FineTuningPipeline` (à créer)
+| Fabrication modèle fine-tuné (dataset prep + training + export GGUF + push Ollama)
+| ❌ À FAIRE
+|===
+
+== Décisions architecturales
+
+. **EPIC codebase-only** — pipeline FT générique N1, pas de code training.
+  Training-gradle TRN-8 reformulé en recettes N2 qui consomment le pipeline.
+
+. **Domaine `codebase.finetuning`** (nouveau, 7ème sous `codebase`) —
+  pipeline FT pur, Gradle-free, unit-testable, pattern `capsule.feed`/
+  `capsule.transcript` (domaine pur + port/adapter).
+
+. **`FineTuningPipeline`** — fun interface `fineTune(request): Result`
+  où `FineTuningRequest(baseModel, dataset, outputModelName, hyperparams)`.
+  Domaine Gradle-free, unit-testable avec fake.
+
+. **`OllamaFineTunerAdapter`** — adapter bridge Ollama API (create model
+  from Modelfile, push to registry). Pattern `ChatModelTranscriptEnhancer`
+  (port + adapter langchain4j/Ollama).
+
+. **Tâches Gradle** :
+  - `prepareFineTuningDataset` — groupe `finetuning`, assemble dataset
+    (corpus cible 10% + base model Modelfile)
+  - `fineTuneExpert` — groupe `finetuning`, exécute continual pre-training
+    via `FineTuningPipeline`, produit GGUF
+  - `publishExpertToOllama` — groupe `finetuning`, push GGUF vers Ollama
+    registry + register dans `ExpertRegistry` (boucle avec domaine expert
+    existant)
+
+. **Cycle itératif TDD IA** — pattern `KoogPlanningGraph` réutilisé :
+  `FineTuningGraph` (koog `strategy<FineTuningState, FineTuningState>`)
+  3 nœuds propose/train/validate + edges conditionnels (convergence score,
+  backtracking, maxIterations). Méthode `execute` séquentielle pattern
+  `KoogAugmentedContextGraph`.
+
+. **Continual pre-training 10% corpus** — méthode ACL 2024 arXiv 2311.08545
+  (déjà référencée `BenchmarkRunner.kt:195`). Hyperparamètre
+  `corpusRatio = 0.10` configurable, default backward compat.
+
+. **Contexte augmenté** — `AugmentedContext` (EPIC SUBGRAPH) consommé
+  pour enrichir les itérations : historique des fine-tunings précédents,
+  patterns d'erreur, scores de validation. Pattern notebook-gradle
+  "conversation persistante" (ARCHITECTURE.adoc:372-398).
+
+. **BYOK** — `api-key-pool-gradle` (N0) consommé pour les appels gros
+  modèle API. Ollama local gratuit pour décideur. Zéro coût Edster.cloud.
+
+. **Output GGUF + manifest** — fine-tune produit un modèle GGUF poussé
+  vers Ollama registry, puis enregistré dans `ExpertRegistry` (domaine
+  expert existant) + manifest JSON via `ExpertExposureTask` (boucle fermée
+  fabrication→exposition).
+
+. **Validation** — `ValidationResult` sealed (pattern `DeckContextValidator`
+  slider SLD-8.3) — score de qualité du modèle fine-tuné (perplexity,
+  human-eval, expert-eval). Seuil configurable, default backward compat.
+
+. **Zéro bump BOM** — pipeline FT consomme les contrats N0 existants
+  (agent-contracts 0.0.3, codebase-contracts 0.0.2). Pas de nouveau contrat
+  N0. Le domaine `codebase.finetuning` est interne N1.
+
+. **Pas de runtime Colab** — notebook-gradle concevait un runtime client
+  Colab. FT-PIPELINE s'exécute en CI/CD Gradle (GitHub Actions Docker +
+  Ollama), pas en notebook interactif. Le runtime Colab est hors scope
+  codebase — relèverait d'un futur borough runtime si besoin.
+
+. **Cucumber BDD** — `codebase_finetuning.feature` scénarios `@finetuning`
+  (runner dédié pattern S-082, `CucumberTaskSpec` 38e) :
+  - pipeline complet dataset→GGUF→manifest
+  - cycle itératif convergence/backtracking
+  - fallback degraded (Ollama unavailable → skip + warn)
+  - validation seuil
+  - BYOK pool rotation
+
+. **Budget tokens** — fine-tuning lourd (10% corpus, itérations). Pool
+  `LlmBuildService` rotation 11437-11465 (29 ports) + 2 modèles autorisés
+  (`gpt-oss:120b-cloud`, `gemma4:31b-cloud`). Pas de nouveau port/modèle.
+
+. **EPIC notebook-gradle caduque** — le vestige LA HAVANA n'est pas
+  implémenté et ne le sera pas. Sa conception est absorbée par FT-PIPELINE
+  (pipeline) + éventuel futur borough cockpit (dashboard). Le backlog
+  notebook-gradle (8 EPICs) est déclaré caduc — la spécification est
+  récupérée, pas le périmètre produit.
+
+. **TRN-8 reformulé** — training-gradle TRN-8 "Pipeline fine-tuning experts
+  CDA/FPA" devient "Recettes CDA/FPA consommant FT-PIPELINE". Les recettes
+  spécifient les datasets (corpus AFNOR/REAC), modèles de base, noms
+  d'expert, mais appellent `fineTuneExpert` de codebase. Dépendance N2→N1
+  propre.
+
+== US découpées (~18 pts)
+
+[cols="1,3,1,1]
+|===
+| US | Description | Tests | Pts
+
+| US-0
+| ✅ Cadrage EPIC (ce document) — 16 décisions, 7 US, source notebook
+| 0
+| 1
+
+| US-1
+| `FineTuningRequest` + `FineTuningResult` + `FineTuningPipeline` port +
+  `FakeFineTuner` (domaine `codebase.finetuning` créé, pattern
+  `TranscriptLlmEnhancer` port/fake). Invariants : baseModel non-blank,
+  dataset non-empty, outputModelName non-blank, corpusRatio 0.0..1.0
+  default 0.10.
+| ~8 unit
+| 3
+
+| US-2
+| `OllamaFineTunerAdapter` — adapter bridge Ollama API (create model from
+  Modelfile, push to registry). Pattern `ChatModelTranscriptEnhancer`.
+  Fallback degraded : Ollama unavailable → `FineTuningResult.failure`
+  (degraded garde dataset original, pas de crash).
+| ~6 unit
+| 3
+
+| US-3
+| `FineTuningGraph` — graphe koog `strategy<FineTuningState, FineTuningState>`
+  3 nœuds propose/train/validate + edges conditionnels (convergence score,
+  backtracking, maxIterations default 3). Méthode `execute` séquentielle
+  pattern `KoogAugmentedContextGraph`. `asMermaidDiagram()`.
+| ~12 unit
+| 4
+
+| US-4
+| Tâches Gradle `prepareFineTuningDataset` (groupe `finetuning`) +
+  `fineTuneExpert` (groupe `finetuning`, dependsOn prepare) +
+  `publishExpertToOllama` (groupe `finetuning`, dependsOn fineTune,
+  register dans `ExpertRegistry` + manifest JSON via `ExpertExposureTask`).
+  Extension `fineTuning { baseModel; dataset; outputModelName;
+  corpusRatio; maxIterations }` 4 sources DSL (pattern `CapsuleConfig`).
+| ~10 unit + 2 functional
+| 4
+
+| US-5
+| Cucumber BDD `codebase_finetuning.feature` 4 scénarios `@finetuning`
+  (pipeline complet, cycle itératif convergence, fallback Ollama
+  unavailable, validation seuil). Runner dédié `FineTuningCucumberRunner`
+  (pattern S-082) + `CucumberTaskSpec("cucumberTestFineTuning")` 38e.
+| 4 scénarios
+| 2
+
+| US-6
+| Cross-borough wiring — training-gradle TRN-8 reformulé en recettes
+  CDA/FPA consommant `fineTuneExpert` de codebase. Dépendance N2→N1
+  propre (training appelle codebase pipeline, spécifie datasets/modèles).
+  Documentation mise à jour (INDEX/BACKLOG training + codebase).
+| 0 (gouvernance)
+| 1
+|===
+
+== Dépendances
+
+* Aucune dépendance externe nouvelle — réutilise koog 1.0.0, langchain4j
+  1.16.3, Ollama API, api-key-pool N0.
+* Dépendance interne : domaine `codebase.koog.expert` (exposition) —
+  `publishExpertToOllama` enregistre dans `ExpertRegistry` + manifest via
+  `ExpertExposureTask` existant.
+* Zéro bump BOM — contrats N0 existants suffisants.
+
+== Ordre d'exécution
+
+US-0 (cadrage ✅) → US-1 (domaine pur) → US-2 (adapter Ollama) →
+US-3 (graphe koog itératif) → US-4 (tâches Gradle + extension) →
+US-5 (Cucumber BDD) → US-6 (cross-borough training-gradle TRN-8 reformulé).
+
+Baby-step TDD/BDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois,
+séquentiel pur. Gate ciblé : `./gradlew test --tests "codebase.finetuning.*"`
+(pas de `./gradlew test` global — Cucumber interminable, pratique canonique
+S175/S179).
+
+== Références croisées
+
+* `WORKSPACE_AS_PRODUCT.adoc:642-658` — vision codebase propriétaire pipeline FT
+* `foundry/public/notebook-gradle/ARCHITECTURE.adoc` — source de conception (vestige)
+* `foundry/public/notebook-gradle/BACKLOG.adoc` — 8 EPICs (caducs, conception absorbée)
+* `foundry/public/codebase-gradle/codebase-plugin/src/main/kotlin/codebase/koog/expert/` — domaine expert (exposition, 13 fichiers)
+* `foundry/public/codebase-gradle/codebase-plugin/src/main/kotlin/codebase/benchmark/BenchmarkRunner.kt:195` — référence méthode ACL 2024
+* `foundry/private/training-gradle/training-plugin/.agents/INDEX.adoc:9` — TRN-8 à reformuler
+* `CADRAGE_EPIC_VIBE_HARDENING.adoc` / `CADRAGE_EPIC_VIBE_HARDENING_2.adoc` — pattern cadrage pur

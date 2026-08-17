@@ -1,53 +1,48 @@
 = Prompt de Reprise — Codebase (Queens N1) — Session 189
 :session: 189
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 188 — Maintenance + cross-borough audit + cadrage EPIC VIBE-HARDENING-2 + propagation 5 boroughs (planner/slider/capsule/codex/training bumpés codebase 0.0.8, 4 compileKotlin VERT codex fail préexistant hors scope). 3 bugs découverts signalés (MEMPHIS BOM 0.0.19 slider 0.0.8 non publié, ABIDJAN codex kotlin-stdlib, capsule codebase-contracts 0.1.0 local-only corrigé). EPIC VIBE-HARDENING-2 CADRÉ 8 US ~21 pts. Borough DORMANT.
+:session_precedente: 188 — Maintenance + cross-borough + cadrage 2 EPICs (VIBE-HARDENING-2 8 US ~21 pts, FT-PIPELINE 7 US ~18 pts) + propagation 5 boroughs codebase 0.0.8. 3 bugs découverts signalés (MEMPHIS slider 0.0.8, ABIDJAN codex kotlin-stdlib, capsule contracts 0.1.0). Borough DORMANT.
 
 == Mission Session 189
 
-EPIC VIBE-HARDENING-2 est cadré (8 US ~21 pts) et prêt à démarrer
-sur déclencheur pilote. Borough DORMANT.
+Deux EPICs cadrés prêts à démarrer sur déclencheur pilote. Borough DORMANT.
+Choix entre FT-PIPELINE (P0 vision) ou VIBE-HARDENING-2 (P2/P3 hardening).
 
-=== Phase 1 — EPIC VIBE-HARDENING-2 US-1 (S2 Allowlist TaskDiscoveryRegistrar)
+=== Option A — EPIC FT-PIPELINE US-1 (P0 vision)
 
-`TaskDiscoveryRegistrar` auto-registration libre `gradle_*` sans allowlist
-(publication accidentelle possible). Ajouter `TASK_DISCOVERY_ALLOWLIST`
-(2 patterns : bare tasks + project:task) + deny-list second ride, pattern
-US-1/US-2 VIBE-HARDENING (ExecShellTool/ExecGradleTool).
+Pipeline de fine-tuning N1 générique — fabrication modèle fine-tuné.
+Source de conception : notebook-gradle ARCHITECTURE.adoc (vestige récupéré).
+Boucle fabrication→exposition avec domaine `codebase.koog.expert` existant.
+
+US-1 : `FineTuningRequest` + `FineTuningResult` + `FineTuningPipeline` port +
+`FakeFineTuner` (domaine `codebase.finetuning` créé, 7ème sous `codebase`).
+Pattern `TranscriptLlmEnhancer` port/fake. Invariants : baseModel non-blank,
+dataset non-empty, outputModelName non-blank, corpusRatio 0.0..1.0 default 0.10.
 
 * Baby-step TDD strict (RED → GREEN → REFACTOR).
-* Gate ciblé : `./gradlew test --tests "codebase.koog.discovery.*"`
-  (pas de `./gradlew test` global — Cucumber interminable).
-* ~8 unit, 4 pts.
+* Gate ciblé : `./gradlew test --tests "codebase.finetuning.*"`.
+* ~8 unit, 3 pts.
+* Document : `.agents/CADRAGE_EPIC_FT_PIPELINE.adoc`.
 
-=== Phase 2 — EPIC VIBE-HARDENING-2 US-2 (S3 Garde taille write/edit)
+=== Option B — EPIC VIBE-HARDENING-2 US-1 (P2/P3 hardening)
 
-`ToolRegistry.kt:125/138` `write_file`/`edit_file` sans garde de taille
-(OOM potentiel — `read_file` a déjà `MAX_OUTPUT_CHARS` L117). Ajouter
-`MAX_WRITE_CHARS` 1MB + validation avant exécution.
-
-* Baby-step TDD strict.
-* Gate ciblé : `./gradlew test --tests "contracts.vibecoding.tools.*"`.
-* ~4 unit, 2 pts.
-
-=== Phase 3 — EPIC VIBE-HARDENING-2 US-3 (C4 Flags GradleTaskArgsMapper)
-
-`GradleTaskArgsMapper.kt:18` flags `--key value` cassés vs
-`GRADLE_ARG_ALLOWLIST` US-2 (S-186) `--\w+` (value rejeté deny-by-default).
-Fix pattern flags avec valeur.
+US-1 S2 Allowlist TaskDiscoveryRegistrar — auto-registration libre `gradle_*`
+sans allowlist. Pattern US-1/US-2 VIBE-HARDENING (ExecShellTool/ExecGradleTool).
 
 * Baby-step TDD strict.
 * Gate ciblé : `./gradlew test --tests "codebase.koog.discovery.*"`.
-* ~6 unit, 3 pts.
+* ~8 unit, 4 pts.
+* Document : `.agents/CADRAGE_EPIC_VIBE_HARDENING_2.adoc`.
 
 === Backlog restant (sur déclencheur pilote)
 
-* US-4 C1 TaskResultVerifier refonte expectedOutput comparison + failed raffiné
-  (~10 unit, 4 pts).
-* US-5 C3 Cleanup doc INSERT-X1..X6 (0 test, 1 pt).
-* US-6 C7 coerceAtLeast(0) remaining tasks (~1 unit, 1 pt).
-* US-7 C6 Extraction SessionProtocolEngine (~8 unit non-régression, 4 pts).
-* US-8 Cucumber BDD codebase_vibe_hardening_2.feature (~4 scénarios, 2 pts).
+FT-PIPELINE : US-2 OllamaFineTunerAdapter (3 pts) → US-3 FineTuningGraph koog
+(4 pts) → US-4 tâches Gradle (4 pts) → US-5 Cucumber BDD (2 pts) → US-6
+cross-borough training TRN-8 reformulé (1 pt).
+
+VIBE-HARDENING-2 : US-2 S3 garde taille (2 pts) → US-3 C4 flags (3 pts) →
+US-4 C1 TaskResultVerifier (4 pts) → US-5 C3 cleanup (1 pt) → US-6 C7 (1 pt)
+→ US-7 C6 SessionProtocol (4 pts) → US-8 Cucumber (2 pts).
 
 == Contexte technique
 

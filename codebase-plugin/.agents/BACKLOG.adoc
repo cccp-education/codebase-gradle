@@ -1,17 +1,18 @@
 = BACKLOG — Codebase Gradle
 :toc:
-:last_update: 2026-08-17 (Session 188 — Maintenance synchronisation post-VIBE-HARDENING)
+:last_update: 2026-08-17 (Session 188 — Maintenance + cross-borough + VIBE-HARDENING-2 cadrage + FT-PIPELINE cadrage)
 
 == Statut Global
 
 **EPIC VIBE-HARDENING ✅ TERMINÉ (6/6 — S184-S187)** — durcissement vibecoding P1 (S1 allowlist shell + gradle, C2 retry single counter, C5 timeout LLM, Cucumber BDD). **EPIC PUB (bump 0.0.8) ✅ TERMINÉ (S183)**. **EPIC SUBGRAPH ✅ TERMINÉ (4/4 — S182)** — contexte augmenté Graphify réel. Le reste du backlog est dormant :
 
+. *EPIC FT-PIPELINE* (P0 vision) — 🟡 CADRÉ (S-188, 7 US ~18 pts) — pipeline de fine-tuning N1 générique (fabrication modèle : dataset prep + continual pre-training 10% corpus + export GGUF + push Ollama). Source de conception : notebook-gradle ARCHITECTURE.adoc (vestige récupéré). Domaine `codebase.finetuning` (7ème). Boucle fabrication→exposition avec domaine `codebase.koog.expert` existant (13 fichiers). TRN-8 training reformulé en recettes N2 consommant le pipeline. Cadrage pur, zéro code. Pas d'exécution sans déclencheur pilote.
 . *EPIC VIBE-HARDENING-2* (P2/P3) — 🟡 CADRÉ (S-188, 8 US ~21 pts) — durcissement vibecoding P2/P3 (S2 allowlist tasks découvertes, S3 garde taille write/edit, C1 TaskResultVerifier refonte, C3 cleanup doc, C4 flags cassés, C6 refactor SessionProtocol, C7 negative counter). Cadrage pur, zéro code. Pas d'exécution sans déclencheur pilote.
 . *EPIC VIBE-HARDENING* (P1) — ✅ TERMINÉ 6/6 US (US-0 cadrage S184, US-1 shell allowlist S185, US-2 gradle allowlist S186, US-3 timeout LLM S187, US-4 retry single counter S187, US-5 cucumber BDD S187). Gate `codebase.koog.tools.*` + VibecodingGraph + StepVerifier VERT 64 tests 0 FAIL + 4/4 cucumber PASSED. P2/P3 restants (S2/S3/C1/C3/C4/C6/C7) → EPIC VIBE-HARDENING-2 si déclencheur.
 . *EPIC SUBGRAPH* (P1) — ✅ TERMINÉ 4/4 US (S178 cadrage, S179 domaine `codebase.graph`, S180 canal Graphify réel, S182 US-3 graphRelations+Resource + US-4 Cucumber 4 scénarios @subgraph). Contexte augmenté complet : EAGER + RAG + GRAPHIFY réel + Docs + Resource.
 . *EPIC 1* (2 items stale — snapshot + commit initial) — à purger, le projet est déjà publié Maven Central 0.0.3.
 . *EPIC V-FLYWAY* (P2, conditionnel) — ne se déclenchera que quand 5+ fichiers de migration de schéma existeront (actuellement 4 : V1→V4).
-. *EPIC 5* — migré vers training-gradle TRN-8, plus dans le scope codebase.
+. *EPIC 5* — migré vers training-gradle TRN-8, plus dans le scope codebase. TRN-8 reformulé en recettes N2 consommant FT-PIPELINE (voir EPIC FT-PIPELINE US-6).
 
 == Dette Technique (Résolue)
 
@@ -308,6 +309,73 @@ directement en R2DBC. Quand le nombre de migrations dépassera 5, importer
 `org.flywaydb:flyway-database-postgresql` et basculer sur `Flyway.migrate()`.
 
 Actuellement 4 migrations (V1→V4). Non applicable.
+
+== 🟡 EPIC FT-PIPELINE — Pipeline de Fine-Tuning N1 (Session 188 — Cadrage, 0/7 US)
+
+**Statut** : 🟡 CADRÉ (7 US ~18 pts, US-0 ✅ S-188, US-1→6 À FAIRE)
+**Priorité** : P0 vision (WORKSPACE_AS_PRODUCT.adoc:642-658)
+**Source de conception** : `foundry/public/notebook-gradle/ARCHITECTURE.adoc` (vestige récupéré)
+**Document** : `.agents/CADRAGE_EPIC_FT_PIPELINE.adoc`
+
+Pipeline de fine-tuning N1 générique — fabrication modèle fine-tuné (dataset
+prep + continual pre-training 10% corpus + export GGUF + push Ollama).
+Boucle fabrication→exposition avec domaine `codebase.koog.expert` existant
+(13 fichiers — `ExpertExposureTask`, `ExpertRegistry`, `ExpertAgent`).
+TRN-8 training-gradle reformulé en recettes N2 consommant le pipeline.
+
+*16 décisions architecturales* : EPIC codebase-only, domaine `codebase.finetuning`
+(7ème sous `codebase`), `FineTuningPipeline` port + `FakeFineTuner`,
+`OllamaFineTunerAdapter` (pattern `ChatModelTranscriptEnhancer`),
+3 tâches Gradle (prepareFineTuningDataset/fineTuneExpert/publishExpertToOllama),
+`FineTuningGraph` koog itératif (pattern `KoogPlanningGraph`), continual
+pre-training 10% corpus (ACL 2024 arXiv 2311.08545), `AugmentedContext`
+consommé, BYOK `api-key-pool` N0, output GGUF + manifest via
+`ExpertExposureTask` (boucle fermée), `ValidationResult` sealed, zéro bump BOM,
+pas de runtime Colab (CI/CD Gradle), Cucumber BDD `@finetuning`, budget pool
+11437-11465, EPIC notebook-gradle caduc, TRN-8 reformulé recettes N2.
+
+[cols="1,3,2,1]
+|===
+| US | Description | Tests | Pts
+
+| US-0
+| ✅ Cadrage EPIC — 16 décisions, 7 US, source notebook (ce document + CADRAGE_EPIC_FT_PIPELINE.adoc)
+| 0
+| 1
+
+| US-1
+| 🟡 À FAIRE : `FineTuningRequest` + `FineTuningResult` + `FineTuningPipeline` port + `FakeFineTuner` (domaine `codebase.finetuning` créé, pattern `TranscriptLlmEnhancer` port/fake). Invariants : baseModel non-blank, dataset non-empty, outputModelName non-blank, corpusRatio 0.0..1.0 default 0.10.
+| ~8 unit
+| 3
+
+| US-2
+| 🟡 À FAIRE : `OllamaFineTunerAdapter` — adapter bridge Ollama API (create model from Modelfile, push to registry). Pattern `ChatModelTranscriptEnhancer`. Fallback degraded : Ollama unavailable → `FineTuningResult.failure` (degraded garde dataset original, pas de crash).
+| ~6 unit
+| 3
+
+| US-3
+| 🟡 À FAIRE : `FineTuningGraph` — graphe koog `strategy<FineTuningState, FineTuningState>` 3 nœuds propose/train/validate + edges conditionnels (convergence score, backtracking, maxIterations default 3). Méthode `execute` séquentielle pattern `KoogAugmentedContextGraph`. `asMermaidDiagram()`.
+| ~12 unit
+| 4
+
+| US-4
+| 🟡 À FAIRE : Tâches Gradle `prepareFineTuningDataset` + `fineTuneExpert` + `publishExpertToOllama` (groupe `finetuning`). Extension `fineTuning { baseModel; dataset; outputModelName; corpusRatio; maxIterations }` 4 sources DSL (pattern `CapsuleConfig`).
+| ~10 unit + 2 functional
+| 4
+
+| US-5
+| 🟡 À FAIRE : Cucumber BDD `codebase_finetuning.feature` 4 scénarios `@finetuning` (pipeline complet, cycle itératif convergence, fallback Ollama unavailable, validation seuil). Runner dédié `FineTuningCucumberRunner` (pattern S-082) + `CucumberTaskSpec("cucumberTestFineTuning")` 38e.
+| 4 scénarios
+| 2
+
+| US-6
+| 🟡 À FAIRE : Cross-borough wiring — training-gradle TRN-8 reformulé en recettes CDA/FPA consommant `fineTuneExpert` de codebase. Dépendance N2→N1 propre. Documentation mise à jour (INDEX/BACKLOG training + codebase).
+| 0 (gouvernance)
+| 1
+|===
+
+Ordre : US-0 ✅ → US-1 → US-2 → US-3 → US-4 → US-5 → US-6.
+Baby-step TDD/BDD strict. Gate ciblé : `./gradlew test --tests "codebase.finetuning.*"`.
 
 == Kover Coverage
 

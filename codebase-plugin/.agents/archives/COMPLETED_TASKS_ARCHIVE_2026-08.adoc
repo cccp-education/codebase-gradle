@@ -1,27 +1,30 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026 — Codebase Gradle (Queens)
 
-== Session 188 — Maintenance + Cross-borough Audit + Cadrage EPIC VIBE-HARDENING-2 + Propagation 5 boroughs
+== Session 188 — Maintenance + Cross-borough Audit + Cadrage 2 EPICs (VIBE-HARDENING-2 + FT-PIPELINE) + Propagation 5 boroughs
 
 [cols="2,3"]
 |===
 | Tâche | Statut
 
-| Maintenance — INDEX.adoc synchronisé (session_en_cours 186→188, VIBE-HARDENING 2/6→6/6, sessions 186/187 ajoutées)
+| Maintenance — INDEX.adoc synchronisé (session_en_cours 186→188, VIBE-HARDENING 2/6→6/6, sessions 186/187 ajoutées, EPIC FT-PIPELINE ajouté table)
 | ✅ TERMINÉ (S-188)
 
-| Maintenance — BACKLOG.adoc synchronisé (last_update S-188, EPIC VIBE-HARDENING-2 section ajoutée)
+| Maintenance — BACKLOG.adoc synchronisé (last_update S-188, EPIC VIBE-HARDENING-2 + FT-PIPELINE sections ajoutées)
 | ✅ TERMINÉ (S-188)
 
 | Maintenance — SESSIONS_HISTORY.adoc (S-186/S-187 ajoutées, doublon S-119→S-126 corrigé, S-188 ajoutée)
 | ✅ TERMINÉ (S-188)
 
-| Maintenance — PROMPT_REPRISE.adoc réécrit (mission N+1 session 189)
+| Maintenance — PROMPT_REPRISE.adoc réécrit (mission N+1 session 189, 2 EPICs cadrés option A/B)
 | ✅ TERMINÉ (S-188)
 
 | Cross-borough — Audit 6 consommateurs codebase-plugin (slider 0.0.7, capsule 0.0.7 BOM 0.0.16 périmé, planner 0.0.7, training 0.0.1, plantuml/bakery BOM 0.0.19 force 0.0.8)
 | ✅ TERMINÉ (S-188)
 
 | Cadrage EPIC VIBE-HARDENING-2 — 7 constats P2/P3 audités, 12 décisions archi, 8 US ~21 pts, document CADRAGE_EPIC_VIBE_HARDENING_2.adoc créé
+| ✅ TERMINÉ (S-188)
+
+| Cadrage EPIC FT-PIPELINE — audit alignement vision globale (WORKSPACE_AS_PRODUCT.adoc:642-658), récupération conception notebook-gradle (vestige), 16 décisions archi, 7 US ~18 pts, domaine `codebase.finetuning` (7ème), boucle fabrication→exposition avec domaine expert existant, document CADRAGE_EPIC_FT_PIPELINE.adoc créé
 | ✅ TERMINÉ (S-188)
 
 | Propagation planner-gradle — bump codebase 0.0.7→0.0.8, compileKotlin VERT, commit `d724e5e` pushé
@@ -47,6 +50,12 @@
 
 | Découverte bug capsule — codebase-contracts 0.1.0 version locale ~/.m2 jamais publiée Central (corrigé vers 0.0.2)
 | ✅ CORRIGÉ (S-188)
+
+| Audit alignement vision globale — gap fine-tuning identifié (WORKSPACE_AS_PRODUCT.adoc:642-658 assigne codebase propriétaire pipeline FT, EPIC 5 migré training-gradle TRN-8 mélange N1/N2)
+| ✅ IDENTIFIÉ (S-188)
+
+| Récupération conception notebook-gradle (vestige LA HAVANA) — ARCHITECTURE.adoc source de conception FT-PIPELINE, briques existantes codebase réutilisées (koog, LlmBuildService, AugmentedContext, api-key-pool, domaine expert)
+| ✅ TERMINÉ (S-188)
 |===
 
 == Session 185 — EPIC VIBE-HARDENING US-1 ExecShellTool Allowlist
