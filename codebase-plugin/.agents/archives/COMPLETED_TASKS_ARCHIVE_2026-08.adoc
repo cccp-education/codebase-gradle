@@ -351,3 +351,40 @@ depuis le sous-graphe (GovernanceContextLoader.kt:68 + ContextChannel.Resource,
 | US-5 Cucumber BDD (4 scénarios @vibe-hardening)
 | ✅ TERMINÉ (S-187)
 |===
+== EPIC VIBE-HARDENING-2 — Durcissement vibecoding P2/P3 (CR-GLOBALE-004 suite)
+
+*Sessions* : 188-189 (2026-08-17)
+*Origine* : CR-GLOBALE-004 (session 175) — 7 findings P2/P3 restants post-EPIC VIBE-HARDENING P1
+*Statut* : 🟡 EN COURS 2/8 US
+
+[cols="3,2"]
+|===
+| Tâche | Statut
+
+| US-0 Cadrage (gouvernance pure, 7 constats P2/P3 + 12 décisions archi)
+| ✅ TERMINÉ (S-188)
+
+| US-1 S2 Allowlist TaskDiscoveryRegistrar (deny-by-default + deny-list second ride)
+| ✅ TERMINÉ (S-189)
+
+| US-2 S3 Garde taille write_file/edit_file (MAX_WRITE_CHARS 1MB)
+| ✅ TERMINÉ (S-189)
+
+| US-3 C4 GradleTaskArgsMapper flags cassés (extension GRADLE_ARG_ALLOWLIST)
+| 🟡 À FAIRE
+
+| US-4 C1 TaskResultVerifier refonte (expectedOutput comparison + failed raffiné)
+| 🟡 À FAIRE
+
+| US-5 C3 Cleanup doc INSERT-X1..X6 (VibecodingGraph.kt:60-84)
+| 🟡 À FAIRE
+
+| US-6 C7 coerceAtLeast(0) Plan remaining tasks (VibecodingGraph.kt:464)
+| 🟡 À FAIRE
+
+| US-7 C6 Extraction SessionProtocolEngine (refactor duplication)
+| 🟡 À FAIRE
+
+| US-8 Cucumber BDD codebase_vibe_hardening_2.feature
+| 🟡 À FAIRE
+|===

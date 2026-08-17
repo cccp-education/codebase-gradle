@@ -131,4 +131,72 @@ class ToolRegistryTest {
         assertTrue(exception.message!!.contains("ENFORCEMENT BLOCKED [exec_gradle]"))
         assertTrue(exception.message!!.contains("publish interdit"))
     }
+
+    @Test
+    fun `write_file should reject content exceeding MAX_WRITE_CHARS`(@TempDir tempDir: File) {
+        val oversized = "a".repeat(ToolRegistry.MAX_WRITE_CHARS + 1)
+        val ex = assertThrows(IllegalArgumentException::class.java) {
+            registry.execute(
+                toolName = "write_file",
+                arguments = mapOf("path" to "big.txt", "content" to oversized),
+                workspaceRoot = tempDir.absolutePath
+            )
+        }
+        assertTrue(ex.message!!.contains("exceeds"))
+        assertTrue(ex.message!!.contains("${ToolRegistry.MAX_WRITE_CHARS}"))
+    }
+
+    @Test
+    fun `write_file should accept content at MAX_WRITE_CHARS`(@TempDir tempDir: File) {
+        val ok = "a".repeat(ToolRegistry.MAX_WRITE_CHARS)
+        val result = registry.execute(
+            toolName = "write_file",
+            arguments = mapOf("path" to "ok.txt", "content" to ok),
+            workspaceRoot = tempDir.absolutePath
+        )
+        assertTrue(result.contains("File written"))
+    }
+
+    @Test
+    fun `edit_file should reject newString exceeding MAX_WRITE_CHARS`(@TempDir tempDir: File) {
+        val original = File(tempDir, "edit.txt")
+        original.writeText("placeholder")
+        val oversized = "a".repeat(ToolRegistry.MAX_WRITE_CHARS + 1)
+        val ex = assertThrows(IllegalArgumentException::class.java) {
+            registry.execute(
+                toolName = "edit_file",
+                arguments = mapOf(
+                    "path" to "edit.txt",
+                    "oldString" to "placeholder",
+                    "newString" to oversized
+                ),
+                workspaceRoot = tempDir.absolutePath
+            )
+        }
+        assertTrue(ex.message!!.contains("exceeds"))
+        assertTrue(ex.message!!.contains("${ToolRegistry.MAX_WRITE_CHARS}"))
+    }
+
+    @Test
+    fun `edit_file should reject resulting file content exceeding MAX_WRITE_CHARS`(@TempDir tempDir: File) {
+        val original = File(tempDir, "grow.txt")
+        original.writeText("a".repeat(ToolRegistry.MAX_WRITE_CHARS))
+        val ex = assertThrows(IllegalArgumentException::class.java) {
+            registry.execute(
+                toolName = "edit_file",
+                arguments = mapOf(
+                    "path" to "grow.txt",
+                    "oldString" to "a",
+                    "newString" to "bb"
+                ),
+                workspaceRoot = tempDir.absolutePath
+            )
+        }
+        assertTrue(ex.message!!.contains("exceeds"))
+    }
+
+    @Test
+    fun `MAX_WRITE_CHARS constant should be 1_000_000`() {
+        assertEquals(1_000_000, ToolRegistry.MAX_WRITE_CHARS)
+    }
 }

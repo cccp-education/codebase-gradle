@@ -1,67 +1,46 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 189
-:session: 189
+= Prompt de Reprise — Codebase (Queens N1) — Session 190
+:session: 190
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 188 — Maintenance + cross-borough + cadrage 2 EPICs (VIBE-HARDENING-2 8 US ~21 pts, FT-PIPELINE 7 US ~18 pts) + propagation 5 boroughs codebase 0.0.8. 3 bugs découverts signalés (MEMPHIS slider 0.0.8, ABIDJAN codex kotlin-stdlib, capsule contracts 0.1.0). Borough DORMANT.
+:session_precedente: 189 — VIBE-HARDENING-2 US-1 (S2 Allowlist TaskDiscoveryRegistrar, 18 unit + 6 réécrits) + US-2 (S3 MAX_WRITE_CHARS write_file/edit_file, +5 unit). 2/8 US. Borough DORMANT.
 
-== Mission Session 189
+== Mission Session 190
 
-Deux EPICs cadrés prêts à démarrer sur déclencheur pilote. Borough DORMANT.
-Choix entre FT-PIPELINE (P0 vision) ou VIBE-HARDENING-2 (P2/P3 hardening).
+EPIC VIBE-HARDENING-2 (P2/P3 hardening) — 6 US restants sur 8.
+Borough DORMANT — réveil sur déclencheur pilote.
 
-=== Option A — EPIC FT-PIPELINE US-1 (P0 vision)
+=== US-3 C4 GradleTaskArgsMapper flags cassés (P2, 3 pts)
 
-Pipeline de fine-tuning N1 générique — fabrication modèle fine-tuné.
-Source de conception : notebook-gradle ARCHITECTURE.adoc (vestige récupéré).
-Boucle fabrication→exposition avec domaine `codebase.koog.expert` existant.
+`GradleTaskArgsMapper.buildCommand` produit `--key value` (2 tokens)
+mais `ExecGradleTool.validateGradleTask` (US-2 S-186) valide chaque
+token vs `GRADLE_ARG_ALLOWLIST` (`--\\w+`) — `value` ne matche pas →
+**rejeté deny-by-default**. Flags avec valeur cassés.
 
-US-1 : `FineTuningRequest` + `FineTuningResult` + `FineTuningPipeline` port +
-`FakeFineTuner` (domaine `codebase.finetuning` créé, 7ème sous `codebase`).
-Pattern `TranscriptLlmEnhancer` port/fake. Invariants : baseModel non-blank,
-dataset non-empty, outputModelName non-blank, corpusRatio 0.0..1.0 default 0.10.
-
-* Baby-step TDD strict (RED → GREEN → REFACTOR).
-* Gate ciblé : `./gradlew test --tests "codebase.finetuning.*"`.
-* ~8 unit, 3 pts.
-* Document : `.agents/CADRAGE_EPIC_FT_PIPELINE.adoc`.
-
-=== Option B — EPIC VIBE-HARDENING-2 US-1 (P2/P3 hardening)
-
-US-1 S2 Allowlist TaskDiscoveryRegistrar — auto-registration libre `gradle_*`
-sans allowlist. Pattern US-1/US-2 VIBE-HARDENING (ExecShellTool/ExecGradleTool).
-
-* Baby-step TDD strict.
+* Fail préexistant confirmé : `GradleTaskArgsMapperTest > execute
+  structured gradle task via handler()` FAILED (S-189 gate).
+* Stratégie : étendre `GRADLE_ARG_ALLOWLIST` à `--\\w+(?:=\\S+)?` (flag
+  seul ou flag=value) ET accepter `--\\w+ \\S+` (pair flag+value 2
+  tokens). ~6 unit.
 * Gate ciblé : `./gradlew test --tests "codebase.koog.discovery.*"`.
-* ~8 unit, 4 pts.
-* Document : `.agents/CADRAGE_EPIC_VIBE_HARDENING_2.adoc`.
+* Document : `.agents/CADRAGE_EPIC_VIBE_HARDENING_2.adoc` US-3.
 
 === Backlog restant (sur déclencheur pilote)
 
-FT-PIPELINE : US-2 OllamaFineTunerAdapter (3 pts) → US-3 FineTuningGraph koog
-(4 pts) → US-4 tâches Gradle (4 pts) → US-5 Cucumber BDD (2 pts) → US-6
-cross-borough training TRN-8 reformulé (1 pt).
-
-VIBE-HARDENING-2 : US-2 S3 garde taille (2 pts) → US-3 C4 flags (3 pts) →
-US-4 C1 TaskResultVerifier (4 pts) → US-5 C3 cleanup (1 pt) → US-6 C7 (1 pt)
-→ US-7 C6 SessionProtocol (4 pts) → US-8 Cucumber (2 pts).
+US-4 C1 TaskResultVerifier refonte (4 pts) → US-5 C3 cleanup doc (1 pt)
+→ US-6 C7 coerceAtLeast (1 pt) → US-7 C6 SessionProtocolEngine (4 pts)
+→ US-8 Cucumber BDD (2 pts).
 
 == Contexte technique
 
-* Build autonome : `cd codebase-plugin && ./gradlew ...` (la racine
-  `codebase-gradle` n'a aucun sous-projet — `:codebase-plugin:compileKotlin`
-  échoue depuis la racine).
+* Build autonome : `cd codebase-plugin && ./gradlew ...`.
 * Version alignée : codebase-plugin 0.0.8 = Maven Central = BOM 0.0.19.
-* Consommateurs publics à jour : planner, slider, capsule (0.0.8).
-  plantuml/bakery résolvent 0.0.8 via BOM 0.0.19. codex fail préexistant
-  (bug ABIDJAN conventions-gradle). training 0.0.8.
 * Borough DORMANT — réveil sur déclencheur pilote uniquement.
+* EPIC FT-PIPELINE (P0 vision, 7 US ~18 pts) en attente — alternative
+  possible sur déclencheur pilote.
 
 == Règles absolues
 
 * Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la
   fois, séquentiel pur (interdiction @xp/subagents/parallélisation).
-* ARRET OBLIGATOIRE avant toute action destructive (lire, vérifier
-  `git ls-files`, confirmation pilote).
 * Zéro commit/push sans permission explicite du pilote.
-* Gate ciblé : jamais `./gradlew test` global (Cucumber interminable,
-  pratique canonique S175/S179).
+* Gate ciblé : jamais `./gradlew test` global (Cucumber interminable).
 * Zéro secret, zéro token dans le code ou les logs.

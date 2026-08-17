@@ -1,0 +1,141 @@
+= Session 189 — VIBE-HARDENING-2 US-1 + US-2
+:session: 189
+:borough: Queens — codebase-gradle (N1)
+:date: 2026-08-17
+:epic: VIBE-HARDENING-2
+:methode: Baby-step TDD strict (RED → GREEN → REFACTOR)
+:gate: ./gradlew test --tests "codebase.koog.discovery.*" --tests "codebase.koog.ToolRegistryTest"
+
+== Contexte
+
+Session 188 a cadré 2 EPICs prêts à démarrer : FT-PIPELINE (P0 vision, 7 US
+~18 pts) et VIBE-HARDENING-2 (P2/P3 hardening, 8 US ~21 pts). Pilote a
+choisi VIBE-HARDENING-2 (Option B). Borough DORMANT — réveil sur
+déclencheur pilote.
+
+== Mission
+
+US-1 S2 Allowlist TaskDiscoveryRegistrar + US-2 S3 Garde taille
+write_file/edit_file. Baby-step TDD strict, 1 fichier à la fois,
+séquentiel pur.
+
+== Actions
+
+=== US-1 S2 — Allowlist TaskDiscoveryRegistrar
+
+*Pattern* : US-1/US-2 VIBE-HARDENING P1 (ExecShellTool/ExecGradleTool
+allowlist deny-by-default + deny-list second ride).
+
+*RED* : `TaskDiscoveryRegistrarAllowlistTest.kt` créé (18 unit) —
+`validateTaskName` absent → `Unresolved reference` × 15 sites.
+
+*GREEN* : `TaskDiscoveryRegistrar.kt` refactoré —
+  - `TASK_ALLOWLIST` (2 regex : bare tasks `build|compileKotlin|...|help` +
+    project:task form `:?[\\w-]+:[\\w-]+`)
+  - `TASK_DENYLIST` (6 regex : `publishToMavenCentral`, `publishAggregation`,
+    `clean`, `purge`, `wrapper`, `bootstrap`)
+  - `validateTaskName(taskName)` companion (allowlist deny-by-default →
+    deny-list second ride, pattern `ExecGradleTool.validateGradleTask`)
+  - `registerAll()` filtre via `validateTaskName` (skip denied, pas crash)
+  - `registeredCount()` filtre via `validateTaskName`
+
+*Tests existants réécrits* : `TaskDiscoveryRegistrarTest.kt` 6 tests —
+  - `registerAll should register all discovered tasks` → `registerAll
+    should skip non-allowlisted tasks deny-by-default` (boucle
+    allowlistedSchemas au lieu de schemas.forEach)
+  - `registeredCount should match discovered tasks` → `should match
+    allowlisted discovered tasks`
+  - `registered tools should have gradle_ prefix` → `should have gradle_
+    prefix only for allowlisted tasks` (assertion chaque toolName
+    re-validé)
+  - `registered tools should have descriptions with options` →
+    `non-allowlisted codebase tasks vibecode and qualityGate should be
+    denied` (assertNull au lieu de get)
+
+*Constat comportemental* : les tasks métier du CodebasePlugin
+(`vibecode`, `generatePlan`, `qualityGate`, `ingestGovernance`, etc.)
+ne matchent pas l'allowlist → ne sont plus enregistrées comme tools
+`gradle_*`. Sécuritaire : un agent LLM ne peut pas auto-découvrir et
+appeler `gradle_vibecode` (récursion agentique dangereuse).
+
+*24 tests discovery VERTS* (18 allowlist + 6 réécrits), 0 FAIL.
+
+=== US-2 S3 — Garde taille write_file/edit_file
+
+*Pattern* : `read_file` `MAX_OUTPUT_CHARS` (L117 `file.readText().take
+(MAX_OUTPUT_CHARS)`) déjà existant — mirror.
+
+*RED* : 5 tests ajoutés à `ToolRegistryTest.kt` —
+`Unresolved reference 'MAX_WRITE_CHARS'` × 7 sites.
+
+*GREEN* : `ToolRegistry.kt` —
+  - `MAX_WRITE_CHARS = 1_000_000` const companion (~1 MB)
+  - `write_file` : check `content.length > MAX_WRITE_CHARS` →
+    `IllegalArgumentException("write_file content exceeds $MAX_WRITE_CHARS
+    chars (${content.length})")` avant `writeText`
+  - `edit_file` : 2 checks —
+    (1) `newString.length > MAX_WRITE_CHARS` → IAE avant replace
+    (2) `updated.length > MAX_WRITE_CHARS` → IAE après replace, avant
+        `writeText` (file content final)
+
+*13 tests ToolRegistry VERTS* (+5 unit), 0 FAIL.
+
+== Commandes exécutées
+
+----
+cd codebase-plugin
+./gradlew test --tests "codebase.koog.discovery.*"
+./gradlew test --tests "codebase.koog.ToolRegistryTest"
+./gradlew test --tests "codebase.koog.tools.*"
+----
+
+== Résultats
+
+* Gate discovery + ToolRegistry : 105 tests, 0 FAIL (1 fail préexistant
+  `GradleTaskArgsMapperTest > execute structured gradle task via handler`
+  = C4 US-3, hors scope cette session).
+* Non-régression ExecShellTool (9) + ExecGradleTool (15) VERTS.
+* Zéro bump BOM, zéro secret, zéro régression.
+
+== Fichiers modifiés
+
+* `src/main/kotlin/codebase/koog/discovery/TaskDiscoveryRegistrar.kt`
+  (33→62 lignes, +29 — allowlist + deny-list + validateTaskName)
+* `src/main/kotlin/contracts/vibecoding/registry/ToolRegistry.kt`
+  (+16 lignes — MAX_WRITE_CHARS + 3 checks)
+* `src/test/kotlin/codebase/koog/discovery/TaskDiscoveryRegistrarTest.kt`
+  (113→133 lignes — 6 tests réécrits sécuritaires)
+* `src/test/kotlin/codebase/koog/discovery/TaskDiscoveryRegistrarAllowlistTest.kt`
+  (nouveau, 18 unit)
+* `src/test/kotlin/codebase/koog/ToolRegistryTest.kt`
+  (+68 lignes — 5 unit MAX_WRITE_CHARS)
+
+== Leçons
+
+* Allowlist deny-by-default pour tasks découvertes : la deny-list n'est
+  qu'un second ride pour les composed commands qui passent l'allowlist
+  (ex. `:plugin:publishToMavenCentral` matche project:task allowlist
+  puis deny-list catch). Pour les noms purs (`clean`, `purge`,
+  `wrapper`), c'est l'allowlist qui rejette — message "not in
+  allowlist", pas "denied pattern". Tests initiaux mal conçus sur ce
+  point, corrigés.
+* Changement comportemental US-1 sécuritaire mais majeur : les tasks
+  métier du plugin (vibecode, qualityGate, etc.) ne sont plus
+  auto-enregistrées. C'est le comportement attendu — un agent LLM ne
+  doit pas piloter la boucle agentique elle-même via tools découverts.
+
+== État EPIC VIBE-HARDENING-2
+
+US-0 ✅ S-188 (cadrage) → US-1 ✅ S-189 → US-2 ✅ S-189 →
+US-3 C4 flags (TODO) → US-4 C1 TaskResultVerifier → US-5 C3 cleanup →
+US-6 C7 coerceAtLeast → US-7 C6 SessionProtocolEngine → US-8 Cucumber.
+
+2/8 US terminés en 1 session. Pattern S-113 (multi-US en 1 session)
+applicable car US-1 et US-2 sont indépendants et triviaux.
+
+== Prochaine session
+
+US-3 C4 GradleTaskArgsMapper flags cassés (extension GRADLE_ARG_ALLOWLIST).
+Le fail préexistant `GradleTaskArgsMapperTest > execute structured gradle
+task via handler` sera résolu par US-3. Gate ciblé :
+`./gradlew test --tests "codebase.koog.discovery.GradleTaskArgsMapperTest"`.

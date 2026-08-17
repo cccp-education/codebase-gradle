@@ -46,6 +46,7 @@ class ToolRegistry(
     companion object {
         const val MAX_READ_FILE_SIZE: Long = 10 * 1024 * 1024 // 10 MB
         const val MAX_OUTPUT_CHARS: Int = 8000
+        const val MAX_WRITE_CHARS: Int = 1_000_000 // ~1 MB
     }
 
     init {
@@ -119,6 +120,11 @@ class ToolRegistry(
             "write_file" -> {
                 val path = arguments["path"] ?: throw IllegalArgumentException("write_file requires 'path'")
                 val content = arguments["content"] ?: throw IllegalArgumentException("write_file requires 'content'")
+                if (content.length > MAX_WRITE_CHARS) {
+                    throw IllegalArgumentException(
+                        "write_file content exceeds $MAX_WRITE_CHARS chars (${content.length})"
+                    )
+                }
                 val file = resolvePath(path, workspaceRoot)
                 if (dryRun) return "DRY RUN: would write ${content.length} chars to ${file.absolutePath}"
                 file.parentFile.mkdirs()
@@ -129,12 +135,22 @@ class ToolRegistry(
                 val path = arguments["path"] ?: throw IllegalArgumentException("edit_file requires 'path'")
                 val oldString = arguments["oldString"] ?: throw IllegalArgumentException("edit_file requires 'oldString'")
                 val newString = arguments["newString"] ?: throw IllegalArgumentException("edit_file requires 'newString'")
+                if (newString.length > MAX_WRITE_CHARS) {
+                    throw IllegalArgumentException(
+                        "edit_file newString exceeds $MAX_WRITE_CHARS chars (${newString.length})"
+                    )
+                }
                 val file = resolvePath(path, workspaceRoot)
                 if (!file.exists()) throw IllegalStateException("File not found: ${file.absolutePath}")
                 if (dryRun) return "DRY RUN: would replace in ${file.absolutePath} (${oldString.length}→${newString.length} chars)"
                 val original = file.readText()
                 if (!original.contains(oldString)) throw IllegalStateException("oldString not found in file: ${file.absolutePath}")
                 val updated = original.replace(oldString, newString)
+                if (updated.length > MAX_WRITE_CHARS) {
+                    throw IllegalArgumentException(
+                        "edit_file resulting content exceeds $MAX_WRITE_CHARS chars (${updated.length})"
+                    )
+                }
                 file.writeText(updated)
                 "File edited: ${file.absolutePath}"
             }

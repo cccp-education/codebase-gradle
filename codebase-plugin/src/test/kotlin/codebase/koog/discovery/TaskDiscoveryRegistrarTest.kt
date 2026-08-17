@@ -6,12 +6,13 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class TaskDiscoveryRegistrarTest {
 
     @Test
-    fun `registerAll should register all discovered tasks as gradle_ tools`() {
+    fun `registerAll should skip non-allowlisted tasks deny-by-default`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply(CodebasePlugin::class.java)
         val scanner = TaskSchemaScanner(project)
@@ -22,8 +23,15 @@ class TaskDiscoveryRegistrarTest {
         registrar.registerAll()
 
         val schemas = scanner.scanAll()
-        assertTrue(registry.toolCount() > initialCount)
-        schemas.forEach { schema ->
+        val allowlistedSchemas = schemas.filter { schema ->
+            runCatching { TaskDiscoveryRegistrar.validateTaskName(schema.name) }.isSuccess
+        }
+        val gradleTools = registry.toolNames().filter { it.startsWith("gradle_") }
+        assertEquals(allowlistedSchemas.size, gradleTools.size)
+        if (allowlistedSchemas.isNotEmpty()) {
+            assertTrue(registry.toolCount() > initialCount)
+        }
+        allowlistedSchemas.forEach { schema ->
             val toolName = "gradle_${schema.name}"
             val tool = registry.get(toolName)
             assertNotNull(tool)
@@ -32,7 +40,7 @@ class TaskDiscoveryRegistrarTest {
     }
 
     @Test
-    fun `registeredCount should match number of discovered tasks`() {
+    fun `registeredCount should match number of allowlisted discovered tasks`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply(CodebasePlugin::class.java)
         val scanner = TaskSchemaScanner(project)
@@ -42,7 +50,10 @@ class TaskDiscoveryRegistrarTest {
         registrar.registerAll()
 
         val schemas = scanner.scanAll()
-        assertEquals(schemas.size, registrar.registeredCount())
+        val allowlisted = schemas.count { schema ->
+            runCatching { TaskDiscoveryRegistrar.validateTaskName(schema.name) }.isSuccess
+        }
+        assertEquals(allowlisted, registrar.registeredCount())
     }
 
     @Test
@@ -57,11 +68,14 @@ class TaskDiscoveryRegistrarTest {
         registrar.registerAll()
 
         val schemas = scanner.scanAll()
-        assertEquals(schemas.size, registrar.registeredCount())
+        val allowlisted = schemas.count { schema ->
+            runCatching { TaskDiscoveryRegistrar.validateTaskName(schema.name) }.isSuccess
+        }
+        assertEquals(allowlisted, registrar.registeredCount())
     }
 
     @Test
-    fun `registered tools should have gradle_ prefix`() {
+    fun `registered tools should have gradle_ prefix only for allowlisted tasks`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply(CodebasePlugin::class.java)
         val scanner = TaskSchemaScanner(project)
@@ -70,15 +84,16 @@ class TaskDiscoveryRegistrarTest {
         val registrar = TaskDiscoveryRegistrar(scanner, registry)
         registrar.registerAll()
 
-        val toolNames = registry.toolNames()
-        val gradleTools = toolNames.filter { it.startsWith("gradle_") }
-        assertTrue(gradleTools.isNotEmpty())
-        assertTrue(gradleTools.contains("gradle_vibecode"))
-        assertTrue(gradleTools.contains("gradle_qualityGate"))
+        val gradleTools = registry.toolNames().filter { it.startsWith("gradle_") }
+        gradleTools.forEach { toolName ->
+            val taskName = toolName.removePrefix("gradle_")
+            runCatching { TaskDiscoveryRegistrar.validateTaskName(taskName) }
+                .onFailure { org.junit.jupiter.api.fail("$toolName registered but $taskName not allowlisted") }
+        }
     }
 
     @Test
-    fun `registered tools should have descriptions with options`() {
+    fun `non-allowlisted codebase tasks vibecode and qualityGate should be denied`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply(CodebasePlugin::class.java)
         val scanner = TaskSchemaScanner(project)
@@ -87,9 +102,8 @@ class TaskDiscoveryRegistrarTest {
         val registrar = TaskDiscoveryRegistrar(scanner, registry)
         registrar.registerAll()
 
-        val vibecodeTool = registry.get("gradle_vibecode")
-        assertTrue(vibecodeTool.description.contains("Vibecoding"))
-        assertTrue(vibecodeTool.description.contains("--intention") || vibecodeTool.description.contains("intention"))
+        assertNull(registry.toolNames().find { it == "gradle_vibecode" })
+        assertNull(registry.toolNames().find { it == "gradle_qualityGate" })
     }
 
     @Test

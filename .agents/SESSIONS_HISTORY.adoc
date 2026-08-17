@@ -411,3 +411,24 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** Tag `@integration` sur feature ne suffit pas — chaque runner dédié doit aussi exclure `@integration` dans `FILTER_TAGS_PROPERTY_NAME`
 ** Workflow CI non testé localement avant commit = anti-pattern (ingest-governance.yml appelait task inexistante depuis session 160)
 ** `gh run view --log --job=<id>` = outil debug CI le plus efficace (stack traces complètes)
+
+=== Sessions 168-188 — 2026-06-26 → 2026-08-17
+* Voir INDEX.adoc table sessions 168-188 + archives `.agents/sessions/`.
+* S-168 fix 19 échecs JUnit5 CI, S-169 CI-green, S-170 SEC-1, S-171 pgvector logs,
+  S-172 C-BOM-FIX, S-173 pub Central 0.0.6, S-174 code review, S-175 clôture CR,
+  S-184 VIBE-HARDENING US-0, S-185 US-1, S-186 US-2, S-187 US-3+4+5 TERMINÉ,
+  S-188 maintenance + cadrage 2 EPICs (FT-PIPELINE + VIBE-HARDENING-2) + propagation 5 boroughs.
+
+=== Session 189 — 2026-08-17
+* **EPICs** : VIBE-HARDENING-2 (US-1 + US-2)
+* **Livrables** :
+** US-1 S2 Allowlist `TaskDiscoveryRegistrar` : `TASK_ALLOWLIST` + `TASK_DENYLIST` + `validateTaskName` companion (pattern `ExecGradleTool.validateGradleTask`). `registerAll` filtre via validateTaskName. 18 unit allowlist + 6 tests existants réécrits (vibecode/qualityGate devenus denied — tasks métier plugin non auto-enregistrées, sécuritaire).
+** US-2 S3 Garde taille `write_file`/`edit_file` : `MAX_WRITE_CHARS = 1_000_000` const + 3 checks (content, newString, resulting updated) → `IllegalArgumentException` avant writeText. Pattern `read_file MAX_OUTPUT_CHARS` mirror. +5 unit.
+** Archive session 189 créée.
+* **Tests** : Gate `codebase.koog.discovery.*` + `ToolRegistryTest` VERT 105 tests (1 fail préexistant C4 US-3 GradleTaskArgsMapperTest). Non-régression ExecShellTool (9) + ExecGradleTool (15) VERTS.
+* **Fichiers** : 4 modifiés + 1 nouveau (AllowlistTest). +157 lignes prod/test.
+* **Leçons** :
+** Allowlist deny-by-default pour tasks découvertes : la deny-list n'est qu'un second ride pour les composed commands qui passent l'allowlist (`:plugin:publishToMavenCentral`). Pour les noms purs (`clean`, `purge`), c'est l'allowlist qui rejette — message "not in allowlist".
+** Changement comportemental US-1 sécuritaire mais majeur : tasks métier du plugin (vibecode, qualityGate, generatePlan, etc.) ne sont plus auto-enregistrées comme tools `gradle_*`. Un agent LLM ne doit pas piloter la boucle agentique elle-même via tools découverts (récursion dangereuse).
+** Pattern S-113 (multi-US 1 session) applicable car US-1 et US-2 indépendants et triviaux.
+* **Zéro bump BOM, zéro secret, zéro régression.** 2/8 US VIBE-HARDENING-2.
