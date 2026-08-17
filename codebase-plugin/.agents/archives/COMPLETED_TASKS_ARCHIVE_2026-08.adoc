@@ -1,6 +1,6 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026 — Codebase Gradle (Queens)
 
-== Session 188 — Maintenance + Cross-borough Audit + Cadrage EPIC VIBE-HARDENING-2
+== Session 188 — Maintenance + Cross-borough Audit + Cadrage EPIC VIBE-HARDENING-2 + Propagation 5 boroughs
 
 [cols="2,3"]
 |===
@@ -12,17 +12,41 @@
 | Maintenance — BACKLOG.adoc synchronisé (last_update S-188, EPIC VIBE-HARDENING-2 section ajoutée)
 | ✅ TERMINÉ (S-188)
 
-| Maintenance — SESSIONS_HISTORY.adoc (S-186/S-187 ajoutées, doublon S-119→S-126 corrigé)
+| Maintenance — SESSIONS_HISTORY.adoc (S-186/S-187 ajoutées, doublon S-119→S-126 corrigé, S-188 ajoutée)
 | ✅ TERMINÉ (S-188)
 
 | Maintenance — PROMPT_REPRISE.adoc réécrit (mission N+1 session 189)
 | ✅ TERMINÉ (S-188)
 
-| Cross-borough — Audit 6 consommateurs codebase-plugin (slider 0.0.7, capsule 0.0.7 BOM 0.0.16 périmé, planner 0.0.7, training 0.0.1, plantuml 0.0.2 alias, bakery 0.0.6 alias) — zéro action codebase requise
+| Cross-borough — Audit 6 consommateurs codebase-plugin (slider 0.0.7, capsule 0.0.7 BOM 0.0.16 périmé, planner 0.0.7, training 0.0.1, plantuml/bakery BOM 0.0.19 force 0.0.8)
 | ✅ TERMINÉ (S-188)
 
 | Cadrage EPIC VIBE-HARDENING-2 — 7 constats P2/P3 audités, 12 décisions archi, 8 US ~21 pts, document CADRAGE_EPIC_VIBE_HARDENING_2.adoc créé
 | ✅ TERMINÉ (S-188)
+
+| Propagation planner-gradle — bump codebase 0.0.7→0.0.8, compileKotlin VERT, commit `d724e5e` pushé
+| ✅ TERMINÉ (S-188)
+
+| Propagation slider-gradle — bump codebase 0.0.7→0.0.8, compileKotlin VERT, commit `f2612e0` pushé
+| ✅ TERMINÉ (S-188)
+
+| Propagation capsule-gradle — bump codebase 0.0.7→0.0.8 + codebase-contracts 0.1.0→0.0.2, compileKotlin VERT, commit `e8f1fec` pushé (BOM gardé 0.0.16 car 0.0.19 référence slider 0.0.18 non publié)
+| ✅ TERMINÉ (S-188)
+
+| Propagation codex-gradle — bump codebase 0.0.1→0.0.8 + codebase-contracts 0.0.1→0.0.2 + BOM 0.0.1→0.0.19, commit `e0ff21d` pushé (compileKotlin FAIL préexistant hors scope — bug ABIDJAN kotlin-stdlib)
+| ✅ TERMINÉ (S-188)
+
+| Propagation training-gradle — bump codebase 0.0.1→0.0.8, compileKotlin VERT, commit `3073b52` pushé
+| ✅ TERMINÉ (S-188)
+
+| Découverte bug MEMPHIS — BOM 0.0.19 référence slider:0.0.18 non publié Central (dernier = 0.0.16)
+| ✅ SIGNALÉ (S-188)
+
+| Découverte bug ABIDJAN — codex fail compile préexistant (conflit kotlin-stdlib 2.3.21 embedded Gradle vs 2.4.10 conventions-plugin 0.0.2)
+| ✅ SIGNALÉ (S-188)
+
+| Découverte bug capsule — codebase-contracts 0.1.0 version locale ~/.m2 jamais publiée Central (corrigé vers 0.0.2)
+| ✅ CORRIGÉ (S-188)
 |===
 
 == Session 185 — EPIC VIBE-HARDENING US-1 ExecShellTool Allowlist

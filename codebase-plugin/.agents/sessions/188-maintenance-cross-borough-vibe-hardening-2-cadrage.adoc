@@ -128,6 +128,58 @@ Document `CADRAGE_EPIC_VIBE_HARDENING_2.adoc` créé (12 décisions archi,
 8 US ~21 pts). EPIC ajouté au BACKLOG (section détaillée) et à l'INDEX
 (table EPICs + ligne session 188).
 
+=== Phase 4 — Propagation cross-borough (bump direct 5 boroughs)
+
+Pilote a autorisé le bump direct chez les consommateurs. 5 boroughs
+traités séquentiellement (1 fichier à la fois, compile après chaque) :
+
+[cols="2,3,2,2,3"]
+|===
+| Borough | Catalogue | Avant | Après | compileKotlin
+
+| planner-gradle (Manhattan)
+| `codebase` version-ref
+| 0.0.7
+| 0.0.8
+| ✅ VERT (commit `d724e5e`)
+
+| slider-gradle (MIAMI)
+| `codebase` version-ref
+| 0.0.7
+| 0.0.8
+| ✅ VERT (commit `f2612e0`)
+
+| capsule-gradle (Détroit)
+| `codebase` + `codebase-contracts` version-ref
+| 0.0.7 / 0.1.0
+| 0.0.8 / 0.0.2
+| ✅ VERT (commit `e8f1fec`)
+
+| codex-gradle (Brooklyn)
+| `codebase` version-ref + `codebase-contracts` hardcodé + BOM platform
+| 0.0.1 / 0.0.1 / 0.0.1
+| 0.0.8 / 0.0.2 / 0.0.19
+| ❌ FAIL préexistant (commit `e0ff21d`)
+
+| training-gradle (Newark, privé)
+| `codebase` version-ref
+| 0.0.1
+| 0.0.8
+| ✅ VERT (commit `3073b52`)
+|===
+
+Découvertes hors scope codebase (signalées, non corrigées) :
+
+* **Bug MEMPHIS** : BOM 0.0.19 référence `slider:0.0.18` non publié Central
+  (dernier = 0.0.16). Capsule gardé sur BOM 0.0.16 pour ne pas casser
+  la résolution slider.
+* **Bug ABIDJAN** : codex (Brooklyn) a un fail compile préexistant non lié
+  au bump — conflit `kotlin-stdlib {strictly 2.3.21}` (embedded Gradle) vs
+  `2.4.10` (conventions-plugin 0.0.2). Le bump codebase est correct mais
+  codex ne compile pas tant que conventions-gradle n'est pas corrigé.
+* **Bug capsule** : référençait `codebase-contracts:0.1.0` (version locale
+  ~/.m2 jamais publiée Central) — corrigé vers 0.0.2 (Central latest).
+
 == Commandes exécutées
 
 ----
@@ -148,10 +200,13 @@ cd codebase-plugin && ./gradlew compileKotlin --offline -q
 * 4 fichiers gouvernance mis à jour (INDEX, BACKLOG, SESSIONS_HISTORY,
   PROMPT_REPRISE).
 * 1 document de cadrage créé (`CADRAGE_EPIC_VIBE_HARDENING_2.adoc`).
-* Zéro fichier de production modifié — gouvernance pure.
-* Zéro bump BOM, zéro publication, zéro secret.
-* EPIC VIBE-HARDENING-2 cadré (8 US ~21 pts, prêt à démarrer sur déclencheur).
-* Cross-borough audit : 6 consommateurs audités, 0 action codebase requise.
+* 5 boroughs consommateurs bumpés (planner, slider, capsule, codex,
+  training) — 4 compilent VERT, codex fail préexistant hors scope.
+* 3 bugs découverts signalés (MEMPHIS slider 0.0.8, ABIDJAN codex
+  kotlin-stdlib, capsule codebase-contracts 0.1.0).
+* Zéro fichier de production codebase modifié — gouvernance pure + bump
+  catalogues consommateurs.
+* EPIC VIBE-HARDENING-2 cadré (8 US ~21 pts, prêt à démarrer).
 * Borough DORMANT maintenu.
 
 == Leçons
@@ -164,8 +219,17 @@ cd codebase-plugin && ./gradlew compileKotlin --offline -q
 * Stale cosmétique dans les catalogues (alias `agent-contracts = "0.0.2"`
   dans BOM `libs.versions.toml` non référencé) est inoffensif mais
   trompeur pour un audit futur. À nettoyer côté MEMPHIS si déclencheur.
-* Capsule-gradle utilise BOM 0.0.16 (périmé 3 versions) — sujet à
-  remonter côté Détroit, pas Queens.
+* **BOM 0.0.19 référence slider:0.0.18 non publié** — bug MEMPHIS critique.
+  Une BOM publiée Central ne doit pas référencer des artefacts non
+  publiés. Capsule protégé en gardant BOM 0.0.16, mais les boroughs qui
+  bumpent BOM 0.0.19 sans consommer slider sont OK (constraints BOM ne
+  résolvent que les deps effectivement demandées).
+* **codex fail compile préexistant** — conflit kotlin-stdlib entre embedded
+  Gradle (2.3.21) et conventions-plugin 0.0.2 (2.4.10). Hors scope bump
+  codebase. À traiter côté ABIDJAN (conventions-gradle).
+* **capsule codebase-contracts 0.1.0** — version locale ~/.m2 jamais
+  publiée Central. Capsule ne buildait pas depuis un état propre. Corrigé
+  vers 0.0.2. Lesson : ne jamais dépendre d'une version non publiée.
 * C4 (flags GradleTaskArgsMapper) est un bug induit par US-2 (S-186) —
   l'allowlist deny-by-default a durci mais cassé les flags avec valeur.
   Pattern : durcissement → régression fonctionnelle → EPIC correctif.
@@ -175,7 +239,10 @@ cd codebase-plugin && ./gradlew compileKotlin --offline -q
 * EPIC VIBE-HARDENING-2 CADRÉ, 8 US ~21 pts. Démarrage sur déclencheur pilote.
 * P2 prioritaires : US-1 (S2 allowlist tasks), US-2 (S3 garde taille),
   US-3 (C4 flags cassés).
-* Cross-borough : signaler à capsule-gradle (Détroit) que BOM 0.0.16 est
-  périmé → bump vers 0.0.19 recommandé.
+* Cross-borough bugs à signaler :
+  - MEMPHIS : BOM 0.0.19 référence slider 0.0.18 non publié (publier slider
+    0.0.18 ou corriger BOM).
+  - ABIDJAN : conventions-plugin 0.0.2 tire kotlin-stdlib 2.4.10 cassant
+    codex (aligner sur embedded Gradle 2.3.21 ou monter Gradle).
 * Pas de publication codebase requise (0.0.8 aligné Central).
 * Borough DORMANT.
