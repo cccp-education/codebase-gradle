@@ -3,8 +3,8 @@
 :icons: font
 
 *Date de creation* : 2026-06-16
-*Derniere mise a jour* : 2026-08-05
-*Version* : 0.0.6 (Session 175 — Clôture code review vibecoding CR-GLOBALE-004. Gate tests koog verts (5m44s, Kotlin 2.4.10). Commit b12a092 (Kotlin 2.4.10 + POM + LlmTranslator). Revues 173/174/175 archivées. Borough DORMANT Maven Central.)
+*Derniere mise a jour* : 2026-08-17
+*Version* : 0.0.8 (Maven Central, S-183). EPIC VIBE-HARDENING 2/6 US (US-0 ✅ S-184, US-1 ✅ S-185, US-2 ✅ S-186 ExecGradleTool allowlist — gate `codebase.koog.tools.*` VERT 32 tests). Borough DORMANT (réveillé sur déclencheur pilote EPIC VIBE-HARDENING).
 
 == Regles Absolues
 
@@ -53,6 +53,9 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | ✅ | Session 173 — Publication Maven Central 0.0.6 (bundle `e4263c78`). Fix POM `<name>`+`<description>` manquants (rejeté par Central Portal 1er upload `f0e0e2fd`). Ajout bloc `publishing { pom { name.set / description.set } }` dans `codebase-plugin/build.gradle.kts`. `publishAggregationToCentralPortal --no-daemon` BUILD SUCCESSFUL. Débloque bakery BKY-LANG-SWITCH sur CI (testRuntimeClasspath résolu). Borough DORMANT Maven Central.
 | ✅ | Session 174 — Code review du vibecoding + audit working tree. 10 findings (S1-S3 sécurité : blacklists bypassables, pas d'allowlist Gradle, edit/write sans garde taille ; C1-C7 : heuristique `contains("failed")`, retry double-compté, VibecodingPlan dead code, flags Gradle cassés, LLM sans timeout, duplication, compteur négatif). SEC-1 propre. Suite tests non exécutée (borough dormant). Session lecture seule.
 | ✅ | Session 175 — Clôture code review vibecoding + CR-GLOBALE-004. Gate tests `codebase.koog.*` + `contracts.vibecoding.*` verds (5m44s, Kotlin 2.4.10). Commit atomique `b12a092` (Kotlin 2.4.10 centralisé + POM publishing + LlmTranslator prompt). CR-GLOBALE-004 archivée dans GLOBAL_CODE_REVIEW.adoc racine. Working tree propre. Borough DORMANT maintenu. Backlog EPIC VIBE-HARDENING ajouté.
+| ✅ | Session 184 — EPIC VIBE-HARDENING US-0 cadrage (gouvernance pure, zéro code). 3 constats P1 audités (S1 blacklists bypassables, C2 retry double-compté, C5 LLM sans timeout) + 7 rappels P2/P3 + 10 décisions architecturales. Document `CADRAGE_EPIC_VIBE_HARDENING.adoc`. 6 US ~12 pts découpees. Pattern S-057/S-063.
+| ✅ | Session 185 — EPIC VIBE-HARDENING US-1 ExecShellTool allowlist. 10 regex `BASH_BLACKLIST` remplacées par `SHELL_ALLOWLIST` (10 patterns) + `SHELL_DENYLIST` (10 patterns second ride). `validateCommand` allowlist deny-by-default + deny-list second ride. `ExecShellToolTest` 11→17 tests. Gate `codebase.koog.tools.*` VERT 21 tests + `ToolRegistryTest` 8/8 non-régression. Zéro bump BOM.
+| ✅ | Session 186 — EPIC VIBE-HARDENING US-2 ExecGradleTool allowlist. 4 regex `GRADLE_BLACKLIST` remplacées par `GRADLE_TASK_ALLOWLIST` (bare tasks + project:task) + `GRADLE_ARG_ALLOWLIST` (-Pprop + --flag) + `GRADLE_DENYLIST` (8 patterns second ride : clean build, --refresh-dependencies, rm, delete, sudo, curl, ;, |). `validateGradleTask` split tokens + allowlist par position. `ExecGradleToolTest` 6→17 tests (15/15 PASSED). Gate `codebase.koog.tools.*` VERT 32 tests + `ToolRegistryTest` 8/8 non-régression. Zéro bump BOM.
 
 === EPICs & Projects
 
@@ -78,6 +81,6 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | EPIC TRAD | TranslationService cross-borough (contrat N0 + impl N1) | N1 | ✅ TERMINÉ (baby-step, débloque bakery US-4) | 133
 | EPIC V-6-POOL | Adaptation Ollama Cloud Pool pour Vibecoding | N1 | ✅ TERMINÉ (4/4 items — AUTHORIZED_MODELS aligné sur AGENTS.adoc 2 modèles, LlmProviderResolver cycling, Cucumber epic_v6_pool) | 077, 158
 | EPIC C-BOM-FIX | POM transitif versions manquantes | NX | ✅ TERMINÉ (3/3 US, 8/8 pts — versions explicites dans libs.versions.toml, bump 0.0.6, 22/22 UT bakery LangSwitch GREEN) | 172
-| EPIC VIBE-HARDENING | Durcissement vibecoding (CR-GLOBALE-004) | N1 | BACKLOG (P1 : S1 allowlist deny-by-default, C2 retry un seul compteur, C5 timeout LLM ; P2 : C3/C4, S2/S3) | 175
+| EPIC VIBE-HARDENING | Durcissement vibecoding (CR-GLOBALE-004) | N1 | 🟡 EN COURS (US-0 ✅ S-184, US-1 ✅ S-185, US-2 ✅ S-186, US-3→5 À FAIRE ~7 pts) | 184-186
 | EPIC 1 | Init gouvernance agent | NX | ✅ TERMINÉ (items stale purgés session 169) | 001
 |===

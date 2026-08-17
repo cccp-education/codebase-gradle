@@ -1,41 +1,50 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 177
-:session: 177
+= Prompt de Reprise — Codebase (Queens N1) — Session 187
+:session: 187
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 176 — SLD-8 US-8.1 LlmBuildService Gradle bridge + corrections architecture. Pattern « Plugin Indépendant + Racine Consommateur » restauré (article 0124). codebase-plugin/ autonome avec son catalog. BOM 0.0.16 + codebase 0.0.5 mavenLocal. plugin.serialization fix (codebase + planner). US-8.1 livrée TDD/BDD 3 niveaux (5 unit + 3 functional + 4 cucumber = 12 tests, 0 FAIL).
+:session_precedente: 186 — EPIC VIBE-HARDENING US-2 ExecGradleTool allowlist. 4 regex `GRADLE_BLACKLIST` remplacées par `GRADLE_TASK_ALLOWLIST` (2 patterns bare tasks + project:task) + `GRADLE_ARG_ALLOWLIST` (2 patterns -Pprop + --flag) + `GRADLE_DENYLIST` (8 patterns second ride). `validateGradleTask` split tokens + allowlist par position. 15/15 ExecGradleToolTest PASSED + gate `codebase.koog.tools.*` VERT + ToolRegistryTest 8/8 non-régression. Zéro bump BOM.
 
-== Mission Session 177
+== Mission Session 187
 
-SLD-8 continue : US-8.2 côté slider. `AssistantManager` (648 lignes, 4
-factories LLM) réduit à du câblage — injection `Provider<LlmBuildService>`
-depuis codebase. Adaptateur `LlmProviderChatModelAdapter` (côté slider)
-adapte `LlmProvider` (suspend fun `call(prompt): String`) → `ChatModel`
-langchain4j (concat system+user en prompt string). Préserve le code de
-consommation existant (`RagTasks`, `TranslateDeckTask`).
+EPIC VIBE-HARDENING continue. US-3 ou US-4 (indépendants, au choix) :
+
+* US-3 (C5 Timeout LLM, ~3 pts) — wrapper `withTimeout(llmTimeoutMs)`
+  sur 3 sites `runBlocking { llmProvider.call(...) }` (callLLMNode L413,
+  replan L288, StepVerifier L44). Constructor param `llmTimeoutMs: Long
+  = 30_000L`. Catch `TimeoutCancellationException` →
+  `withError("LLMTimeout: ${ms}ms")`. ~8 unit.
+
+* US-4 (C2 Retry un seul compteur, ~2 pts) — supprimer
+  `retryCount = state.retryCount + 1` dans `executePlanTasks` (L587, L604)
+  + `incrementRetry()` dans bloc error (L291, L298, L302). Utiliser
+  `withRecoverableError` (déjà correct). MàJ `VibecodingGraphTest` +
+  `StepVerifierTest`. ~6 unit.
+
+US-5 (Cucumber BDD, ~2 pts) dépend de US-1→US-4 — à planifier en dernier.
 
 == État actuel
 
-- Version codebase-plugin : `0.0.5` (hardcodé build.gradle.kts, mavenLocal)
-- BOM workspace-bom : `0.0.16` (mavenLocal, codebase constraint 0.0.5)
-- US-8.1 ✅ TERMINÉ : `LlmBuildService` + `LlmServiceResolver` (codebase)
-- US-8.2 🟡 À CÂBLER : `AssistantManager` slider → 4 factories supprimées
-- US-8.3 🟡 À PLANIFIER : `DeckPipelineGraph` sur services codebase
-- BOM 0.0.16 + codebase 0.0.5 non publiés sur Central (mavenLocal only)
+- Version codebase-plugin : `0.0.8` (Maven Central, S-183)
+- EPIC VIBE-HARDENING : 2/6 US terminés (US-0 ✅, US-1 ✅, US-2 ✅ S-186)
+- Reste : US-3 (timeout), US-4 (retry), US-5 (cucumber) — ~7 pts
+- Borough DORMANT (réveillé sur déclencheur pilote)
 
 == Rappels
 
 - GroupId : `education.cccp`
-- Pattern architecture : « Plugin Indépendant + Racine Consommateur » (article 0124)
-- `codebase-plugin/` est un build autonome (son propre settings, catalog, wrapper)
-- `codebase-gradle/` est racine consommateur (catalog minimal, dogfooding)
-- DI native Gradle (Decision 001 slider) : `BuildService` + `Provider<T>`
-- `LlmProvider` (fun interface) : `suspend fun call(prompt: String): String`
-- `LlmProviderResolver.resolve(model): LlmProvider` — factory `gemini`/`ollama`/custom
-- `LlmBuildService` : `BuildService<Params>` avec `provider(): LlmProvider`
-- Baby-step TDD/BDD 3 niveaux : unit → functional → cucumber
+- Baby-step TDD strict : RED → GREEN → REFACTOR, 1 fichier à la fois
+- Gate ciblé en fin d'US : `./gradlew test --tests "codebase.koog.*"`
+  (pas de `./gradlew test` global — Cucumber interminable)
+- `kotlinx-coroutines-core` déjà dans le classpath (`withTimeout` available)
+- `VibecodingState.withRecoverableError` incrémente déjà `retryCount`
+  (L46-47) — source de vérité unique pour US-4
 - English only : code, Gherkin, comments
-- `./gradlew compileKotlin` côté codebase ; `./gradlew :slider:check` côté slider
+- Pas de bump BOM (EPIC local à codebase-plugin)
+- `cd codebase-plugin && ./gradlew ...` (build autonome)
 
-== Décisions architecture (DECISIONS_ARCHITECTURE.adoc slider)
+== Références
 
-- Decision 001 : rejet PicoContainer, DI native Gradle
-- Decision 002 : slider consomme codebase (N1) comme socle LLM unifié
+* `CADRAGE_EPIC_VIBE_HARDENING.adoc` — 10 décisions architecturales
+* `ExecShellTool.kt` / `ExecGradleTool.kt` — patterns allowlist (US-1/US-2)
+* `VibecodingGraph.kt` L277-313, L413, L580-607 (sites US-3/US-4)
+* `VibecodingState.kt` L46-53 (`withRecoverableError`)
+* `StepVerifier.kt` L44 (site US-3)

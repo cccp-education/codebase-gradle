@@ -1,10 +1,10 @@
 = Backlog — Codebase Gradle
 :sectnums:
-:date: 2026-08-05
+:date: 2026-08-17
 
 _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux._
 
-== Synthèse Backlog (Session 176 — 2026-08-05)
+== Synthèse Backlog (Session 186 — 2026-08-17)
 
 [cols="1,3,1,2"]
 |===
@@ -14,16 +14,16 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 | SLD-8 US-8.3 | DeckPipelineGraph sur services codebase | 🟡 À PLANIFIER | Côté slider
 | EPIC 1 | Init gouvernance | ✅ TERMINÉ | Items stale purgés (projet publié Central 0.0.5)
 | EPIC V-FLYWAY | Migration Flyway | BACKLOG P2 | Seuil déclenchement : 5+ migrations (actuellement 4 : V1→V4)
-| EPIC VIBE-HARDENING | Durcissement vibecoding (CR-GLOBALE-004) | 🟡 EN COURS (US-0 ✅ S-184, US-1 ✅ S-185, US-2→5 À FAIRE) | 3 risques P1 : S1 allowlist, C2 retry, C5 timeout
+| EPIC VIBE-HARDENING | Durcissement vibecoding (CR-GLOBALE-004) | 🟡 EN COURS (US-0 ✅ S-184, US-1 ✅ S-185, US-2 ✅ S-186, US-3→5 À FAIRE ~7 pts) | 3 risques P1 : S1 allowlist ✅, C2 retry, C5 timeout
 | Tous autres EPICs | V, W, X, Y, Z, K, L, OCR, CR, TRAD, PUB, V-LOCAL, SP, V-6, V-7, V-8, V-9, 2→12 | ✅ TERMINÉ | Voir détails ci-dessous
 |===
 
-*Backlog réellement restant* : EPIC VIBE-HARDENING (🟡 EN COURS — US-0 ✅ S-184, US-1 ✅ S-185, US-2→5 À FAIRE ~9 pts) + SLD-8 US-8.2/8.3 (côté slider) + EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5.
+*Backlog réellement restant* : EPIC VIBE-HARDENING (🟡 EN COURS — US-0 ✅ S-184, US-1 ✅ S-185, US-2 ✅ S-186, US-3→5 À FAIRE ~7 pts) + SLD-8 US-8.2/8.3 (côté slider) + EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5.
 
 == EPIC VIBE-HARDENING — Durcissement vibecoding (CR-GLOBALE-004)
 
-**Statut** : 🟡 EN COURS (US-0 ✅ S-184 cadrage, US-1 ✅ S-185 shell allowlist — 4 US restantes US-2→US-5)
-**Priorité** : P1 (3 risques P1 : S1 sécurité, C2 correction, C5 résilience)
+**Statut** : 🟡 EN COURS (US-0 ✅ S-184 cadrage, US-1 ✅ S-185 shell allowlist, US-2 ✅ S-186 gradle allowlist — 3 US restantes US-3→US-5)
+**Priorité** : P1 (2 risques P1 résolus : S1 ✅ ; reste C2 retry, C5 timeout)
 **Origine** : Code review session 174/175 (10 findings S1-S3/C1-C7 archivés GLOBAL_CODE_REVIEW.adoc)
 **Document** : link:.agents/CADRAGE_EPIC_VIBE_HARDENING.adoc[CADRAGE_EPIC_VIBE_HARDENING.adoc]
 
@@ -69,10 +69,18 @@ _Reportés EPIC VIBE-HARDENING-2 (P2/P3, hors scope cette itération)_ :
 | 3
 
 | US-2
-| 🟡 À FAIRE — S1 ExecGradleTool allowlist. Remplacer 4 regex `GRADLE_BLACKLIST` par
-  allowlist deny-by-default (8 patterns). Refactor `validateGradleTask`. MàJ
-  `ExecGradleToolTest` (6 tests).
-| ~6 unit
+| ✅ TERMINÉ (S-186) — S1 ExecGradleTool allowlist. 4 regex `GRADLE_BLACKLIST`
+  remplacées par `GRADLE_TASK_ALLOWLIST` (2 patterns : bare tasks build/compileKotlin/
+  compileTestKotlin/test/testFast/check/assemble/jar/publishToMavenLocal/tasks +
+  project:task form `:?[\w-]+:[\w-]+`) + `GRADLE_ARG_ALLOWLIST` (2 patterns :
+  `-P[\w.]+=\\S+` + `--\\w+`) + `GRADLE_DENYLIST` (8 patterns second ride : clean build,
+  --refresh-dependencies, rm, delete, sudo, curl, semicolon, pipe). `validateGradleTask`
+  refactor : split tokens par `\\s+`, allowlist par position (1er token = task, reste =
+  args), puis deny-list sur chaîne complète (defense in depth). `ExecGradleToolTest`
+  6→17 tests (baby-step TDD strict RED → GREEN → REFACTOR). Gate
+  `codebase.koog.tools.*` VERT 32 tests 0 FAIL + `ToolRegistryTest` 8/8 non-régression.
+  Zéro bump BOM.
+| 15 unit
 | 2
 
 | US-3
@@ -99,20 +107,24 @@ _Reportés EPIC VIBE-HARDENING-2 (P2/P3, hors scope cette itération)_ :
 | 2
 |===
 
-_Total_ : ~12 pts, 6 US (US-0 ✅, US-1 ✅, US-2→US-5 🟡 À FAIRE).
+_Total_ : ~12 pts, 6 US (US-0 ✅, US-1 ✅, US-2 ✅, US-3→US-5 🟡 À FAIRE).
 
 === Dépendances
 
 ----
-US-0 (cadrage ✅) → US-1 (shell allowlist ✅) → US-2 (gradle allowlist)
-                                     ↘
-                                      US-3 (timeout LLM) → US-5 (cucumber)
-                                     ↗
+US-0 (cadrage ✅) → US-1 (shell allowlist ✅) → US-2 (gradle allowlist ✅)
+                                      ↘
+                                       US-3 (timeout LLM) → US-5 (cucumber)
+                                      ↗
 US-4 (retry un seul compteur) ──┘
 ----
 
 US-1 et US-2 indépendants (2 tools). US-3 et US-4 indépendants (timeout vs retry).
 US-5 dépend de US-1→US-4.
+
+*Progression* : 4/12 pts (US-0 0 + US-1 3 + US-2 2 + prochaines 7 pts).
+US-1 et US-2 clos la branche S1 (sécurité allowlist). Reste C2 (retry) + C5 (timeout)
++ Cucumber.
 
 == EPIC C-BOM-FIX — POM transitif codebase-plugin versions manquantes
 

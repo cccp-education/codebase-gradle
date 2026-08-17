@@ -137,3 +137,11 @@
 ** `build.gradle.kts` : `excludeTags("integration")` dans `tasks.withType<Test>()`.
 * *Résultats* : `test` ✅ (42 tests ciblés, 0 failed — @integration exclus), `testFast` ✅ (BUILD SUCCESSFUL 41s).
 * *CI GitHub Actions* : workflow `test.yml` enrichi (job `full-tests`) — cache Docker + 2 instances Ollama 11466-11467 + pull `qwen3:0.6b` + env vars. Tests d'intégration CI prêts à s'exécuter sur runner GitHub Actions.
+
+=== Session 186 — EPIC VIBE-HARDENING US-2 ExecGradleTool allowlist
+
+* *Fichiers modifiés* :
+** `ExecGradleTool.kt` (62→71 lignes) : 4 regex `GRADLE_BLACKLIST` → `GRADLE_TASK_ALLOWLIST` (2 patterns) + `GRADLE_ARG_ALLOWLIST` (2 patterns) + `GRADLE_DENYLIST` (8 patterns). `validateGradleTask` refactor split tokens + allowlist par position + deny-list second ride.
+** `ExecGradleToolTest.kt` (6→17 tests) : 5 allowlist pass + 9 deny-list/deny-by-default + 2 @integration préservés + 1 backward compat.
+* *Résultats* : 15/15 ExecGradleToolTest PASSED (2 @integration exclus). Gate `codebase.koog.tools.*` VERT 32 tests (ExecShellToolTest 17 + ExecGradleToolTest 15). `ToolRegistryTest` 8/8 non-régression.
+* *Pattern* : US-1 mirroré (allowlist deny-by-default + deny-list second ride, YAGNI 2 tools).

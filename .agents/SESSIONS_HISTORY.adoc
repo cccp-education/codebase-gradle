@@ -2,6 +2,38 @@
 :toc: left
 :icons: font
 
+== Session 186 — 2026-08-17
+
+* **EPICs** : EPIC VIBE-HARDENING (US-2 ExecGradleTool allowlist)
+* **Livrables** :
+** 4 regex `GRADLE_BLACKLIST` remplacées par `GRADLE_TASK_ALLOWLIST` (2 patterns : bare tasks + project:task form) + `GRADLE_ARG_ALLOWLIST` (2 patterns : -Pproperty + --long-flag) + `GRADLE_DENYLIST` (8 patterns second ride : clean build, --refresh-dependencies, rm, delete, sudo, curl, semicolon, pipe)
+** `validateGradleTask` refactor : split tokens par `\\s+`, allowlist par position (1er token = task, reste = args), puis deny-list sur chaîne complète (defense in depth)
+** `ExecGradleToolTest` 6→17 tests (5 allowlist pass + 9 deny-list/deny-by-default + 2 @integration préservés + 1 backward compat)
+** Description tool enrichie (allowlist + deny-list second ride)
+* **Tests** : 15/15 ExecGradleToolTest PASSED + gate `codebase.koog.tools.*` VERT 32 tests + ToolRegistryTest 8/8 non-régression
+* **Build** : `compileTestKotlin` VERT, zéro bump BOM, zéro secret
+* **Score** : 9/10
+
+== Session 185 — 2026-08-17
+
+* **EPICs** : EPIC VIBE-HARDENING (US-1 ExecShellTool allowlist)
+* **Livrables** :
+** 10 regex `BASH_BLACKLIST` remplacées par `SHELL_ALLOWLIST` (10 patterns) + `SHELL_DENYLIST` (10 patterns second ride)
+** `validateCommand` allowlist deny-by-default + deny-list second ride
+** `ExecShellToolTest` 11→17 tests
+* **Tests** : gate `codebase.koog.tools.*` VERT 21 tests + ToolRegistryTest 8/8 non-régression
+* **Score** : 9/10
+
+== Session 184 — 2026-08-17
+
+* **EPICs** : EPIC VIBE-HARDENING (US-0 cadrage)
+* **Livrables** :
+** 3 constats P1 audités (S1 blacklists bypassables, C2 retry double-compté, C5 LLM sans timeout) + 7 rappels P2/P3
+** 10 décisions architecturales + 6 US ~12 pts découpees
+** Document `CADRAGE_EPIC_VIBE_HARDENING.adoc` (301 lignes)
+* **Tests** : zéro (gouvernance pure, pattern S-057/S-063)
+* **Score** : 9/10
+
 == Session 175 — 2026-08-05
 
 * **EPICs** : Aucun (code review + clôture)

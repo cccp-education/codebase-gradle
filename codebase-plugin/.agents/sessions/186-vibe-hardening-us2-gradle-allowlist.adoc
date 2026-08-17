@@ -1,0 +1,107 @@
+= Session 186 — EPIC VIBE-HARDENING US-2 ExecGradleTool Allowlist
+:sectnums:
+:date: 2026-08-17
+:borough: Queens — codebase-gradle (N1)
+:epic: VIBE-HARDENING
+:us: US-2
+:methode: Baby-step TDD strict — RED → GREEN → REFACTOR
+:pattern: S-185 (US-1 ExecShellTool allowlist à copier)
+
+== Contexte
+
+Suite de l'EPIC VIBE-HARDENING (CR-GLOBALE-004). US-0 cadrage ✅ S-184,
+US-1 ExecShellTool allowlist ✅ S-185. US-2 traite le second tool
+d'exécution : `ExecGradleTool` — remplacement des 4 regex `GRADLE_BLACKLIST`
+par allowlist deny-by-default + deny-list second ride (pattern US-1).
+
+== Constat audité (P1 S1)
+
+`ExecGradleTool.validateGradleTask` (`contracts/vibecoding/tools/ExecGradleTool.kt:53-61`)
+appliquait 4 regex `GRADLE_BLACKLIST` :
+* `clean\s+build` → contournable (`clean  build` double espace passe)
+* `--refresh-dependencies` → contournable via variations
+* `rm\s` / `delete\s` → couvre pas `sudo`, `curl`, `;`, `|`
+
+Surface d'attaque réelle : un agent LLM peut produire des variantes
+lexicales que les regex ne couvrent pas, et exécuter dans le workspace
+sans surveillance.
+
+== Actions
+
+=== RED — Tests écrits avant implémentation
+
+Fichier `src/test/kotlin/codebase/koog/tools/ExecGradleToolTest.kt`
+réécrit (6 tests → 17 tests) :
+* 5 tests allowlist pass (bare tasks, project:task form, -Pproperty, --flag, mixed)
+* 9 tests deny-list + deny-by-default (clean build, double space,
+  --refresh-dependencies, rm, delete, sudo, unknown, semicolon, pipe, curl)
+* 2 tests @integration préservés (executeBlocking + async, unchanged)
+
+Pattern US-1 mirroré : tests d'abord, assertions sur "denied" / "allowlist".
+
+=== GREEN — Implémentation minimale
+
+Fichier `src/main/kotlin/contracts/vibecoding/tools/ExecGradleTool.kt`
+réécrit (62 → 71 lignes) :
+* `GRADLE_TASK_ALLOWLIST` (2 patterns) : bare tasks (build, compileKotlin,
+  compileTestKotlin, test, testFast, check, assemble, jar,
+  publishToMavenLocal, tasks) + project:task form `:?[\w-]+:[\w-]+`
+* `GRADLE_ARG_ALLOWLIST` (2 patterns) : `-P[\w.]+=\\S+` + `--\\w+`
+* `GRADLE_DENYLIST` (8 patterns, second ride) : clean build, --refresh-
+  dependencies, rm, delete, sudo, curl, semicolon, pipe
+* `validateGradleTask` : split tokens par `\\s+`, 1er token vs GRADLE_TASK_
+  ALLOWLIST, reste vs GRADLE_ARG_ALLOWLIST, puis deny-list sur la chaîne
+  complète (defense in depth)
+* Description enrichie (allowlist + deny-list second ride)
+
+=== REFACTOR — Nettoyage
+
+* Tokens split via `task.trim().split(Regex("\\s+"))` — uniforme
+* `withIndex().all { ... }` — lisible, allowlist par position
+* Constantes `private val` au niveau fichier (pattern US-1, YAGNI 2 tools)
+* Zéro duplication avec ExecShellTool (allowlists disjoints par nature)
+
+== Commandes exécutées
+
+----
+cd codebase-plugin
+./gradlew compileTestKotlin          # VERT
+./gradlew test --tests "codebase.koog.tools.ExecGradleToolTest"   # 15/15 PASSED (2 @integration exclus)
+./gradlew test --tests "codebase.koog.tools.*"                    # gate VERT
+./gradlew test --tests "codebase.koog.ToolRegistryTest"           # non-régression VERT
+----
+
+== Résultats
+
+* `ExecGradleToolTest` : 15/15 PASSED (13 unitaires + 2 @integration
+  exclus par défaut du task `test`)
+* Gate `codebase.koog.tools.*` VERT (ExecShellToolTest 17 + ExecGradleToolTest 15 = 32 tests)
+* `ToolRegistryTest` 8/8 VERT — zéro régression
+* 1 fichier prod modifié (`ExecGradleTool.kt`), 1 fichier test modifié
+  (`ExecGradleToolTest.kt`)
+* Zéro bump BOM (EPIC local à codebase-plugin, contrats dans le même artefact)
+* Zéro secret, zéro warning critique
+* Backward compat préservée : `validateGradleTask` signature inchangée,
+  `execute`/`executeBlocking` inchangés
+
+== Leçons
+
+* Pattern US-1 (allowlist par token + deny-list second ride) se transpose
+  directement à un tool Gradle — la seule différence est la nature des
+  tokens (task vs args, vs commande shell monolithique)
+* Split par `\\s+` nécessaire car Gradle accepte plusieurs args (flags,
+  properties) alors que shell valide la commande entière comme un bloc
+* Test `clean  build` (double espace) — cas limite couvert par deny-list
+  `clean\\s+build` (regex `\\s+` matche 1+ espaces), confirmé PASS
+
+== État EPIC VIBE-HARDENING
+
+* US-0 ✅ S-184 (cadrage)
+* US-1 ✅ S-185 (ExecShellTool allowlist)
+* US-2 ✅ S-186 (ExecGradleTool allowlist) — cette session
+* US-3 🟡 À FAIRE (C5 timeout LLM, ~3 pts)
+* US-4 🟡 À FAIRE (C2 retry un seul compteur, ~2 pts)
+* US-5 🟡 À FAIRE (Cucumber BDD, ~2 pts)
+
+2/6 US terminés (4 pts / 12 pts). Prochaine session : US-3 ou US-4
+(indépendants).

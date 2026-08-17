@@ -1,5 +1,40 @@
 = Completed Tasks Archive — 2026-08
 
+== Session 186 — EPIC VIBE-HARDENING US-2 ExecGradleTool allowlist
+
+* **Date** : 2026-08-17
+* **EPIC** : VIBE-HARDENING (US-2)
+* **Statut** : ✅ TERMINÉ
+* **Actions** :
+  * 4 regex `GRADLE_BLACKLIST` remplacées par `GRADLE_TASK_ALLOWLIST` (2 patterns : bare tasks + project:task form) + `GRADLE_ARG_ALLOWLIST` (2 patterns : -Pproperty + --long-flag) + `GRADLE_DENYLIST` (8 patterns second ride : clean build, --refresh-dependencies, rm, delete, sudo, curl, semicolon, pipe)
+  * `validateGradleTask` refactor : split tokens par `\\s+`, allowlist par position (1er token = task, reste = args), puis deny-list sur chaîne complète (defense in depth)
+  * `ExecGradleToolTest` 6→17 tests (15/15 PASSED + 2 @integration préservés)
+  * Gate `codebase.koog.tools.*` VERT 32 tests + `ToolRegistryTest` 8/8 non-régression
+* **Impact** : Tool Gradle durci (S1 P1 résolu), pattern US-1 mirroré, zéro bump BOM. EPIC VIBE-HARDENING 2/6 US (4 pts / 12 pts).
+
+== Session 185 — EPIC VIBE-HARDENING US-1 ExecShellTool allowlist
+
+* **Date** : 2026-08-17
+* **EPIC** : VIBE-HARDENING (US-1)
+* **Statut** : ✅ TERMINÉ
+* **Actions** :
+  * 10 regex `BASH_BLACKLIST` remplacées par `SHELL_ALLOWLIST` (10 patterns) + `SHELL_DENYLIST` (10 patterns second ride)
+  * `validateCommand` allowlist deny-by-default + deny-list second ride
+  * `ExecShellToolTest` 11→17 tests
+  * Gate `codebase.koog.tools.*` VERT 21 tests + `ToolRegistryTest` 8/8 non-régression
+* **Impact** : Tool shell durci (S1 P1 résolu côté shell). Zéro bump BOM.
+
+== Session 184 — EPIC VIBE-HARDENING US-0 cadrage
+
+* **Date** : 2026-08-17
+* **EPIC** : VIBE-HARDENING (US-0)
+* **Statut** : ✅ TERMINÉ
+* **Actions** :
+  * 3 constats P1 audités (S1 blacklists bypassables, C2 retry double-compté, C5 LLM sans timeout) + 7 rappels P2/P3
+  * 10 décisions architecturales + 6 US ~12 pts découpees
+  * Document `CADRAGE_EPIC_VIBE_HARDENING.adoc` (301 lignes)
+* **Impact** : Socle des décisions US-1→US-5. Pattern S-057/S-063 (gouvernance pure, zéro code).
+
 == Session 175 — Clôture code review vibecoding + CR-GLOBALE-004
 
 * **Date** : 2026-08-05
