@@ -1,32 +1,70 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 187
-:session: 187
+= Prompt de Reprise — Codebase (Queens N1) — Session 188
+:session: 188
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 186 — EPIC VIBE-HARDENING US-2 ExecGradleTool allowlist. 4 regex `GRADLE_BLACKLIST` remplacées par `GRADLE_TASK_ALLOWLIST` (2 patterns bare tasks + project:task) + `GRADLE_ARG_ALLOWLIST` (2 patterns -Pprop + --flag) + `GRADLE_DENYLIST` (8 patterns second ride). `validateGradleTask` split tokens + allowlist par position. 15/15 ExecGradleToolTest PASSED + gate `codebase.koog.tools.*` VERT + ToolRegistryTest 8/8 non-régression. Zéro bump BOM.
+:session_precedente: 187 — EPIC VIBE-HARDENING TERMINÉ 6/6 US (US-3 timeout LLM withTimeout 30s 3 sites, US-4 retry single counter, US-5 Cucumber BDD 4 scénarios @vibe-hardening). Gate `codebase.koog.tools.*` + VibecodingGraph + StepVerifier VERT 64 tests 0 FAIL + 4/4 cucumber PASSED. Zéro bump BOM, zéro secret. Borough DORMANT.
 
-== Mission Session 187
+== Mission Session 188
 
-EPIC VIBE-HARDENING continue. US-3 ou US-4 (indépendants, au choix) :
+Session de maintenance + cross-borough + hardening supplémentaire
+(pilote ordonné : 1 maintenance → 4 cross-borough → 3 code review).
+Borough DORMANT réveillé sur déclencheur pilote.
 
-* US-3 (C5 Timeout LLM, ~3 pts) — wrapper `withTimeout(llmTimeoutMs)`
-  sur 3 sites `runBlocking { llmProvider.call(...) }` (callLLMNode L413,
-  replan L288, StepVerifier L44). Constructor param `llmTimeoutMs: Long
-  = 30_000L`. Catch `TimeoutCancellationException` →
-  `withError("LLMTimeout: ${ms}ms")`. ~8 unit.
+=== Phase 1 — Maintenance (gouvernance pure)
 
-* US-4 (C2 Retry un seul compteur, ~2 pts) — supprimer
-  `retryCount = state.retryCount + 1` dans `executePlanTasks` (L587, L604)
-  + `incrementRetry()` dans bloc error (L291, L298, L302). Utiliser
-  `withRecoverableError` (déjà correct). MàJ `VibecodingGraphTest` +
-  `StepVerifierTest`. ~6 unit.
+Synchroniser la gouvernance interne codebase-plugin avec l'état réel
+post-S-187 :
 
-US-5 (Cucumber BDD, ~2 pts) dépend de US-1→US-4 — à planifier en dernier.
+* INDEX.adoc : `session_en_cours` 186 → 188, EPIC VIBE-HARDENING
+  `🟡 EN COURS (2/6)` → `✅ TERMINÉ 6/6`, sessions 186/187 ajoutées.
+* BACKLOG.adoc : section EPIC VIBE-HARDENING ajoutée, `last_update` S-188.
+* SESSIONS_HISTORY.adoc : entrées S-186/S-187 ajoutées (S-119→S-126 déjà
+  rattrapées).
+* PROMPT_REPRISE.adoc : mission N+1 (ce document).
+* TEST_COVERAGE_ANALYSIS.adoc : sessions S-173→S-187 si tests modifiés.
+
+Aucun code modifié — gouvernance pure pattern S-057/S-063.
+
+=== Phase 2 — Cross-borough (support consommateurs)
+
+Identifier les boroughs consommateurs de codebase-plugin et vérifier leur
+alignement de version. Consommateurs connus : planner (Manhattan),
+slider (MIAMI), capsule (Détroit), training (Newark), plantuml (HTOWN).
+Vérifier :
+
+* Version codebase-plugin consommée dans chaque `libs.versions.toml`.
+* Delta éventuel entre version consommée et 0.0.8 (dernière Central).
+* Backlog EPIC PUB dans chaque borough consommateur (bump requis ?).
+
+Ne pas publier — audit uniquement. Décider si un EPIC PUB bump
+codebase-plugin 0.0.8 → 0.0.9 est requis (si modifications post-0.0.8
+non publiées — hors scope si working tree propre et 0.0.8 = Central).
+
+=== Phase 3 — Code review / hardening supplémentaire
+
+Audit des P2/P3 restants de CR-GLOBALE-004 reportés vers EPIC
+VIBE-HARDENING-2 :
+
+* S2 — pas d'allowlist Gradle globale (au-delà ExecGradleTool).
+* S3 — edit/write sans garde taille (limite taille fichier écrit).
+* C1 — heuristique `contains("failed")` dans TaskResultVerifier.
+* C3 — VibecodingPlan dead code.
+* C4 — flags Gradle cassés.
+* C6 — duplication.
+* C7 — compteur négatif.
+
+Décider : cadrer EPIC VIBE-HARDENING-2 (gouvernance pure) ou laisser
+dormant. Pas d'exécution code sans permission pilote.
 
 == État actuel
 
-- Version codebase-plugin : `0.0.8` (Maven Central, S-183)
-- EPIC VIBE-HARDENING : 2/6 US terminés (US-0 ✅, US-1 ✅, US-2 ✅ S-186)
-- Reste : US-3 (timeout), US-4 (retry), US-5 (cucumber) — ~7 pts
-- Borough DORMANT (réveillé sur déclencheur pilote)
+- Version codebase-plugin : `0.0.8` (Maven Central, S-183, alignée code)
+- workspace-bom : `0.0.19` (Maven Central, aligné)
+- agent-contracts : `0.0.3` (Maven Central, aligné — alias `0.0.2` dans
+  BOM `libs.versions.toml:72` est un mort non référencé, stale cosmétique)
+- EPIC VIBE-HARDENING : ✅ TERMINÉ 6/6 US (S-184→S-187)
+- EPIC SUBGRAPH : ✅ TERMINÉ 4/4 US (S-178→S-182)
+- EPIC PUB 0.0.8 : ✅ TERMINÉ 3/3 US (S-183)
+- Borough DORMANT — tous EPICs terminés
 
 == Rappels
 
@@ -34,17 +72,14 @@ US-5 (Cucumber BDD, ~2 pts) dépend de US-1→US-4 — à planifier en dernier.
 - Baby-step TDD strict : RED → GREEN → REFACTOR, 1 fichier à la fois
 - Gate ciblé en fin d'US : `./gradlew test --tests "codebase.koog.*"`
   (pas de `./gradlew test` global — Cucumber interminable)
-- `kotlinx-coroutines-core` déjà dans le classpath (`withTimeout` available)
-- `VibecodingState.withRecoverableError` incrémente déjà `retryCount`
-  (L46-47) — source de vérité unique pour US-4
 - English only : code, Gherkin, comments
-- Pas de bump BOM (EPIC local à codebase-plugin)
-- `cd codebase-plugin && ./gradlew ...` (build autonome)
+- Build autonome : `cd codebase-plugin && ./gradlew ...`
+- Pas de bump BOM sans permission (artefact local)
+- AGENTS.adoc racine : commit/push autorisés en fin de session (pilote)
 
 == Références
 
 * `CADRAGE_EPIC_VIBE_HARDENING.adoc` — 10 décisions architecturales
-* `ExecShellTool.kt` / `ExecGradleTool.kt` — patterns allowlist (US-1/US-2)
-* `VibecodingGraph.kt` L277-313, L413, L580-607 (sites US-3/US-4)
-* `VibecodingState.kt` L46-53 (`withRecoverableError`)
-* `StepVerifier.kt` L44 (site US-3)
+* `.agents/sessions/187-vibe-hardening-us3-us4-us5-clos.adoc` — clôture EPIC
+* `.agents/sessions/186-vibe-hardening-us2-gradle-allowlist.adoc` — US-2
+* `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-08.adoc` — archive août

@@ -1,0 +1,181 @@
+= Session 188 — Maintenance + Cross-borough Audit + Cadrage EPIC VIBE-HARDENING-2
+:sectnums:
+:date: 2026-08-17
+:borough: Queens — codebase-gradle (N1)
+:epic: VIBE-HARDENING-2 (cadrage) + maintenance
+:methode: Gouvernance pure (zéro code modifié) + audit cross-borough
+:pattern: S-057/S-063 (cadrage pur)
+
+== Contexte
+
+Suite à la clôture EPIC VIBE-HARDENING P1 (S-184→S-187, 6/6 US TERMINÉ),
+le borough Queens était DORMANT. Pilote a demandé 3 phases ordonnées :
+1. Maintenance (synchronisation docs post-S-187)
+2. Cross-borough (audit consommateurs codebase-plugin)
+3. Code review / hardening supplémentaire (P2/P3 restants CR-GLOBALE-004)
+
+Working tree propre en début de session. Build `codebase-plugin/` compile
+(`compileKotlin` VERT). Version 0.0.8 = Maven Central = BOM (aligné).
+
+== Actions réalisées
+
+=== Phase 1 — Maintenance (gouvernance pure)
+
+Audit révélé désynchronisation de la gouvernance interne `codebase-plugin/` :
+
+* `INDEX.adoc` `:session_en_cours: 186` (devrait 187/188), EPIC VIBE-HARDENING
+  `🟡 EN COURS (2/6)` (devrait `✅ TERMINÉ 6/6`), sessions 186/187 manquantes.
+* `BACKLOG.adoc` `:last_update: 2026-08-15 (S-181)` — VIBE-HARDENING absent.
+* `SESSIONS_HISTORY.adoc` s'arrêtait à S-134 (manquaient S-135→S-187, 53 sessions).
+* `PROMPT_REPRISE.adoc` mission S-187 déjà accomplie.
+
+Corrections appliquées (Edit partiel, 1 fichier à la fois) :
+
+* `INDEX.adoc` : `session_en_cours` 186→188, EPIC VIBE-HARDENING
+  `🟡 EN COURS (2/6)` → `✅ TERMINÉ 6/6`, sessions 186+187 ajoutées au
+  tableau "Sessions Récentes".
+* `BACKLOG.adoc` : `last_update` S-188, section EPIC VIBE-HARDENING-2
+  ajoutée après section VIBE-HARDENING, Statut Global mis à jour.
+* `SESSIONS_HISTORY.adoc` : entrées S-186/S-187 ajoutées en haut (doublon
+  S-119→S-126 corrigé en bas — 9 lignes dupliquées supprimées).
+* `PROMPT_REPRISE.adoc` : réécrit pour mission N+1 (session 189).
+
+Audit versions Maven Central (curl metadata.xml) :
+* `codebase-plugin` : 0.0.8 (dernier Central) — aligné code
+* `workspace-bom` : 0.0.19 (dernier Central) — aligné code
+* `agent-contracts` : 0.0.3 (dernier Central) — code source OK
+
+Stale cosmétique identifié (non corrigé — hors scope codebase) :
+* `workspace-bom/gradle/libs.versions.toml:72` `agent-contracts = "0.0.2"`
+  (alias mort non référencé — le build hardcode 0.0.3 L100).
+* `workspace-bom/agent-contracts/gradle/libs.versions.toml:2`
+  `agent-contracts = "0.0.1"` (catalogue interne, build hardcode 0.0.3).
+* `workspace-bom/vibecoding-contracts/gradle/libs.versions.toml:14`
+  `agent-contracts:0.0.1` (stale).
+
+=== Phase 2 — Cross-borough audit (lecture seule)
+
+Audit des 6 boroughs consommateurs de `codebase-plugin` :
+
+[cols="2,3,2,2,3"]
+|===
+| Borough | Mécanisme | Version locale | Central 0.0.8 | Statut
+
+| slider-gradle (MIAMI)
+| `alias(libs.plugins.codebase)` (plugin appliqué)
+| 0.0.7
+| 0.0.8
+| en retard -1 (pas de BOM platform)
+
+| capsule-gradle (Détroit)
+| `platform("education.cccp:workspace-bom:0.0.16")` + `alias(libs.plugins.codebase)`
+| 0.0.7
+| 0.0.8
+| BOM 0.0.16 périmé (3 versions en retard) force 0.0.7
+
+| planner-gradle (Manhattan)
+| `implementation(libs.codebase.plugin)` direct (pas de BOM platform)
+| 0.0.7
+| 0.0.8
+| en retard -1 (pas de BOM platform)
+
+| training-gradle (Newark)
+| `alias(libs.plugins.codebase)` (plugin appliqué)
+| 0.0.1
+| 0.0.8
+| en retard -7 (très en retard)
+
+| plantuml-gradle (HTOWN)
+| `platform("education.cccp:workspace-bom:0.0.19")` + plugin
+| 0.0.2 (alias local)
+| 0.0.8
+| BOM 0.0.19 force 0.0.8 (alias local 0.0.2 stale)
+
+| bakery-gradle (Bushwick)
+| `platform("education.cccp:workspace-bom:0.0.19")` + `implementation(libs.codebase.plugin)`
+| 0.0.6 (alias local)
+| 0.0.8
+| BOM 0.0.19 force 0.0.8 (alias local 0.0.6 stale)
+|===
+
+Conclusion : `codebase-plugin 0.0.8` est publié et aligné côté Queens.
+Les consommateurs sont en retard mais ça compile via le BOM (quand présent).
+Le cas le plus préoccupant : **capsule-gradle** utilise BOM 0.0.16 (périmé).
+Responsabilité de mise à jour revient à chaque borough consommateur —
+aucune action codebase requise.
+
+=== Phase 3 — Cadrage EPIC VIBE-HARDENING-2 (gouvernance pure)
+
+Audit des 7 constats P2/P3 de CR-GLOBALE-004 reportés en S-187 :
+
+* **S2** (P2) — `TaskDiscoveryRegistrar` auto-registration libre `gradle_*`
+  sans allowlist (publication accidentelle possible).
+* **S3** (P2) — `ToolRegistry.kt:125/138` `write_file`/`edit_file` sans garde
+  de taille (OOM potentiel — confirmé `read_file` a déjà `MAX_OUTPUT_CHARS`).
+* **C1** (P1 mais refonte) — `TaskResultVerifier.kt:31`
+  `combined.contains("failed")` faux positif (`0 failed tests` → FAILED) +
+  `expectedOutput` (GradleTask N0 S-064) jamais comparé au stdout.
+* **C3** (P2) — `VibecodingGraph.kt:60-84` commentaires `INSERT-X1..X6` stale
+  (EPIC X sessions 101-105 déjà fait).
+* **C4** (P2) — `GradleTaskArgsMapper.kt:18` flags `--key value` cassés vs
+  `GRADLE_ARG_ALLOWLIST` US-2 (S-186) `--\\w+` (value rejeté deny-by-default).
+* **C6** (P3) — Duplication `SessionProtocolTask` (329 lignes) /
+  `SessionProtocolServer` (158 lignes).
+* **C7** (P3) — `VibecodingGraph.kt:464` `Plan remaining tasks` négatif
+  possible (`executedTasks.size > total`).
+
+Document `CADRAGE_EPIC_VIBE_HARDENING_2.adoc` créé (12 décisions archi,
+8 US ~21 pts). EPIC ajouté au BACKLOG (section détaillée) et à l'INDEX
+(table EPICs + ligne session 188).
+
+== Commandes exécutées
+
+----
+# Audit versions Central (lecture seule)
+curl -s "https://repo1.maven.org/maven2/education/cccp/codebase-plugin/maven-metadata.xml"
+curl -s "https://repo1.maven.org/maven2/education/cccp/workspace-bom/maven-metadata.xml"
+curl -s "https://repo1.maven.org/maven2/education/cccp/agent-contracts/maven-metadata.xml"
+
+# Build compile (lecture seule, pas de tests)
+cd codebase-plugin && ./gradlew compileKotlin --offline -q
+
+# Audit cross-borough consommateurs (grep dans libs.versions.toml)
+# Audit code P2/P3 (grep dans src/main/kotlin)
+----
+
+== Résultats
+
+* 4 fichiers gouvernance mis à jour (INDEX, BACKLOG, SESSIONS_HISTORY,
+  PROMPT_REPRISE).
+* 1 document de cadrage créé (`CADRAGE_EPIC_VIBE_HARDENING_2.adoc`).
+* Zéro fichier de production modifié — gouvernance pure.
+* Zéro bump BOM, zéro publication, zéro secret.
+* EPIC VIBE-HARDENING-2 cadré (8 US ~21 pts, prêt à démarrer sur déclencheur).
+* Cross-borough audit : 6 consommateurs audités, 0 action codebase requise.
+* Borough DORMANT maintenu.
+
+== Leçons
+
+* La gouvernance interne `codebase-plugin/.agents/` se désynchronise
+  facilement de l'INDEX racine `codebase-gradle/.agents/INDEX.adoc` quand
+  les sessions s'enchaînent (S-186/187 non propagées). Double source de
+  vérité = risque de drift. L'INDEX racine était à jour (S-187), l'INDEX
+  plugin en retard (S-185).
+* Stale cosmétique dans les catalogues (alias `agent-contracts = "0.0.2"`
+  dans BOM `libs.versions.toml` non référencé) est inoffensif mais
+  trompeur pour un audit futur. À nettoyer côté MEMPHIS si déclencheur.
+* Capsule-gradle utilise BOM 0.0.16 (périmé 3 versions) — sujet à
+  remonter côté Détroit, pas Queens.
+* C4 (flags GradleTaskArgsMapper) est un bug induit par US-2 (S-186) —
+  l'allowlist deny-by-default a durci mais cassé les flags avec valeur.
+  Pattern : durcissement → régression fonctionnelle → EPIC correctif.
+
+== Next steps
+
+* EPIC VIBE-HARDENING-2 CADRÉ, 8 US ~21 pts. Démarrage sur déclencheur pilote.
+* P2 prioritaires : US-1 (S2 allowlist tasks), US-2 (S3 garde taille),
+  US-3 (C4 flags cassés).
+* Cross-borough : signaler à capsule-gradle (Détroit) que BOM 0.0.16 est
+  périmé → bump vers 0.0.19 recommandé.
+* Pas de publication codebase requise (0.0.8 aligné Central).
+* Borough DORMANT.

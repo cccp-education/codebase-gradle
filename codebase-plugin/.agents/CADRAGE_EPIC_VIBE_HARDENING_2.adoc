@@ -1,0 +1,287 @@
+= CADRAGE_EPIC_VIBE_HARDENING_2.adoc — Durcissement Vibecoding P2/P3 (CR-GLOBALE-004 suite)
+:sectnums:
+:date: 2026-08-17 (Session 188)
+:status: CADRÉ — Prêt à démarrer (gouvernance pure, zéro code)
+:origin: CR-GLOBALE-004 (session 175) — 7 findings P2/P3 restants post-EPIC VIBE-HARDENING P1
+:pattern: S-057/S-063 (cadrage pur)
+:predecessor: `CADRAGE_EPIC_VIBE_HARDENING.adoc` (S-184, EPIC P1 terminé 6/6 US S-187)
+
+== Contexte
+
+EPIC VIBE-HARDENING P1 (S-184→S-187) a traité 3 constats P1 : S1 (allowlist
+shell + gradle deny-by-default), C2 (retry single counter), C5 (timeout LLM
+withTimeout 30s). 7 constats P2/P3 ont été reportés vers EPIC
+VIBE-HARDENING-2. Cette session (S-188) les auditent et découpe en US.
+
+== Constats P2/P3 audités (7)
+
+=== S2 (P2) — Auto-registration libre `gradle_*`
+
+`TaskDiscoveryRegistrar` enregistre toute tâche Gradle découverte comme tool
+`gradle_*` dans le `ToolRegistry`. Un agent LLM peut appeler n'importe quelle
+tâche Gradle découverte (ex. `gradle_publishToMavenCentral` qui pousse des
+artefacts). Pas d'allowlist sur les tasks découvertes.
+
+*Site* : `src/main/kotlin/codebase/koog/discovery/TaskDiscoveryRegistrar.kt`
+(référence à vérifier).
+*Risque* : publication accidentelle, exécution de tâches destructrices
+(`clean`, `purge`, wrapper updates).
+*Stratégie* : allowlist des tâches découvertes (pattern `build|test|check|
+compile|assemble|jar|publishToMavenLocal|tasks|help` + project:task form),
+deny-list second ride (`publishToMavenCentral`, `publishAggregation*`,
+`clean`, `purge`, `wrapper`, `bootstrap`). Reuse pattern US-1/US-2
+ExecShellTool/ExecGradleTool.
+
+=== S3 (P2) — `edit_file`/`write_file` sans garde de taille
+
+`ToolRegistry.executeAction("write_file")` (L119-126) et `"edit_file"`
+(L128-139) écrivent le contenu sans vérifier la taille. Un LLM peut écrire
+un fichier de 100MB → OOM + saturation disque.
+
+*Sites* :
+* `contracts/vibecoding/registry/ToolRegistry.kt:125` (`file.writeText(content)`)
+* `contracts/vibecoding/registry/ToolRegistry.kt:138` (`file.writeText(updated)`)
+*Stratégie* : `MAX_WRITE_CHARS` const (ex. 1_000_000 = ~1MB), check
+`content.length > MAX_WRITE_CHARS` → `IllegalArgumentException("write_file
+content exceeds ${MAX_WRITE_CHARS} chars")` avant `writeText`. Idem pour
+`edit_file` (`newString.length` + `updated.length`). ~4 unit.
+*Note* : `read_file` a déjà `MAX_OUTPUT_CHARS` (L117 `file.readText().take
+(MAX_OUTPUT_CHARS)`) — pattern à mirror.
+
+=== C1 (P1 mais hors scope P1) — `contains("failed")` faux positif + `expectedOutput` jamais comparé
+
+`TaskResultVerifier.verify` (TaskResultVerifier.kt:17-43) heuristique
+fragile :
+* L31 `combined.contains("failed")` matche `0 failed tests` (réussite) →
+  `TaskVerdict.FAILED` faux positif.
+* `expectedOutput` (GradleTask N0 S-064, StepVerifier) n'est jamais comparé
+  au stdout réel — le contrat de vérification N0 est inutilisé.
+
+*Site* : `src/main/kotlin/codebase/koog/planning/TaskResultVerifier.kt`
+*Stratégie* : refonte `TaskResultVerifier` — (1) heuristique améliorée :
+  `failed` doit être précédé d'un contexte négatif (`BUILD FAILED`,
+  `tests failed`, `compilation error`), pas `0 failed` ; (2) comparaison
+  `expectedOutput` quand non-default `"BUILD SUCCESSFUL"` : si stdout
+  `contains(expectedOutput)` → SUCCESS, sinon FAILED. ~10 unit.
+*Risque* : backward compat — tests existants utilisent `"BUILD SUCCESSFUL"`
+default. Préserver l'heuristique actuelle comme fallback quand
+`expectedOutput` est default.
+
+=== C3 (P2) — `VibecodingPlan` dead code + javadoc INSERT-X1..X6 stale
+
+`VibecodingGraph.kt:60-84` contient 6 blocs commentaires `// [INSERT-X1]`
+jusqu'à `[INSERT-X6]` décrivant des insertions à faire — ces insertions ont
+été faites (EPIC X sessions 101-105). Le javadoc est stale et trompeur.
+
+*Site* : `src/main/kotlin/codebase/koog/VibecodingGraph.kt:60-84`
+*Stratégie* : supprimer les commentaires INSERT-X1..X6 (dead doc). `VibecodingPlan`
+(L18 `planning/VibecodingPlan.kt`) est utilisé (import L13) — pas dead code.
+~0 test (pure doc cleanup).
+
+=== C4 (P2) — `GradleTaskArgsMapper` flags cassés
+
+`GradleTaskArgsMapper.buildCommand` (L9-20) construit `"$taskName $flags"`
+où `flags = "--key value --key2 value2"`. `ExecGradleTool.executeBlocking`
+passe `cmd` comme un seul `task` arg à `ProcessBuilder("./gradlew", args.task)`
+(L51). Mais `ExecGradleTool.validateGradleTask` (US-2 S-186) split par `\\s+`
+et valide 1er token vs `GRADLE_TASK_ALLOWLIST` + reste vs `GRADLE_ARG_ALLOWLIST`
+(`--\\w+`).
+
+Le flag `--key value` (2 tokens : `--key` + `value`) — `value` ne matche pas
+`--\\w+` → **rejeté deny-by-default**. Les flags avec valeur sont cassés.
+
+*Site* : `src/main/kotlin/codebase/koog/discovery/GradleTaskArgsMapper.kt:18`
+*Stratégie* : `buildCommand` doit produire une chaîne compatible avec
+`validateGradleTask` — soit `--key=value` (1 token match `--\\w+=\\S+` ? non,
+pattern est `-P[\\w.]+=\\S+`), soit étendre `GRADLE_ARG_ALLOWLIST` pour
+accepter `--\\w+ \\S+` (pair flag+value). Décision à prendre en US.
+~6 unit.
+
+=== C6 (P3) — Duplication `SessionProtocolServer`/`SessionProtocolTask`
+
+`SessionProtocolTask.kt` (329 lignes) et `SessionProtocolServer.kt` (158
+lignes) dupliquent la logique de parsing JSON-lines + résolution contexte
++ injection governance. Refactor possible : extraire `SessionProtocolEngine`
+shared.
+
+*Sites* :
+* `src/main/kotlin/codebase/koog/SessionProtocolTask.kt`
+* `src/main/kotlin/codebase/koog/SessionProtocolServer.kt`
+*Stratégie* : extract `SessionProtocolEngine` (parsing + context resolution
++ governance injection) — `SessionProtocolTask` et `SessionProtocolServer`
+délèguent. ~8 unit (non-régression sur tests existants).
+*Priorité* : P3 — la duplication ne cause pas de bug, juste dette technique.
+
+=== C7 (P3) — `Plan remaining tasks` négatif possible
+
+`VibecodingGraph.kt:464` :
+`plan.epics.sumOf { it.userStories.sumOf { s -> s.tasks.size } } - state.executedTasks.size`
+
+Si `executedTasks.size > total tasks` (retry, tâche exécutée hors plan), le
+résultat est négatif → `"Plan remaining tasks: -1"` trompeur.
+
+*Site* : `src/main/kotlin/codebase/koog/VibecodingGraph.kt:464`
+*Stratégie* : `coerceAtLeast(0)` : `(total - executed).coerceAtLeast(0)`.
+~1 unit.
+*Priorité* : P3 — trivial, 1 ligne.
+
+== Décisions architecturales
+
+=== Décision 1 — Allowlist sur tasks découvertes (S2)
+
+Pattern US-1/US-2 (allowlist deny-by-default + deny-list second ride) appliqué
+à `TaskDiscoveryRegistrar`. Allowlist des préfixes de tâches sûres +
+project:task form. Deny-list second ride (`publishTo*`, `clean`, `purge`,
+`wrapper`, `bootstrap`).
+
+=== Décision 2 — Garde de taille write_file/edit_file (S3)
+
+`MAX_WRITE_CHARS = 1_000_000` (~1MB) const dans `ToolRegistry`. Check avant
+`writeText` → `IllegalArgumentException`. `edit_file` check aussi
+`updated.length`. Pattern `read_file` `MAX_OUTPUT_CHARS` (déjà existant L117).
+
+=== Décision 3 — TaskResultVerifier refonte (C1)
+
+Backward compat : heuristique actuelle conservée comme fallback. Nouveau
+chemin prioritaire : si `expectedOutput != "BUILD SUCCESSFUL"` (custom),
+comparer `stdout.contains(expectedOutput)` → SUCCESS sinon FAILED. Heuristique
+`contains("failed")` raffinée : regex `(?<!0 )failed` (failed non précédé de
+`0 `) ou exclusion `0 failed`. ~10 unit.
+
+=== Décision 4 — Cleanup doc INSERT-X (C3)
+
+Suppression pure des commentaires stale L60-84. Zéro test impact.
+
+=== Décision 5 — GradleTaskArgsMapper flags (C4)
+
+Extension `GRADLE_ARG_ALLOWLIST` pour accepter `--\\w+ \\S+` (pair flag+value
+2 tokens) en plus de `--\\w+` seul. OU `buildCommand` produit `--key=value`
+(si `GRADLE_ARG_ALLOWLIST` étendu à `--\\w+=\\S+`). Décision : étendre
+`GRADLE_ARG_ALLOWLIST` à `--\\w+(?:=\\S+)?` (flag seul ou flag=value) ET
+accepter `--\\w+ \\S+` (flag value séparés). ~6 unit.
+
+=== Décision 6 — Extraction SessionProtocolEngine (C6)
+
+Refactor extract `SessionProtocolEngine` partagé. P3 — pas prioritaire.
+
+=== Décision 7 — coerceAtLeast(0) remaining tasks (C7)
+
+1 ligne fix. Trivial.
+
+=== Décision 8 — Domaine conservé
+
+Pas de nouveau domaine DDD. Tout dans les domaines existants
+(`codebase.koog.tools`, `codebase.koog.planning`, `contracts.vibecoding.*`).
+
+=== Décision 9 — Zéro bump BOM
+
+EPIC local à codebase-plugin. Contrats dans le même artefact.
+
+=== Décision 10 — Baby-step TDD strict
+
+1 US à la fois. RED → GREEN → REFACTOR. Gate ciblé en fin d'US :
+`./gradlew test --tests "codebase.koog.tools.*"` ou `--tests
+"codebase.koog.planning.*"`. Pas de `./gradlew test` global (Cucumber
+interminable).
+
+=== Décision 11 — Cucumber BDD (US-7)
+
+Feature `codebase_vibe_hardening_2.feature` `@vibe-hardening-2` reprenant les
+scénarios clés (S3 garde taille, C1 expectedOutput, C4 flags, C7 negative).
+Runner dédié `VibeHardening2CucumberRunner` (pattern S-082).
+`CucumberTaskSpec("cucumberTestVibeHardening2")` 38e.
+
+=== Décision 12 — Ordre de priorité
+
+P2 d'abord (S2, S3, C4), puis C1 (P1 mais refonte complexe), puis P3 (C3,
+C7 triviaux, C6 refactor). 7 US + 1 Cucumber = 8 US ~20 pts.
+
+== US découpées (~20 pts, 8 US)
+
+[cols="1,4,1,1"]
+|===
+| US | Sujet | Priorité | Estimation
+
+| US-0
+| Cadrage EPIC VIBE-HARDENING-2 (ce document, gouvernance pure)
+| —
+| ✅ S-188
+
+| US-1
+| S2 Allowlist TaskDiscoveryRegistrar (deny-by-default + deny-list second ride)
+| P2
+| ~4 pts (~8 unit)
+
+| US-2
+| S3 Garde de taille write_file/edit_file (MAX_WRITE_CHARS 1MB)
+| P2
+| ~2 pts (~4 unit)
+
+| US-3
+| C4 GradleTaskArgsMapper flags cassés (extension GRADLE_ARG_ALLOWLIST)
+| P2
+| ~3 pts (~6 unit)
+
+| US-4
+| C1 TaskResultVerifier refonte (expectedOutput comparison + failed raffiné)
+| P1
+| ~4 pts (~10 unit)
+
+| US-5
+| C3 Cleanup doc INSERT-X1..X6 (VibecodingGraph.kt:60-84)
+| P3
+| ~1 pt (0 test)
+
+| US-6
+| C7 coerceAtLeast(0) Plan remaining tasks (VibecodingGraph.kt:464)
+| P3
+| ~1 pt (~1 unit)
+
+| US-7
+| C6 Extraction SessionProtocolEngine (refactor duplication)
+| P3
+| ~4 pts (~8 unit non-régression)
+
+| US-8
+| Cucumber BDD codebase_vibe_hardening_2.feature (~4 scénarios @vibe-hardening-2)
+| —
+| ~2 pts
+|===
+
+Total : ~21 pts. 8 US.
+
+== Dépendances
+
+* US-1→US-7 indépendants (peuvent être faits dans n'importe quel ordre).
+* US-8 (Cucumber) dépend de US-1→US-7 (synthèse BDD).
+
+== Backward Compatibility
+
+Toutes les US préservent la backward compat :
+* Allowlist (S2) : tasks découvertes déjà allowlistées par défaut (build,
+  test, check, compile) — les autres deviennent denied (changement
+  comportemental mineur mais sécuritaire).
+* Garde taille (S3) : `MAX_WRITE_CHARS` = 1MB — aucun test existant n'écrit
+  >1MB.
+* Flags (C4) : extension allowlist — accepte plus, ne rejette pas ce qui
+  passait avant.
+* TaskResultVerifier (C1) : heuristique fallback conservée — tests
+  existants (`TaskResultVerifierTest`) préservés.
+* Cleanup doc (C3) : zéro impact.
+* coerceAtLeast (C7) : 0 si déjà 0, sinon inchangé.
+* SessionProtocolEngine (C6) : refactor interne, signatures publiques
+  préservées.
+
+== Non-cible (out of scope)
+
+* S2 avancé (allowlist par plugin/borough consommateur) — EPIC futur si
+  besoin.
+* C1 scoring sémantique LLM (remplacer heuristique par LLM judge) — EPIC
+  futur.
+* C6 refactor complet SessionProtocol (P3, dette technique acceptable).
+
+== Prochaines étapes
+
+* US-0 ✅ S-188 (ce document, gouvernance pure).
+* US-1 à US-8 : démarrage sur déclencheur pilote. Borough DORMANT.
+* Pas d'exécution code sans permission pilote.
