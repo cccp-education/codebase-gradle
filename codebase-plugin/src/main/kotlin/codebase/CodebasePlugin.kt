@@ -1,6 +1,10 @@
 package codebase
 
 import codebase.blog.EndSessionBlogTask
+import codebase.finetuning.CodebaseFineTuningExtension
+import codebase.finetuning.FineTuneExpertTask
+import codebase.finetuning.PrepareFineTuningDatasetTask
+import codebase.finetuning.PublishExpertToOllamaTask
 import codebase.koog.SessionProtocolDaemonTask
 import codebase.koog.VibecodingTask
 import codebase.koog.agentic.CodebaseGovernanceExtension
@@ -41,6 +45,8 @@ class CodebasePlugin : Plugin<Project> {
         governanceExt.reportFormat.convention("json")
         governanceExt.incremental.convention(false)
         governanceExt.chunkIncremental.convention(false)
+
+        val fineTuningExt = project.extensions.create("fineTuning", CodebaseFineTuningExtension::class.java)
 
         project.tasks.register(
             "collectFromCodebase",
@@ -245,6 +251,87 @@ class CodebasePlugin : Plugin<Project> {
                         .orElse(expertExt.outputFile)
                 )
             )
+        }
+
+        // ─── EPIC FT-PIPELINE US-4 — fine-tuning tasks (prepare → fineTune → publish) ───
+        val ftBaseModelProp = project.providers.gradleProperty("codebase.finetuning.baseModel")
+        val ftDatasetProp = project.providers.gradleProperty("codebase.finetuning.dataset")
+        val ftOutputNameProp = project.providers.gradleProperty("codebase.finetuning.outputModelName")
+        val ftCorpusRatioProp = project.providers.gradleProperty("codebase.finetuning.corpusRatio")
+        val ftMaxIterProp = project.providers.gradleProperty("codebase.finetuning.maxIterations")
+        val ftEpochsProp = project.providers.gradleProperty("codebase.finetuning.epochs")
+        val ftLearningRateProp = project.providers.gradleProperty("codebase.finetuning.learningRate")
+        val ftBatchSizeProp = project.providers.gradleProperty("codebase.finetuning.batchSize")
+        val ftCorpusGlobsProp = project.providers.gradleProperty("codebase.finetuning.corpusGlobs")
+        val ftValidationThresholdProp = project.providers.gradleProperty("codebase.finetuning.validationThreshold")
+        val ftDomainNameProp = project.providers.gradleProperty("codebase.finetuning.domainName")
+        val ftDomainLabelProp = project.providers.gradleProperty("codebase.finetuning.domainLabel")
+        val ftOllamaBaseUrlProp = project.providers.gradleProperty("codebase.finetuning.ollamaBaseUrl")
+
+        project.tasks.register(
+            "prepareFineTuningDataset",
+            PrepareFineTuningDatasetTask::class.java
+        ) { task ->
+            task.group = "finetuning"
+            task.description = "Prepares the fine-tuning dataset (Modelfile + corpus globs) for continual pre-training"
+            task.baseModel.set(ftBaseModelProp.orElse(fineTuningExt.baseModel))
+            task.dataset.set(
+                ftDatasetProp.map { it.split(",").map { d -> d.trim() } }
+                    .orElse(fineTuningExt.dataset)
+            )
+            task.corpusGlobs.set(
+                ftCorpusGlobsProp.map { it.split(",").map { d -> d.trim() } }
+                    .orElse(fineTuningExt.corpusGlobs)
+            )
+            task.outputModelName.set(ftOutputNameProp.orElse(fineTuningExt.outputModelName))
+            task.corpusRatio.set(
+                ftCorpusRatioProp.map { it.toDouble() }.orElse(fineTuningExt.corpusRatio)
+            )
+            task.outputFile.set(project.layout.buildDirectory.file("finetuning/dataset-prep.txt"))
+        }
+
+        project.tasks.register(
+            "fineTuneExpert",
+            FineTuneExpertTask::class.java
+        ) { task ->
+            task.group = "finetuning"
+            task.description = "Executes the fine-tuning pipeline (continual pre-training) and produces a GGUF model + report"
+            task.baseModel.set(ftBaseModelProp.orElse(fineTuningExt.baseModel))
+            task.dataset.set(
+                ftDatasetProp.map { it.split(",").map { d -> d.trim() } }
+                    .orElse(fineTuningExt.dataset)
+            )
+            task.corpusGlobs.set(
+                ftCorpusGlobsProp.map { it.split(",").map { d -> d.trim() } }
+                    .orElse(fineTuningExt.corpusGlobs)
+            )
+            task.outputModelName.set(ftOutputNameProp.orElse(fineTuningExt.outputModelName))
+            task.corpusRatio.set(
+                ftCorpusRatioProp.map { it.toDouble() }.orElse(fineTuningExt.corpusRatio)
+            )
+            task.ollamaBaseUrl.set(ftOllamaBaseUrlProp.orElse("http://localhost:11437"))
+            task.outputReport.set(project.layout.buildDirectory.file("finetuning/report.txt"))
+            task.ggufOutputDir.set(project.layout.buildDirectory.dir("finetuning/gguf"))
+            task.dependsOn("prepareFineTuningDataset")
+        }
+
+        project.tasks.register(
+            "publishExpertToOllama",
+            PublishExpertToOllamaTask::class.java
+        ) { task ->
+            task.group = "finetuning"
+            task.description = "Registers the fine-tuned expert in ExpertRegistry and generates the exposure manifest JSON"
+            task.outputModelName.set(ftOutputNameProp.orElse(fineTuningExt.outputModelName))
+            task.domainName.set(ftDomainNameProp.orElse(""))
+            task.domainLabel.set(ftDomainLabelProp.orElse(""))
+            task.baseUrl.set(ftOllamaBaseUrlProp.orElse("http://localhost:11437"))
+            task.anonymizeEndpoints.set(
+                project.providers.gradleProperty("codebase.finetuning.anonymizeEndpoints")
+                    .map { it.toBoolean() }
+                    .orElse(true)
+            )
+            task.manifestOutput.set(project.layout.buildDirectory.file("finetuning/expert-manifest.json"))
+            task.dependsOn("fineTuneExpert")
         }
     }
 }

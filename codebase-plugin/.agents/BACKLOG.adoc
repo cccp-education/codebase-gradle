@@ -1,12 +1,12 @@
 = BACKLOG — Codebase Gradle
 :toc:
-:last_update: 2026-08-19 (Session 194 — EPIC FT-PIPELINE US-2 TERMINÉ : port `FineTuningPipeline` + `OllamaFineTunerAdapter` + `OllamaRegistryClient`/`OllamaHttpRegistryClient`, 43/43 unit PASSED)
+:last_update: 2026-08-19 (Session 196 — EPIC FT-PIPELINE US-4 TERMINÉ : tâches Gradle + extension DSL `fineTuning {}` + 3 tâches `prepareFineTuningDataset`/`fineTuneExpert`/`publishExpertToOllama` + câblage `CodebasePlugin` + 13 props CLI, 140 tests 0 FAIL)
 
 == Statut Global
 
 **EPIC VIBE-HARDENING ✅ TERMINÉ (6/6 — S184-S187)** — durcissement vibecoding P1 (S1 allowlist shell + gradle, C2 retry single counter, C5 timeout LLM, Cucumber BDD). **EPIC PUB (bump 0.0.8) ✅ TERMINÉ (S183)**. **EPIC SUBGRAPH ✅ TERMINÉ (4/4 — S182)** — contexte augmenté Graphify réel. Le reste du backlog est dormant :
 
-. *EPIC FT-PIPELINE* (P0 vision) — 🟡 EN COURS 2/7 US (S-188 cadrage + S-193 US-1 + S-194 US-2) — pipeline de fine-tuning N1 générique (fabrication modèle : dataset prep + continual pre-training 10% corpus + export GGUF + push Ollama). Source de conception : notebook-gradle ARCHITECTURE.adoc (vestige récupéré). Domaine `codebase.finetuning` (7ème) enrichi S-194 : port `FineTuningPipeline` + `FineTuningRequest`/`FineTuningResult` sealed + `OllamaFineTunerAdapter` + `OllamaRegistryClient`/`OllamaHttpRegistryClient` (6 prod + 1 fake + 2 test). Boucle fabrication→exposition avec domaine `codebase.koog.expert` existant (13 fichiers). TRN-8 training reformulé en recettes N2 consommant le pipeline. US-3→6 À FAIRE.
+. *EPIC FT-PIPELINE* (P0 vision) — 🟡 EN COURS 4/7 US (S-188 cadrage + S-193 US-1 + S-194 US-2 + S-195 US-3 + S-196 US-4) — pipeline de fine-tuning N1 générique (fabrication modèle : dataset prep + continual pre-training 10% corpus + export GGUF + push Ollama). Source de conception : notebook-gradle ARCHITECTURE.adoc (vestige récupéré). Domaine `codebase.finetuning` (7ème) enrichi S-196 : extension DSL `CodebaseFineTuningExtension` (10 propriétés) + 3 tâches Gradle `prepareFineTuningDataset`/`fineTuneExpert`/`publishExpertToOllama` + câblage `CodebasePlugin` (+87 lignes, 13 props CLI `-Pcodebase.finetuning.*`) (17 fichiers prod). Boucle fabrication→exposition avec domaine `codebase.koog.expert` existant (13 fichiers). TRN-8 training reformulé en recettes N2 consommant le pipeline. US-5→6 À FAIRE.
 . *EPIC VIBE-HARDENING-2* (P2/P3) — ✅ TERMINÉ 8/8 US (S-188 cadrage + S-189 US-1+US-2 + S-190 US-3 + S-191 US-4 + S-192 US-5+US-6+US-7+US-8) — durcissement vibecoding P2/P3 (S2 allowlist tasks découvertes ✅, S3 garde taille write/edit ✅, C4 flags cassés ✅, C1 TaskResultVerifier refonte ✅, C3 cleanup doc ✅ S-192, C6 SessionProtocolEngine extraction ✅ S-192, C7 coerceAtLeast ✅ S-192, Cucumber BDD ✅ S-192). EPIC clos. Gate `codebase.koog.planning.*` + `codebase.koog.tools.*` + `codebase.koog.discovery.*` + `ToolRegistryTest` + `SessionProtocolEngineTest` + `VibecodingGraphTest` VERT 0 FAIL + 4/4 cucumber `@vibe-hardening-2` PASSED.
 . *EPIC VIBE-HARDENING* (P1) — ✅ TERMINÉ 6/6 US (US-0 cadrage S184, US-1 shell allowlist S185, US-2 gradle allowlist S186, US-3 timeout LLM S187, US-4 retry single counter S187, US-5 cucumber BDD S187). Gate `codebase.koog.tools.*` + VibecodingGraph + StepVerifier VERT 64 tests 0 FAIL + 4/4 cucumber PASSED. P2/P3 restants (S2/S3/C1/C3/C4/C6/C7) → EPIC VIBE-HARDENING-2 si déclencheur.
 . *EPIC SUBGRAPH* (P1) — ✅ TERMINÉ 4/4 US (S178 cadrage, S179 domaine `codebase.graph`, S180 canal Graphify réel, S182 US-3 graphRelations+Resource + US-4 Cucumber 4 scénarios @subgraph). Contexte augmenté complet : EAGER + RAG + GRAPHIFY réel + Docs + Resource.
@@ -310,9 +310,9 @@ directement en R2DBC. Quand le nombre de migrations dépassera 5, importer
 
 Actuellement 4 migrations (V1→V4). Non applicable.
 
-== 🟡 EPIC FT-PIPELINE — Pipeline de Fine-Tuning N1 (Session 188 — Cadrage, 2/7 US)
+== 🟡 EPIC FT-PIPELINE — Pipeline de Fine-Tuning N1 (Session 188 — Cadrage, 4/7 US)
 
-**Statut** : 🟡 EN COURS (7 US ~18 pts, US-0 ✅ S-188, US-1 ✅ S-193, US-2 ✅ S-194, US-3→6 À FAIRE)
+**Statut** : 🟡 EN COURS (7 US ~18 pts, US-0 ✅ S-188, US-1 ✅ S-193, US-2 ✅ S-194, US-3 ✅ S-195, US-4 ✅ S-196, US-5→6 À FAIRE)
 **Priorité** : P0 vision (WORKSPACE_AS_PRODUCT.adoc:642-658)
 **Source de conception** : `foundry/public/notebook-gradle/ARCHITECTURE.adoc` (vestige récupéré)
 **Document** : `.agents/CADRAGE_EPIC_FT_PIPELINE.adoc`
@@ -354,13 +354,13 @@ pas de runtime Colab (CI/CD Gradle), Cucumber BDD `@finetuning`, budget pool
 | 3
 
 | US-3
-| 🟡 À FAIRE : `FineTuningGraph` — graphe koog `strategy<FineTuningState, FineTuningState>` 3 nœuds propose/train/validate + edges conditionnels (convergence score, backtracking, maxIterations default 3). Méthode `execute` séquentielle pattern `KoogAugmentedContextGraph`. `asMermaidDiagram()`.
-| ~12 unit
+| ✅ TERMINÉ (S-195) : `FineTuningGraph` — graphe koog `strategy<FineTuningState, FineTuningState>` 3 nœuds propose/train/validate + 7 edges conditionnels (convergence score, backtracking, maxIterations default 3). Méthode `execute` séquentielle pattern `KoogAugmentedContextGraph`. `asMermaidDiagram()`. 5 fichiers prod créés (FineTuningStage, FineTuningState 11 champs + 10 invariants, FineTuningPromptBuilder port, FineTuningLlm port, FineTuningGraph) + 2 test (FineTuningStateTest 18 unit, FineTuningGraphTest 17 unit). Gate 78/78 VERT.
+| 35 unit
 | 4
 
 | US-4
-| 🟡 À FAIRE : Tâches Gradle `prepareFineTuningDataset` + `fineTuneExpert` + `publishExpertToOllama` (groupe `finetuning`). Extension `fineTuning { baseModel; dataset; outputModelName; corpusRatio; maxIterations }` 4 sources DSL (pattern `CapsuleConfig`).
-| ~10 unit + 2 functional
+| ✅ TERMINÉ (S-196) : tâches Gradle `prepareFineTuningDataset` (groupe `finetuning`, `@OutputFile`, assemble Modelfile + Dataset globs) + `fineTuneExpert` (groupe `finetuning`, dependsOn prepare, `@Internal pipeline` injectable — défaut `OllamaFineTunerAdapter`, `@OutputFile report` + `@OutputDirectory ggufDir`) + `publishExpertToOllama` (groupe `finetuning`, dependsOn fineTune, register `ExpertRegistry` + manifest JSON via `ExpertExposureTask`). Extension `fineTuning {}` 10 propriétés DSL + helpers `toConfig()`/`toRequest()`. `CodebasePlugin.kt` câblé (+87 lignes, extension + 3 tâches + 13 props CLI `-Pcodebase.finetuning.*`). 4 fichiers prod créés + 5 test créés + 1 modifié. 140 tests 0 FAIL (gate finetuning + plugin).
+| 47 unit + 3 functional
 | 4
 
 | US-5
@@ -374,7 +374,7 @@ pas de runtime Colab (CI/CD Gradle), Cucumber BDD `@finetuning`, budget pool
 | 1
 |===
 
-Ordre : US-0 ✅ → US-1 ✅ → US-2 ✅ → US-3 → US-4 → US-5 → US-6.
+Ordre : US-0 ✅ → US-1 ✅ → US-2 ✅ → US-3 ✅ → US-4 ✅ → US-5 → US-6.
 Baby-step TDD/BDD strict. Gate ciblé : `./gradlew test --tests "codebase.finetuning.*"`.
 
 == Kover Coverage

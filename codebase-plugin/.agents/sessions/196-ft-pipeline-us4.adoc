@@ -1,0 +1,158 @@
+= Session 196 — EPIC FT-PIPELINE US-4 : Tâches Gradle + Extension DSL
+:borough: Queens — codebase-gradle (N1)
+:date: 2026-08-19
+:session: 196
+:epic: FT-PIPELINE
+:us: US-4
+:methode: Baby-step TDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois, séquentiel pur
+:pattern: S-113 (multi-US 1 session), `CodebaseExpertExtension` / `ExpertExposureTask`
+
+== Contexte
+
+EPIC FT-PIPELINE 3/7 US livrés (US-0 cadrage S-188, US-1 config+merger
+S-193, US-2 port `FineTuningPipeline` + `OllamaFineTunerAdapter` S-194,
+US-3 `FineTuningGraph` koog itératif S-195). US-4 = tâches Gradle +
+extension DSL — la couche Gradle qui câble le domaine pur
+`codebase.finetuning` (US-1→US-3) aux tâches exécutables.
+
+== Actions
+
+=== 1. Extension DSL `CodebaseFineTuningExtension`
+
+* Fichier : `src/main/kotlin/codebase/finetuning/CodebaseFineTuningExtension.kt`
+* Pattern : `CodebaseExpertExtension` / `CodebaseOcrExtension` (abstract class,
+  Gradle-managed `Property` / `ListProperty`).
+* 10 propriétés DSL : `baseModel`, `dataset`, `outputModelName`, `corpusRatio`,
+  `maxIterations`, `epochs`, `learningRate`, `batchSize`, `corpusGlobs`,
+  `validationThreshold`.
+* Defaults backward compat : mirrors `FineTuningConfig` / `FineTuningRequest`
+  defaults (`corpusRatio=0.10`, `epochs=3`, `learningRate=2e-4`, etc.).
+* Helpers `toConfig()` / `toRequest()` : bridge Gradle properties → pure
+  domain objects. `toRequest()` utilise `corpusGlobs` comme fallback dataset
+  (pattern `FineTuningConfig.corpusGlobs`).
+* Test : `CodebaseFineTuningExtensionTest` — 10 unit (registration, defaults,
+  setters, `toConfig`, `toRequest`, invariants × 3).
+
+=== 2. `PrepareFineTuningDatasetTask` — tâche `prepareFineTuningDataset`
+
+* Fichier : `src/main/kotlin/codebase/finetuning/PrepareFineTuningDatasetTask.kt`
+* Groupe : `finetuning`. Pattern `ExpertExposureTask` (`@DisableCachingByDefault`,
+  `@Input`/`@OutputFile`).
+* Inputs : `baseModel`, `dataset`, `corpusGlobs`, `outputModelName`,
+  `corpusRatio`. Output : `outputFile` (défaut
+  `build/finetuning/dataset-prep.txt`).
+* `executePrepare()` : valide les invariants (delegated to
+  `FineTuningRequest` semantics), assemble Modelfile section (`FROM
+  baseModel` + corpus ratio + output model name) + Dataset section (globs
+  listing). `corpusGlobs` fallback when `dataset` empty.
+* Test : `PrepareFineTuningDatasetTaskTest` — 11 unit (task class, annotation,
+  inputs, execute happy path, corpusGlobs fallback, 3 invariants × GradleException,
+  parent dirs, corpusRatio value, section headers).
+
+=== 3. `FineTuneExpertTask` — tâche `fineTuneExpert`
+
+* Fichier : `src/main/kotlin/codebase/finetuning/FineTuneExpertTask.kt`
+* Groupe : `finetuning`, `dependsOn("prepareFineTuningDataset")`.
+* Inputs : `baseModel`, `dataset`, `corpusGlobs`, `outputModelName`,
+  `corpusRatio`, `ollamaBaseUrl`. Outputs : `outputReport` (défaut
+  `build/finetuning/report.txt`), `ggufOutputDir` (défaut
+  `build/finetuning/gguf`). `@Internal pipeline: FineTuningPipeline?` —
+  injectable pour tests (`FakeFineTuner`), défaut
+  `OllamaFineTunerAdapter(OllamaHttpRegistryClient(baseUrl), ggufDir)`.
+* `executeFineTune()` : valide invariants, construit `FineTuningRequest`,
+  délègue à `pipeline.fineTune(request)`, écrit rapport texte (status
+  SUCCESS/FAILURE + baseModel + dataset + score/reason).
+* Test : `FineTuneExpertTaskTest` — 12 unit (task class, annotation, inputs,
+  success report, failure report, 3 invariants × GradleException,
+  corpusGlobs fallback, parent dirs, report fields, default Ollama adapter
+  degraded → FAILURE).
+
+=== 4. `PublishExpertToOllamaTask` — tâche `publishExpertToOllama`
+
+* Fichier : `src/main/kotlin/codebase/finetuning/PublishExpertToOllamaTask.kt`
+* Groupe : `finetuning`, `dependsOn("fineTuneExpert")`.
+* Inputs : `outputModelName`, `domainName`, `domainLabel`, `baseUrl`,
+  `anonymizeEndpoints`. Output : `manifestOutput` (défaut
+  `build/finetuning/expert-manifest.json`). `@Internal expertRegistry:
+  ExpertRegistry` — injectable, défaut fresh registry.
+* `executePublish()` : valide invariants, enregistre `ExpertRegistration`
+  dans `ExpertRegistry` (domaine `codebase.koog.expert` existant — boucle
+  fabrication→exposition), délègue manifest JSON à `ExpertExposureTask`
+  (`findByName` ou `register` fallback pour isolation test).
+* Test : `PublishExpertToOllamaTaskTest` — 11 unit (task class, annotation,
+  inputs, register + manifest delegation, anonymization, 2 invariants ×
+  GradleException, parent dirs, default registry, preserves existing entries,
+  default timeoutSeconds 120).
+
+=== 5. Câblage `CodebasePlugin`
+
+* Fichier : `src/main/kotlin/codebase/CodebasePlugin.kt` modifié.
+* Extension `fineTuning` créée (`CodebaseFineTuningExtension`).
+* 3 tâches enregistrées : `prepareFineTuningDataset`, `fineTuneExpert`
+  (dependsOn prepare), `publishExpertToOllama` (dependsOn fineTune).
+* 13 propriétés CLI `-Pcodebase.finetuning.*` câblées (baseModel, dataset,
+  outputModelName, corpusRatio, maxIterations, epochs, learningRate,
+  batchSize, corpusGlobs, validationThreshold, domainName, domainLabel,
+  ollamaBaseUrl). Pattern `ocrDocument` / `ingestGovernance` (CLI override
+  extension).
+* Test : `CodebasePluginTest` mis à jour — 8→11 tâches attendues, +5 tests
+  (3 groupes finetuning, 2 dependsOn via `taskDependencies`, extension
+  registered).
+
+=== 6. Test `FunctionalTest`
+
+* Fichier : `src/test/kotlin/codebase/finetuning/FineTuningFunctionalTest.kt`
+* 3 tests : DSL block end-to-end (extension → 3 tâches), prepare executes
+  via DSL, publish registers expert via DSL.
+
+== Commandes
+
+----
+./gradlew compileKotlin
+./gradlew test --tests "codebase.finetuning.*" --rerun-tasks
+./gradlew test --tests "codebase.CodebasePluginTest" --rerun-tasks
+./gradlew test --tests "codebase.finetuning.*" --tests "codebase.CodebasePluginTest" --rerun-tasks
+----
+
+== Résultats
+
+* Gate `codebase.finetuning.*` + `CodebasePluginTest` : **140 tests, 0 FAIL**
+  (8 config + 19 merger + 11 pipeline + 5 adapter + 18 state + 17 graph +
+  10 extension + 11 prepare + 12 fineTune + 11 publish + 3 functional + 15
+  plugin = 140).
+* `compileKotlin` VERT, `validatePlugins` VERT.
+* 4 fichiers prod créés (Extension + 3 tâches) + 1 modifié (`CodebasePlugin.kt`
+  +87 lignes).
+* 5 fichiers test créés + 1 modifié (`CodebasePluginTest.kt`).
+* Zéro bump BOM (version 0.0.8 inchangée), zéro secret, zéro régression.
+* Domaine `codebase.finetuning` (7ème) enrichi : 13→17 fichiers prod (+
+  Extension + 3 tâches).
+* EPIC FT-PIPELINE **4/7 US** (reste US-5 Cucumber BDD + US-6 cross-borough
+  training-gradle TRN-8).
+
+== Leçons
+
+* `dependsOn` avec String n'est pas visible via `task.dependsOn` cast
+  `TaskReference` dans `ProjectBuilder` — utiliser `taskDependencies.
+  getDependencies(task).map { it.name }` (API Gradle stable pour résoudre
+  les dépendances lazily-resolved).
+* `ProjectBuilder` + `tasks.register("exposeExperts", ...)` dans une tâche
+  qui assume que `CodebasePlugin` a déjà enregistré `exposeExperts` →
+  DuplicateTaskException. Solution : `findByName` + fallback `register`
+  (idempotent, testable isolément).
+* Test `contains("0.10")` fragile — Kotlin `Double.toString()` supprime le
+  zéro final (`0.1`). Utiliser `contains("corpus ratio: 0.1")` (exact
+  formatted string) au lieu de `contains("0.10")`.
+* Pattern `@Internal var pipeline: FineTuningPipeline?` + lazy default
+  `buildDefaultPipeline()` : la tâche reste testable avec `FakeFineTuner`
+  ET fonctionne en production avec `OllamaFineTunerAdapter` sans
+  modification.
+
+== Référence
+
+* `CADRAGE_EPIC_FT_PIPELINE.adoc` US-4 — spécification d'origine.
+* `CodebaseExpertExtension` / `ExpertExposureTask` — patterns copiés.
+* `FineTuningRequest` / `FineTuningPipeline` / `OllamaFineTunerAdapter` —
+  domaine pur consommé (US-1→US-3).
+* `ExpertRegistry` / `ExpertDomain` / `ExpertRegistration` — boucle
+  fabrication→exposition (domaine `codebase.koog.expert` existant).

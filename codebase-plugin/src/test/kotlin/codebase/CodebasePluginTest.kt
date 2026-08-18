@@ -20,11 +20,14 @@ class CodebasePluginTest {
         "vibecodingDashboard",
         "qualityGate",
         "generateCompositeContext",
-        "ocrDocument"
+        "ocrDocument",
+        "prepareFineTuningDataset",
+        "fineTuneExpert",
+        "publishExpertToOllama"
     )
 
     @Test
-    fun `apply plugin registers all 8 tasks`() {
+    fun `apply plugin registers all 11 tasks`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply(CodebasePlugin::class.java)
 
@@ -34,12 +37,12 @@ class CodebasePluginTest {
     }
 
     @Test
-    fun `task count equals 8 after applying plugin`() {
+    fun `task count equals 11 after applying plugin`() {
         val project = ProjectBuilder.builder().withName("codebase").build()
         project.pluginManager.apply(CodebasePlugin::class.java)
 
         val registeredTasks = expectedTasks.mapNotNull { project.tasks.findByName(it) }
-        assertEquals(8, registeredTasks.size)
+        assertEquals(11, registeredTasks.size)
     }
 
     @Test
@@ -120,6 +123,54 @@ class CodebasePluginTest {
         val task = project.tasks.findByName("ocrDocument")
         assertNotNull(task)
         assertEquals("collect", task.group)
+    }
+
+    @Test
+    fun `prepareFineTuningDataset is in finetuning group`() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply(CodebasePlugin::class.java)
+
+        val task = project.tasks.findByName("prepareFineTuningDataset")
+        assertNotNull(task)
+        assertEquals("finetuning", task.group)
+    }
+
+    @Test
+    fun `fineTuneExpert is in finetuning group and dependsOn prepareFineTuningDataset`() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply(CodebasePlugin::class.java)
+
+        val task = project.tasks.findByName("fineTuneExpert")
+        assertNotNull(task)
+        assertEquals("finetuning", task.group)
+        val depNames = task.taskDependencies.getDependencies(task)
+            .mapNotNull { it.name }.toSet()
+        assertTrue(depNames.contains("prepareFineTuningDataset"),
+            "fineTuneExpert should dependOn prepareFineTuningDataset, got $depNames")
+    }
+
+    @Test
+    fun `publishExpertToOllama is in finetuning group and dependsOn fineTuneExpert`() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply(CodebasePlugin::class.java)
+
+        val task = project.tasks.findByName("publishExpertToOllama")
+        assertNotNull(task)
+        assertEquals("finetuning", task.group)
+        val depNames = task.taskDependencies.getDependencies(task)
+            .mapNotNull { it.name }.toSet()
+        assertTrue(depNames.contains("fineTuneExpert"),
+            "publishExpertToOllama should dependOn fineTuneExpert, got $depNames")
+    }
+
+    @Test
+    fun `fineTuning extension is registered`() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply(CodebasePlugin::class.java)
+
+        val ext = project.extensions.findByName("fineTuning")
+        assertNotNull(ext, "Extension 'fineTuning' should be registered")
+        assertTrue(ext is codebase.finetuning.CodebaseFineTuningExtension)
     }
 
     @Test

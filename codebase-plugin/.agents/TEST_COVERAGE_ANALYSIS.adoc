@@ -1,6 +1,78 @@
 = Test Coverage Analysis — Codebase Gradle
 :date: 2026-08-19
 
+== Session 196 — FT-PIPELINE US-4 (tâches Gradle + extension DSL)
+
+=== Tests créés
+
+* **Unit** (`codebase/finetuning/CodebaseFineTuningExtensionTest.kt`) : 10 tests
+  - Extension registered under name `fineTuning` (ProjectBuilder + `extensions.create`)
+  - Defaults backward compat (`baseModel=""`, `dataset=[]`, `outputModelName=""`, `corpusRatio=0.10`, `maxIterations=3`, `epochs=3`, `learningRate=2e-4`, `batchSize=4`, `corpusGlobs=[]`, `validationThreshold=0.7`)
+  - DSL setters mutate properties (10 champs)
+  - `toConfig()` maps extension → `FineTuningConfig` (5 champs hyperparamètres)
+  - `toConfig()` defaults match `FineTuningConfig` defaults
+  - `toRequest()` builds `FineTuningRequest` from extension fields
+  - `toRequest()` uses `corpusGlobs` as dataset fallback when `dataset` empty
+  - `toRequest()` throws `IllegalArgumentException` when `baseModel` blank / `outputModelName` blank / both `dataset` and `corpusGlobs` empty
+
+* **Unit** (`codebase/finetuning/PrepareFineTuningDatasetTaskTest.kt`) : 11 tests
+  - Task class is abstract `DefaultTask` + annotated `@DisableCachingByDefault`
+  - Task exposes `baseModel`/`dataset`/`corpusGlobs`/`outputModelName`/`corpusRatio`/`outputFile` inputs
+  - `executePrepare()` writes dataset listing + Modelfile section to outputFile (FROM baseModel + globs + corpus ratio)
+  - `executePrepare()` uses `corpusGlobs` fallback when `dataset` empty
+  - `executePrepare()` throws `GradleException` when `baseModel` blank / `outputModelName` blank / both empty
+  - `executePrepare()` creates parent directories of outputFile
+  - Modelfile header uses `corpusRatio` value (0.25)
+  - Writes Dataset section header + Modelfile section header
+
+* **Unit** (`codebase/finetuning/FineTuneExpertTaskTest.kt`) : 12 tests
+  - Task class is abstract `DefaultTask` + annotated `@DisableCachingByDefault`
+  - Task exposes `baseModel`/`dataset`/`outputModelName`/`corpusRatio`/`outputReport` inputs
+  - `executeFineTune()` writes success report when pipeline returns `Success` (status SUCCESS + model + score 0.92)
+  - `executeFineTune()` writes failure report when pipeline returns `Failure` (status FAILURE + reason)
+  - `executeFineTune()` throws `GradleException` when `baseModel` blank / `outputModelName` blank / `dataset` empty
+  - `executeFineTune()` uses `corpusGlobs` fallback when `dataset` empty
+  - `executeFineTune()` creates parent directories of `outputReport`
+  - Report contains `baseModel` + dataset fields
+  - Default pipeline is `OllamaFineTunerAdapter` when not overridden (no server → FAILURE degraded)
+
+* **Unit** (`codebase/finetuning/PublishExpertToOllamaTaskTest.kt`) : 11 tests
+  - Task class is abstract `DefaultTask` + annotated `@DisableCachingByDefault`
+  - Task exposes `outputModelName`/`domainName`/`domainLabel`/`baseUrl`/`manifestOutput` inputs
+  - `executePublish()` registers expert in registry + delegates manifest to `ExpertExposureTask`
+  - `executePublish()` anonymizes endpoints when configured (`***anonymized***`)
+  - `executePublish()` throws `GradleException` when `outputModelName` blank / `domainName` blank
+  - `executePublish()` creates parent directories of `manifestOutput`
+  - Default registry is created when not injected
+  - Preserves existing registry entries when adding new expert (2 experts après publish)
+  - Default `timeoutSeconds` 120
+
+* **Functional** (`codebase/finetuning/FineTuningFunctionalTest.kt`) : 3 tests
+  - DSL block configures all 3 finetuning tasks end-to-end (extension → 3 tâches ProjectBuilder)
+  - `prepareFineTuningDataset` executes via DSL extension values (Modelfile + Dataset sections)
+  - `publishExpertToOllama` registers fine-tuned expert via DSL extension values (registry size 1 + manifest)
+
+* **Plugin** (`codebase/CodebasePluginTest.kt`) : +5 tests (15 total)
+  - `prepareFineTuningDataset` in `finetuning` group
+  - `fineTuneExpert` in `finetuning` group + `dependsOn("prepareFineTuningDataset")` (via `taskDependencies`)
+  - `publishExpertToOllama` in `finetuning` group + `dependsOn("fineTuneExpert")`
+  - `fineTuning` extension is registered
+  - Task count 8 → 11
+
+=== Gate
+
+`./gradlew test --tests "codebase.finetuning.*" --tests "codebase.CodebasePluginTest" --rerun-tasks`
+
+* **140 tests, 0 FAIL** (8 config + 19 merger + 11 pipeline + 5 adapter + 18 state + 17 graph + 10 extension + 11 prepare + 12 fineTune + 11 publish + 3 functional + 15 plugin)
+* `compileKotlin` + `validatePlugins` VERT
+* Zéro régression (tests existants préserve's)
+
+=== Couverture
+
+* Domaine `codebase.finetuning` : 13 → 17 fichiers prod (+4 : Extension + 3 tâches Gradle)
+* 5 fichiers test créés + 1 modifié (`CodebasePluginTest.kt`)
+* Zéro bump BOM (version 0.0.8 inchangée)
+
 == Session 195 — FT-PIPELINE US-3 (`FineTuningGraph` koog itératif)
 
 === Tests créés
