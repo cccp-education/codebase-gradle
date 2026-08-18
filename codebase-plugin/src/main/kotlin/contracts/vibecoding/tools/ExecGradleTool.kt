@@ -14,8 +14,11 @@ private val GRADLE_TASK_ALLOWLIST = listOf(
 
 private val GRADLE_ARG_ALLOWLIST = listOf(
     Regex("^-P[\\w.]+=\\S+$"),
-    Regex("^--\\w+$")
+    Regex("^--\\w+(?:=\\S+)?$")
 )
+
+private fun isBareLongFlag(token: String): Boolean =
+    token.startsWith("--") && !token.contains('=') && GRADLE_ARG_ALLOWLIST.any { it.matches(token) }
 
 private val GRADLE_DENYLIST = listOf(
     Regex("clean\\s+build", RegexOption.IGNORE_CASE),
@@ -31,11 +34,11 @@ private val GRADLE_DENYLIST = listOf(
 object ExecGradleTool : SimpleTool<ExecGradleTool.Args>(
     argsType = typeToken<Args>(),
     name = "__exec_gradle__",
-    description = "Execute a Gradle task via ./gradlew. " +
+        description = "Execute a Gradle task via ./gradlew. " +
         "Returns EXIT code + stdout (max 8000 chars). " +
         "Use for build, test, compile, publish, etc. " +
         "Allowlist deny-by-default: only listed tasks (build, compileKotlin, test, check, jar, publishToMavenLocal, tasks, project:task form) pass; " +
-        "args limited to -Pproperty=value and --long-flag. " +
+        "args limited to -Pproperty=value, --long-flag, --long-flag=value, and --long-flag value (paired). " +
         "Deny-list second ride rejects clean build, --refresh-dependencies, rm, delete, sudo, curl, semicolon, pipe."
 ) {
     @Serializable
@@ -70,8 +73,19 @@ object ExecGradleTool : SimpleTool<ExecGradleTool.Args>(
     fun validateGradleTask(task: String) {
         val tokens = task.trim().split(Regex("\\s+"))
         val allowed = tokens.withIndex().all { (index, token) ->
-            val allowlist = if (index == 0) GRADLE_TASK_ALLOWLIST else GRADLE_ARG_ALLOWLIST
-            allowlist.any { it.matches(token) }
+            when (index) {
+                0 -> GRADLE_TASK_ALLOWLIST.any { it.matches(token) }
+                else -> {
+                    val previous = tokens[index - 1]
+                    if (GRADLE_ARG_ALLOWLIST.any { it.matches(token) }) {
+                        true
+                    } else if (isBareLongFlag(previous)) {
+                        !token.startsWith("-") && !token.matches(Regex(".*[;&|].*"))
+                    } else {
+                        false
+                    }
+                }
+            }
         }
         if (!allowed) {
             throw SecurityException(

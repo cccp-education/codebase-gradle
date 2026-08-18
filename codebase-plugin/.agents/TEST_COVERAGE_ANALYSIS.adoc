@@ -1,5 +1,36 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-08-17
+:date: 2026-08-18
+
+== Session 190 — VIBE-HARDENING-2 US-3 C4 GradleTaskArgsMapper flags cassés
+
+=== Tests modifiés
+
+* **Unit** (`codebase/koog/tools/ExecGradleToolTest.kt`) : 15 → 20 tests (+5 nouveaux)
+  - `task with long flag followed by value passes validation` (NOUVEAU — `test --tests FooTest`, `test --tests codebase.koog.tools.FooTest`, `build --tests FooTest`)
+  - `task with flag equals value passes validation` (NOUVEAU — `test --tests=FooTest`, `check --dryRun=true`)
+  - `task with mixed flags and values passes validation` (NOUVEAU — `test --tests FooTest -Pfoo=bar --info`, `test -Pfoo=bar --tests=FooTest --stacktrace`)
+  - `bare value without preceding flag is rejected` (NOUVEAU — `test FooTest` → SecurityException allowlist)
+  - `value after -P property is rejected as standalone token` (NOUVEAU — `test -Pfoo=bar standaloneValue` → SecurityException)
+
+=== Tests résolus (fail préexistant C4)
+
+* `GradleTaskArgsMapperTest > execute structured gradle task via handler()` : FAILED → PASSED. Subprocess Gradle `test --tests FakeTestClassName` ne lance plus `SecurityException` (valeur `FakeTestClassName` désormais acceptée comme pair du flag `--tests`).
+
+=== Production modifiée
+
+* `contracts/vibecoding/tools/ExecGradleTool.kt` :
+  - `GRADLE_ARG_ALLOWLIST` : `--\w+` → `--\w+(?:=\S+)?` (flag seul ou `--flag=value`)
+  - `isBareLongFlag(token)` helper ajouté (détecte flag sans `=`)
+  - `validateGradleTask` refondu : un token d'arg qui ne matche pas l'allowlist est accepté si le token précédent est un `bareLongFlag`, à condition de ne pas commencer par `-` et de ne pas contenir `;&|`
+  - Description mise à jour : "args limited to -Pproperty=value, --long-flag, --long-flag=value, and --long-flag value (paired)"
+
+=== Gate
+
+* `codebase.koog.tools.*` VERT : 37 tests 0 FAIL (20 ExecGradleTool + 17 ExecShellTool)
+* `codebase.koog.discovery.*` VERT : 60 tests 0 FAIL (was 60 + 1 fail C4 résolu)
+* `codebase.koog.ToolRegistryTest` VERT : 13/13 PASSED (non-régression)
+* Gate combinée : 110 tests 0 FAIL
+* `compileKotlin` VERT
 
 == Session 185 — VIBE-HARDENING US-1 ExecShellTool Allowlist
 

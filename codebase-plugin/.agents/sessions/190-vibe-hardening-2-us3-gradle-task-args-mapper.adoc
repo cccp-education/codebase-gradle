@@ -1,0 +1,119 @@
+= Session 190 — VIBE-HARDENING-2 US-3 C4 GradleTaskArgsMapper flags cassés
+:session: 190
+:borough: Queens — codebase-gradle (N1)
+:epic: VIBE-HARDENING-2
+:date: 2026-08-18
+:pattern: Baby-step TDD strict RED → GREEN → REFACTOR
+:gate: `codebase.koog.tools.*` + `codebase.koog.discovery.*` + `ToolRegistryTest`
+
+== Contexte
+
+EPIC VIBE-HARDENING-2 (P2/P3 hardening, 8 US ~21 pts). US-0 cadrage ✅
+S-188, US-1 S2 allowlist TaskDiscoveryRegistrar ✅ S-189, US-2 S3
+MAX_WRITE_CHARS write_file/edit_file ✅ S-189. Borough DORMANT — réveil
+sur déclencheur pilote.
+
+Déclencheur pilote : US-3 C4 GradleTaskArgsMapper flags cassés (P2, 3 pts).
+Fail préexistant confirmé : `GradleTaskArgsMapperTest > execute structured
+gradle task via handler()` FAILED (S-189 gate, 1 fail sur 60 tests).
+
+== Constat C4 (CR-GLOBALE-004)
+
+`GradleTaskArgsMapper.buildCommand` (L9-20) produit `"--key value"` (2
+tokens séparés) pour chaque option. `ExecGradleTool.validateGradleTask`
+(US-2 S-186) split par `\s+` et valide chaque token vs `GRADLE_ARG_ALLOWLIST`
+(`-P[\w.]+=\S+` + `--\w+`). Le token `value` ne matche pas `--\w+` →
+**rejeté deny-by-default**. Les flags avec valeur séparée sont cassés.
+
+== Actions
+
+=== RED — Tests unitaires `ExecGradleToolTest` (5 nouveaux)
+
+Ajout de 5 tests à `ExecGradleToolTest.kt` :
+
+. `task with long flag followed by value passes validation` —
+  `test --tests FooTest`, `test --tests codebase.koog.tools.FooTest`,
+  `build --tests FooTest`.
+. `task with flag equals value passes validation` —
+  `test --tests=FooTest`, `check --dryRun=true`.
+. `task with mixed flags and values passes validation` —
+  `test --tests FooTest -Pfoo=bar --info`,
+  `test -Pfoo=bar --tests=FooTest --stacktrace`.
+. `bare value without preceding flag is rejected` —
+  `test FooTest` → `SecurityException` (allowlist).
+. `value after -P property is rejected as standalone token` —
+  `test -Pfoo=bar standaloneValue` → `SecurityException`.
+
+3 tests RED confirmés (`task with long flag followed by value`,
+`task with flag equals value`, `task with mixed flags and values`).
+
+=== GREEN — `ExecGradleTool.kt` (3 changements)
+
+. `GRADLE_ARG_ALLOWLIST` étendu : `--\w+` → `--\w+(?:=\S+)?` (flag seul
+  ou `--flag=value`).
+. `isBareLongFlag(token)` helper : détecte un flag sans `=` (précédant
+  une valeur séparée).
+. `validateGradleTask` refondu : un token d'arg qui ne matche pas
+  l'allowlist est accepté si le token précédent est un `bareLongFlag`,
+  à condition de ne pas commencer par `-` et de ne pas contenir `;&|`.
+
+20/20 tests PASSED (15 existants + 5 nouveaux).
+
+=== REFACTOR — Gate combinée VERT
+
+. `ExecGradleToolTest` : 20 tests, 0 FAIL (gate `codebase.koog.tools.*`).
+. `GradleTaskArgsMapperTest` : 6/6 PASSED — **fail préexistant C4
+  résolu** (`execute structured gradle task via handler()` maintenant
+  PASSED, subprocess Gradle `test --tests FakeTestClassName` ne lance
+  plus `SecurityException`).
+. `codebase.koog.discovery.*` : 60 tests, 0 FAIL (was 60 + 1 fail).
+. `ToolRegistryTest` : 13 tests, 0 FAIL (non-régression).
+. Gate combinée `tools` + `discovery` + `ToolRegistryTest` : **110
+  tests, 0 FAIL**.
+. `compileKotlin` VERT.
+. Description `ExecGradleTool` mise à jour : "args limited to
+  -Pproperty=value, --long-flag, --long-flag=value, and --long-flag
+  value (paired)".
+
+== Commandes exécutées
+
+----
+./gradlew test --tests "codebase.koog.discovery.*"           # fail préexistant
+./gradlew test --tests "codebase.koog.tools.ExecGradleToolTest" --rerun-tasks
+./gradlew test --tests "codebase.koog.discovery.GradleTaskArgsMapperTest" --rerun-tasks
+./gradlew test --tests "codebase.koog.tools.*" --tests "codebase.koog.discovery.*" --tests "codebase.koog.ToolRegistryTest" --rerun-tasks
+./gradlew compileKotlin
+----
+
+== Résultats
+
+* EPIC VIBE-HARDENING-2 : 3/8 US (US-0 ✅ S-188, US-1 ✅ S-189, US-2 ✅
+  S-189, US-3 ✅ S-190). 5 US restantes (~18 pts).
+* Fail préexistant C4 résolu : `GradleTaskArgsMapperTest > execute
+  structured gradle task via handler()` PASSED.
+* Zéro bump BOM (artefact local, EPIC VIBE-HARDENING-2 Décision 9).
+* Zéro secret, zéro régression.
+* Backward compat préservée : flags seuls (`--info`), `-Pfoo=bar`,
+  `--flag=value` continuaient de passer ; maintenant `--flag value`
+  (pair) passe aussi.
+
+== Leçons
+
+. *Baby-step TDD sur validation* : écrire les tests positifs ET négatifs
+  avant de modifier la logique. Les tests négatifs (`bare value without
+  preceding flag`, `value after -P property`) sont restés PASSED à
+  travers RED/GREEN — ils garantissent que la nouvelle porte ne crée
+  pas de trou de sécurité.
+. *Cache Gradle* : `--rerun-tasks` obligatoire pour voir les tests
+  après modification de production ET de test dans la même passe. Sans
+  ça, `UP-TO-DATE` masque les résultats.
+. *Allowlist paire flag+value* : la sécurité reste deny-by-default. Un
+  token valeur n'est accepté que s'il suit immédiatement un `bareLongFlag`
+  reconnu, ne commence pas par `-`, et ne contient pas `;&|`. Defense in
+  depth préservée.
+
+== Prochaines étapes
+
+US-4 C1 TaskResultVerifier refonte (P1, ~4 pts, ~10 unit) → US-5 C3
+cleanup doc (P3, ~1 pt) → US-6 C7 coerceAtLeast (P3, ~1 pt) → US-7 C6
+SessionProtocolEngine (P3, ~4 pts) → US-8 Cucumber BDD (~2 pts).

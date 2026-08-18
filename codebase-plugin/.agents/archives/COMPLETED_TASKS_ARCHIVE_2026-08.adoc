@@ -1,5 +1,33 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026 — Codebase Gradle (Queens)
 
+== Session 190 — VIBE-HARDENING-2 US-3 C4 GradleTaskArgsMapper flags cassés
+
+[cols="2,3"]
+|===
+| Tâche | Statut
+
+| US-3 C4 — `GRADLE_ARG_ALLOWLIST` étendu `--\w+` → `--\w+(?:=\S+)?` (flag seul ou `--flag=value`)
+| ✅ TERMINÉ (S-190)
+
+| US-3 C4 — `isBareLongFlag(token)` helper ajouté (détecte flag sans `=` précédant une valeur séparée)
+| ✅ TERMINÉ (S-190)
+
+| US-3 C4 — `validateGradleTask` refondu (pair flag+value accepté, defense in depth préservée)
+| ✅ TERMINÉ (S-190)
+
+| US-3 C4 — Fail préexistant `GradleTaskArgsMapperTest > execute structured gradle task via handler()` résolu
+| ✅ TERMINÉ (S-190)
+
+| US-3 C4 — 5 nouveaux tests `ExecGradleToolTest` (3 positifs pair flag+value/flag=value/mixed + 2 négatifs bare value/standalone token)
+| ✅ TERMINÉ (S-190)
+
+| US-3 C4 — Description `ExecGradleTool` mise à jour (--long-flag value paired)
+| ✅ TERMINÉ (S-190)
+
+| Gate combinée `codebase.koog.tools.*` + `codebase.koog.discovery.*` + `ToolRegistryTest` VERT 110 tests 0 FAIL
+| ✅ TERMINÉ (S-190)
+|===
+
 == Session 188 — Maintenance + Cross-borough Audit + Cadrage 2 EPICs (VIBE-HARDENING-2 + FT-PIPELINE) + Propagation 5 boroughs
 
 [cols="2,3"]

@@ -57,6 +57,40 @@ class ExecGradleToolTest {
     }
 
     @Test
+    fun `task with long flag followed by value passes validation`() {
+        ExecGradleTool.validateGradleTask("test --tests FooTest")
+        ExecGradleTool.validateGradleTask("test --tests codebase.koog.tools.FooTest")
+        ExecGradleTool.validateGradleTask("build --tests FooTest")
+    }
+
+    @Test
+    fun `task with flag equals value passes validation`() {
+        ExecGradleTool.validateGradleTask("test --tests=FooTest")
+        ExecGradleTool.validateGradleTask("check --dryRun=true")
+    }
+
+    @Test
+    fun `task with mixed flags and values passes validation`() {
+        ExecGradleTool.validateGradleTask("test --tests FooTest -Pfoo=bar --info")
+        ExecGradleTool.validateGradleTask("test -Pfoo=bar --tests=FooTest --stacktrace")
+    }
+
+    @Test
+    fun `bare value without preceding flag is rejected`() {
+        val exception = assertFailsWith<SecurityException> {
+            ExecGradleTool.validateGradleTask("test FooTest")
+        }
+        assertTrue(exception.message!!.contains("allowlist"))
+    }
+
+    @Test
+    fun `value after -P property is rejected as standalone token`() {
+        assertFailsWith<SecurityException> {
+            ExecGradleTool.validateGradleTask("test -Pfoo=bar standaloneValue")
+        }
+    }
+
+    @Test
     fun `clean build is rejected`() {
         val exception = assertFailsWith<SecurityException> {
             ExecGradleTool.validateGradleTask("clean build")

@@ -1,10 +1,10 @@
 = Backlog — Codebase Gradle
 :sectnums:
-:date: 2026-08-17
+:date: 2026-08-18
 
-_Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux._
+_Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux. Pour le backlog à jour détaillé, voir `.agents/BACKLOG.adoc`._
 
-== Synthèse Backlog (Session 186 — 2026-08-17)
+== Synthèse Backlog (Session 190 — 2026-08-18)
 
 [cols="1,3,1,2"]
 |===
@@ -14,15 +14,17 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 | SLD-8 US-8.3 | DeckPipelineGraph sur services codebase | 🟡 À PLANIFIER | Côté slider
 | EPIC 1 | Init gouvernance | ✅ TERMINÉ | Items stale purgés (projet publié Central 0.0.5)
 | EPIC V-FLYWAY | Migration Flyway | BACKLOG P2 | Seuil déclenchement : 5+ migrations (actuellement 4 : V1→V4)
-| EPIC VIBE-HARDENING | Durcissement vibecoding (CR-GLOBALE-004) | 🟡 EN COURS (US-0 ✅ S-184, US-1 ✅ S-185, US-2 ✅ S-186, US-3→5 À FAIRE ~7 pts) | 3 risques P1 : S1 allowlist ✅, C2 retry, C5 timeout
+| EPIC VIBE-HARDENING | Durcissement vibecoding P1 (CR-GLOBALE-004) | ✅ TERMINÉ 6/6 US (S-184→S-187) | S1 allowlist ✅, C2 retry ✅, C5 timeout ✅, Cucumber BDD ✅
+| EPIC VIBE-HARDENING-2 | Durcissement vibecoding P2/P3 (CR-GLOBALE-004 suite) | 🟡 EN COURS 3/8 US (US-0 ✅ S-188, US-1 ✅ S-189, US-2 ✅ S-189, US-3 ✅ S-190, reste US-4→US-8 ~18 pts) | S2 allowlist ✅, S3 MAX_WRITE_CHARS ✅, C4 flags cassés ✅, reste C1/C3/C6/C7 + Cucumber
+| EPIC FT-PIPELINE | Pipeline de fine-tuning N1 (P0 vision) | 🟡 CADRÉ 0/7 US (S-188) | Domaine `codebase.finetuning` (7ème), boucle fabrication→exposition
 | Tous autres EPICs | V, W, X, Y, Z, K, L, OCR, CR, TRAD, PUB, V-LOCAL, SP, V-6, V-7, V-8, V-9, 2→12 | ✅ TERMINÉ | Voir détails ci-dessous
 |===
 
-*Backlog réellement restant* : EPIC VIBE-HARDENING (🟡 EN COURS — US-0 ✅ S-184, US-1 ✅ S-185, US-2 ✅ S-186, US-3→5 À FAIRE ~7 pts) + SLD-8 US-8.2/8.3 (côté slider) + EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5.
+*Backlog réellement restant* : EPIC VIBE-HARDENING-2 (🟡 EN COURS 3/8 US, 5 US restantes ~18 pts — voir `.agents/BACKLOG.adoc` section dédiée) + EPIC FT-PIPELINE (🟡 CADRÉ 0/7 US, P0 vision) + SLD-8 US-8.2/8.3 (côté slider) + EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5.
 
-== EPIC VIBE-HARDENING — Durcissement vibecoding (CR-GLOBALE-004)
+== EPIC VIBE-HARDENING — Durcissement vibecoding P1 (CR-GLOBALE-004)
 
-**Statut** : 🟡 EN COURS (US-0 ✅ S-184 cadrage, US-1 ✅ S-185 shell allowlist, US-2 ✅ S-186 gradle allowlist — 3 US restantes US-3→US-5)
+**Statut** : ✅ TERMINÉ 6/6 US (S-184→S-187)
 **Priorité** : P1 (2 risques P1 résolus : S1 ✅ ; reste C2 retry, C5 timeout)
 **Origine** : Code review session 174/175 (10 findings S1-S3/C1-C7 archivés GLOBAL_CODE_REVIEW.adoc)
 **Document** : link:.agents/CADRAGE_EPIC_VIBE_HARDENING.adoc[CADRAGE_EPIC_VIBE_HARDENING.adoc]
