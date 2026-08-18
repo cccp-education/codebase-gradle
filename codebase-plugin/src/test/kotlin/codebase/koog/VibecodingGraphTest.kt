@@ -565,6 +565,79 @@ class VibecodingGraphTest {
     }
 
     // ═══════════════════════════════════════════════════════════
+    // EPIC VIBE-HARDENING-2 US-6 — C7 coerceAtLeast(0) remaining tasks
+    // ═══════════════════════════════════════════════════════════
+
+    @Test
+    fun `buildPromptForIteration should not report negative remaining tasks when executed exceeds plan total`() {
+        val plan = Plan(
+            title = "Single task plan",
+            epics = listOf(
+                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
+                    UserStory(description = "US1", tasks = listOf(
+                        PlanTask(description = "only task", gradleTask = "tasks")
+                    ))
+                ))
+            ),
+            totalPoints = 1,
+            estimatedSessions = "1"
+        )
+        // 3 executed tasks > 1 plan task → remaining would be -2 without coerceAtLeast(0)
+        val state = VibecodingState(
+            intention = "Force negative remaining",
+            workspaceRoot = "/tmp",
+            maxActions = 10,
+            maxRetries = 2,
+            plan = plan,
+            executedTasks = listOf("tasks", "compileKotlin", "test")
+        )
+
+        val prompt = vibecodingGraph.buildPromptForIteration(state)
+
+        val remainingLine = prompt.lineSequence().firstOrNull { it.startsWith("Plan remaining tasks:") }
+        assertNotNull(remainingLine, "Prompt should contain a 'Plan remaining tasks' line")
+        val line = remainingLine!!
+        assertFalse(line.contains("-"),
+            "Remaining tasks should not be negative, got: $line")
+        assertTrue(line.contains("0"),
+            "Remaining tasks should be coerced to 0, got: $line")
+    }
+
+    @Test
+    fun `buildPromptForIteration should report positive remaining tasks when plan has more tasks than executed`() {
+        val plan = Plan(
+            title = "Three task plan",
+            epics = listOf(
+                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
+                    UserStory(description = "US1", tasks = listOf(
+                        PlanTask(description = "t1", gradleTask = "tasks"),
+                        PlanTask(description = "t2", gradleTask = "compileKotlin"),
+                        PlanTask(description = "t3", gradleTask = "test")
+                    ))
+                ))
+            ),
+            totalPoints = 1,
+            estimatedSessions = "1"
+        )
+        val state = VibecodingState(
+            intention = "Normal remaining",
+            workspaceRoot = "/tmp",
+            maxActions = 10,
+            maxRetries = 2,
+            plan = plan,
+            executedTasks = listOf("tasks")
+        )
+
+        val prompt = vibecodingGraph.buildPromptForIteration(state)
+
+        val remainingLine = prompt.lineSequence().firstOrNull { it.startsWith("Plan remaining tasks:") }
+        assertNotNull(remainingLine, "Prompt should contain a 'Plan remaining tasks' line")
+        val line = remainingLine!!
+        assertTrue(line.contains("2"),
+            "Remaining tasks should be 2 (3 total - 1 executed), got: $line")
+    }
+
+    // ═══════════════════════════════════════════════════════════
     // EPIC VIBE-HARDENING US-4 — C2 Retry un seul compteur
     // ═══════════════════════════════════════════════════════════
 

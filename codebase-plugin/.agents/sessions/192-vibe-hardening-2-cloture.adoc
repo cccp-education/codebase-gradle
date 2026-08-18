@@ -1,0 +1,113 @@
+= Session 192 — EPIC VIBE-HARDENING-2 clôture (US-5 → US-8)
+:date: 2026-08-18
+:borough: Queens — codebase-gradle (N1, RAG socle pgvector)
+:session_precedente: 191 — VIBE-HARDENING-2 US-4 C1 TaskResultVerifier refonte
+:epic: VIBE-HARDENING-2 (durcissement vibecoding P2/P3)
+:methode: Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), séquentiel pur
+
+== Contexte
+
+Borough DORMANT réveillé sur déclencheur pilote. EPIC VIBE-HARDENING-2 en
+cours (4/8 US livrées S-188→S-191). 4 US restantes P3 + Cucumber BDD.
+
+== Actions menées (4 US en 1 session, pattern S-113)
+
+=== US-5 C3 — Cleanup doc INSERT-X1..X6 (1 pt)
+
+`VibecodingGraph.kt:32-86` — 32 lignes de KDoc stale supprimées
+(section "EPIC X Audit" + 6 blocs `[INSERT-X1]` à `[INSERT-X6]`).
+Ces insertions ont été faites en EPIC X (S-101→S-105). Le javadoc
+était trompeur — il décrivait des insertions à faire, pas l'état réel.
+`VibecodingPlan` (L18 `planning/VibecodingPlan.kt`) reste utilisé
+(import L13) — pas dead code. Zéro test impacté. `compileKotlin` VERT.
+
+=== US-6 C7 — coerceAtLeast(0) remaining tasks (1 pt)
+
+Bug : `VibecodingGraph.kt:430` `buildPromptForIteration` produisait
+`"Plan remaining tasks: -2"` quand `executedTasks.size > total plan tasks`
+(retry, tâche exécutée hors plan). Baby-step TDD strict :
+
+* RED : 2 unit `VibecodingGraphTest.buildPromptForIteration*` — le test
+  négatif FAIL (AssertionFailedError `contains("-")` car la ligne produit
+  `Plan remaining tasks: -2`). `buildPromptForIteration` rendu `internal`
+  (était `private`) pour testabilité (pattern `buildReplanPrompt`).
+* GREEN : `(totalTasks - state.executedTasks.size).coerceAtLeast(0)`.
+* REFACTOR : gate VERT 24 VibecodingGraph (+2) + 13 StepVerifier + 26
+  TaskResultVerifier = 63 tests 0 FAIL.
+
+=== US-7 C6 — Extraction SessionProtocolEngine (4 pts)
+
+Duplication `SessionProtocolTask.executeVibecoding` (L183-249, 67 lignes)
+et `SessionProtocolServer.executePrompt` (L80-129, 50 lignes) — même
+logique : construction `VibecodingGraph` + `execute(state)` + toolCalls
+mapping + status `when` + `SessionResponse` + `buildOutput`.
+
+Refactor : `SessionProtocolEngine.kt` créé (105 lignes) — classe partagée
+qui encapsule `executeVibecoding(promptText, workspaceRootPath, maxActions,
+sessionId, agentContext, model)` + `resolveAgentContext` + `buildOutput`.
+`SessionProtocolServer` délégué (69→32 lignes, -37). `SessionProtocolTask`
+délégué (329→280 lignes, -49, `buildOutput` privé dupliqué supprimé).
+
+Baby-step TDD :
+* RED : 9 unit `SessionProtocolEngineTest` (executeVibecoding sessionId,
+  ERROR status LLM throw, toolCalls record, output format, resolveAgent
+  Context provided/fallback, buildOutput error/plan/blank).
+* GREEN : `SessionProtocolEngine.kt` créé + délégation Server/Task.
+* REFACTOR : gate SessionProtocol 4 classes (Task + Server + E2E +
+  Lifecycle) VERT non-régression, 9/9 engine VERT. Total ~30 tests
+  SessionProtocol + 9 engine = 39 tests 0 FAIL. Imports inutilisés
+  nettoyés (TokenTracker, TokenUsage, ToolCallRecord, SessionStatus dans
+  Server ; TokenTracker, TokenUsage, ToolCallRecord, VibecodingState
+  dans Task).
+
+=== US-8 — Cucumber BDD (2 pts)
+
+Feature `codebase_vibe_hardening_2.feature` `@vibe-hardening-2` (4
+scénarios : write_file size guard, expectedOutput comparison, gradle
+flag+value, remaining tasks coerce). Runner dédié
+`VibeHardening2CucumberRunner` (pattern S-082, filter `@vibe-hardening-2
+and not @integration`, glue `codebase.scenarios`). `VibeHardening2World`
+(PicoContainer) + `VibeHardening2Steps` (14 step defs préfixés
+"vibe hardening 2" — bug S-088 glue partagée évité, step texts uniques).
+`CucumberTaskSpec("cucumberTestVibeHardening2")` 38e cucumber dédié
+câblé `build.gradle.kts`. 4/4 scénarios PASSED.
+
+== Résultats
+
+* 11 fichiers touchés (5 modifiés + 6 créés) :
+  - `VibecodingGraph.kt` (KDoc cleanup L53-85 + coerceAtLeast L430 +
+    buildPromptForIteration internal)
+  - `SessionProtocolServer.kt` (délégation engine, -37 lignes)
+  - `SessionProtocolTask.kt` (délégation engine, -49 lignes)
+  - `VibecodingGraphTest.kt` (+2 unit coerceAtLeast)
+  - `build.gradle.kts` (CucumberTaskSpec 38e)
+  - `SessionProtocolEngine.kt` (créé, 105 lignes)
+  - `SessionProtocolEngineTest.kt` (créé, 9 unit)
+  - `codebase_vibe_hardening_2.feature` (créé, 4 scénarios)
+  - `VibeHardening2World.kt` (créé)
+  - `VibeHardening2Steps.kt` (créé, 14 step defs)
+  - `VibeHardening2CucumberRunner.kt` (créé)
+* `compileKotlin` VERT. `compileTestKotlin` VERT.
+* Zéro bump BOM (EPIC local à codebase-plugin).
+* Zéro secret, zéro token dans le code ou les logs.
+* Zéro régression (gate SessionProtocol + VibecodingGraph + planning VERT).
+
+== Leçons
+
+* `buildPromptForIteration` était `private` — rendu `internal` pour
+  testabilité, pattern déjà établi pour `buildReplanPrompt`. Les prompts
+  builders sont des objets purs testables sans I/O.
+* Bug `DEFAULT_EXPECTED_OUTPUT_LOWER` (S-191) a rendu C1 sensible à la
+  casse — le test US-8 `expected "3 tests passed"` vs stdout `"BUILD
+  SUCCESSFUL\n3 tests passed"` passe car `combined.contains(expected)`
+  est case-insensitive (lowercase des deux côtés dans `verify`).
+* `eagerRules` sur `AgentContext` (contrat N0) est `String`, pas
+  `List<String>` — correction de test US-7.
+
+== Statut EPIC
+
+EPIC VIBE-HARDENING-2 TERMINÉ 8/8 US :
+US-0 ✅ S-188 (cadrage), US-1 ✅ S-189, US-2 ✅ S-189, US-3 ✅ S-190,
+US-4 ✅ S-191, US-5 ✅ S-192, US-6 ✅ S-192, US-7 ✅ S-192, US-8 ✅ S-192.
+Borough DORMANT — reste EPIC FT-PIPELINE (P0 vision, 7 US ~18 pts) sur
+déclencheur pilote.

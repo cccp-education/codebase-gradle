@@ -1,13 +1,13 @@
 = BACKLOG — Codebase Gradle
 :toc:
-:last_update: 2026-08-18 (Session 191 — VIBE-HARDENING-2 US-4 C1 TaskResultVerifier refonte)
+:last_update: 2026-08-18 (Session 192 — EPIC VIBE-HARDENING-2 TERMINÉ 8/8 US : US-5 C3 cleanup doc + US-6 C7 coerceAtLeast + US-7 C6 SessionProtocolEngine + US-8 Cucumber BDD)
 
 == Statut Global
 
 **EPIC VIBE-HARDENING ✅ TERMINÉ (6/6 — S184-S187)** — durcissement vibecoding P1 (S1 allowlist shell + gradle, C2 retry single counter, C5 timeout LLM, Cucumber BDD). **EPIC PUB (bump 0.0.8) ✅ TERMINÉ (S183)**. **EPIC SUBGRAPH ✅ TERMINÉ (4/4 — S182)** — contexte augmenté Graphify réel. Le reste du backlog est dormant :
 
 . *EPIC FT-PIPELINE* (P0 vision) — 🟡 CADRÉ (S-188, 7 US ~18 pts) — pipeline de fine-tuning N1 générique (fabrication modèle : dataset prep + continual pre-training 10% corpus + export GGUF + push Ollama). Source de conception : notebook-gradle ARCHITECTURE.adoc (vestige récupéré). Domaine `codebase.finetuning` (7ème). Boucle fabrication→exposition avec domaine `codebase.koog.expert` existant (13 fichiers). TRN-8 training reformulé en recettes N2 consommant le pipeline. Cadrage pur, zéro code. Pas d'exécution sans déclencheur pilote.
-. *EPIC VIBE-HARDENING-2* (P2/P3) — 🟡 EN COURS (S-188 cadrage + S-189 US-1+US-2 + S-190 US-3 + S-191 US-4, 4/8 US) — durcissement vibecoding P2/P3 (S2 allowlist tasks découvertes ✅, S3 garde taille write/edit ✅, C4 flags cassés ✅, C1 TaskResultVerifier refonte ✅, C3 cleanup doc, C6 refactor SessionProtocol, C7 negative counter, Cucumber BDD). 4 US restantes. Gate `codebase.koog.planning.*` + `codebase.koog.tools.*` + `codebase.koog.discovery.*` + `ToolRegistryTest` VERT 158 tests 0 FAIL.
+. *EPIC VIBE-HARDENING-2* (P2/P3) — ✅ TERMINÉ 8/8 US (S-188 cadrage + S-189 US-1+US-2 + S-190 US-3 + S-191 US-4 + S-192 US-5+US-6+US-7+US-8) — durcissement vibecoding P2/P3 (S2 allowlist tasks découvertes ✅, S3 garde taille write/edit ✅, C4 flags cassés ✅, C1 TaskResultVerifier refonte ✅, C3 cleanup doc ✅ S-192, C6 SessionProtocolEngine extraction ✅ S-192, C7 coerceAtLeast ✅ S-192, Cucumber BDD ✅ S-192). EPIC clos. Gate `codebase.koog.planning.*` + `codebase.koog.tools.*` + `codebase.koog.discovery.*` + `ToolRegistryTest` + `SessionProtocolEngineTest` + `VibecodingGraphTest` VERT 0 FAIL + 4/4 cucumber `@vibe-hardening-2` PASSED.
 . *EPIC VIBE-HARDENING* (P1) — ✅ TERMINÉ 6/6 US (US-0 cadrage S184, US-1 shell allowlist S185, US-2 gradle allowlist S186, US-3 timeout LLM S187, US-4 retry single counter S187, US-5 cucumber BDD S187). Gate `codebase.koog.tools.*` + VibecodingGraph + StepVerifier VERT 64 tests 0 FAIL + 4/4 cucumber PASSED. P2/P3 restants (S2/S3/C1/C3/C4/C6/C7) → EPIC VIBE-HARDENING-2 si déclencheur.
 . *EPIC SUBGRAPH* (P1) — ✅ TERMINÉ 4/4 US (S178 cadrage, S179 domaine `codebase.graph`, S180 canal Graphify réel, S182 US-3 graphRelations+Resource + US-4 Cucumber 4 scénarios @subgraph). Contexte augmenté complet : EAGER + RAG + GRAPHIFY réel + Docs + Resource.
 . *EPIC 1* (2 items stale — snapshot + commit initial) — à purger, le projet est déjà publié Maven Central 0.0.3.
@@ -259,9 +259,9 @@ S2 (pas d'allowlist Gradle globale), S3 (edit/write sans garde taille), C1 (heur
 * Zéro bump BOM (EPIC local à codebase-plugin, contrats dans le même artefact)
 * Zéro secret, zéro régression
 
-== EPIC VIBE-HARDENING-2 — Durcissement Vibecoding P2/P3 (CR-GLOBALE-004 suite)
+== ✅ EPIC VIBE-HARDENING-2 — Durcissement Vibecoding P2/P3 (CR-GLOBALE-004 suite) — TERMINÉ 8/8 US (S-192)
 
-**Statut** : 🟡 EN COURS (4/8 US — US-0 ✅ S-188, US-1 ✅ S-189, US-2 ✅ S-189, US-3 ✅ S-190, US-4 ✅ S-191, reste US-5→US-8)
+**Statut** : ✅ TERMINÉ 8/8 US (US-0 ✅ S-188, US-1 ✅ S-189, US-2 ✅ S-189, US-3 ✅ S-190, US-4 ✅ S-191, US-5 ✅ S-192, US-6 ✅ S-192, US-7 ✅ S-192, US-8 ✅ S-192)
 **Priorité** : P2/P3
 **Origine** : CR-GLOBALE-004 (session 175) — 7 findings P2/P3 restants post-EPIC VIBE-HARDENING P1
 **Cadrage** : `CADRAGE_EPIC_VIBE_HARDENING_2.adoc` (12 décisions architecturales)
@@ -271,10 +271,10 @@ S2 (pas d'allowlist Gradle globale), S3 (edit/write sans garde taille), C1 (heur
 * **S2** (P2) — ✅ US-1 S-189 : `TaskDiscoveryRegistrar` auto-registration libre `gradle_*` sans allowlist.
 * **S3** (P2) — ✅ US-2 S-189 : `write_file`/`edit_file` (`ToolRegistry.kt:125/138`) sans garde de taille (OOM potentiel).
 * **C1** (P1 mais refonte) — ✅ US-4 S-191 : `TaskResultVerifier` `contains("failed")` faux positif + `expectedOutput` jamais comparé. Résolu : surcharge `verify(stdout, stderr, expectedOutput)` + `hasActualFailure` raffiné (`\\bfailed\\b` non précédé de `0 `/`no `) + `StepVerifier` câble `step.expectedOutput` (contrat N0 PLN-VERIFY). Bug subtil `DEFAULT_EXPECTED_OUTPUT_LOWER` fix. 26+13+22+97 = 158 tests VERT.
-* **C3** (P2) — 🟡 US-5 À FAIRE : `VibecodingGraph.kt:60-84` commentaires `INSERT-X1..X6` stale (EPIC X déjà fait).
+* **C3** (P2) — ✅ US-5 S-192 : `VibecodingGraph.kt:53-85` commentaires `INSERT-X1..X6` stale supprimés (32 lignes KDoc, EPIC X déjà fait S-101→S-105). `VibecodingPlan` toujours utilisé (import L13). Zéro test impacté.
 * **C4** (P2) — ✅ US-3 S-190 : `GradleTaskArgsMapper.buildCommand` (L18) flags `--key value` cassés vs `GRADLE_ARG_ALLOWLIST` US-2. Résolu : `GRADLE_ARG_ALLOWLIST` étendu + `isBareLongFlag` + `validateGradleTask` accepte pair flag+value. Fail préexistant `GradleTaskArgsMapperTest > execute structured gradle task via handler` résolu.
-* **C6** (P3) — 🟡 US-7 À FAIRE : Duplication `SessionProtocolTask` (329 lignes) / `SessionProtocolServer` (158 lignes).
-* **C7** (P3) — 🟡 US-6 À FAIRE : `VibecodingGraph.kt:464` `Plan remaining tasks` négatif possible.
+* **C6** (P3) — ✅ US-7 S-192 : Extraction `SessionProtocolEngine` (105 lignes) — shared engine `executeVibecoding` + `resolveAgentContext` + `buildOutput`. `SessionProtocolServer` délégué (-37 lignes) + `SessionProtocolTask` délégué (-49 lignes) + `buildOutput` privé dupliqué supprimé. 9 unit dédiés + 4 classes SessionProtocol non-régression VERT.
+* **C7** (P3) — ✅ US-6 S-192 : `VibecodingGraph.kt:430` `Plan remaining tasks` négatif possible. Résolu : `(totalTasks - state.executedTasks.size).coerceAtLeast(0)`. `buildPromptForIteration` rendu `internal` pour testabilité. 2 unit RED→GREEN. Gate 63 tests 0 FAIL.
 
 === US découpées (~21 pts, 8 US)
 
@@ -283,10 +283,10 @@ S2 (pas d'allowlist Gradle globale), S3 (edit/write sans garde taille), C1 (heur
 . US-2 — ✅ S189 : S3 Garde de taille write_file/edit_file MAX_WRITE_CHARS 1MB (+5 unit, 2 pts) — 3 checks (content, newString, resulting updated) → IAE avant writeText.
 . US-3 — ✅ S190 : C4 GradleTaskArgsMapper flags cassés (+5 unit, 3 pts) — `GRADLE_ARG_ALLOWLIST` étendu `--\w+(?:=\S+)?` + `isBareLongFlag` + `validateGradleTask` accepte pair flag+value (defense in depth préservée). Fail préexistant `GradleTaskArgsMapperTest > execute structured gradle task via handler` résolu. Gate 110 tests 0 FAIL.
 . US-4 — ✅ S191 : C1 TaskResultVerifier refonte expectedOutput comparison + failed raffiné (+9 unit TaskResultVerifier +2 StepVerifier, 4 pts) — surcharge `verify(3-arg)` + `hasActualFailure` raffiné + `StepVerifier` câble `step.expectedOutput` + bug `DEFAULT_EXPECTED_OUTPUT_LOWER` fix. 158 tests VERT 0 FAIL.
-. US-5 — 🟡 À FAIRE : C3 Cleanup doc INSERT-X1..X6 (0 test, 1 pt)
-. US-6 — 🟡 À FAIRE : C7 coerceAtLeast(0) remaining tasks (~1 unit, 1 pt)
-. US-7 — 🟡 À FAIRE : C6 Extraction SessionProtocolEngine (~8 unit non-régression, 4 pts)
-. US-8 — 🟡 À FAIRE : Cucumber BDD codebase_vibe_hardening_2.feature (~4 scénarios @vibe-hardening-2, 2 pts)
+. US-5 — ✅ S192 : C3 Cleanup doc INSERT-X1..X6 (32 lignes KDoc stale supprimées, 0 test, 1 pt)
+. US-6 — ✅ S192 : C7 coerceAtLeast(0) remaining tasks (2 unit RED→GREEN, `buildPromptForIteration` internal, 1 pt)
+. US-7 — ✅ S192 : C6 Extraction SessionProtocolEngine (105 lignes, 9 unit dédiés, Server -37 + Task -49 lignes, 4 pts)
+. US-8 — ✅ S192 : Cucumber BDD `codebase_vibe_hardening_2.feature` 4 scénarios `@vibe-hardening-2` + runner dédié `VibeHardening2CucumberRunner` + `CucumberTaskSpec("cucumberTestVibeHardening2")` 38e (4/4 PASSED, 2 pts)
 
 === Ordre de priorité
 

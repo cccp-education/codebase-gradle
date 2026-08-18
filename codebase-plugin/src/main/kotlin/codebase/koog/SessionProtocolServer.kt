@@ -1,16 +1,11 @@
 package codebase.koog
 
 import codebase.koog.llm.LlmProvider
-import codebase.koog.tracking.TokenTracker
-import contracts.session.AgentContext
 import contracts.session.SessionPrompt
 import contracts.session.SessionResponse
 import contracts.session.SessionStatus
-import contracts.session.TokenUsage
-import contracts.session.ToolCallRecord
 import contracts.vibecoding.registry.ToolRegistry
 import codebase.koog.governance.GovernanceContextLoader
-import codebase.koog.state.VibecodingState
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.io.File
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -78,53 +73,20 @@ class SessionProtocolServer(
     }
 
     private fun executePrompt(sessionPrompt: SessionPrompt): SessionResponse {
-        val tokenTracker = TokenTracker()
-
-        val graph = VibecodingGraph(
-            augmentedGraph = KoogAugmentedContextGraph(),
+        val agentContext = resolveAgentContext(sessionPrompt)
+        val engine = SessionProtocolEngine(
             toolRegistry = toolRegistry,
             llmProvider = llmProvider,
-            tokenTracker = tokenTracker,
             eventStream = eventStream,
             liveContextInjector = liveContextInjector
         )
-        graph.staticContext = resolveAgentContext(sessionPrompt)
-
-        val state = VibecodingState(
-            intention = sessionPrompt.prompt,
-            workspaceRoot = workspaceRoot,
-            dryRun = false,
-            maxActions = sessionPrompt.maxActions
-        )
-
-        val result = graph.execute(state)
-
-            val toolCalls = toolRegistry.auditEntries().map { entry ->
-            ToolCallRecord(
-                toolName = entry.tool,
-                args = emptyMap(),
-                result = entry.result,
-                timestamp = entry.timestamp
-            )
-        }
-
-        val status = when {
-            result.error != null -> SessionStatus.ERROR
-            result.finished -> SessionStatus.COMPLETED
-            else -> SessionStatus.IN_PROGRESS
-        }
-
-        return SessionResponse(
+        return engine.executeVibecoding(
+            promptText = sessionPrompt.prompt,
+            workspaceRootPath = workspaceRoot,
+            maxActions = sessionPrompt.maxActions,
             sessionId = sessionPrompt.sessionId,
-            output = buildOutput(result),
-            toolCalls = toolCalls,
-            tokenUsage = TokenUsage(
-                promptTokens = tokenTracker.promptTokens.toInt(),
-                completionTokens = tokenTracker.completionTokens.toInt(),
-                totalTokens = (tokenTracker.promptTokens + tokenTracker.completionTokens).toInt(),
-                cost = tokenTracker.estimatedCost(sessionPrompt.model ?: "unknown")
-            ),
-            status = status
+            agentContext = agentContext,
+            model = sessionPrompt.model
         )
     }
 
@@ -139,20 +101,5 @@ class SessionProtocolServer(
             log.warn("[SessionProtocolServer] Failed to auto-load governance context: {} — continuing without context", e.message)
             contracts.session.AgentContext()
         }
-    }
-
-    private fun buildOutput(state: VibecodingState): String = buildString {
-        appendLine("=== Session Result ===")
-        appendLine("Intention: ${state.intention}")
-        appendLine("Classification: ${state.classification}")
-        appendLine("Iterations: ${state.iteration}")
-        appendLine("Finished: ${state.finished}")
-        if (state.error != null) {
-            appendLine("Error: ${state.error}")
-        }
-        if (state.planJson.isNotBlank()) {
-            appendLine("Plan: ${state.planJson}")
-        }
-        appendLine("Executed tasks: ${state.executedTasks.joinToString(", ")}")
     }
 }

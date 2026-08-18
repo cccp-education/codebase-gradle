@@ -49,40 +49,6 @@ import org.slf4j.LoggerFactory
  * Rétrocompatibilité : si llmProvider est null → pas de callLLM (mode déterministe comme avant V-4).
  * Si sessionRepository ET connectionFactory sont null → pas de persistance.
  * Si connectionFactory est fourni → création automatique d'un SessionRepository interne.
- *
- * === EPIC X Audit (Session 101 — X-0) : Points d'insertion verify→adapt ===
- *
- * Flux actuel (linéaire, une action à la fois) :
- *   buildContext → [callLLM | executeTools] → persistState → checkProgress → (↺)
- *
- * Gaps identifiés pour le pattern multi-step verify→adapt :
- *
- * [INSERT-X1] VibecodingPlan structuré :
- *   Remplacer `Plan` (Epic→UserStory→GradleTask plat) par `VibecodingPlan`
- *   (steps ordonnés avec expectedOutput, maxRetries, verifyHook, dépendances).
- *   Point d'insertion : buildContextNode() — le plan généré doit être un VibecodingPlan.
- *   Impact : VibecodingState.plan passe de `Plan?` à `VibecodingPlan?`.
- *
- * [INSERT-X2] TaskResultVerifier :
- *   Après executeToolsNode() (ligne ~166), insérer verifyStepNode() qui parse
- *   la sortie stdout/stderr et détermine SUCCESS/FAILED/BLOCKED/UNKNOWN.
- *   Actuellement : seule l'erreur (exception) est captée, pas le résultat sémantique.
- *
- * [INSERT-X3] Boucle verify→adapt :
- *   Remplacer la V-6 feedback loop (error→replan→retry, lignes 174-207) par
- *   une boucle structurée : executeStep → verifyResult → [nextStep | adapt | rollback].
- *   Le LLM reçoit le résultat brut + les fichiers modifiés + le plan initial.
- *
- * [INSERT-X4] RollbackStrategy :
- *   checkProgressNode() (ligne 451) — ajouter STOP_ON_ERROR / REVERT_AND_CONTINUE /
- *   MARK_SKIPPED / FALLBACK_HUMAN. Actuellement : seule erreur fatale (finished=true).
- *
- * [INSERT-X5] Intégration W (TaskSchemaScanner) :
- *   callLLMNode() (ligne 297) — le LLM utilise le catalogue list_tasks (W-4)
- *   pour construire son plan multi-step avant d'exécuter.
- *
- * [INSERT-X6] Tests Cucumber :
- *   Scénario "agent planifie, échoue, adapte, réussit" avec projet test buggé.
  */
 class VibecodingGraph(
     val augmentedGraph: KoogAugmentedContextGraph? = null,
@@ -442,7 +408,7 @@ class VibecodingGraph(
         }
     }
 
-    private fun buildPromptForIteration(state: VibecodingState): String {
+    internal fun buildPromptForIteration(state: VibecodingState): String {
         val statusLine = state.error?.let { "ERROR: $it" } ?: "OK"
         val focusInfo = state.focusLevel?.let { "Focus level: $it" } ?: "Focus level: MODULE (default)"
         val liveContext = liveContextInjector?.injectLiveContext(state, toolRegistry.auditEntries(), staticContext) ?: ""
@@ -461,7 +427,9 @@ class VibecodingGraph(
                 appendLine("Tasks done: ${state.executedTasks.joinToString(", ")}")
             }
             state.plan?.let { plan ->
-                appendLine("Plan remaining tasks: ${plan.epics.sumOf { it.userStories.sumOf { s -> s.tasks.size } } - state.executedTasks.size}")
+                val totalTasks = plan.epics.sumOf { it.userStories.sumOf { s -> s.tasks.size } }
+                val remaining = (totalTasks - state.executedTasks.size).coerceAtLeast(0)
+                appendLine("Plan remaining tasks: $remaining")
             }
             state.zoomedContext?.let { zc ->
                 appendLine()

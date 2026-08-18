@@ -1,28 +1,24 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 192
-:session: 192
+= Prompt de Reprise — Codebase (Queens N1) — Session 193
+:session: 193
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 191 — VIBE-HARDENING-2 US-4 C1 TaskResultVerifier refonte (P1, 4 pts). Surcharge `verify(stdout, stderr, expectedOutput)` + `hasActualFailure` raffiné (`\\bfailed\\b` non précédé de `0 `/`no `) + `StepVerifier` câble `step.expectedOutput` (contrat N0 PLN-VERIFY). Bug subtil lowercase `DEFAULT_EXPECTED_OUTPUT_LOWER` fix. 26 TaskResultVerifier + 13 StepVerifier + 22 VibecodingGraph + 97 gate = 158 tests VERT. 4/8 US. Borough DORMANT.
+:session_precedente: 192 — EPIC VIBE-HARDENING-2 TERMINÉ 8/8 US (US-5 C3 cleanup doc INSERT-X1..X6 + US-6 C7 coerceAtLeast(0) + US-7 C6 SessionProtocolEngine extraction + US-8 Cucumber BDD 4 scénarios). Baby-step TDD/BDD strict. 11 fichiers (5 modifiés + 6 créés). `SessionProtocolEngine.kt` créé (105 lignes) — délégation Server/Task (-37/-49 lignes). 2 unit coerceAtLeast + 9 unit engine + 4/4 cucumber PASSED. `compileKotlin` VERT, zéro régression, zéro secret, zéro bump BOM. Borough DORMANT.
 
-== Mission Session 192
+== Mission Session 193
 
-EPIC VIBE-HARDENING-2 (P2/P3 hardening) — 4 US restants sur 8.
-Borough DORMANT — réveil sur déclencheur pilote.
+EPIC VIBE-HARDENING-2 TERMINÉ 8/8 US. Borough DORMANT — réveil sur
+déclencheur pilote uniquement.
 
-=== US-5 C3 cleanup doc INSERT-X1..X6 (P3, 1 pt)
+=== Option A — EPIC FT-PIPELINE US-1 (P0 vision, domaine `codebase.finetuning`)
 
-`VibecodingGraph.kt:60-84` contient 6 blocs commentaires `// [INSERT-X1]`
-jusqu'à `[INSERT-X6]` décrivant des insertions à faire — ces insertions
-ont été faites (EPIC X sessions 101-105). Le javadoc est stale et trompeur.
+US-1 (3 pts, ~8 unit) : `FineTuningConfig` data class + merger 4 sources
+(pattern `ValidationConfig`) — `epochs`, `learningRate`, `batchSize`,
+`corpusGlobs`, `continualPreTrainingRatio` (0.10). Domaine
+`codebase.finetuning` (7ème). Baby-step TDD strict. Document :
+`.agents/CADRAGE_EPIC_FT_PIPELINE.adoc` US-1.
 
-* Stratégie : supprimer les commentaires INSERT-X1..X6 (dead doc).
-  `VibecodingPlan` (L18 `planning/VibecodingPlan.kt`) est utilisé
-  (import L13) — pas dead code. ~0 test (pure doc cleanup).
-* Document : `.agents/CADRAGE_EPIC_VIBE_HARDENING_2.adoc` US-5 (Décision 4).
+=== Option B — Maintenance / déclencheur pilote
 
-=== Backlog restant (sur déclencheur pilote)
-
-US-6 C7 coerceAtLeast (1 pt) → US-7 C6 SessionProtocolEngine (4 pts) →
-US-8 Cucumber BDD (2 pts).
+Aucun EPIC actif. Borough DORMANT jusqu'à déclencheur pilote.
 
 == Contexte technique
 

@@ -15,12 +15,12 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 | EPIC 1 | Init gouvernance | ✅ TERMINÉ | Items stale purgés (projet publié Central 0.0.5)
 | EPIC V-FLYWAY | Migration Flyway | BACKLOG P2 | Seuil déclenchement : 5+ migrations (actuellement 4 : V1→V4)
 | EPIC VIBE-HARDENING | Durcissement vibecoding P1 (CR-GLOBALE-004) | ✅ TERMINÉ 6/6 US (S-184→S-187) | S1 allowlist ✅, C2 retry ✅, C5 timeout ✅, Cucumber BDD ✅
-| EPIC VIBE-HARDENING-2 | Durcissement vibecoding P2/P3 (CR-GLOBALE-004 suite) | 🟡 EN COURS 4/8 US (US-0 ✅ S-188, US-1 ✅ S-189, US-2 ✅ S-189, US-3 ✅ S-190, US-4 ✅ S-191, reste US-5→US-8 ~14 pts) | S2 allowlist ✅, S3 MAX_WRITE_CHARS ✅, C4 flags cassés ✅, C1 TaskResultVerifier refonte ✅, reste C3/C6/C7 + Cucumber
+| EPIC VIBE-HARDENING-2 | Durcissement vibecoding P2/P3 (CR-GLOBALE-004 suite) | ✅ TERMINÉ 8/8 US (S-188→S-192) | S2 ✅, S3 ✅, C4 ✅, C1 ✅, C3 ✅ S-192, C7 ✅ S-192, C6 ✅ S-192, Cucumber ✅ S-192
 | EPIC FT-PIPELINE | Pipeline de fine-tuning N1 (P0 vision) | 🟡 CADRÉ 0/7 US (S-188) | Domaine `codebase.finetuning` (7ème), boucle fabrication→exposition
 | Tous autres EPICs | V, W, X, Y, Z, K, L, OCR, CR, TRAD, PUB, V-LOCAL, SP, V-6, V-7, V-8, V-9, 2→12 | ✅ TERMINÉ | Voir détails ci-dessous
 |===
 
-*Backlog réellement restant* : EPIC VIBE-HARDENING-2 (🟡 EN COURS 4/8 US, 4 US restantes ~14 pts — voir `.agents/BACKLOG.adoc` section dédiée) + EPIC FT-PIPELINE (🟡 CADRÉ 0/7 US, P0 vision) + SLD-8 US-8.2/8.3 (côté slider) + EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5.
+*Backlog réellement restant* : EPIC FT-PIPELINE (🟡 CADRÉ 0/7 US, P0 vision) + SLD-8 US-8.2/8.3 (côté slider) + EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5. EPIC VIBE-HARDENING-2 ✅ TERMINÉ 8/8 US (S-192).
 
 == EPIC VIBE-HARDENING — Durcissement vibecoding P1 (CR-GLOBALE-004)
 

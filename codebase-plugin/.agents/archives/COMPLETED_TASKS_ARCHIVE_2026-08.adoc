@@ -1,5 +1,24 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026 — Codebase Gradle (Queens)
 
+== Session 192 — EPIC VIBE-HARDENING-2 TERMINÉ 8/8 US (clôture)
+
+[cols="2,3"]
+|===
+| Tâche | Statut
+
+| US-5 C3 — Cleanup doc INSERT-X1..X6 (`VibecodingGraph.kt:53-85`, 32 lignes KDoc stale supprimées, insertions faites en EPIC X S-101→S-105)
+| ✅ TERMINÉ (S-192)
+
+| US-6 C7 — coerceAtLeast(0) `buildPromptForIteration` L430 (bug `"Plan remaining tasks: -2"` quand executedTasks > plan total, `buildPromptForIteration` rendu `internal` pour testabilité, 2 unit RED→GREEN)
+| ✅ TERMINÉ (S-192)
+
+| US-7 C6 — Extraction `SessionProtocolEngine` (105 lignes, shared engine `executeVibecoding` + `resolveAgentContext` + `buildOutput`, Server -37 + Task -49 lignes, `buildOutput` privé dupliqué supprimé, 9 unit dédiés + 4 classes non-régression VERT)
+| ✅ TERMINÉ (S-192)
+
+| US-8 — Cucumber BDD `codebase_vibe_hardening_2.feature` `@vibe-hardening-2` 4 scénarios (write_file size guard, expectedOutput comparison, gradle flag+value, remaining coerce) + `VibeHardening2World` + `VibeHardening2Steps` (14 step defs préfixés "vibe hardening 2") + `VibeHardening2CucumberRunner` (pattern S-082) + `CucumberTaskSpec("cucumberTestVibeHardening2")` 38e
+| ✅ TERMINÉ (S-192)
+|===
+
 == Session 191 — VIBE-HARDENING-2 US-4 C1 TaskResultVerifier refonte
 
 [cols="2,3"]
