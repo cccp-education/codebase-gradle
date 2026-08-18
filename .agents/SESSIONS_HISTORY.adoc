@@ -2,6 +2,16 @@
 :toc: left
 :icons: font
 
+== Session 193 — 2026-08-18
+
+* **EPICs** : EPIC FT-PIPELINE (US-1 — domaine `codebase.finetuning` 7ème)
+* **Livrables** :
+** `FineTuningConfig.kt` — data class 5 champs (`epochs=3`, `learningRate=2e-4`, `batchSize=4`, `corpusGlobs=[]`, `continualPreTrainingRatio=0.10`) + invariants `init` × 4 (epochs/batchSize > 0, learningRate > 0, ratio 0..1).
+** `FineTuningConfigMerger.kt` — object pur, `merge(projectDir, yamlConfig, cliParams, yamlLoaded)` + `loadFromGradleProperties` (prefix `codebase.finetuning.`) + `loadFromEnvironment` (prefix `CODEBASE_FINETUNING_`) + helpers `mergeInt`/`mergeDouble`/`mergeStrList` + `splitCommaList`. Precedence ENV < props < YAML < CLI.
+* **Tests** : 27/27 unit PASSED (8 FineTuningConfigTest + 19 FineTuningConfigMergerTest), 0 FAIL.
+* **Build** : `compileKotlin` VERT, zéro bump BOM, zéro secret, zéro régression.
+* **Score** : 9/10
+
 == Session 187 — 2026-08-17
 
 * **EPICs** : EPIC VIBE-HARDENING (US-3+US-4+US-5 — clôture EPIC 6/6 US)

@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-08-18
-*Version* : 0.0.8 (Maven Central, S-183). EPIC VIBE-HARDENING TERMINÉ 6/6 US (S-184→S-187). EPIC VIBE-HARDENING-2 4/8 US (US-0 ✅ S-188, US-1 ✅ S-189 allowlist TaskDiscoveryRegistrar, US-2 ✅ S-189 MAX_WRITE_CHARS, US-3 ✅ S-190 GradleTaskArgsMapper flags cassés, US-4 ✅ S-191 TaskResultVerifier refonte — surcharge `verify(stdout, stderr, expectedOutput)` + `hasActualFailure` raffiné `\\bfailed\\b` non précédé de `0 `/`no ` + `StepVerifier` câble `step.expectedOutput` (contrat N0 PLN-VERIFY) + bug subtil `DEFAULT_EXPECTED_OUTPUT_LOWER` fix, 26 TaskResultVerifier + 13 StepVerifier + 22 VibecodingGraph + 97 gate = 158 tests VERT). Gate `codebase.koog.planning.*` + `codebase.koog.tools.*` + `codebase.koog.discovery.*` + `ToolRegistryTest` VERT. Borough DORMANT.
+*Version* : 0.0.8 (Maven Central, S-183). EPIC VIBE-HARDENING TERMINÉ 6/6 US (S-184→S-187). EPIC VIBE-HARDENING-2 TERMINÉ 8/8 US (S-188→S-192). EPIC FT-PIPELINE 1/7 US (US-0 cadrage S-188, US-1 ✅ S-193 domaine `codebase.finetuning` — `FineTuningConfig` + `FineTuningConfigMerger` 4 sources, 27/27 unit PASSED). Borough DORMANT (réveil sur déclencheur pilote).
 
 == Regles Absolues
 
@@ -85,6 +85,7 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | EPIC V-6-POOL | Adaptation Ollama Cloud Pool pour Vibecoding | N1 | ✅ TERMINÉ (4/4 items — AUTHORIZED_MODELS aligné sur AGENTS.adoc 2 modèles, LlmProviderResolver cycling, Cucumber epic_v6_pool) | 077, 158
 | EPIC C-BOM-FIX | POM transitif versions manquantes | NX | ✅ TERMINÉ (3/3 US, 8/8 pts — versions explicites dans libs.versions.toml, bump 0.0.6, 22/22 UT bakery LangSwitch GREEN) | 172
 | EPIC VIBE-HARDENING | Durcissement vibecoding (CR-GLOBALE-004) | N1 | ✅ TERMINÉ (6/6 US — US-0 cadrage S-184, US-1 shell allowlist S-185, US-2 gradle allowlist S-186, US-3 timeout LLM S-187, US-4 retry single counter S-187, US-5 cucumber BDD S-187) | 184-187
-| EPIC VIBE-HARDENING-2 | Durcissement vibecoding P2/P3 (CR-GLOBALE-004 suite) | N1 | 🟡 EN COURS (3/8 US — US-0 cadrage S-188, US-1 allowlist TaskDiscoveryRegistrar S-189, US-2 MAX_WRITE_CHARS S-189, US-3 GradleTaskArgsMapper flags cassés S-190) | 188-190
+| EPIC VIBE-HARDENING-2 | Durcissement vibecoding P2/P3 (CR-GLOBALE-004 suite) | N1 | ✅ TERMINÉ (8/8 US — US-0 cadrage S-188, US-1 allowlist TaskDiscoveryRegistrar S-189, US-2 MAX_WRITE_CHARS S-189, US-3 GradleTaskArgsMapper flags cassés S-190, US-4 TaskResultVerifier refonte S-191, US-5 cleanup doc S-192, US-6 coerceAtLeast S-192, US-7 SessionProtocolEngine S-192, US-8 Cucumber BDD S-192) | 188-192
+| EPIC FT-PIPELINE | Pipeline de fine-tuning N1 (P0 vision) | N1 | 🟡 EN COURS (1/7 US — US-0 cadrage S-188, US-1 ✅ S-193 domaine `codebase.finetuning` + merger 4 sources, US-2→6 À FAIRE) | 188, 193
 | EPIC 1 | Init gouvernance agent | NX | ✅ TERMINÉ (items stale purgés session 169) | 001
 |===

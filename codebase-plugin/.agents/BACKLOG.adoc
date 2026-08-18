@@ -1,12 +1,12 @@
 = BACKLOG — Codebase Gradle
 :toc:
-:last_update: 2026-08-18 (Session 192 — EPIC VIBE-HARDENING-2 TERMINÉ 8/8 US : US-5 C3 cleanup doc + US-6 C7 coerceAtLeast + US-7 C6 SessionProtocolEngine + US-8 Cucumber BDD)
+:last_update: 2026-08-18 (Session 193 — EPIC FT-PIPELINE US-1 TERMINÉ : domaine `codebase.finetuning` 7ème créé, `FineTuningConfig` + `FineTuningConfigMerger` 4 sources, 27/27 unit PASSED)
 
 == Statut Global
 
 **EPIC VIBE-HARDENING ✅ TERMINÉ (6/6 — S184-S187)** — durcissement vibecoding P1 (S1 allowlist shell + gradle, C2 retry single counter, C5 timeout LLM, Cucumber BDD). **EPIC PUB (bump 0.0.8) ✅ TERMINÉ (S183)**. **EPIC SUBGRAPH ✅ TERMINÉ (4/4 — S182)** — contexte augmenté Graphify réel. Le reste du backlog est dormant :
 
-. *EPIC FT-PIPELINE* (P0 vision) — 🟡 CADRÉ (S-188, 7 US ~18 pts) — pipeline de fine-tuning N1 générique (fabrication modèle : dataset prep + continual pre-training 10% corpus + export GGUF + push Ollama). Source de conception : notebook-gradle ARCHITECTURE.adoc (vestige récupéré). Domaine `codebase.finetuning` (7ème). Boucle fabrication→exposition avec domaine `codebase.koog.expert` existant (13 fichiers). TRN-8 training reformulé en recettes N2 consommant le pipeline. Cadrage pur, zéro code. Pas d'exécution sans déclencheur pilote.
+. *EPIC FT-PIPELINE* (P0 vision) — 🟡 EN COURS 1/7 US (S-188 cadrage + S-193 US-1) — pipeline de fine-tuning N1 générique (fabrication modèle : dataset prep + continual pre-training 10% corpus + export GGUF + push Ollama). Source de conception : notebook-gradle ARCHITECTURE.adoc (vestige récupéré). Domaine `codebase.finetuning` (7ème) ouvert S-193 (`FineTuningConfig` + `FineTuningConfigMerger` 4 sources). Boucle fabrication→exposition avec domaine `codebase.koog.expert` existant (13 fichiers). TRN-8 training reformulé en recettes N2 consommant le pipeline. US-2→6 À FAIRE.
 . *EPIC VIBE-HARDENING-2* (P2/P3) — ✅ TERMINÉ 8/8 US (S-188 cadrage + S-189 US-1+US-2 + S-190 US-3 + S-191 US-4 + S-192 US-5+US-6+US-7+US-8) — durcissement vibecoding P2/P3 (S2 allowlist tasks découvertes ✅, S3 garde taille write/edit ✅, C4 flags cassés ✅, C1 TaskResultVerifier refonte ✅, C3 cleanup doc ✅ S-192, C6 SessionProtocolEngine extraction ✅ S-192, C7 coerceAtLeast ✅ S-192, Cucumber BDD ✅ S-192). EPIC clos. Gate `codebase.koog.planning.*` + `codebase.koog.tools.*` + `codebase.koog.discovery.*` + `ToolRegistryTest` + `SessionProtocolEngineTest` + `VibecodingGraphTest` VERT 0 FAIL + 4/4 cucumber `@vibe-hardening-2` PASSED.
 . *EPIC VIBE-HARDENING* (P1) — ✅ TERMINÉ 6/6 US (US-0 cadrage S184, US-1 shell allowlist S185, US-2 gradle allowlist S186, US-3 timeout LLM S187, US-4 retry single counter S187, US-5 cucumber BDD S187). Gate `codebase.koog.tools.*` + VibecodingGraph + StepVerifier VERT 64 tests 0 FAIL + 4/4 cucumber PASSED. P2/P3 restants (S2/S3/C1/C3/C4/C6/C7) → EPIC VIBE-HARDENING-2 si déclencheur.
 . *EPIC SUBGRAPH* (P1) — ✅ TERMINÉ 4/4 US (S178 cadrage, S179 domaine `codebase.graph`, S180 canal Graphify réel, S182 US-3 graphRelations+Resource + US-4 Cucumber 4 scénarios @subgraph). Contexte augmenté complet : EAGER + RAG + GRAPHIFY réel + Docs + Resource.
@@ -310,9 +310,9 @@ directement en R2DBC. Quand le nombre de migrations dépassera 5, importer
 
 Actuellement 4 migrations (V1→V4). Non applicable.
 
-== 🟡 EPIC FT-PIPELINE — Pipeline de Fine-Tuning N1 (Session 188 — Cadrage, 0/7 US)
+== 🟡 EPIC FT-PIPELINE — Pipeline de Fine-Tuning N1 (Session 188 — Cadrage, 1/7 US)
 
-**Statut** : 🟡 CADRÉ (7 US ~18 pts, US-0 ✅ S-188, US-1→6 À FAIRE)
+**Statut** : 🟡 EN COURS (7 US ~18 pts, US-0 ✅ S-188, US-1 ✅ S-193, US-2→6 À FAIRE)
 **Priorité** : P0 vision (WORKSPACE_AS_PRODUCT.adoc:642-658)
 **Source de conception** : `foundry/public/notebook-gradle/ARCHITECTURE.adoc` (vestige récupéré)
 **Document** : `.agents/CADRAGE_EPIC_FT_PIPELINE.adoc`
@@ -344,8 +344,8 @@ pas de runtime Colab (CI/CD Gradle), Cucumber BDD `@finetuning`, budget pool
 | 1
 
 | US-1
-| 🟡 À FAIRE : `FineTuningRequest` + `FineTuningResult` + `FineTuningPipeline` port + `FakeFineTuner` (domaine `codebase.finetuning` créé, pattern `TranscriptLlmEnhancer` port/fake). Invariants : baseModel non-blank, dataset non-empty, outputModelName non-blank, corpusRatio 0.0..1.0 default 0.10.
-| ~8 unit
+| ✅ TERMINÉ (S-193) : `FineTuningConfig` data class 5 champs (`epochs=3`, `learningRate=2e-4`, `batchSize=4`, `corpusGlobs=[]`, `continualPreTrainingRatio=0.10`) + invariants `init` × 4 + `FineTuningConfigMerger` 4 sources (ENV < props < YAML < CLI). Domaine `codebase.finetuning` (7ème) créé. Pattern `ValidationConfig`/`CapsuleConfigMerger`. _Note : US-1 redéfinie par PROMPT_REPRISE S-193 (config+merger) — le port `FineTuningPipeline` + `FakeFineTuner` initialement cadré est reporté US-2._
+| 27 unit
 | 3
 
 | US-2

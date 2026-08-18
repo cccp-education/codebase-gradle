@@ -1,0 +1,58 @@
+= Session 193 — EPIC FT-PIPELINE US-1 (domaine `codebase.finetuning`)
+
+:date: 2026-08-18
+:borough: Queens — codebase-gradle (N1)
+:epic: FT-PIPELINE
+:us: US-1
+:methode: Baby-step TDD strict (RED → GREEN → REFACTOR)
+:pattern: S-057/S-063 (cadrage) + S-113 (multi-US) + ValidationConfig (capsule)
+
+== Contexte
+
+EPIC FT-PIPELINE cadré S-188 (7 US ~18 pts, P0 vision). US-1 = domaine
+`codebase.finetuning` (7ème sous `codebase`) : `FineTuningConfig` data class
+immutable + merger 4 sources (pattern `ValidationConfig` capsule /
+`CapsuleConfigMerger`). Déclencheur pilote : Option A du PROMPT_REPRISE.
+
+== Actions
+
+. RED — `FineTuningConfigTest.kt` (8 unit) : defaults rétrocompatibles,
+  copy, invariants (epochs/batchSize > 0, learningRate > 0, ratio 0..1),
+  boundary values, corpusGlobs non-empty.
+. GREEN — `FineTuningConfig.kt` : data class 5 champs
+  (`epochs=3`, `learningRate=2e-4`, `batchSize=4`, `corpusGlobs=[]`,
+  `continualPreTrainingRatio=0.10`) + `init` require × 4.
+. RED — `FineTuningConfigMergerTest.kt` (19 unit) : loadFromGradleProperties
+  (dot-prefixed, defaults, ignore non-finetuning, commentaires, malformed),
+  loadFromEnvironment (defaults), merge 4 sources (YAML/props/CLI precedence,
+  partial override, CLI string→Int/Double, corpusGlobs comma-split, empty CLI
+  fallback, NoYaml defaults).
+. GREEN — `FineTuningConfigMerger.kt` : object pur, `merge(projectDir,
+  yamlConfig, cliParams, yamlLoaded)` + `loadFromGradleProperties` +
+  `loadFromEnvironment` + helpers `mergeInt`/`mergeDouble`/`mergeStrList` +
+  `splitCommaList`. Precedence ENV < props < YAML < CLI.
+. REFACTOR — gate ciblé `codebase.finetuning.*` VERT.
+
+== Commandes
+
+----
+./gradlew test --tests "codebase.finetuning.*" --console=plain
+./gradlew compileKotlin --console=plain
+----
+
+== Résultats
+
+* 27/27 unit PASSED, 0 FAIL (8 FineTuningConfigTest + 19 FineTuningConfigMergerTest).
+* `compileKotlin` VERT.
+* 4 fichiers créés (2 prod + 2 test), zéro fichier existant modifié.
+* Zéro bump BOM, zéro secret, zéro régression.
+
+== Leçons
+
+* Le pattern `CapsuleConfigMerger` (494 lignes) est surdimensionné pour un
+  domaine à 5 champs — merger réduit à 3 helpers génériques + 2 loaders.
+* Int/Double n'ont pas de concept "blank" (contrairement aux String) — pas de
+  fallback isNotBlank pour les scalaires, YAML/props gagnent toujours sur ENV.
+* `epochs=0` lèverait l'invariant à la construction — le test "blank YAML
+  fallback" n'a pas de sens pour les scalaires (retiré au profit de NoYaml
+  defaults).

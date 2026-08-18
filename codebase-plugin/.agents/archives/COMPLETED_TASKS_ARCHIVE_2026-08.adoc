@@ -1,5 +1,20 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026 — Codebase Gradle (Queens)
 
+== Session 193 — EPIC FT-PIPELINE US-1 (domaine `codebase.finetuning`)
+
+|===
+| Tâche | Statut
+
+| US-1 `FineTuningConfig` data class 5 champs + invariants `init` × 4
+| ✅ TERMINÉ (S-193)
+
+| US-1 `FineTuningConfigMerger` 4 sources (ENV < props < YAML < CLI)
+| ✅ TERMINÉ (S-193)
+
+| 27/27 unit PASSED (8 config + 19 merger) + `compileKotlin` VERT
+| ✅ TERMINÉ (S-193)
+|===
+
 == Session 192 — EPIC VIBE-HARDENING-2 TERMINÉ 8/8 US (clôture)
 
 [cols="2,3"]

@@ -1,6 +1,28 @@
 = Test Coverage Analysis — Codebase Gradle
 :date: 2026-08-18
 
+== Session 193 — FT-PIPELINE US-1 (domaine `codebase.finetuning`)
+
+=== Tests créés
+
+* **Unit** (`codebase/finetuning/FineTuningConfigTest.kt`) : 8 tests
+  - defaults rétrocompatibles, copy preserves defaults, epochs/batchSize/learningRate positifs, ratio 0..1, boundary values, corpusGlobs non-empty.
+
+* **Unit** (`codebase/finetuning/FineTuningConfigMergerTest.kt`) : 19 tests
+  - loadFromGradleProperties (dot-prefixed, defaults, ignore non-finetuning, commentaires, malformed)
+  - loadFromEnvironment (defaults)
+  - merge 4 sources (YAML/props/CLI precedence, partial override, CLI string→Int/Double, corpusGlobs comma-split, empty CLI fallback, NoYaml defaults)
+
+=== Production créée
+
+* `codebase/finetuning/FineTuningConfig.kt` — data class 5 champs + invariants `init` × 4
+* `codebase/finetuning/FineTuningConfigMerger.kt` — object pur, merge 4 sources + 2 loaders + 3 helpers
+
+=== Gate
+
+* `codebase.finetuning.*` VERT : 27 tests 0 FAIL (8 config + 19 merger)
+* `compileKotlin` VERT
+
 == Session 191 — VIBE-HARDENING-2 US-4 C1 TaskResultVerifier refonte
 
 === Tests modifiés

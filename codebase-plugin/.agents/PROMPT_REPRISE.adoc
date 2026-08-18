@@ -1,31 +1,35 @@
-= PROMPT_REPRISE — Codebase (Queens N1) — Session 188
-:session: 188
+= Prompt de Reprise — Codebase (Queens N1) — Session 194
+:session: 194
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 187 — EPIC VIBE-HARDENING TERMINÉ 6/6 US (US-3 timeout LLM withTimeout 30s sur 3 sites callLLMNode/replan/StepVerifier + US-4 retry single counter suppression double incrémentation executePlanTasks + bloc error + US-5 Cucumber BDD 4 scénarios @vibe-hardening). Gate `codebase.koog.tools.*` VERT 64 tests 0 FAIL + 4/4 cucumber PASSED. Zéro bump BOM. Borough DORMANT.
+:session_precedente: 193 — EPIC FT-PIPELINE US-1 TERMINÉ (domaine `codebase.finetuning` 7ème créé : `FineTuningConfig` data class 5 champs + invariants + `FineTuningConfigMerger` 4 sources ENV < props < YAML < CLI). Baby-step TDD strict. 4 fichiers créés (2 prod + 2 test). 27/27 unit PASSED (8 config + 19 merger). `compileKotlin` VERT, zéro régression, zéro secret, zéro bump BOM. EPIC FT-PIPELINE 1/7 US.
 
-== Contexte
+== Mission Session 194
 
-- ✅ EPIC VIBE-HARDENING TERMINÉ 6/6 US (S-184→S-187) — durcissement vibecoding (allowlist shell+gradle deny-by-default, timeout LLM 30s, retry single counter, Cucumber BDD)
-- ✅ EPIC SUBGRAPH TERMINÉ 4/4 US (S-178-182)
-- ✅ EPIC PUB TERMINÉ 3/3 US (S-183) — codebase-plugin 0.0.8 Maven Central
-- Version : codebase-plugin 0.0.8 Central
-- BOM Central 0.0.18 contient constraint codebase-plugin 0.0.5 — bump BOM MEMPHIS (hors scope)
-- ⚠️ Build via `codebase-plugin/` autonome (racine `codebase-gradle` ne configure plus)
+EPIC FT-PIPELINE en cours (1/7 US). Prochaine US-2.
 
-== Mission Session 188
+=== Option A — EPIC FT-PIPELINE US-2 (P0 vision, adapter Ollama)
 
-Borough Queens DORMANT. Aucune mission prioritaire — attendre déclencheur pilote.
+US-2 (3 pts, ~6 unit) : `OllamaFineTunerAdapter` — adapter bridge Ollama API
+(create model from Modelfile, push to registry). Pattern `ChatModelTranscriptEnhancer`.
+Fallback degraded : Ollama unavailable → `FineTuningResult.failure` (degraded
+garde dataset original, pas de crash). Document :
+`.agents/CADRAGE_EPIC_FT_PIPELINE.adoc` US-2.
 
-Déclencheurs possibles :
-- EPIC VIBE-HARDENING-2 (P2/P3 : S2 auto-registration libre, S3 edit/write taille garde, C1 TaskResultVerifier scoring sémantique, C3 VibecodingPlan dead code, C4 GradleTaskArgsMapper flags, C6 duplication SessionProtocolServer, C7 Plan remaining négatif)
-- Cross-borough : un borough N2 qui demande une évolution du socle N1
-- Maintenance : bump version, CVE, dépendance cassée
+=== Option B — Maintenance / déclencheur pilote
 
-== Rappels
+Borough DORMANT jusqu'à déclencheur pilote.
 
-- BABY-STEP TDD strict si code — jamais de code sans test rouge d'abord
-- 1 fichier à la fois — modifier, valider (`compileTestKotlin`), puis suivant
-- Anglais uniquement dans le code (OSS Apache 2.0)
-- Gate tests ciblé, JAMAIS `./gradlew test` global (Cucumber interminable)
-- Ports Ollama 11437-11465 (jamais 11434-11436)
-- Zéro bump BOM sauf si contrats N0 modifiés (EPIC local = pas de bump)
+== Contexte technique
+
+* Build autonome : `cd codebase-plugin && ./gradlew ...`.
+* Version alignée : codebase-plugin 0.0.8 = Maven Central = BOM 0.0.19.
+* EPIC FT-PIPELINE (P0 vision, 7 US ~18 pts) — US-1 ✅ S-193, US-2→6 À FAIRE.
+* Domaine `codebase.finetuning` (7ème) ouvert S-193 (FineTuningConfig + merger).
+
+== Règles absolues
+
+* Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la
+  fois, séquentiel pur (interdiction @xp/subagents/parallélisation).
+* Zéro commit/push sans permission explicite du pilote.
+* Gate ciblé : jamais `./gradlew test` global (Cucumber interminable).
+* Zéro secret, zéro token dans le code ou les logs.
