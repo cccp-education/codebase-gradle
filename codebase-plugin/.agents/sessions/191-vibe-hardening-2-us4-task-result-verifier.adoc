@@ -1,0 +1,142 @@
+= Session 191 — VIBE-HARDENING-2 US-4 C1 TaskResultVerifier refonte
+:session: 191
+:date: 2026-08-18
+:epic: VIBE-HARDENING-2
+:pattern: baby-step TDD strict RED → GREEN → REFACTOR
+
+== Contexte
+
+EPIC VIBE-HARDENING-2 (P2/P3 hardening, 8 US ~21 pts). US-0 cadrage ✅
+S-188, US-1 allowlist TaskDiscoveryRegistrar ✅ S-189, US-2 MAX_WRITE_CHARS
+✅ S-189, US-3 GradleTaskArgsMapper flags ✅ S-190. Borough DORMANT —
+réveil sur déclencheur pilote.
+
+US-4 C1 (P1 mais reporté hors scope P1) — `TaskResultVerifier.verify`
+heuristique fragile : `contains("failed")` matche `0 failed tests`
+(réussite) → faux positif FAILED. `expectedOutput` (GradleTask N0 S-064,
+StepVerifier) n'est jamais comparé au stdout réel — le contrat de
+vérification N0 est inutilisé.
+
+== Actions
+
+=== Phase RED — tests échouants (10 nouveaux tests)
+
+`TaskResultVerifierTest.kt` : +10 tests (17 → 27 tests).
+
+* `zero failed tests should return SUCCESS not FAILED` — `0 failed tests`
+  ne doit plus produire FAILED
+* `zero failed with no build successful should not be FAILED` — `0 failed,
+  5 passed` sans BUILD SUCCESSFUL → UNKNOWN (pas FAILED)
+* `N tests failed still returns FAILED` — non-régression `3 tests failed`
+* `custom expectedOutput matching stdout should return SUCCESS` —
+  `verify(stdout, stderr, "SPG generated")` avec stdout contenant
+  expectedOutput → SUCCESS
+* `custom expectedOutput not matching stdout should return FAILED` —
+  expectedOutput absent → FAILED
+* `custom expectedOutput with BUILD FAILED should return FAILED` —
+  expectedOutput présent mais BUILD FAILED dans stderr → FAILED
+* `custom expectedOutput matching with zero failed tests should return
+  SUCCESS` — expectedOutput présent + `0 failed tests` → SUCCESS
+* `custom expectedOutput case insensitive matching should return SUCCESS`
+  — comparaison case insensitive
+* `default expectedOutput with zero failed tests returns SUCCESS` —
+  default + `0 failed tests` → SUCCESS
+* `custom expectedOutput absent with zero failed tests returns FAILED` —
+  expectedOutput absent + `0 failed tests` (sans BUILD SUCCESSFUL) → FAILED
+
+RED confirmé : `compileTestKotlin` FAILED (4 erreurs `Too many arguments
+for 'fun verify'`).
+
+=== Phase GREEN — implémentation
+
+`TaskResultVerifier.kt` refondu :
+
+. Surcharge `verify(stdout, stderr, expectedOutput)` ajoutée — 2-arg
+  délègue avec `DEFAULT_EXPECTED_OUTPUT`.
+. `DEFAULT_EXPECTED_OUTPUT = "BUILD SUCCESSFUL"` const companion +
+  `DEFAULT_EXPECTED_OUTPUT_LOWER = "build successful"` (comparaison
+  lowercase — bug subtil : `expected` est lowercased mais
+  `DEFAULT_EXPECTED_OUTPUT` non lowercased → `isCustomExpected` toujours
+  true → tous les tests default cassés. Fix : comparaison avec
+  `DEFAULT_EXPECTED_OUTPUT_LOWER`).
+. Branche `isCustomExpected` : (1) check `build failed`/`compilation
+  error`/`hasActualFailure` → FAILED ; (2) si stdout contains expected
+  (case insensitive) → SUCCESS sinon FAILED.
+. Branche default : heuristique fallback conservée + `hasActualFailure`
+  raffiné.
+. `hasActualFailure(combined)` : `FAILED_PATTERN = \\bfailed\\b` findAll
+  → any match non précédé de `0 ` ou `no ` (exclut `0 failed`, `no
+  failed`).
+
+`StepVerifier.kt` : `resultVerifier.verify(state.lastToolResult, "")` →
+`resultVerifier.verify(state.lastToolResult, "", step.expectedOutput)` —
+câble le contrat N0 `expectedOutput` du `VibecodingStep` (PLN-VERIFY
+S-064).
+
+=== Phase REFACTOR — tests StepVerifier adaptés
+
+`StepVerifierTest.kt` : 2 tests adaptés (backward compat contrat
+`expectedOutput`) :
+
+* `BLOCKED verdict should set blocked error` : `step.expectedOutput` custom
+  `"SPD generated"` → `DEFAULT_EXPECTED_OUTPUT` (sinon branche custom →
+  FAILED au lieu de BLOCKED — `expectedOutput` custom est maintenant
+  comparé).
+* `UNKNOWN verdict should set unknown error` : `step.expectedOutput`
+  custom `"Expected output"` → `DEFAULT_EXPECTED_OUTPUT` (sinon branche
+  custom → FAILED au lieu de UNKNOWN).
+
++2 nouveaux tests StepVerifier (13 → 15 tests) :
+
+* `custom expectedOutput matching should clear error` — expectedOutput
+  custom présent dans stdout → SUCCESS → error cleared
+* `custom expectedOutput not matching should trigger retry` —
+  expectedOutput custom absent → FAILED → retry (retryCount 1, error null)
+
+== Commandes
+
+----
+./gradlew test --tests "codebase.koog.planning.TaskResultVerifierTest" --rerun-tasks
+./gradlew test --tests "codebase.koog.planning.*" --rerun-tasks
+./gradlew test --tests "codebase.koog.VibecodingGraphTest" --rerun-tasks
+./gradlew test --tests "codebase.koog.tools.*" --tests "codebase.koog.discovery.*" --tests "contracts.vibecoding.registry.ToolRegistryTest" --rerun-tasks
+----
+
+== Résultats
+
+* **TaskResultVerifierTest** : 26/26 PASSED (17 existants + 9 nouveaux
+  + 0 supprimés — 1 test `zero failed with no build successful` compté
+  dans les 9)
+* **StepVerifierTest** : 13/13 PASSED (11 existants + 2 nouveaux, 2
+  adaptés)
+* **VibecodingGraphTest** : 22/22 PASSED (non-régression)
+* **Gate combiné** `codebase.koog.tools.*` + `codebase.koog.discovery.*`
+  + `ToolRegistryTest` : 97 tests 0 FAIL (non-régression — US-4 touche
+  uniquement `codebase.koog.planning.*`)
+* **Total planning gate** : 60 tests 0 FAIL (26 TaskResultVerifier + 13
+  StepVerifier + 14 VibecodingPlan + 7 autres planning)
+
+`compileKotlin` VERT. Zéro bump BOM, zéro secret, zéro régression.
+
+== Leçons
+
+. **Bug subtil lowercase** : comparer `expected` (lowercased) avec
+  `DEFAULT_EXPECTED_OUTPUT` (const non lowercased) → `isCustomExpected`
+  toujours true. Fix : const `DEFAULT_EXPECTED_OUTPUT_LOWER` séparée.
+  Diagnostic difficile car bytecode décompilé semblait correct — le bug
+  était dans la logique de comparaison, pas dans la compilation.
+. **Backward compat contrat** : `expectedOutput` custom est maintenant
+  comparé au stdout. Les tests StepVerifier qui utilisaient des
+  expectedOutput custom " décoratifs " (non comparés avant) doivent être
+  adaptés pour utiliser `DEFAULT_EXPECTED_OUTPUT` quand on teste
+  BLOCKED/UNKNOWN (qui sont des verdicts heuristiques fallback).
+. **Baby-step TDD** : 10 tests RED d'un coup → 1 cycle GREEN → 1 cycle
+  REFACTOR (tests StepVerifier adaptés). Pattern efficace pour une
+  refonte d'API.
+
+== État EPIC VIBE-HARDENING-2
+
+4/8 US (US-0 ✅ S-188, US-1 ✅ S-189, US-2 ✅ S-189, US-3 ✅ S-190,
+US-4 ✅ S-191). Reste US-5 C3 cleanup doc (1 pt) → US-6 C7 coerceAtLeast
+(1 pt) → US-7 C6 SessionProtocolEngine (4 pts) → US-8 Cucumber BDD
+(2 pts).

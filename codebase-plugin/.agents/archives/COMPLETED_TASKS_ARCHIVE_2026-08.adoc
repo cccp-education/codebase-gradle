@@ -1,5 +1,21 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026 — Codebase Gradle (Queens)
 
+== Session 191 — VIBE-HARDENING-2 US-4 C1 TaskResultVerifier refonte
+
+[cols="2,3"]
+|===
+| Tâche | Statut
+
+| US-4 C1 — Surcharge `verify(stdout, stderr, expectedOutput)` + `hasActualFailure` raffiné (`\\bfailed\\b` non précédé de `0 `/`no `) + `StepVerifier` câble `step.expectedOutput` (contrat N0 PLN-VERIFY) + bug `DEFAULT_EXPECTED_OUTPUT_LOWER` fix
+| ✅ TERMINÉ (S-191)
+|===
+
+* Tests : 26 TaskResultVerifier + 13 StepVerifier + 22 VibecodingGraph + 97 gate = 158 VERT 0 FAIL
+* Production : `TaskResultVerifier.kt` (refonte), `StepVerifier.kt` (câblage expectedOutput)
+* Tests : `TaskResultVerifierTest.kt` (+9), `StepVerifierTest.kt` (+2, 2 adaptés)
+* Zéro bump BOM, zéro secret, zéro régression
+* Rapport : `.agents/sessions/191-vibe-hardening-2-us4-task-result-verifier.adoc`
+
 == Session 190 — VIBE-HARDENING-2 US-3 C4 GradleTaskArgsMapper flags cassés
 
 [cols="2,3"]

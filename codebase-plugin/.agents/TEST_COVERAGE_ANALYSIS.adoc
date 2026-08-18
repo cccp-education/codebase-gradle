@@ -1,6 +1,47 @@
 = Test Coverage Analysis — Codebase Gradle
 :date: 2026-08-18
 
+== Session 191 — VIBE-HARDENING-2 US-4 C1 TaskResultVerifier refonte
+
+=== Tests modifiés
+
+* **Unit** (`codebase/koog/planning/TaskResultVerifierTest.kt`) : 17 → 26 tests (+9 nouveaux)
+  - `zero failed tests should return SUCCESS not FAILED` (NOUVEAU — `0 failed tests` ne doit plus produire FAILED)
+  - `zero failed with no build successful should not be FAILED` (NOUVEAU — `0 failed, 5 passed` sans BUILD SUCCESSFUL → UNKNOWN)
+  - `N tests failed still returns FAILED` (NOUVEAU — non-régression `3 tests failed`)
+  - `custom expectedOutput matching stdout should return SUCCESS` (NOUVEAU — `verify(stdout, stderr, "SPG generated")` avec stdout contenant expectedOutput → SUCCESS)
+  - `custom expectedOutput not matching stdout should return FAILED` (NOUVEAU — expectedOutput absent → FAILED)
+  - `custom expectedOutput with BUILD FAILED should return FAILED` (NOUVEAU — expectedOutput présent mais BUILD FAILED dans stderr → FAILED)
+  - `custom expectedOutput matching with zero failed tests should return SUCCESS` (NOUVEAU — expectedOutput présent + `0 failed tests` → SUCCESS)
+  - `custom expectedOutput case insensitive matching should return SUCCESS` (NOUVEAU — comparaison case insensitive)
+  - `default expectedOutput with zero failed tests returns SUCCESS` (NOUVEAU — default + `0 failed tests` → SUCCESS)
+  - `custom expectedOutput absent with zero failed tests returns FAILED` (NOUVEAU — expectedOutput absent + `0 failed tests` sans BUILD SUCCESSFUL → FAILED)
+
+* **Unit** (`codebase/koog/planning/StepVerifierTest.kt`) : 11 → 13 tests (+2 nouveaux, 2 adaptés)
+  - `BLOCKED verdict should set blocked error` (ADAPTÉ — `step.expectedOutput` custom `"SPD generated"` → `DEFAULT_EXPECTED_OUTPUT` car expectedOutput custom est maintenant comparé)
+  - `UNKNOWN verdict should set unknown error` (ADAPTÉ — `step.expectedOutput` custom `"Expected output"` → `DEFAULT_EXPECTED_OUTPUT`)
+  - `custom expectedOutput matching should clear error` (NOUVEAU — expectedOutput custom présent dans stdout → SUCCESS → error cleared)
+  - `custom expectedOutput not matching should trigger retry` (NOUVEAU — expectedOutput custom absent → FAILED → retry)
+
+=== Production modifiée
+
+* `codebase/koog/planning/TaskResultVerifier.kt` :
+  - Surcharge `verify(stdout, stderr, expectedOutput)` ajoutée — 2-arg délègue avec `DEFAULT_EXPECTED_OUTPUT`
+  - Branche `isCustomExpected` : check `build failed`/`compilation error`/`hasActualFailure` → FAILED ; sinon `stdout.contains(expected)` → SUCCESS sinon FAILED
+  - Branche default : heuristique fallback conservée + `hasActualFailure` raffiné
+  - `hasActualFailure(combined)` : `FAILED_PATTERN = \\bfailed\\b` findAll → any match non précédé de `0 `/`no `
+  - `DEFAULT_EXPECTED_OUTPUT_LOWER` const ajoutée (bug subtil lowercase fix)
+
+* `codebase/koog/planning/StepVerifier.kt` :
+  - `verify(state.lastToolResult, "")` → `verify(state.lastToolResult, "", step.expectedOutput)` — câble contrat N0 `expectedOutput`
+
+=== Gate
+
+* `codebase.koog.planning.*` VERT : 60 tests 0 FAIL (26 TaskResultVerifier + 13 StepVerifier + 14 VibecodingPlan + 7 autres planning)
+* `codebase.koog.VibecodingGraphTest` VERT : 22 tests 0 FAIL (non-régression)
+* `codebase.koog.tools.*` + `codebase.koog.discovery.*` + `ToolRegistryTest` VERT : 97 tests 0 FAIL (non-régression)
+* Total : 158 tests VERT 0 FAIL
+
 == Session 190 — VIBE-HARDENING-2 US-3 C4 GradleTaskArgsMapper flags cassés
 
 === Tests modifiés

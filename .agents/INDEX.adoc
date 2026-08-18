@@ -4,7 +4,7 @@
 
 *Date de creation* : 2026-06-16
 *Derniere mise a jour* : 2026-08-18
-*Version* : 0.0.8 (Maven Central, S-183). EPIC VIBE-HARDENING TERMINÉ 6/6 US (S-184→S-187). EPIC VIBE-HARDENING-2 3/8 US (US-0 ✅ S-188, US-1 ✅ S-189 allowlist TaskDiscoveryRegistrar, US-2 ✅ S-189 MAX_WRITE_CHARS, US-3 ✅ S-190 GradleTaskArgsMapper flags cassés — `GRADLE_ARG_ALLOWLIST` étendu `--\w+(?:=\S+)?` + `isBareLongFlag` + `validateGradleTask` accepte pair flag+value, fail préexistant C4 résolu, 5 unit + 110 gate VERT). Gate `codebase.koog.tools.*` + `codebase.koog.discovery.*` + `ToolRegistryTest` VERT 110 tests 0 FAIL. Borough DORMANT.
+*Version* : 0.0.8 (Maven Central, S-183). EPIC VIBE-HARDENING TERMINÉ 6/6 US (S-184→S-187). EPIC VIBE-HARDENING-2 4/8 US (US-0 ✅ S-188, US-1 ✅ S-189 allowlist TaskDiscoveryRegistrar, US-2 ✅ S-189 MAX_WRITE_CHARS, US-3 ✅ S-190 GradleTaskArgsMapper flags cassés, US-4 ✅ S-191 TaskResultVerifier refonte — surcharge `verify(stdout, stderr, expectedOutput)` + `hasActualFailure` raffiné `\\bfailed\\b` non précédé de `0 `/`no ` + `StepVerifier` câble `step.expectedOutput` (contrat N0 PLN-VERIFY) + bug subtil `DEFAULT_EXPECTED_OUTPUT_LOWER` fix, 26 TaskResultVerifier + 13 StepVerifier + 22 VibecodingGraph + 97 gate = 158 tests VERT). Gate `codebase.koog.planning.*` + `codebase.koog.tools.*` + `codebase.koog.discovery.*` + `ToolRegistryTest` VERT. Borough DORMANT.
 
 == Regles Absolues
 

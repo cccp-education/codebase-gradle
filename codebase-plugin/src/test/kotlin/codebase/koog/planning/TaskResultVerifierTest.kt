@@ -104,4 +104,66 @@ class TaskResultVerifierTest {
         val result = verifier.verify("DRY RUN: would write 42 chars to /tmp/foo.txt", "")
         assertEquals(TaskVerdict.SUCCESS, result.verdict)
     }
+
+    // ── US-4 C1 : expectedOutput comparison + refined "failed" heuristic ──
+
+    @Test
+    fun `zero failed tests should return SUCCESS not FAILED`() {
+        val result = verifier.verify("BUILD SUCCESSFUL\n0 failed tests, 10 passed", "")
+        assertEquals(TaskVerdict.SUCCESS, result.verdict)
+    }
+
+    @Test
+    fun `zero failed with no build successful should not be FAILED`() {
+        val result = verifier.verify("Test run: 0 failed, 5 passed", "")
+        assertEquals(TaskVerdict.UNKNOWN, result.verdict)
+    }
+
+    @Test
+    fun `N tests failed still returns FAILED`() {
+        val result = verifier.verify("BUILD FAILED\n3 tests failed", "assertion error")
+        assertEquals(TaskVerdict.FAILED, result.verdict)
+    }
+
+    @Test
+    fun `custom expectedOutput matching stdout should return SUCCESS`() {
+        val result = verifier.verify("SPG generated successfully at /tmp/spg.adoc", "", "SPG generated")
+        assertEquals(TaskVerdict.SUCCESS, result.verdict)
+    }
+
+    @Test
+    fun `custom expectedOutput not matching stdout should return FAILED`() {
+        val result = verifier.verify("Some random output", "", "SPG generated")
+        assertEquals(TaskVerdict.FAILED, result.verdict)
+    }
+
+    @Test
+    fun `custom expectedOutput with BUILD FAILED should return FAILED`() {
+        val result = verifier.verify("SPG generated", "BUILD FAILED in 2s", "SPG generated")
+        assertEquals(TaskVerdict.FAILED, result.verdict)
+    }
+
+    @Test
+    fun `custom expectedOutput matching with zero failed tests should return SUCCESS`() {
+        val result = verifier.verify("SPG generated\n0 failed tests", "", "SPG generated")
+        assertEquals(TaskVerdict.SUCCESS, result.verdict)
+    }
+
+    @Test
+    fun `custom expectedOutput case insensitive matching should return SUCCESS`() {
+        val result = verifier.verify("SPG GENERATED Successfully", "", "spg generated")
+        assertEquals(TaskVerdict.SUCCESS, result.verdict)
+    }
+
+    @Test
+    fun `default expectedOutput with zero failed tests returns SUCCESS`() {
+        val result = verifier.verify("BUILD SUCCESSFUL\n0 failed tests", "", "BUILD SUCCESSFUL")
+        assertEquals(TaskVerdict.SUCCESS, result.verdict)
+    }
+
+    @Test
+    fun `custom expectedOutput absent with zero failed tests returns FAILED`() {
+        val result = verifier.verify("0 failed tests\n5 passed", "", "SPG generated")
+        assertEquals(TaskVerdict.FAILED, result.verdict)
+    }
 }

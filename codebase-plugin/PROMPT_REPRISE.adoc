@@ -1,34 +1,28 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 191
-:session: 191
+= Prompt de Reprise — Codebase (Queens N1) — Session 192
+:session: 192
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 190 — VIBE-HARDENING-2 US-3 C4 GradleTaskArgsMapper flags cassés (P2, 3 pts). `GRADLE_ARG_ALLOWLIST` étendu `--\w+(?:=\S+)?` + `isBareLongFlag` helper + `validateGradleTask` accepte pair flag+value. Fail préexistant résolu. 5 unit + 110 gate VERT. 3/8 US. Borough DORMANT.
+:session_precedente: 191 — VIBE-HARDENING-2 US-4 C1 TaskResultVerifier refonte (P1, 4 pts). Surcharge `verify(stdout, stderr, expectedOutput)` + `hasActualFailure` raffiné (`\\bfailed\\b` non précédé de `0 `/`no `) + `StepVerifier` câble `step.expectedOutput` (contrat N0 PLN-VERIFY). Bug subtil lowercase `DEFAULT_EXPECTED_OUTPUT_LOWER` fix. 26 TaskResultVerifier + 13 StepVerifier + 22 VibecodingGraph + 97 gate = 158 tests VERT. 4/8 US. Borough DORMANT.
 
-== Mission Session 191
+== Mission Session 192
 
-EPIC VIBE-HARDENING-2 (P2/P3 hardening) — 5 US restants sur 8.
+EPIC VIBE-HARDENING-2 (P2/P3 hardening) — 4 US restants sur 8.
 Borough DORMANT — réveil sur déclencheur pilote.
 
-=== US-4 C1 TaskResultVerifier refonte (P1, 4 pts)
+=== US-5 C3 cleanup doc INSERT-X1..X6 (P3, 1 pt)
 
-`TaskResultVerifier.verify` (TaskResultVerifier.kt:17-43) heuristique
-fragile : `combined.contains("failed")` matche `0 failed tests` →
-`TaskVerdict.FAILED` faux positif. `expectedOutput` (GradleTask N0
-S-064, StepVerifier) n'est jamais comparé au stdout réel.
+`VibecodingGraph.kt:60-84` contient 6 blocs commentaires `// [INSERT-X1]`
+jusqu'à `[INSERT-X6]` décrivant des insertions à faire — ces insertions
+ont été faites (EPIC X sessions 101-105). Le javadoc est stale et trompeur.
 
-* Stratégie : (1) heuristique raffinée — `failed` doit être précédé
-  d'un contexte négatif (`BUILD FAILED`, `tests failed`, `compilation
-  error`), pas `0 failed` ; (2) comparaison `expectedOutput` quand
-  non-default `"BUILD SUCCESSFUL"` : si `stdout.contains(expectedOutput)`
-  → SUCCESS, sinon FAILED. ~10 unit.
-* Backward compat : heuristique actuelle conservée comme fallback quand
-  `expectedOutput` est default.
-* Gate ciblé : `./gradlew test --tests "codebase.koog.planning.*"`.
-* Document : `.agents/CADRAGE_EPIC_VIBE_HARDENING_2.adoc` US-4 (Décision 3).
+* Stratégie : supprimer les commentaires INSERT-X1..X6 (dead doc).
+  `VibecodingPlan` (L18 `planning/VibecodingPlan.kt`) est utilisé
+  (import L13) — pas dead code. ~0 test (pure doc cleanup).
+* Document : `.agents/CADRAGE_EPIC_VIBE_HARDENING_2.adoc` US-5 (Décision 4).
 
 === Backlog restant (sur déclencheur pilote)
 
-US-5 C3 cleanup doc INSERT-X1..X6 (1 pt) → US-6 C7 coerceAtLeast (1 pt)
-→ US-7 C6 SessionProtocolEngine (4 pts) → US-8 Cucumber BDD (2 pts).
+US-6 C7 coerceAtLeast (1 pt) → US-7 C6 SessionProtocolEngine (4 pts) →
+US-8 Cucumber BDD (2 pts).
 
 == Contexte technique
 

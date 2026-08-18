@@ -50,7 +50,7 @@ class StepVerifierTest {
     @Test
     fun `BLOCKED verdict should set blocked error`() {
         val state = vibecodingState(lastToolResult = "Task 'generateSPD' not found in project", retryCount = 0)
-        val step = VibecodingStep("generateSPD", "generateSPD", "SPD generated")
+        val step = VibecodingStep("generateSPD", "generateSPD", TaskResultVerifier.DEFAULT_EXPECTED_OUTPUT)
         val result = verifier.verifyAndAdapt(state, step)
         assertNotNull(result.error)
         assertTrue(result.error!!.contains("BLOCKED"))
@@ -59,10 +59,31 @@ class StepVerifierTest {
     @Test
     fun `UNKNOWN verdict should set unknown error`() {
         val state = vibecodingState(lastToolResult = "Some random output", retryCount = 0)
-        val step = VibecodingStep("mystery", "mysteryTask", "Expected output")
+        val step = VibecodingStep("mystery", "mysteryTask", TaskResultVerifier.DEFAULT_EXPECTED_OUTPUT)
         val result = verifier.verifyAndAdapt(state, step)
         assertNotNull(result.error)
         assertTrue(result.error!!.contains("UNKNOWN"))
+    }
+
+    @Test
+    fun `custom expectedOutput matching should clear error`() {
+        val state = vibecodingState(lastToolResult = "SPD generated at /tmp/spg.adoc")
+        val step = VibecodingStep("generateSPD", "generateSPD", "SPD generated")
+        val result = verifier.verifyAndAdapt(state, step)
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `custom expectedOutput not matching should trigger retry`() {
+        val state = vibecodingState(
+            lastToolResult = "Some random output",
+            retryCount = 0,
+            maxRetries = 3
+        )
+        val step = VibecodingStep("generateSPD", "generateSPD", "SPD generated", maxRetries = 3)
+        val result = verifier.verifyAndAdapt(state, step)
+        assertEquals(1, result.retryCount)
+        assertNull(result.error)
     }
 
     @Test

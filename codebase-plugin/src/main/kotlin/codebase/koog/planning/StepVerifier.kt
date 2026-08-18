@@ -21,7 +21,7 @@ class StepVerifier(
         state: VibecodingState,
         step: VibecodingStep
     ): VibecodingState {
-        val taskResult = resultVerifier.verify(state.lastToolResult, "")
+        val taskResult = resultVerifier.verify(state.lastToolResult, "", step.expectedOutput)
 
         return when (taskResult.verdict) {
             TaskVerdict.SUCCESS -> {
