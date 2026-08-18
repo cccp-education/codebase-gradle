@@ -1,20 +1,23 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 193
-:session: 193
+= Prompt de Reprise — Codebase (Queens N1) — Session 196
+:session: 196
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 192 — EPIC VIBE-HARDENING-2 TERMINÉ 8/8 US (US-5 C3 cleanup doc INSERT-X1..X6 + US-6 C7 coerceAtLeast(0) + US-7 C6 SessionProtocolEngine extraction + US-8 Cucumber BDD 4 scénarios). Baby-step TDD/BDD strict. 11 fichiers (5 modifiés + 6 créés). `SessionProtocolEngine.kt` créé (105 lignes) — délégation Server/Task (-37/-49 lignes). 2 unit coerceAtLeast + 9 unit engine + 4/4 cucumber PASSED. `compileKotlin` VERT, zéro régression, zéro secret, zéro bump BOM. Borough DORMANT.
+:session_precedente: 195 — EPIC FT-PIPELINE US-3 FineTuningGraph (koog itératif). 5 fichiers prod créés (FineTuningStage, FineTuningState, FineTuningPromptBuilder, FineTuningLlm, FineTuningGraph) + 2 test (FineTuningStateTest 18 unit, FineTuningGraphTest 17 unit). 35 nouveaux tests, 0 FAIL. Gate `codebase.finetuning.*` 78/78 VERT. Domaine `codebase.finetuning` (7 fichiers prod + 5 test). Zéro bump BOM, zéro secret, zéro régression.
 
-== Mission Session 193
+== Mission Session 196
 
-EPIC VIBE-HARDENING-2 TERMINÉ 8/8 US. Borough DORMANT — réveil sur
+EPIC FT-PIPELINE 3/7 US terminé. Borough DORMANT — réveil sur
 déclencheur pilote uniquement.
 
-=== Option A — EPIC FT-PIPELINE US-1 (P0 vision, domaine `codebase.finetuning`)
+=== Option A — EPIC FT-PIPELINE US-4 (P0 vision, tâches Gradle + extension)
 
-US-1 (3 pts, ~8 unit) : `FineTuningConfig` data class + merger 4 sources
-(pattern `ValidationConfig`) — `epochs`, `learningRate`, `batchSize`,
-`corpusGlobs`, `continualPreTrainingRatio` (0.10). Domaine
-`codebase.finetuning` (7ème). Baby-step TDD strict. Document :
-`.agents/CADRAGE_EPIC_FT_PIPELINE.adoc` US-1.
+US-4 (4 pts, ~10 unit + 2 functional) : tâches Gradle
+`prepareFineTuningDataset` (groupe `finetuning`) + `fineTuneExpert`
+(groupe `finetuning`, dependsOn prepare) + `publishExpertToOllama`
+(groupe `finetuning`, dependsOn fineTune, register dans `ExpertRegistry`
++ manifest JSON via `ExpertExposureTask`). Extension
+`fineTuning { baseModel; dataset; outputModelName; corpusRatio;
+maxIterations }` 4 sources DSL (pattern `CapsuleConfig`). Document :
+`.agents/CADRAGE_EPIC_FT_PIPELINE.adoc` US-4.
 
 === Option B — Maintenance / déclencheur pilote
 
@@ -25,8 +28,9 @@ Aucun EPIC actif. Borough DORMANT jusqu'à déclencheur pilote.
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
 * Version alignée : codebase-plugin 0.0.8 = Maven Central = BOM 0.0.19.
 * Borough DORMANT — réveil sur déclencheur pilote uniquement.
-* EPIC FT-PIPELINE (P0 vision, 7 US ~18 pts) en attente — alternative
-  possible sur déclencheur pilote.
+* EPIC FT-PIPELINE (P0 vision, 7 US ~18 pts) en cours — 3/7 US livrés.
+* Gate ciblé : `./gradlew test --tests "codebase.finetuning.*"`
+  (pas de `./gradlew test` global — Cucumber interminable).
 
 == Règles absolues
 

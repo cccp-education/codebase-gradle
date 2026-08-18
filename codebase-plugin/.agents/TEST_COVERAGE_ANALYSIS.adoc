@@ -1,6 +1,44 @@
 = Test Coverage Analysis — Codebase Gradle
 :date: 2026-08-19
 
+== Session 195 — FT-PIPELINE US-3 (`FineTuningGraph` koog itératif)
+
+=== Tests créés
+
+* **Unit** (`codebase/finetuning/FineTuningStateTest.kt`) : 18 tests
+  - Default state INITIALIZED (config defaults, iteration 0, maxIterations 3, threshold 0.7)
+  - PROPOSED stage requires non-blank proposal + proposal non-blank requires stage >= PROPOSED
+  - TRAINED/VALIDATED stage requires trainResult non-null + trainResult non-null requires stage >= TRAINED
+  - CONVERGED stage requires validationScore >= threshold + trainResult Success + accepts valid converged
+  - FAILED stage requires non-blank error + error non-null requires stage FAILED + accepts valid failed
+  - Ranges : validationScore 0..1, validationThreshold 0..1, maxIterations > 0, iteration 0..maxIterations
+  - copy preserves request + config through stage transitions
+
+* **Unit** (`codebase/finetuning/FineTuningGraphTest.kt`) : 17 tests
+  - Happy path : converges when first validation passes (stage CONVERGED, score >= threshold)
+  - Proposal populated from propose node + corpus ratio parsed from proposal (0.15) + fallback request ratio
+  - Loop : loops back to propose when validation below threshold (3 iterations, 3 propose/validate/train calls)
+  - MaxIterationsExhausted when loop never converges (stage FAILED, error contains "MaxIterationsExhausted")
+  - Train returns Failure → stage FAILED + error "TrainReturnedFailure" + reason
+  - LLM throws : propose/train/validate → stage FAILED + error contains node name
+  - Prompt builder : propose called with INITIALIZED state, validate called with TRAINED state + trainResult non-null
+  - Validate skipped when train returns Failure
+  - LLM prompts forwarded (propose + validate)
+  - asMermaidDiagram non-blank
+  - Request + config preserved through pipeline
+
+=== Production créée
+
+* `codebase/finetuning/FineTuningStage.kt` — enum 6 stages (INITIALIZED/PROPOSED/TRAINED/VALIDATED/CONVERGED/FAILED)
+* `codebase/finetuning/FineTuningState.kt` — data class immutable 11 champs + 10 invariants croisés `init`
+* `codebase/finetuning/FineTuningPromptBuilder.kt` — port 2 méthodes (buildProposePrompt, buildValidatePrompt)
+* `codebase/finetuning/FineTuningLlm.kt` — port sync 2 méthodes (propose, validate)
+* `codebase/finetuning/FineTuningGraph.kt` — graphe koog `AIAgentGraphStrategy` 3 nœuds + 7 edges + execute séquentiel + asMermaidDiagram + adjustedCorpusRatio parser
+
+=== Gate
+
+`./gradlew test --tests "codebase.finetuning.*"` — 78/78 PASSED (+35 nets : 17 graph + 18 state), 0 FAIL.
+
 == Session 194 — FT-PIPELINE US-2 (port `FineTuningPipeline` + `OllamaFineTunerAdapter`)
 
 === Tests créés

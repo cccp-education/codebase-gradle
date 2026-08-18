@@ -1,0 +1,112 @@
+= Session 195 — EPIC FT-PIPELINE US-3 FineTuningGraph (koog itératif)
+:borough: Queens — codebase-gradle (N1)
+:date: 2026-08-19
+:epic: FT-PIPELINE
+:us: US-3
+:methode: Baby-step TDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois
+:gate: `./gradlew test --tests "codebase.finetuning.*"`
+
+== Contexte
+
+EPIC FT-PIPELINE en cours — US-0 cadrage ✅ S-188, US-1 FineTuningConfig +
+merger ✅ S-193, US-2 port + adapter ✅ S-194. Cette session livre US-3 :
+`FineTuningGraph` — graphe koog itératif 3 nœuds propose/train/validate +
+edges conditionnels (convergence score, backtracking, maxIterations=3).
+
+Pattern de référence : `slider.pipeline.DeckPipelineGraph` (SLD-8.3) +
+`codebase.koog.KoogAugmentedContextGraph`. Domaine `codebase.finetuning`
+(7ème sous `codebase`) enrichi.
+
+== Actions
+
+=== US-3a — FineTuningStage + FineTuningState (RED → GREEN)
+
+. `FineTuningStage.kt` créé — enum pur 6 stages (INITIALIZED, PROPOSED,
+  TRAINED, VALIDATED, CONVERGED, FAILED). Pattern `slider.pipeline.DeckStage`.
+. `FineTuningState.kt` créé — data class immutable 11 champs (request,
+  config, proposal, trainResult, validationScore, validationThreshold,
+  iteration, maxIterations, error, stage) + 10 invariants croisés `init`.
+  Pattern `slider.pipeline.DeckState`.
+. `FineTuningStateTest.kt` créé — 18 unit tests (default state, PROPOSED
+  requires proposal, TRAINED requires trainResult, CONVERGED requires score
+  >= threshold + Success, FAILED requires error, ranges validation, copy
+  preservation). Bug backtick `0..1` Kotlin illegal chars → renommés
+  `0 to 1 range`.
+. `compileTestKotlin` GREEN + 18/18 PASSED.
+
+=== US-3b — FineTuningPromptBuilder + FineTuningLlm ports
+
+. `FineTuningPromptBuilder.kt` créé — interface 2 méthodes
+  (`buildProposePrompt`, `buildValidatePrompt`). Pattern
+  `slider.pipeline.DeckPromptBuilder`. Pur, no LLM, no I/O.
+. `FineTuningLlm.kt` créé — interface 2 méthodes (`propose`, `validate`).
+  Pattern `slider.pipeline.DeckLlm`. Synchronous contract — Gradle-free,
+  coroutine-free, unit-testable avec fake.
+
+=== US-3c — FineTuningGraph (koog strategy + execute séquentiel)
+
+. `FineTuningGraph.kt` créé — graphe koog `AIAgentGraphStrategy<FineTuningState,
+  FineTuningState>` 3 nœuds propose/train/validate + 7 edges conditionnels
+  (train→validate on Success, train→finish on Failure, validate→finish on
+  convergence, validate→propose on retry budget, validate→finish on max
+  iterations exhausted). Méthode `execute` séquentielle pattern
+  `KoogAugmentedContextGraph.execute` + `DeckPipelineGraph.execute`.
+  `asMermaidDiagram()` via `runBlocking`.
+. `adjustedCorpusRatio()` helper — parse le premier Double `[0,1]` du proposal
+  LLM, fallback ratio request. Pattern economy of ink.
+. `FineTuningGraphTest.kt` créé — 17 unit tests (happy path convergence,
+  proposal populated, loop back to propose, MaxIterationsExhausted, train
+  Failure, propose LLM throws, train pipeline throws, validate LLM throws,
+  prompt builder state forwarded, validate skipped on Failure, LLM prompts
+  forwarded, asMermaidDiagram non-blank, request+config preserved, corpus
+  ratio parsed, fallback ratio).
+. Bug découvert RED : `execute` loop back to `proposeNode` cassait l'invariant
+  `trainResult non-null requires stage >= TRAINED` car `trainResult` et
+  `proposal` restaient du tour précédent. Fix : `state.copy(proposal = "",
+  trainResult = null, validationScore = 0.0, stage = INITIALIZED)` avant
+  re-proposer. GREEN.
+
+. `compileKotlin` VERT + `compileTestKotlin` VERT.
+. Gate `./gradlew test --tests "codebase.finetuning.*"` — 78/78 PASSED
+  (19 FineTuningConfigMergerTest + 8 FineTuningConfigTest + 17 FineTuningGraphTest
+  + 11 FineTuningPipelineTest + 18 FineTuningStateTest + 5 OllamaFineTunerAdapterTest),
+  0 FAIL. Baseline S-194 préservée (+35 tests nets : 17 graph + 18 state).
+. Zéro régression, zéro secret, zéro bump BOM.
+
+== Commandes exécutées
+
+----
+cd codebase-plugin
+./gradlew compileKotlin                                 # VERT
+./gradlew test --tests "codebase.finetuning.*"          # 78/78 PASSED
+----
+
+== Résultats
+
+* 5 fichiers prod créés : `FineTuningStage.kt`, `FineTuningState.kt`,
+  `FineTuningPromptBuilder.kt`, `FineTuningLlm.kt`, `FineTuningGraph.kt`.
+* 2 fichiers test créés : `FineTuningStateTest.kt` (18 unit),
+  `FineTuningGraphTest.kt` (17 unit).
+* 35 nouveaux tests unitaires, 0 FAIL.
+* Domaine `codebase.finetuning` enrichi (7 fichiers prod + 5 test).
+* EPIC FT-PIPELINE 3/7 US (US-0 ✅ S-188, US-1 ✅ S-193, US-2 ✅ S-194,
+  US-3 ✅ S-195, US-4→6 À FAIRE).
+* Zéro bump BOM, zéro secret, zéro régression.
+
+== Leçons
+
+. **Bug invariant koog state loop** : quand un graphe koog reboucle sur un
+  nœud amont, les champs du tour précédent (`trainResult`, `proposal`,
+  `validationScore`) doivent être explicitement resetés avant de re-entrer.
+  Les invariants croisés `init` catch ce bug au runtime — TDD strict
+  révèle l'erreur au premier test de loop. Pattern à documenter pour les
+  futurs graphes itératifs (Cross-borough teaching : slider SLD-8.3 n'avait
+  pas de loop, d'où l'absence de ce piège là-bas).
+. **Backtick Kotlin illegal chars** : les noms de tests avec `..` sont
+  rejetés par Kotlin ( Name contains illegal characters: .. ). Utiliser
+  `0 to 1 range` à la place de `0..1`.
+. **Pattern DDD port/fake/adapter** : `FineTuningGraph` consomme 3 ports
+  (`FineTuningPromptBuilder`, `FineTuningLlm`, `FineTuningPipeline`) —
+  tous synchrones, tous unit-testable avec fakes. L'adapter production
+  (`OllamaFineTunerAdapter` US-2) vit hors du graphe. Pattern identique
+  à `DeckPipelineGraph` + `DeckLlm` + `DeckPromptBuilder`.
