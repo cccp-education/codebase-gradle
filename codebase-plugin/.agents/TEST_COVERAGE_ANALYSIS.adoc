@@ -1,5 +1,39 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-08-18
+:date: 2026-08-19
+
+== Session 194 — FT-PIPELINE US-2 (port `FineTuningPipeline` + `OllamaFineTunerAdapter`)
+
+=== Tests créés
+
+* **Unit** (`codebase/finetuning/FineTuningPipelineTest.kt`) : 11 tests
+  - `FineTuningRequest` defaults (corpusRatio 0.10) + invariants × 4 (baseModel non-blank, dataset non-empty, outputModelName non-blank, corpusRatio 0..1)
+  - `FineTuningResult.Success` (isSuccess true, champs outputModelName/ggufPath/iterations/validationScore)
+  - `FineTuningResult.Failure` (isFailure true, reason + originalDataset préservé)
+  - `FakeFineTuner` (returns Success, captures lastRequest/callCount, throws when no result, FIFO queue)
+
+* **Unit** (`codebase/finetuning/OllamaFineTunerAdapterTest.kt`) : 5 tests
+  - `fineTune returns Success when Ollama create and push succeed` (200/200 → Success + ggufPath marker)
+  - `fineTune returns Failure when Ollama create fails HTTP 500` (push pas appelé, dataset préservé)
+  - `fineTune returns Failure when Ollama push fails HTTP 404` (create appelé, dataset préservé)
+  - `fineTune returns Failure when registryClient throws IOException` (degraded economy of ink)
+  - `adapter implements FineTuningPipeline` (contrat port respecté)
+
+* **Fake** (`codebase/finetuning/FakeFineTuner.kt`, src/test) — pattern `FakeLlmTranslator` (FIFO + defaultResult + capture)
+
+=== Production créée
+
+* `codebase/finetuning/FineTuningRequest.kt` — data class 4 champs + invariants `init` × 4
+* `codebase/finetuning/FineTuningResult.kt` — sealed interface Success/Failure + factory success/failure
+* `codebase/finetuning/FineTuningPipeline.kt` — fun interface sync (pattern `TranscriptLlmEnhancer`)
+* `codebase/finetuning/OllamaRegistryClient.kt` — port interne + `CreateModelRequest`/`PushModelRequest` + `RegistryResponse` sealed Ok/Fail
+* `codebase/finetuning/OllamaHttpRegistryClient.kt` — impl production HTTP JDK 24 (`/api/create` + `/api/push`)
+* `codebase/finetuning/OllamaFineTunerAdapter.kt` — adapter `FineTuningPipeline` (pipeline + fallback degraded)
+
+=== Gate
+
+* `codebase.finetuning.*` VERT : 43 tests 0 FAIL (8 config + 19 merger + 11 pipeline + 5 adapter)
+* `compileKotlin` VERT
+* Zéro régression, zéro secret, zéro bump BOM
 
 == Session 193 — FT-PIPELINE US-1 (domaine `codebase.finetuning`)
 

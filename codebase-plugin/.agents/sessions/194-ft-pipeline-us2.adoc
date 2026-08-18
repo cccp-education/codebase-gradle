@@ -1,0 +1,126 @@
+= Session 194 — EPIC FT-PIPELINE US-2 (port `FineTuningPipeline` + `OllamaFineTunerAdapter`)
+
+:date: 2026-08-19
+:borough: Queens — codebase-gradle (N1)
+:epic: FT-PIPELINE
+:us: US-2
+:methode: Baby-step TDD strict (RED → GREEN → REFACTOR)
+:pattern: S-057/S-063 + S-113 (multi-US 1 session) + TranscriptLlmEnhancer (port/fake) + ChatModelTranscriptEnhancer (adapter)
+
+== Contexte
+
+EPIC FT-PIPELINE cadré S-188 (7 US ~18 pts, P0 vision). US-1 (S-193)
+a ouvert le domaine `codebase.finetuning` avec `FineTuningConfig` +
+merger 4 sources. Le port `FineTuningPipeline` initialement cadré en
+US-1 a été reporté en US-2 par le PROMPT_REPRISE S-193.
+
+US-2 = port domaine `FineTuningPipeline` + data classes
+(`FineTuningRequest`, `FineTuningResult` sealed) + `FakeFineTuner` +
+adapter production `OllamaFineTunerAdapter` + port interne
+`OllamaRegistryClient` + impl HTTP `OllamaHttpRegistryClient`.
+
+Déclencheur pilote : Option A du PROMPT_REPRISE S-194. Permission
+commit/push accordée par le pilote en fin de session.
+
+== Actions
+
+. Audit patterns port/adapter codebase :
+  * `LlmProvider` (fun interface suspend, `OllamaLlmProvider` pool)
+  * `TranscriptLlmEnhancer` (capsule, port sync + `ChatModelTranscriptEnhancer`
+    adapter langchain4j) — pattern cible pour le port `FineTuningPipeline`
+  * `ExpertContracts` (data classes DDD simples)
+  * `OllamaOcrProvider` (HTTP direct JDK 24 `HttpClient` vers `/api/chat`)
+  * `FakeLlmTranslator` (pattern fake : `enqueueResult` FIFO + capture
+    `requestsReceived`)
+. RED — `FineTuningPipelineTest.kt` (11 unit) : `FineTuningRequest`
+  defaults (corpusRatio 0.10), invariants × 4 (baseModel non-blank,
+  dataset non-empty, outputModelName non-blank, corpusRatio 0..1),
+  `FineTuningResult.Success` (isSuccess true, champs), `FineTuningResult.Failure`
+  (isFailure true, reason + originalDataset), `FakeFineTuner` (returns
+  Success, captures lastRequest/callCount, throws when no result, FIFO queue).
+. GREEN — 4 fichiers prod + 1 fake test :
+  * `FineTuningRequest.kt` — data class 4 champs + invariants `init` × 4.
+  * `FineTuningResult.kt` — sealed interface `Success`/`Failure` + factory
+    `success`/`failure` (pattern `ValidationResult` slider SLD-8.3).
+  * `FineTuningPipeline.kt` — fun interface `fineTune(request): FineTuningResult`
+    (sync contract, Gradle-free/coroutine-free, pattern `TranscriptLlmEnhancer`).
+  * `FakeFineTuner.kt` (src/test) — fake `enqueueResult` FIFO + constructeur
+    `defaultResult` + capture `lastRequest`/`callCount` (pattern
+    `FakeLlmTranslator`).
+. RED — `OllamaFineTunerAdapterTest.kt` (5 unit) : Success when create+push
+  ok, Failure when create HTTP 500 (push pas appelé), Failure when push
+  HTTP 404 (create appelé), Failure when registryClient throws
+  IOException, `adapter implements FineTuningPipeline`.
+. GREEN — 3 fichiers prod :
+  * `OllamaRegistryClient.kt` — port interne `createModel`/`pushModel` +
+    data classes `CreateModelRequest`/`PushModelRequest` + sealed
+    `RegistryResponse.Ok`/`Fail` + factory `ok`/`fail`.
+  * `OllamaHttpRegistryClient.kt` — impl production HTTP direct JDK 24
+    (`POST /api/create` + `POST /api/push`, pattern `OllamaOcrProvider`,
+    timeout 120s, baseUrl défaut `http://localhost:11437`).
+  * `OllamaFineTunerAdapter.kt` — adapter `FineTuningPipeline` pontant
+    vers `OllamaRegistryClient`. Pipeline : buildModelfile → createModel
+    → pushModel → writeGgufMarker → `Success`. Fallback degraded :
+    `createResponse !isOk` → Failure("create failed: …"), `pushResponse
+    !isOk` → Failure("push failed: …"), `catch Exception` → Failure(e.message).
+    Dataset original préservé dans tous les cas (economy of ink).
+. REFACTOR — `compileKotlin` VERT, gate `./gradlew test --tests
+  "codebase.finetuning.*"` VERT 43/43 PASSED 0 FAIL (8 config + 19 merger
+  + 11 pipeline + 5 adapter). Zéro régression, zéro secret, zéro bump BOM.
+
+== Commandes
+
+----
+cd codebase-plugin
+./gradlew compileTestKotlin                         # RED (unresolved refs)
+./gradlew test --tests "codebase.finetuning.*"      # GREEN 43/43
+./gradlew compileKotlin                             # REFACTOR VERT
+----
+
+== Résultats
+
+* 43/43 unit PASSED (8 FineTuningConfigTest + 19 FineTuningConfigMergerTest
+  + 11 FineTuningPipelineTest + 5 OllamaFineTunerAdapterTest).
+* 7 fichiers créés (5 prod + 2 test), zéro fichier existant modifié.
+  * Prod : `FineTuningRequest.kt`, `FineTuningResult.kt`,
+    `FineTuningPipeline.kt`, `OllamaRegistryClient.kt`,
+    `OllamaHttpRegistryClient.kt`, `OllamaFineTunerAdapter.kt`.
+  * Test : `FineTuningPipelineTest.kt`, `FakeFineTuner.kt`,
+    `OllamaFineTunerAdapterTest.kt`.
+* `compileKotlin` VERT, zéro régression, zéro secret, zéro bump BOM.
+* Domaine `codebase.finetuning` (7ème) enrichi : 2 fichiers S-193 →
+  8 fichiers S-194 (6 prod + 2 test + 1 fake test).
+* EPIC FT-PIPELINE 2/7 US (US-0 ✅ S-188, US-1 ✅ S-193, US-2 ✅ S-194,
+  US-3→6 À FAIRE).
+
+== Leçons
+
+. Port interne `OllamaRegistryClient` (fun interface) est préférable à
+  un stub `java.net.http.HttpClient` direct — la hiérarchie abstract
+  `HttpClient` a trop de membres abstraits (`Optional<HttpResponse>`
+  return type, `HttpHeaders.of(map, BiPredicate)`), rendant le stub
+  verbeux et cassé en Kotlin. Le port interne isole le domaine de
+  l'API HTTP et reste unit-testable via lambda.
+. Pattern `FakeLlmTranslator` (FIFO queue + defaultResult + capture)
+  directement réutilisé pour `FakeFineTuner` — zéro friction, le
+  domaine DDD bénéficie du même socle de test que les autres ports.
+. Fallback degraded "economy of ink" (pattern `AudioPostProcessor`/
+  `ChatModelTranscriptEnhancer`) : l'adapter ne lève jamais pour un
+  échec opérationnel — `Failure` avec dataset original préservé, le
+  caller garde un état valide. Testé explicitement (4 scénarios
+  Failure + 1 IOException).
+. `RegistryResponse` sealed (Ok/Fail) + factory `ok`/`fail` évite les
+  `Result<RegistryResponse, RegistryResponse>` ambigus et garde la
+  signature lisible. Pattern identique à `FineTuningResult`.
+
+== Prochaines US
+
+* US-3 — `FineTuningGraph` (graphe koog `strategy<FineTuningState,
+  FineTuningState>` 3 nœuds propose/train/validate + edges
+  conditionnels, pattern `KoogAugmentedContextGraph`, ~12 unit, 4 pts).
+* US-4 — Tâches Gradle `prepareFineTuningDataset` + `fineTuneExpert` +
+  `publishExpertToOllama` + extension DSL 4 sources (~10 unit + 2
+  functional, 4 pts).
+* US-5 — Cucumber BDD `codebase_finetuning.feature` 4 scénarios
+  `@finetuning` + runner dédié (2 pts).
+* US-6 — Cross-borough wiring training-gradle TRN-8 (gouvernance, 1 pt).

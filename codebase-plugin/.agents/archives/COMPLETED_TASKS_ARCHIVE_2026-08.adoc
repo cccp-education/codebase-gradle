@@ -1,5 +1,35 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026 — Codebase Gradle (Queens)
 
+== Session 194 — EPIC FT-PIPELINE US-2 (port `FineTuningPipeline` + `OllamaFineTunerAdapter`)
+
+|===
+| Tâche | Statut
+
+| US-2 `FineTuningRequest` data class 4 champs + invariants `init` × 4
+| ✅ TERMINÉ (S-194)
+
+| US-2 `FineTuningResult` sealed interface Success/Failure + factory
+| ✅ TERMINÉ (S-194)
+
+| US-2 `FineTuningPipeline` fun interface sync (pattern `TranscriptLlmEnhancer`)
+| ✅ TERMINÉ (S-194)
+
+| US-2 `OllamaRegistryClient` port interne + `RegistryResponse` sealed
+| ✅ TERMINÉ (S-194)
+
+| US-2 `OllamaHttpRegistryClient` impl HTTP JDK 24 (`/api/create` + `/api/push`)
+| ✅ TERMINÉ (S-194)
+
+| US-2 `OllamaFineTunerAdapter` adapter + fallback degraded economy of ink
+| ✅ TERMINÉ (S-194)
+
+| US-2 `FakeFineTuner` test (pattern `FakeLlmTranslator`)
+| ✅ TERMINÉ (S-194)
+
+| 43/43 unit PASSED (8 config + 19 merger + 11 pipeline + 5 adapter) + `compileKotlin` VERT
+| ✅ TERMINÉ (S-194)
+|===
+
 == Session 193 — EPIC FT-PIPELINE US-1 (domaine `codebase.finetuning`)
 
 |===

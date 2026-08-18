@@ -1,19 +1,21 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 194
-:session: 194
+= Prompt de Reprise — Codebase (Queens N1) — Session 195
+:session: 195
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 193 — EPIC FT-PIPELINE US-1 TERMINÉ (domaine `codebase.finetuning` 7ème créé : `FineTuningConfig` data class 5 champs + invariants + `FineTuningConfigMerger` 4 sources ENV < props < YAML < CLI). Baby-step TDD strict. 4 fichiers créés (2 prod + 2 test). 27/27 unit PASSED (8 config + 19 merger). `compileKotlin` VERT, zéro régression, zéro secret, zéro bump BOM. EPIC FT-PIPELINE 1/7 US.
+:session_precedente: 194 — EPIC FT-PIPELINE US-2 TERMINÉ (port `FineTuningPipeline` + `FineTuningRequest`/`FineTuningResult` sealed + `FakeFineTuner` + `OllamaFineTunerAdapter` + port interne `OllamaRegistryClient` + impl HTTP `OllamaHttpRegistryClient`). Baby-step TDD strict. 7 fichiers créés (6 prod + 1 fake test + 2 test). 43/43 unit PASSED (8 config + 19 merger + 11 pipeline + 5 adapter). `compileKotlin` VERT, zéro régression, zéro secret, zéro bump BOM. EPIC FT-PIPELINE 2/7 US.
 
-== Mission Session 194
+== Mission Session 195
 
-EPIC FT-PIPELINE en cours (1/7 US). Prochaine US-2.
+EPIC FT-PIPELINE en cours (2/7 US). Prochaine US-3.
 
-=== Option A — EPIC FT-PIPELINE US-2 (P0 vision, adapter Ollama)
+=== Option A — EPIC FT-PIPELINE US-3 (P0 vision, graphe koog itératif)
 
-US-2 (3 pts, ~6 unit) : `OllamaFineTunerAdapter` — adapter bridge Ollama API
-(create model from Modelfile, push to registry). Pattern `ChatModelTranscriptEnhancer`.
-Fallback degraded : Ollama unavailable → `FineTuningResult.failure` (degraded
-garde dataset original, pas de crash). Document :
-`.agents/CADRAGE_EPIC_FT_PIPELINE.adoc` US-2.
+US-3 (4 pts, ~12 unit) : `FineTuningGraph` — graphe koog
+`strategy<FineTuningState, FineTuningState>` 3 nœuds propose/train/validate
++ edges conditionnels (convergence score, backtracking, maxIterations
+default 3). Méthode `execute` séquentielle pattern
+`KoogAugmentedContextGraph`. `asMermaidDiagram()`. Domaine
+`codebase.finetuning` enrichi. Baby-step TDD strict. Document :
+`.agents/CADRAGE_EPIC_FT_PIPELINE.adoc` US-3.
 
 === Option B — Maintenance / déclencheur pilote
 
@@ -23,8 +25,12 @@ Borough DORMANT jusqu'à déclencheur pilote.
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
 * Version alignée : codebase-plugin 0.0.8 = Maven Central = BOM 0.0.19.
-* EPIC FT-PIPELINE (P0 vision, 7 US ~18 pts) — US-1 ✅ S-193, US-2→6 À FAIRE.
-* Domaine `codebase.finetuning` (7ème) ouvert S-193 (FineTuningConfig + merger).
+* EPIC FT-PIPELINE (P0 vision, 7 US ~18 pts) — US-1 ✅ S-193, US-2 ✅
+  S-194, US-3→6 À FAIRE.
+* Domaine `codebase.finetuning` (7ème) — 6 prod + 2 test + 1 fake
+  (FineTuningConfig, FineTuningConfigMerger, FineTuningRequest,
+  FineTuningResult, FineTuningPipeline, OllamaRegistryClient,
+  OllamaHttpRegistryClient, OllamaFineTunerAdapter + FakeFineTuner test).
 
 == Règles absolues
 

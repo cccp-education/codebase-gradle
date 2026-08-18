@@ -1,10 +1,10 @@
 = Backlog — Codebase Gradle
 :sectnums:
-:date: 2026-08-18
+:date: 2026-08-19
 
 _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux. Pour le backlog à jour détaillé, voir `.agents/BACKLOG.adoc`._
 
-== Synthèse Backlog (Session 191 — 2026-08-18)
+== Synthèse Backlog (Session 194 — 2026-08-19)
 
 [cols="1,3,1,2"]
 |===
@@ -16,11 +16,11 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 | EPIC V-FLYWAY | Migration Flyway | BACKLOG P2 | Seuil déclenchement : 5+ migrations (actuellement 4 : V1→V4)
 | EPIC VIBE-HARDENING | Durcissement vibecoding P1 (CR-GLOBALE-004) | ✅ TERMINÉ 6/6 US (S-184→S-187) | S1 allowlist ✅, C2 retry ✅, C5 timeout ✅, Cucumber BDD ✅
 | EPIC VIBE-HARDENING-2 | Durcissement vibecoding P2/P3 (CR-GLOBALE-004 suite) | ✅ TERMINÉ 8/8 US (S-188→S-192) | S2 ✅, S3 ✅, C4 ✅, C1 ✅, C3 ✅ S-192, C7 ✅ S-192, C6 ✅ S-192, Cucumber ✅ S-192
-| EPIC FT-PIPELINE | Pipeline de fine-tuning N1 (P0 vision) | 🟡 EN COURS 1/7 US (S-188, S-193) | Domaine `codebase.finetuning` (7ème), boucle fabrication→exposition
+| EPIC FT-PIPELINE | Pipeline de fine-tuning N1 (P0 vision) | 🟡 EN COURS 2/7 US (S-188, S-193, S-194) | Domaine `codebase.finetuning` (7ème), port `FineTuningPipeline` + `OllamaFineTunerAdapter` livrés S-194
 | Tous autres EPICs | V, W, X, Y, Z, K, L, OCR, CR, TRAD, PUB, V-LOCAL, SP, V-6, V-7, V-8, V-9, 2→12 | ✅ TERMINÉ | Voir détails ci-dessous
 |===
 
-*Backlog réellement restant* : EPIC FT-PIPELINE (🟡 EN COURS 1/7 US, P0 vision) + SLD-8 US-8.2/8.3 (côté slider) + EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5. EPIC VIBE-HARDENING-2 ✅ TERMINÉ 8/8 US (S-192).
+*Backlog réellement restant* : EPIC FT-PIPELINE (🟡 EN COURS 2/7 US, P0 vision) + SLD-8 US-8.2/8.3 (côté slider) + EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5. EPIC VIBE-HARDENING-2 ✅ TERMINÉ 8/8 US (S-192).
 
 == EPIC VIBE-HARDENING — Durcissement vibecoding P1 (CR-GLOBALE-004)
 
