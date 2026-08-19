@@ -2,6 +2,18 @@
 :toc: left
 :icons: font
 
+== Session 198 — 2026-08-19
+
+* **EPICs** : EPIC FT-PIPELINE (US-6 — cross-borough training-gradle, clôture EPIC 7/7 US)
+* **Livrables** :
+** TRN-8 training-gradle reformulé : "Pipeline fine-tuning experts CDA/FPA ~21 pts" → "Recettes CDA/FPA consommant FT-PIPELINE" (~10 pts). Séparation N1/N2 actée — machinerie générique N1 dans codebase (FT-PIPELINE TERMINÉ 7/7 US S-188→S-198), recettes métier N2 dans training (datasets corpus AFNOR/REAC + modèles de base + noms experts + curation Bloom/Qualiopi). Dépendance N2→N1 propre (training appelle `fineTuneExpert` de codebase via DSL, spécifie datasets/modèles). Pattern identique à `LlmBuildService` (pool N1 consommé par N2 slider/capsule/planner).
+** Littérature agentique préparatoire posée dans BACKLOG training (constat N1/N2 + plan baby-steps TRN-8.0→8.6), démarrage coding reporté post-travaux codex prioritaires (signal pilote).
+** BACKLOG training mis à jour (TRN-8 reformulé, charge ~21→~10 pts, dépendance codebase FT-PIPELINE, plan baby-steps préparatoire). INDEX training mis à jour (table EPICs + statut). PROMPT_REPRISE training mis à jour (Session 070, contexte S-198 cross-borough).
+** BACKLOG codebase mis à jour (US-6 ✅ S-198, EPIC FT-PIPELINE TERMINÉ 7/7 US, statut global + section détaillée + table US). INDEX codebase mis à jour (table EPICs + entrée session 198). PROMPT_REPRISE codebase mis à jour (Session 199, EPIC TERMINÉ).
+* **Tests** : zéro (gouvernance pure, zéro code modifié).
+* **Build** : zéro (gouvernance pure cross-borough pattern S-057). Zéro bump BOM, zéro secret, zéro régression.
+* **Score** : 9/10
+
 == Session 193 — 2026-08-18
 
 * **EPICs** : EPIC FT-PIPELINE (US-1 — domaine `codebase.finetuning` 7ème)

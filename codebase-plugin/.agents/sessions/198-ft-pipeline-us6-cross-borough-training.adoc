@@ -1,0 +1,81 @@
+= Session 198 — EPIC FT-PIPELINE US-6 (cross-borough training-gradle, clôture EPIC 7/7 US)
+:date: 2026-08-19
+:borough: Queens — codebase-gradle (N1)
+:epic: FT-PIPELINE
+:us: US-6
+:methode: Gouvernance pure cross-borough (pattern S-057)
+:pattern: S-057/S-063/S-184 (cadrage pur, zéro code)
+
+== Contexte
+
+EPIC FT-PIPELINE 5/7 US livrés (S-188 cadrage, S-193→S-197 US-1→US-5).
+US-6 restante : cross-borough training-gradle TRN-8 reformulé en
+recettes CDA/FPA consommant `fineTuneExpert` de codebase. Gouvernance
+pure — zéro code modifié. Clôture EPIC FT-PIPELINE 7/7 US.
+
+Pilote a signalé : travaux codex (Brooklyn) prioritaires avant tout
+démarrage coding dans training. Démarrage coding TRN-8 reporté.
+
+== Actions
+
+. Audit BACKLOG training TRN-8 existant : "Pipeline fine-tuning experts
+  CDA/FPA ~21 pts" mélangeait machinerie (générique N1) et recettes
+  (métier N2). La machinerie est désormais dans codebase FT-PIPELINE
+  (TERMINÉ 7/7 US S-188→S-198).
+. Reformulation TRN-8 BACKLOG training : "Pipeline fine-tuning ~21 pts"
+  → "Recettes CDA/FPA consommant FT-PIPELINE" (~10 pts). Séparation N1/N2
+  actée. Constat de séparation + plan baby-steps TRN-8.0→8.6 posé comme
+  littérature agentique préparatoire (pas de démarrage coding — travaux
+  codex prioritaires d'abord).
+. INDEX training mis à jour : table EPICs (TRN-8 reformulé, dépendance
+  codebase FT-PIPELINE, charge ~10 pts), statut (littérature agentique
+  préparatoire S-198, démarrage post-travaux codex).
+. PROMPT_REPRISE training mis à jour : Session 070, contexte S-198
+  cross-borough (TRN-8 reformulé, littérature préparatoire, démarrage
+  coding post-travaux codex).
+. BACKLOG codebase mis à jour : US-6 ✅ S-198, EPIC FT-PIPELINE TERMINÉ
+  7/7 US (statut global + section détaillée + table US + en-tête).
+. INDEX codebase mis à jour : table EPICs (FT-PIPELINE ✅ TERMINÉ 7/7),
+  entrée session 198 (dashboard).
+. PROMPT_REPRISE codebase mis à jour : Session 199, EPIC FT-PIPELINE
+  TERMINÉ 7/7 US, borough DORMANT.
+. SESSIONS_HISTORY codebase mis à jour : entrée session 198.
+
+== Décisions architecturales
+
+. **Séparation N1/N2 actée** — machinerie générique N1 dans codebase
+  (FT-PIPELINE TERMINÉ 7/7 US), recettes métier N2 dans training
+  (datasets + modèles + noms + curation Bloom/Qualiopi). Pattern
+  identique à `LlmBuildService` (pool N1 consommé par N2).
+. **Littérature agentique préparatoire** — TRN-8 reformulé comme constat
+  documentaire de séparation N1/N2 + plan baby-steps TRN-8.0→8.6, pas
+  démarrage coding. Démarrage reporté post-travaux codex prioritaires.
+. **Zéro code modifié** — gouvernance pure cross-borough pattern
+  S-057/S-063/S-184.
+
+== Commandes exécutées
+
+Aucune (gouvernance pure, zéro build, zéro test).
+
+== Résultats
+
+* EPIC FT-PIPELINE TERMINÉ 7/7 US (S-188→S-198)
+* TRN-8 training reformulé (~21 → ~10 pts, littérature préparatoire)
+* 7 fichiers gouvernance mis à jour (BACKLOG/INDEX/PROMPT_REPRISE × 2
+  boroughs + SESSIONS_HISTORY codebase)
+* Zéro code modifié, zéro build, zéro test, zéro bump BOM, zéro secret
+* Vérification post-sync `grep` marqueurs périmés : OK (zéro match
+  pour EPICs terminés)
+
+== Leçons
+
+. **Cross-borough gouvernance pure** : un US de cross-borough wiring
+  peut être de la pure gouvernance (reformulation de backlog + doc) quand
+  la machinerie N1 est déjà fermée. Aucun code à modifier côté N1.
+. **Littérature agentique préparatoire** : poser un constat de
+  séparation + un plan baby-steps comme littérature préparatoire (pas
+  de démarrage coding) permet de préparer le travail futur sans
+  engager le coding. Le déclencheur pilote décide du démarrage.
+. **Synchronisation backlog multi-borough** : la clôture d'un EPIC N1
+  peut nécessiter la mise à jour du backlog N2 consommateur (ici
+  training TRN-8 reformulé).

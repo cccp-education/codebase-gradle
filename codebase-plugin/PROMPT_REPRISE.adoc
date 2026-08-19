@@ -1,35 +1,32 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 198
-:session: 198
+= Prompt de Reprise — Codebase (Queens N1) — Session 199
+:session: 199
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 197 — EPIC FT-PIPELINE US-5 TERMINÉ (Cucumber BDD). 4 scénarios `@finetuning` (pipeline complet dataset→GGUF→manifest, cycle itératif convergence, fallback Ollama unavailable, validation seuil) + `FineTuningCucumberRunner` (pattern S-082) + `CucumberTaskSpec("cucumberTestFineTuning")` 39e + `FineTuningWorld` (`StubRegistryClient` in-memory) + `FineTuningSteps` (16 step defs préfixés + `FakeFineTuningLlm` FIFO + `StubPromptBuilder`). 4/4 PASSED 9s (17 steps). Zéro prod modifié — pure BDD. Gate finetuning + CodebasePluginTest non-régression VERT.
+:session_precedente: 198 — EPIC FT-PIPELINE US-6 TERMINÉ (cross-borough training-gradle). TRN-8 reformulé en recettes CDA/FPA consommant FT-PIPELINE (~10 pts). Séparation N1/N2 actée — machinerie codebase (TERMINÉ 7/7 US S-188→S-198), recettes métier training. Littérature agentique préparatoire posée dans BACKLOG training (constat N1/N2 + plan baby-steps TRN-8.0→8.6), démarrage coding reporté post-travaux codex prioritaires. EPIC FT-PIPELINE TERMINÉ 7/7 US. Zéro code modifié — gouvernance pure cross-borough pattern S-057.
 
-== Mission Session 198
+== Mission Session 199
 
-EPIC FT-PIPELINE 5/7 US terminé. Borough DORMANT — réveil sur
-déclencheur pilote uniquement.
+EPIC FT-PIPELINE TERMINÉ 7/7 US. Borough DORMANT — réveil sur
+déclencheur pilote uniquement. Aucun EPIC actif.
 
-=== Option A — EPIC FT-PIPELINE US-6 (cross-borough training-gradle)
-
-US-6 (1 pt, gouvernance pure) : training-gradle TRN-8 reformulé en
-recettes CDA/FPA consommant `fineTuneExpert` de codebase. Dépendance
-N2→N1 propre (training appelle codebase pipeline, spécifie
-datasets/modèles). Documentation mise à jour (INDEX/BACKLOG training +
-codebase). Document : `.agents/CADRAGE_EPIC_FT_PIPELINE.adoc` US-6.
-Clôture EPIC FT-PIPELINE TERMINÉ 7/7 US.
-
-=== Option B — Maintenance / déclencheur pilote
+=== Option A — Maintenance / déclencheur pilote
 
 Aucun EPIC actif. Borough DORMANT jusqu'à déclencheur pilote.
 Réveil sur déclencheur (nouveau borough consommateur, bug, évolution
-contrat N0).
+contrat N0, training TRN-8 démarrage coding post-travaux codex).
+
+=== Option B — Travaux codex (Brooklyn) prioritaires
+
+Le pilote a signalé des travaux codex prioritaires avant tout démarrage
+coding training TRN-8. Codebase reste DORMANT pendant ce temps.
 
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
 * Version alignée : codebase-plugin 0.0.8 = Maven Central = BOM 0.0.19.
 * Borough DORMANT — réveil sur déclencheur pilote uniquement.
-* EPIC FT-PIPELINE (P0 vision, 7 US ~18 pts) en cours — 5/7 US livrés
-  (reste US-6 cross-borough training-gradle, gouvernance pure 1 pt).
+* EPIC FT-PIPELINE (P0 vision, 7 US ~18 pts) TERMINÉ 7/7 US
+  (S-188→S-198). Domaine `codebase.finetuning` clos BDD S-197
+  (17 fichiers prod + 13 test + 1 feature + 3 cucumber infra).
 * Gate ciblé : `./gradlew test --tests "codebase.finetuning.*"`
   (pas de `./gradlew test` global — Cucumber interminable).
 * 39 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).

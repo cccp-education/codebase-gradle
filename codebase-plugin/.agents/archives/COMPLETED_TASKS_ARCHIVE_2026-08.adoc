@@ -461,9 +461,9 @@ depuis le sous-graphe (GovernanceContextLoader.kt:68 + ContextChannel.Resource,
 |===
 == EPIC VIBE-HARDENING-2 — Durcissement vibecoding P2/P3 (CR-GLOBALE-004 suite)
 
-*Sessions* : 188-189 (2026-08-17)
+*Sessions* : 188-192 (2026-08-17 → 2026-08-18)
 *Origine* : CR-GLOBALE-004 (session 175) — 7 findings P2/P3 restants post-EPIC VIBE-HARDENING P1
-*Statut* : 🟡 EN COURS 2/8 US
+*Statut* : ✅ TERMINÉ 8/8 US (S-188→S-192)
 
 [cols="3,2"]
 |===
@@ -479,20 +479,50 @@ depuis le sous-graphe (GovernanceContextLoader.kt:68 + ContextChannel.Resource,
 | ✅ TERMINÉ (S-189)
 
 | US-3 C4 GradleTaskArgsMapper flags cassés (extension GRADLE_ARG_ALLOWLIST)
-| 🟡 À FAIRE
+| ✅ TERMINÉ (S-190)
 
 | US-4 C1 TaskResultVerifier refonte (expectedOutput comparison + failed raffiné)
-| 🟡 À FAIRE
+| ✅ TERMINÉ (S-191)
 
 | US-5 C3 Cleanup doc INSERT-X1..X6 (VibecodingGraph.kt:60-84)
-| 🟡 À FAIRE
+| ✅ TERMINÉ (S-192)
 
 | US-6 C7 coerceAtLeast(0) Plan remaining tasks (VibecodingGraph.kt:464)
-| 🟡 À FAIRE
+| ✅ TERMINÉ (S-192)
 
 | US-7 C6 Extraction SessionProtocolEngine (refactor duplication)
-| 🟡 À FAIRE
+| ✅ TERMINÉ (S-192)
 
 | US-8 Cucumber BDD codebase_vibe_hardening_2.feature
-| 🟡 À FAIRE
+| ✅ TERMINÉ (S-192)
+|===
+
+== Session 198 — EPIC FT-PIPELINE US-6 (cross-borough training-gradle, clôture EPIC 7/7 US)
+
+|===
+| Tâche | Statut
+
+| US-6 TRN-8 training reformulé en recettes CDA/FPA consommant FT-PIPELINE (~10 pts)
+| ✅ TERMINÉ (S-198)
+
+| US-6 Séparation N1/N2 actée — machinerie codebase (TERMINÉ 7/7), recettes training
+| ✅ TERMINÉ (S-198)
+
+| US-6 Littérature agentique préparatoire posée BACKLOG training (constat + plan baby-steps TRN-8.0→8.6)
+| ✅ TERMINÉ (S-198)
+
+| US-6 Démarrage coding reporté post-travaux codex prioritaires (signal pilote)
+| ✅ TERMINÉ (S-198)
+
+| US-6 BACKLOG/INDEX/PROMPT_REPRISE training mis à jour
+| ✅ TERMINÉ (S-198)
+
+| US-6 BACKLOG/INDEX/PROMPT_REPRISE/SESSIONS_HISTORY codebase mis à jour
+| ✅ TERMINÉ (S-198)
+
+| EPIC FT-PIPELINE TERMINÉ 7/7 US (S-188→S-198)
+| ✅ TERMINÉ (S-198)
+
+| Zéro code modifié, zéro build, zéro test, zéro bump BOM, zéro secret
+| ✅ TERMINÉ (S-198)
 |===

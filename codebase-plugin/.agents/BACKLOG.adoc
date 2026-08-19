@@ -1,12 +1,12 @@
 = BACKLOG — Codebase Gradle
 :toc:
-:last_update: 2026-08-19 (Session 197 — EPIC FT-PIPELINE US-5 TERMINÉ : Cucumber BDD `codebase_finetuning.feature` 4 scénarios `@finetuning` + `FineTuningCucumberRunner` 39e + `FineTuningWorld`/`StubRegistryClient` + `FineTuningSteps`/`FakeFineTuningLlm` FIFO + `StubPromptBuilder`, 4/4 PASSED 9s pure BDD zéro prod modifié, gate non-régression VERT)
+:last_update: 2026-08-19 (Session 198 — EPIC FT-PIPELINE US-6 TERMINÉ : cross-borough training-gradle TRN-8 reformulé en recettes CDA/FPA consommant FT-PIPELINE. Séparation N1/N2 actée — machinerie codebase (TERMINÉ 7/7 US S-188→S-198), recettes métier training. Littérature agentique préparatoire posée dans BACKLOG training (constat N1/N2 + plan baby-steps TRN-8.0→8.6), démarrage coding post-travaux codex. EPIC FT-PIPELINE TERMINÉ 7/7 US)
 
 == Statut Global
 
 **EPIC VIBE-HARDENING ✅ TERMINÉ (6/6 — S184-S187)** — durcissement vibecoding P1 (S1 allowlist shell + gradle, C2 retry single counter, C5 timeout LLM, Cucumber BDD). **EPIC PUB (bump 0.0.8) ✅ TERMINÉ (S183)**. **EPIC SUBGRAPH ✅ TERMINÉ (4/4 — S182)** — contexte augmenté Graphify réel. Le reste du backlog est dormant :
 
-. *EPIC FT-PIPELINE* (P0 vision) — 🟡 EN COURS 5/7 US (S-188 cadrage + S-193 US-1 + S-194 US-2 + S-195 US-3 + S-196 US-4 + S-197 US-5) — pipeline de fine-tuning N1 générique (fabrication modèle : dataset prep + continual pre-training 10% corpus + export GGUF + push Ollama). Source de conception : notebook-gradle ARCHITECTURE.adoc (vestige récupéré). Domaine `codebase.finetuning` (7ème) clos BDD S-197 (17 fichiers prod + 13 test + 1 feature + 3 cucumber infra) : extension DSL `CodebaseFineTuningExtension` (10 propriétés) + 3 tâches Gradle `prepareFineTuningDataset`/`fineTuneExpert`/`publishExpertToOllama` + câblage `CodebasePlugin` (+87 lignes, 13 props CLI `-Pcodebase.finetuning.*`) + Cucumber BDD `codebase_finetuning.feature` 4 scénarios `@finetuning` (pattern S-082, 39e `CucumberTaskSpec`). Boucle fabrication→exposition avec domaine `codebase.koog.expert` existant (13 fichiers). TRN-8 training reformulé en recettes N2 consommant le pipeline. US-6 À FAIRE.
+. *EPIC FT-PIPELINE* (P0 vision) — ✅ TERMINÉ 7/7 US (S-188 cadrage + S-193 US-1 + S-194 US-2 + S-195 US-3 + S-196 US-4 + S-197 US-5 + S-198 US-6) — pipeline de fine-tuning N1 générique (fabrication modèle : dataset prep + continual pre-training 10% corpus + export GGUF + push Ollama). Source de conception : notebook-gradle ARCHITECTURE.adoc (vestige récupéré). Domaine `codebase.finetuning` (7ème) clos BDD S-197 (17 fichiers prod + 13 test + 1 feature + 3 cucumber infra) : extension DSL `CodebaseFineTuningExtension` (10 propriétés) + 3 tâches Gradle `prepareFineTuningDataset`/`fineTuneExpert`/`publishExpertToOllama` + câblage `CodebasePlugin` (+87 lignes, 13 props CLI `-Pcodebase.finetuning.*`) + Cucumber BDD `codebase_finetuning.feature` 4 scénarios `@finetuning` (pattern S-082, 39e `CucumberTaskSpec`). Boucle fabrication→exposition avec domaine `codebase.koog.expert` existant (13 fichiers). TRN-8 training reformulé en recettes N2 consommant le pipeline (US-6 S-198 : littérature agentique préparatoire, démarrage coding post-travaux codex). EPIC clos.
 . *EPIC VIBE-HARDENING-2* (P2/P3) — ✅ TERMINÉ 8/8 US (S-188 cadrage + S-189 US-1+US-2 + S-190 US-3 + S-191 US-4 + S-192 US-5+US-6+US-7+US-8) — durcissement vibecoding P2/P3 (S2 allowlist tasks découvertes ✅, S3 garde taille write/edit ✅, C4 flags cassés ✅, C1 TaskResultVerifier refonte ✅, C3 cleanup doc ✅ S-192, C6 SessionProtocolEngine extraction ✅ S-192, C7 coerceAtLeast ✅ S-192, Cucumber BDD ✅ S-192). EPIC clos. Gate `codebase.koog.planning.*` + `codebase.koog.tools.*` + `codebase.koog.discovery.*` + `ToolRegistryTest` + `SessionProtocolEngineTest` + `VibecodingGraphTest` VERT 0 FAIL + 4/4 cucumber `@vibe-hardening-2` PASSED.
 . *EPIC VIBE-HARDENING* (P1) — ✅ TERMINÉ 6/6 US (US-0 cadrage S184, US-1 shell allowlist S185, US-2 gradle allowlist S186, US-3 timeout LLM S187, US-4 retry single counter S187, US-5 cucumber BDD S187). Gate `codebase.koog.tools.*` + VibecodingGraph + StepVerifier VERT 64 tests 0 FAIL + 4/4 cucumber PASSED. P2/P3 restants (S2/S3/C1/C3/C4/C6/C7) → EPIC VIBE-HARDENING-2 si déclencheur.
 . *EPIC SUBGRAPH* (P1) — ✅ TERMINÉ 4/4 US (S178 cadrage, S179 domaine `codebase.graph`, S180 canal Graphify réel, S182 US-3 graphRelations+Resource + US-4 Cucumber 4 scénarios @subgraph). Contexte augmenté complet : EAGER + RAG + GRAPHIFY réel + Docs + Resource.
@@ -310,9 +310,9 @@ directement en R2DBC. Quand le nombre de migrations dépassera 5, importer
 
 Actuellement 4 migrations (V1→V4). Non applicable.
 
-== 🟡 EPIC FT-PIPELINE — Pipeline de Fine-Tuning N1 (Session 188 — Cadrage, 5/7 US)
+== ✅ EPIC FT-PIPELINE — Pipeline de Fine-Tuning N1 (Session 188 — Cadrage, TERMINÉ 7/7 US S-198)
 
-**Statut** : 🟡 EN COURS (7 US ~18 pts, US-0 ✅ S-188, US-1 ✅ S-193, US-2 ✅ S-194, US-3 ✅ S-195, US-4 ✅ S-196, US-5 ✅ S-197, US-6 À FAIRE)
+**Statut** : ✅ TERMINÉ (7 US ~18 pts, US-0 ✅ S-188, US-1 ✅ S-193, US-2 ✅ S-194, US-3 ✅ S-195, US-4 ✅ S-196, US-5 ✅ S-197, US-6 ✅ S-198)
 **Priorité** : P0 vision (WORKSPACE_AS_PRODUCT.adoc:642-658)
 **Source de conception** : `foundry/public/notebook-gradle/ARCHITECTURE.adoc` (vestige récupéré)
 **Document** : `.agents/CADRAGE_EPIC_FT_PIPELINE.adoc`
@@ -369,13 +369,14 @@ pas de runtime Colab (CI/CD Gradle), Cucumber BDD `@finetuning`, budget pool
 | 2
 
 | US-6
-| 🟡 À FAIRE : Cross-borough wiring — training-gradle TRN-8 reformulé en recettes CDA/FPA consommant `fineTuneExpert` de codebase. Dépendance N2→N1 propre. Documentation mise à jour (INDEX/BACKLOG training + codebase).
+| ✅ TERMINÉ (S-198) : Cross-borough wiring — training-gradle TRN-8 reformulé en recettes CDA/FPA consommant `fineTuneExpert` de codebase. Séparation N1/N2 actée : machinerie générique N1 dans codebase (FT-PIPELINE TERMINÉ 7/7), recettes métier N2 dans training (datasets corpus AFNOR/REAC + modèles de base + noms experts + curation Bloom/Qualiopi). Dépendance N2→N1 propre (training appelle codebase pipeline, spécifie datasets/modèles). Littérature agentique préparatoire posée dans BACKLOG training (constat N1/N2 + plan baby-steps TRN-8.0→8.6), démarrage coding reporté post-travaux codex prioritaires. INDEX/PROMPT_REPRISE training mis à jour. EPIC FT-PIPELINE TERMINÉ 7/7 US. Zéro code modifié — gouvernance pure cross-borough pattern S-057.
 | 0 (gouvernance)
 | 1
 |===
 
-Ordre : US-0 ✅ → US-1 ✅ → US-2 ✅ → US-3 ✅ → US-4 ✅ → US-5 → US-6.
-Baby-step TDD/BDD strict. Gate ciblé : `./gradlew test --tests "codebase.finetuning.*"`.
+Ordre : US-0 ✅ → US-1 ✅ → US-2 ✅ → US-3 ✅ → US-4 ✅ → US-5 ✅ → US-6 ✅.
+EPIC FT-PIPELINE TERMINÉ 7/7 US.
+Gate ciblé : `./gradlew test --tests "codebase.finetuning.*"`.
 
 == Kover Coverage
 
