@@ -6,7 +6,7 @@ graphify = "0.0.2"
 
 [libraries]
 # BOM — source unique de vérité pour toutes les versions
-workspace-bom = { module = "education.cccp:workspace-bom", version = "0.0.4" }
+workspace-bom = { module = "education.cccp:workspace-bom", version = "0.0.22" }
 
 # External deps — versions explicites pour propagation POM transitive
 # (le BOM en implementation(platform()) ne propage pas ses contraintes aux consommateurs transitifs)
@@ -40,7 +40,7 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 
 # Internal education.cccp deps — versions explicites pour propagation POM transitive
 # (le BOM en implementation(platform()) ne propage pas ses contraintes aux consommateurs transitifs)
-codex-plugin = { module = "education.cccp:codex-plugin", version = "0.0.2" }
+codex-plugin = { module = "education.cccp:codex-plugin", version = "0.0.3" }
 planner-plugin = { module = "education.cccp:planner-plugin", version = "0.0.1" }
 graphify-plugin = { module = "education.cccp:graphify-plugin", version.ref = "graphify" }
 codebase-contracts = { module = "education.cccp:codebase-contracts", version = "0.0.2" }
