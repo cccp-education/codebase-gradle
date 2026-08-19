@@ -1,6 +1,32 @@
 = Test Coverage Analysis — Codebase Gradle
 :date: 2026-08-19
 
+== Session 197 — FT-PIPELINE US-5 (Cucumber BDD)
+
+=== Tests créés
+
+* **Cucumber BDD** (`src/test/features/codebase_finetuning.feature`) : 4 scénarios `@finetuning` (17 steps)
+  - *Pipeline complet dataset→GGUF→manifest* : `OllamaFineTunerAdapter` wired à `StubRegistryClient` succès → `FineTuningResult.Success` (outputModelName, ggufPath non-blank, iterations=1, validationScore=1.0)
+  - *Cycle itératif convergence après ajustement corpus ratio* : `FineTuningGraph` avec `FakeFineTuningLlm` (propose 0.15, validate 0.5 puis 0.8) + `FakeFineTuner` succès + threshold 0.7 + max 3 → `CONVERGED` (score 0.8, iteration 1 — loop backtracking validé)
+  - *Fallback degraded Ollama registry indisponible* : `StubRegistryClient` 503 → `FineTuningResult.Failure` (reason mentionne 503/create failed, originalDataset préservé — economy of ink)
+  - *Validation seuil dès la 1re itération* : `FakeFineTuningLlm` validate 0.9 + threshold 0.7 → `CONVERGED` (score 0.9, iteration 0 — pas de loop)
+
+* **Cucumber BDD infrastructure** (3 fichiers créés) :
+  - `FineTuningWorld.kt` : classe `FineTuningWorld` (state shared PicoContainer : registryStub/pipeline/fakeFineTuner/finetuningGraph/result/finalState) + `StubRegistryClient` in-memory `OllamaRegistryClient` (`createResponse`/`pushResponse` configurables + capture `lastCreateRequest`/`lastPushRequest`)
+  - `FineTuningSteps.kt` : 16 step defs préfixés "finetuning" pattern S-088 (anti-collision glue package `codebase.scenarios`) + `FakeFineTuningLlm` (FIFO queues propose/validate) + `StubPromptBuilder` (object deterministic non-blank prompts)
+  - `FineTuningCucumberRunner.kt` : runner dédié pattern S-082 (filtre `@finetuning and not @integration`)
+
+* **Build wiring** : `CucumberTaskSpec("cucumberTestFineTuning", ...)` 39e câblé `build.gradle.kts` (pattern S-082).
+
+=== Résultats
+
+* `./gradlew cucumberTestFineTuning` : 4/4 scénarios PASSED 9s (17 steps)
+* `./gradlew test --tests "codebase.finetuning.*"` : VERT 0 FAIL (non-régression, 12 fichiers test domaine)
+* `./gradlew test --tests "codebase.CodebasePluginTest"` : VERT (wiring plugin préservé)
+* Zéro fichier prod modifié — pure BDD (pattern VibeHardening2 S-192)
+* Domaine `codebase.finetuning` clos BDD (17 fichiers prod + 13 test + 1 feature + 3 cucumber infra)
+* 39 cucumber runners dédiés dans `build.gradle.kts`
+
 == Session 196 — FT-PIPELINE US-4 (tâches Gradle + extension DSL)
 
 === Tests créés

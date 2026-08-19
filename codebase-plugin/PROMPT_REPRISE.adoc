@@ -1,41 +1,38 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 197
-:session: 197
+= Prompt de Reprise — Codebase (Queens N1) — Session 198
+:session: 198
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 196 — EPIC FT-PIPELINE US-4 TERMINÉ (tâches Gradle + extension DSL). 4 fichiers prod créés (CodebaseFineTuningExtension + PrepareFineTuningDatasetTask + FineTuneExpertTask + PublishExpertToOllamaTask) + CodebasePlugin.kt câblé (+87 lignes, extension `fineTuning` + 3 tâches `finetuning` group + 13 props CLI `-Pcodebase.finetuning.*`). 5 fichiers test créés + CodebasePluginTest.kt mis à jour (8→11 tâches). 140 tests 0 FAIL (gate finetuning + plugin). Zéro bump BOM, zéro secret, zéro régression.
+:session_precedente: 197 — EPIC FT-PIPELINE US-5 TERMINÉ (Cucumber BDD). 4 scénarios `@finetuning` (pipeline complet dataset→GGUF→manifest, cycle itératif convergence, fallback Ollama unavailable, validation seuil) + `FineTuningCucumberRunner` (pattern S-082) + `CucumberTaskSpec("cucumberTestFineTuning")` 39e + `FineTuningWorld` (`StubRegistryClient` in-memory) + `FineTuningSteps` (16 step defs préfixés + `FakeFineTuningLlm` FIFO + `StubPromptBuilder`). 4/4 PASSED 9s (17 steps). Zéro prod modifié — pure BDD. Gate finetuning + CodebasePluginTest non-régression VERT.
 
-== Mission Session 197
+== Mission Session 198
 
-EPIC FT-PIPELINE 4/7 US terminé. Borough DORMANT — réveil sur
+EPIC FT-PIPELINE 5/7 US terminé. Borough DORMANT — réveil sur
 déclencheur pilote uniquement.
 
-=== Option A — EPIC FT-PIPELINE US-5 (P0 vision, Cucumber BDD)
+=== Option A — EPIC FT-PIPELINE US-6 (cross-borough training-gradle)
 
-US-5 (2 pts, 4 scénarios) : Cucumber BDD `codebase_finetuning.feature`
-4 scénarios `@finetuning` (pipeline complet dataset→GGUF→manifest, cycle
-itératif convergence, fallback Ollama unavailable, validation seuil).
-Runner dédié `FineTuningCucumberRunner` (pattern S-082) +
-`CucumberTaskSpec("cucumberTestFineTuning")` 38e (déjà 37 cucumber
-dédiés — vérifier numéro exact). Document :
-`.agents/CADRAGE_EPIC_FT_PIPELINE.adoc` US-5.
+US-6 (1 pt, gouvernance pure) : training-gradle TRN-8 reformulé en
+recettes CDA/FPA consommant `fineTuneExpert` de codebase. Dépendance
+N2→N1 propre (training appelle codebase pipeline, spécifie
+datasets/modèles). Documentation mise à jour (INDEX/BACKLOG training +
+codebase). Document : `.agents/CADRAGE_EPIC_FT_PIPELINE.adoc` US-6.
+Clôture EPIC FT-PIPELINE TERMINÉ 7/7 US.
 
-=== Option B — EPIC FT-PIPELINE US-6 (cross-borough training-gradle)
-
-US-6 (1 pt, gouvernance) : training-gradle TRN-8 reformulé en recettes
-CDA/FPA consommant `fineTuneExpert` de codebase. Dépendance N2→N1
-propre. Documentation mise à jour (INDEX/BACKLOG training + codebase).
-
-=== Option C — Maintenance / déclencheur pilote
+=== Option B — Maintenance / déclencheur pilote
 
 Aucun EPIC actif. Borough DORMANT jusqu'à déclencheur pilote.
+Réveil sur déclencheur (nouveau borough consommateur, bug, évolution
+contrat N0).
 
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
 * Version alignée : codebase-plugin 0.0.8 = Maven Central = BOM 0.0.19.
 * Borough DORMANT — réveil sur déclencheur pilote uniquement.
-* EPIC FT-PIPELINE (P0 vision, 7 US ~18 pts) en cours — 4/7 US livrés.
+* EPIC FT-PIPELINE (P0 vision, 7 US ~18 pts) en cours — 5/7 US livrés
+  (reste US-6 cross-borough training-gradle, gouvernance pure 1 pt).
 * Gate ciblé : `./gradlew test --tests "codebase.finetuning.*"`
   (pas de `./gradlew test` global — Cucumber interminable).
+* 39 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
 
 == Règles absolues
 

@@ -1,0 +1,130 @@
+= Session 197 — EPIC FT-PIPELINE US-5 Cucumber BDD (codebase_finetuning.feature)
+:borough: Queens — codebase-gradle (N1)
+:epic: FT-PIPELINE
+:us: US-5
+:date: 2026-08-19
+:methode: Baby-step TDD/BDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois, séquentiel pur
+
+== Contexte
+
+Session 197. Reprise depuis `codebase-plugin/PROMPT_REPRISE.adoc`.
+Mission : EPIC FT-PIPELINE US-5 (Cucumber BDD — 4 scénarios
+`@finetuning`). État d'entrée : 4/7 US livrées (US-0 cadrage S-188,
+US-1 config+merger S-193, US-2 pipeline+adapter S-194, US-3 graphe koog
+S-195, US-4 tâches Gradle S-196). Borough DORMANT — réveil sur
+déclencheur pilote.
+
+== Constat initial
+
+Le domaine `codebase.finetuning` (17 fichiers prod + 12 fichiers test)
+n'a aucun scénario Cucumber BDD. L'EPIC FT-PIPELINE US-5 (2 pts, 4
+scénarios) clôt la boucle BDD du pipeline fine-tuning N1. Pattern S-082
+en place : 38 `CucumberTaskSpec` déjà câblés dans `build.gradle.kts` —
+le 39e `cucumberTestFineTuning` est à ajouter.
+
+== Actions (séquentiel pur)
+
+. *Lecture gouvernance* — PROMPT_REPRISE S-197, INDEX borough, BACKLOG
+  borough, CADRAGE_EPIC_FT_PIPELINE.adoc US-5, AGENT.adoc racine,
+  SESSION_CHECKLIST. Audit des classes du domaine `codebase.finetuning`
+  (Pipeline, Request, Result, Graph, State, Stage, Llm, PromptBuilder,
+  OllamaFineTunerAdapter, OllamaRegistryClient, FakeFineTuner) + domaine
+  `codebase.koog.expert` (ExpertRegistry, ExpertDomain) pour piloter
+  les scénarios BDD sur le domaine pur (zéro Gradle task, zéro réseau).
+. *Pattern Cucumber* — audit VibeHardening2CucumberRunner + World + Steps
+  + SubgraphCucumberRunner + build.gradle.kts CucumberTaskSpec. Calage
+  du pattern S-082 + S-088 (step defs préfixés pour éviter les
+  collisions glue dans le package partagé `codebase.scenarios`).
+. *Baseline* — `./gradlew compileKotlin compileTestKotlin` VERT (zéro
+  régression préalable).
+. *RED → GREEN → REFACTOR baby-step* :
+  ** *Feature Gherkin* — `src/test/features/codebase_finetuning.feature`
+     créé. 4 scénarios `@finetuning` + Background "a finetuning world is
+     initialized" :
+       . Pipeline complet dataset→GGUF→manifest (pipeline success → Success
+         avec outputModelName + ggufPath non-blank + iterations + score).
+       . Cycle itératif convergence (graph LLM propose 0.15, validate 0.5
+         puis 0.8, threshold 0.7, max 3 → CONVERGED, score 0.8, iteration 1).
+       . Fallback degraded Ollama unavailable (registry 503 → Failure,
+         reason mentionne 503/create failed, originalDataset préservé).
+       . Validation seuil dès la 1re itération (LLM validate 0.9,
+         threshold 0.7 → CONVERGED, score 0.9, iteration 0).
+  ** *World* — `FineTuningWorld.kt` créé. Classe `FineTuningWorld`
+     (state shared : registryStub, pipeline, fakeFineTuner,
+     finetuningGraph, result, finalState) + `StubRegistryClient`
+     (in-memory `OllamaRegistryClient` — `createResponse`/`pushResponse`
+     configurables + capture `lastCreateRequest`/`lastPushRequest`).
+  ** *Steps* — `FineTuningSteps.kt` créé. 16 step defs préfixés
+     "finetuning" (pattern S-088) + `FakeFineTuningLlm` (FIFO queues
+     propose/validate) + `StubPromptBuilder` (object deterministic
+     non-blank prompts). Aucun appel Gradle task, aucune I/O réseau.
+  ** *Runner* — `FineTuningCucumberRunner.kt` créé (pattern S-082).
+     `@Suite` + `@IncludeEngines("cucumber")` + glue
+     `codebase.scenarios` + feature `codebase_finetuning.feature` +
+     filtre `@finetuning and not @integration` + plugins
+     pretty/html/json dédiés `cucumber-finetuning`.
+  ** *Câblage* — `build.gradle.kts` modifié : `CucumberTaskSpec(
+     "cucumberTestFineTuning", ...)` 39e ajouté après
+     `cucumberTestVibeHardening2`.
+  ** *GREEN* — `./gradlew cucumberTestFineTuning` BUILD SUCCESSFUL 9s,
+     4/4 scénarios PASSED (17 steps). Avertissement non-critique
+     `cucumber.features property` (workaround JUnit5 Gradle, présent
+     sur tous les runners Cucumber du borough — pattern identique).
+  ** *REFACTOR* — code déjà propre (pattern établi, step defs préfixés,
+     fakes/stubs isolés, zéro duplication). Aucun refactoring nécessaire.
+. *Non-régression* — `./gradlew test --tests "codebase.finetuning.*"`
+  BUILD SUCCESSFUL 14s (gate finetuning complète : 12 fichiers test
+  incluant FineTuningGraphTest, OllamaFineTunerAdapterTest, tasks).
+  `./gradlew test --tests "codebase.CodebasePluginTest"` BUILD
+  SUCCESSFUL 17s (wiring plugin préservé).
+
+== Commandes exécutées
+
+----
+cd codebase-plugin
+./gradlew compileKotlin compileTestKotlin -q
+./gradlew cucumberTestFineTuning --console=plain
+./gradlew test --tests "codebase.finetuning.*" --console=plain
+./gradlew test --tests "codebase.CodebasePluginTest" --console=plain
+----
+
+== Résultats
+
+* 4/4 scénarios Cucumber `@finetuning` PASSED (17 steps).
+* 5 fichiers créés/modifiés :
+  - `src/test/features/codebase_finetuning.feature` (créé, 36 lignes)
+  - `src/test/kotlin/codebase/scenarios/FineTuningWorld.kt` (créé, 68 lignes)
+  - `src/test/kotlin/codebase/scenarios/FineTuningSteps.kt` (créé, 195 lignes)
+  - `src/test/kotlin/codebase/scenarios/FineTuningCucumberRunner.kt` (créé, 25 lignes)
+  - `build.gradle.kts` (modifié, +1 ligne CucumberTaskSpec)
+* Zéro fichier prod modifié — pure BDD (pattern VibeHardening2 S-192,
+  Subgraph S-182).
+* Gate `codebase.finetuning.*` VERT 0 FAIL (non-régression).
+* `CodebasePluginTest` VERT (wiring plugin préservé).
+* Zéro bump BOM, zéro secret, zéro token.
+* Domaine `codebase.finetuning` clos BDD (US-5 livrée).
+
+== Leçons
+
+. *BDD pur sur domaine* — les 4 scénarios pilotent le domaine pur via
+  fakes/stubs ([FakeFineTuner], [StubRegistryClient],
+  [FakeFineTuningLlm], [StubPromptBuilder]) sans invoquer de tâche Gradle
+  ni émettre d'appel réseau. Pattern identique à VibeHardening2/Subgraph
+  — la BDD domaine valide le contrat fonctionnel sans la mécanique
+  d'exécution Gradle.
+. *FIFO queues pour LLM itératif* — `FakeFineTuningLlm` expose des
+  FIFO queues pour `propose`/`validate` afin de piloter le cycle
+  itératif `FineTuningGraph` (1 propose + 1 validate par itération).
+  Le scénario "Cycle itératif converge" envoie 2 propose + 2 validate
+  (re-propose après score < threshold), le scénario "Validation seuil
+  dès la 1re" envoie 1 propose + 1 validate.
+. *39e `CucumberTaskSpec`* — le borough codebase-plugin atteint 39
+  cucumber runners dédiés (pattern S-082). `cucumberTestFineTuning`
+  hérite du `testFast` (timeout ≤ 8 min défaut, exécution 9s).
+
+== Prochaine session
+
+EPIC FT-PIPELINE 5/7 US (reste US-6 cross-borough training-gradle
+TRN-8 reformulé en recettes CDA/FPA consommant `fineTuneExpert` de
+codebase — gouvernance pure, 1 pt). Borough DORMANT — réveil sur
+déclencheur pilote.
