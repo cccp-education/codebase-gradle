@@ -1,23 +1,26 @@
 package codebase.ocr
 
-import codebase.koog.llm.CodexOcrEngineAdapter
 import codebase.koog.llm.ThrowingVisionProvider
-import codex.ocr.TesseractOcrEngine
+import org.gradle.api.GradleException
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
 import java.nio.file.Path
 import kotlin.test.assertTrue
 
-class OcrTaskTesseractFallbackTest {
+/**
+ * Boundary tests (EPIC CDX-OCR-BOUNDARY US-2): the codebase OCR task is
+ * AI-only. Software OCR (Tesseract) is actioned by codex via `collectOcr`.
+ */
+class OcrTaskAiOnlyBoundaryTest {
 
     @Test
-    fun `OcrTask with tesseract provider processes image`(@TempDir dir: Path) {
+    fun `tesseract provider is rejected with boundary message`(@TempDir dir: Path) {
         val project = ProjectBuilder.builder().withProjectDir(dir.toFile()).withName("ocr-tess").build()
         project.pluginManager.apply(codebase.CodebasePlugin::class.java)
 
-        val imgFile = File(dir.toFile(), "tess.png")
+        val imgFile = dir.resolve("tess.png").toFile()
         imgFile.writeBytes(createMinimalPng())
 
         val task = project.tasks.getByName("ocrDocument") as OcrTask
@@ -26,19 +29,19 @@ class OcrTaskTesseractFallbackTest {
         task.ocrLanguage.set("eng")
         task.outputFormat.set("asciidoc")
 
-        task.executeOcr()
-
-        val outFile = project.layout.buildDirectory.dir("ocr").get().asFile
-            .resolve("tess_ocr.adoc")
-        assertTrue(outFile.exists(), "OCR output should exist: ${outFile.absolutePath}")
+        val exception = assertThrows<GradleException> { task.executeOcr() }
+        assertTrue(
+            exception.message!!.contains("codex"),
+            "Error message should point to the codex plugin: ${exception.message}"
+        )
     }
 
     @Test
-    fun `OcrTask gemini+ollama falls back to Tesseract when both fail`(@TempDir dir: Path) {
+    fun `gemini+ollama raises error when both providers fail without software fallback`(@TempDir dir: Path) {
         val project = ProjectBuilder.builder().withProjectDir(dir.toFile()).withName("ocr-tess-fb").build()
         project.pluginManager.apply(codebase.CodebasePlugin::class.java)
 
-        val imgFile = File(dir.toFile(), "fallback.png")
+        val imgFile = dir.resolve("fallback.png").toFile()
         imgFile.writeBytes(createMinimalPng())
 
         val task = project.tasks.getByName("ocrDocument") as OcrTask
@@ -48,15 +51,12 @@ class OcrTaskTesseractFallbackTest {
         task.outputFormat.set("asciidoc")
         task.geminiVisionProvider = ThrowingVisionProvider()
         task.ollamaOcrProvider = ThrowingVisionProvider()
-        task.tesseractOcrProvider = CodexOcrEngineAdapter(TesseractOcrEngine(tesseractPath = "tesseract"))
 
-        task.executeOcr()
-
-        val outFile = project.layout.buildDirectory.dir("ocr").get().asFile
-            .resolve("fallback_ocr.adoc")
-        assertTrue(outFile.exists(), "OCR output should exist after Tesseract fallback: ${outFile.absolutePath}")
-        val content = outFile.readText(Charsets.UTF_8)
-        assertTrue(content.isNotEmpty() || content == "", "Tesseract fallback should produce output (may be empty for textless image)")
+        val exception = assertThrows<GradleException> { task.executeOcr() }
+        assertTrue(
+            exception.message == OcrTask.AI_ONLY_ERROR_MESSAGE,
+            "Error should be the AI-only boundary message: ${exception.message}"
+        )
     }
 
     private fun createMinimalPng(): ByteArray {

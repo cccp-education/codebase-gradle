@@ -1,16 +1,15 @@
 package codebase.ocr
 
-import codebase.koog.llm.CodexOcrEngineAdapter
 import codebase.koog.llm.GeminiVisionProvider
 import codebase.koog.llm.OllamaOcrProvider
 import codebase.koog.llm.VisionProvider
 import codebase.koog.llm.pool.GeminiKeyPool
 import codebase.koog.llm.pool.GeminiPoolFactory
 import codebase.rag.GeminiConfig
-import codex.ocr.TesseractOcrEngine
 import codebase.rag.LlmConfig
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
@@ -65,13 +64,6 @@ abstract class OcrTask : DefaultTask() {
 
     @get:Internal
     var ollamaOcrProvider: VisionProvider? = null
-
-    /**
-     * Provider Tesseract injectable (fallback OCR sans IA).
-     * Si null, un [CodexOcrEngineAdapter] wrapant [TesseractOcrEngine] de codex est créé (OCR-2).
-     */
-    @get:Internal
-    var tesseractOcrProvider: VisionProvider? = null
 
     /**
      * Clés API Gemini injectables (DSL `geminiApiKeys` ou test).
@@ -359,19 +351,13 @@ abstract class OcrTask : DefaultTask() {
                             ollamaProvider.processImage(imageBytes, mimeType, language, ollamaVisionModel, maxTokens)
                         }
                     } catch (e2: Exception) {
-                        logger.warn("[OCR] Ollama failed: {} — fallback to Tesseract", e2.message)
-                        val tesseract = tesseractOcrProvider ?: CodexOcrEngineAdapter(TesseractOcrEngine())
-                        runBlocking {
-                            tesseract.processImage(imageBytes, mimeType, language, "tesseract", 0)
-                        }
+                        logger.warn("[OCR] Ollama failed: {} — no software fallback in codebase", e2.message)
+                        throw GradleException(AI_ONLY_ERROR_MESSAGE)
                     }
                 }
             }
             "tesseract" -> {
-                val tesseract = tesseractOcrProvider ?: CodexOcrEngineAdapter(TesseractOcrEngine())
-                runBlocking {
-                    tesseract.processImage(imageBytes, mimeType, language, "tesseract", 0)
-                }
+                throw GradleException(AI_ONLY_ERROR_MESSAGE)
             }
             else -> {
                 val geminiProvider = geminiVisionProvider ?: resolveGeminiProvider(model)
@@ -418,6 +404,15 @@ abstract class OcrTask : DefaultTask() {
     }
 
     companion object {
+        /**
+         * Boundary rule (EPIC CDX-OCR-BOUNDARY): software OCR (Tesseract) is
+         * actioned by codex (Brooklyn) via `collectOcr`. The codebase task is
+         * AI-only (Gemini/Ollama vision).
+         */
+        const val AI_ONLY_ERROR_MESSAGE =
+            "OCR provider 'tesseract' (software OCR) is not actioned by codebase — " +
+                "use the codex plugin's collectOcr task instead (EPIC CDX-OCR-BOUNDARY)"
+
         private val IMAGE_EXTENSIONS = setOf("png", "jpg", "jpeg", "gif", "bmp", "tiff")
 
         private val MIME_MAP = mapOf(

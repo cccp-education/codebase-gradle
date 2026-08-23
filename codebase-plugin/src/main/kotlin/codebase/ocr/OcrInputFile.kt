@@ -11,7 +11,7 @@ data class OcrInputFile(
     val path: String,
     /** Langue source (fr, en, auto) */
     val language: String = "fr",
-    /** Fournisseur IA (gemini, tesseract) */
+    /** Fournisseur IA (gemini, ollama) */
     val provider: String = "gemini",
     /** Modèle Gemini */
     val model: String = "gemini-2.5-flash",

@@ -100,16 +100,16 @@ Feature: OCR — Extraction de texte assistée IA
     And the multi-account pool has 3 total instances
 
   @unit @epic_ocr_2
-  Scenario: OCR with Tesseract provider processes image without IA
+  Scenario: OCR with Tesseract provider is rejected — software OCR belongs to codex
     Given an OCR test file "tess-scan.png" with text "fake png for tesseract"
     When I OCR "tess-scan.png" with provider "tesseract"
-    Then the OCR result for "tess-scan" exists
+    Then an error is raised with message containing "codex"
 
   @unit @epic_ocr_2
-  Scenario: OCR with gemini+ollama falls back to Tesseract when both Gemini and Ollama fail
+  Scenario: OCR raises error when both Gemini and Ollama fail — no software fallback in codebase
     Given an OCR test file "tess-fallback.png" with text "fake png for tess fallback"
     When I OCR "tess-fallback.png" with provider "gemini+ollama" and Gemini and Ollama fail
-    Then the OCR result for "tess-fallback" exists
+    Then an error is raised with message containing "codex"
 
   @unit @epic_ocr_2b
   Scenario: OCR with Ollama provider produces structured AsciiDoc

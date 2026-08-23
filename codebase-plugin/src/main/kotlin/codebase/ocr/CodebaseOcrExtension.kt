@@ -24,14 +24,16 @@ import org.gradle.api.provider.Property
  *
  * Usage CLI :
  * ```
- * ./gradlew ocrDocument -PocrProvider=tesseract -PocrLanguage=en
+ * ./gradlew ocrDocument -PocrProvider=gemini -PocrLanguage=en
  * ```
  */
 abstract class CodebaseOcrExtension {
 
     /**
      * Fournisseur IA pour l'OCR.
-     * Valeurs supportées : `"gemini"`, `"tesseract"` (fallback sans IA).
+     * Valeurs supportées : `"gemini"`, `"ollama"`, `"gemini+ollama"` (fallback IA).
+     * Software OCR (`"tesseract"`) est actionné par codex (`collectOcr`) —
+     * boundary EPIC CDX-OCR-BOUNDARY.
      * Par défaut : `"gemini"`.
      */
     abstract val ocrProvider: Property<String>
