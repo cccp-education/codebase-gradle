@@ -173,3 +173,18 @@
 ** `ToolRegistryTest.kt` (+5 unit) : `MAX_WRITE_CHARS` constant 1_000_000, write_file reject/accept boundary, edit_file reject newString oversized, edit_file reject resulting content oversized.
 * *Résultats* : gate `codebase.koog.discovery.*` + `ToolRegistryTest` VERT 105 tests (24 TaskDiscoveryRegistrar 18 allowlist + 6 réécrits, 13 ToolRegistry +5, 15 ExecGradleTool, 9 ExecShellTool, autres discovery). 1 fail préexistant `GradleTaskArgsMapperTest > execute structured gradle task via handler` = C4 US-3 (hors scope S-189, sera résolu US-3). Non-régression ExecShellTool + ExecGradleTool VERTS.
 * *Pattern* : US-1/US-2 VIBE-HARDENING mirroré (allowlist deny-by-default + deny-list second ride). Pattern S-113 multi-US 1 session (US-1 + US-2 indépendants triviaux).
+=== Session 199 — EPIC CDX-RAG-SOCLE US-1 (domaine `codebase.store`)
+
+* *Fichiers créés (prod)* :
+** `codebase/store/DocumentChunk.kt` (data class, mirror `codex.tasks.DocumentChunk`) — chunk sémantique autonome du store (zéro import `codex.tasks.*`).
+** `codebase/store/RetrieveResult.kt` (data class, mirror `codex.tasks.RetrieveResult`) — résultat recherche sémantique autonome.
+** `codebase/store/IngestIndexing.kt` (object pur, mirror `codex.store.IngestIndexing`) — assignation `chunk_index` locaux par document.
+** `codebase/store/StoreStatements.kt` (object pur, mirror `codex.store.IngestStatements`) — templates SQL paramétrés (`$1`, `$2`...) + bind counts.
+** `codebase/store/RagVectorStore.kt` (class R2DBC + ONNX, mirror `codex.store.CodexVectorStore`) — `searchBlocking`/`search` API identique, tables `codex_documents`/`codex_chunks` inchangées.
+* *Fichiers créés (test)* :
+** `codebase/store/IngestIndexingTest.kt` — 6 unit (mirror `ChunkIndexAssignmentTest`).
+** `codebase/store/StoreStatementsTest.kt` — 9 unit (mirror `IngestStatementsTest`).
+** `codebase/store/RagVectorStoreTest.kt` — 10 unit (mirror `CodexVectorStoreTest`).
+* *Résultats* : 25/25 characterization tests PASSED (6 + 9 + 10), 0 FAIL. Gate `codebase.rag.*` non-régression VERT. `compileKotlin`/`compileTestKotlin` VERT.
+* *Pattern* : verbatim migration délibérée (pas refactor) — characterization tests mirroir verrouillent le contrat comportemental avant RAG-2 (bascule call sites). Baby-step TDD strict RED → GREEN → REFACTOR (1 classe à la fois : IngestIndexing → StoreStatements → RagVectorStore).
+* *Pré-requis bump versions* : codex 0.0.5 → mavenLocal, codebase `libs.versions.toml` BOM 0.0.22→0.0.24 + codex 0.0.3→0.0.5, codebase 0.0.8 republié mavenLocal.

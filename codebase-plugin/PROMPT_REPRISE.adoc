@@ -1,34 +1,43 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 199
-:session: 199
+= Prompt de Reprise — Codebase (Queens N1) — Session 200
+:session: 200
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 198 — EPIC FT-PIPELINE US-6 TERMINÉ (cross-borough training-gradle). TRN-8 reformulé en recettes CDA/FPA consommant FT-PIPELINE (~10 pts). Séparation N1/N2 actée — machinerie codebase (TERMINÉ 7/7 US S-188→S-198), recettes métier training. Littérature agentique préparatoire posée dans BACKLOG training (constat N1/N2 + plan baby-steps TRN-8.0→8.6), démarrage coding reporté post-travaux codex prioritaires. EPIC FT-PIPELINE TERMINÉ 7/7 US. Zéro code modifié — gouvernance pure cross-borough pattern S-057.
+:session_precedente: 199 — EPIC CDX-RAG-SOCLE US-1 (cross-borough Brooklyn pilote). Domaine `codebase.store` créé (5 prod + 3 test) : migration verbatim `RagVectorStore`/`StoreStatements`/`IngestIndexing` + types autonomes `RetrieveResult`/`DocumentChunk` depuis `codex.store`. 25/25 characterization tests PASSED. Pré-requis bump versions : codex 0.0.5 mavenLocal + codebase BOM 0.0.24 + codex 0.0.5 + codebase 0.0.8 republié mavenLocal. Zéro régression (call sites `CodexVectorStore` inchangés — bascule RAG-2). EPIC CDX-RAG-SOCLE 2/6 US.
 
-== Mission Session 199
+== Mission Session 200
 
-EPIC FT-PIPELINE TERMINÉ 7/7 US. Borough DORMANT — réveil sur
-déclencheur pilote uniquement. Aucun EPIC actif.
+[STRATEGIE]
+EPIC CDX-RAG-SOCLE US-2 : bascule interne codebase.
 
-=== Option A — Maintenance / déclencheur pilote
+=== US CDX-RAG-2 — Bascule 6 call sites
 
-Aucun EPIC actif. Borough DORMANT jusqu'à déclencheur pilote.
-Réveil sur déclencheur (nouveau borough consommateur, bug, évolution
-contrat N0, training TRN-8 démarrage coding post-travaux codex).
+Remplacer les 6 call sites `codex.store.CodexVectorStore` →
+`codebase.store.RagVectorStore` (API identique `searchBlocking`).
 
-=== Option B — Travaux codex (Brooklyn) prioritaires
+Fichiers concernés (audit S-097) :
+. `codebase/rag/CompositeContextBuilder.kt:7,17,63,75` (param + log messages)
+. `codebase/rag/CodebaseCompositeContextTask.kt:3,41,54,56` (import + instanciation + logs)
+. `codebase/koog/KoogAugmentedContextGraph.kt:14,125` (import + instanciation)
+. `codebase/koog/MultiChannelContextGraph.kt:17,142,150` (import + instanciation + log)
+. `codebase/koog/KoogPlanningOrchestrator.kt:14,153` (import + instanciation)
+. `codebase/CodebasePlugin.kt:176` (description task)
 
-Le pilote a signalé des travaux codex prioritaires avant tout démarrage
-coding training TRN-8. Codebase reste DORMANT pendant ce temps.
+Gate non-régression : tests `codebase.rag.*` + `codebase.koog.*` VERTS.
+Pure mécanique — API identique. Zéro bump BOM, zéro secret.
+
+=== Suite EPIC (après RAG-2)
+
+* RAG-3 : codex — bascule + purge `codex.store.*` (dep `libs.codebase.plugin`)
+* RAG-4 : codebase — retrait `libs.codex.plugin` (`build.gradle.kts:49`)
+* RAG-5 : Cucumber BDD — composite context canal Docs + retrieval koog
 
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
-* Version alignée : codebase-plugin 0.0.8 = Maven Central = BOM 0.0.19.
-* Borough DORMANT — réveil sur déclencheur pilote uniquement.
-* EPIC FT-PIPELINE (P0 vision, 7 US ~18 pts) TERMINÉ 7/7 US
-  (S-188→S-198). Domaine `codebase.finetuning` clos BDD S-197
-  (17 fichiers prod + 13 test + 1 feature + 3 cucumber infra).
-* Gate ciblé : `./gradlew test --tests "codebase.finetuning.*"`
-  (pas de `./gradlew test` global — Cucumber interminable).
+* Version alignée : codebase-plugin 0.0.8 = Maven Central. BOM 0.0.24
+  (bump S-199). codex-plugin 0.0.5 (bump S-199).
+* Domaine `codebase.store` créé S-199 (5 prod + 3 test, 25 tests).
+* Gate ciblé : `./gradlew test --tests "codebase.store.*"` +
+  `--tests "codebase.rag.*"` (pas de `./gradlew test` global — Cucumber interminable).
 * 39 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
 
 == Règles absolues

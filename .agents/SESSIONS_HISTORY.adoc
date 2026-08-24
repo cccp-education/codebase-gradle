@@ -454,3 +454,17 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** Changement comportemental US-1 sécuritaire mais majeur : tasks métier du plugin (vibecode, qualityGate, generatePlan, etc.) ne sont plus auto-enregistrées comme tools `gradle_*`. Un agent LLM ne doit pas piloter la boucle agentique elle-même via tools découverts (récursion dangereuse).
 ** Pattern S-113 (multi-US 1 session) applicable car US-1 et US-2 indépendants et triviaux.
 * **Zéro bump BOM, zéro secret, zéro régression.** 2/8 US VIBE-HARDENING-2.
+
+=== Session 199 — 2026-08-24
+* **EPICs** : CDX-RAG-SOCLE (cross-borough Brooklyn pilote, US-1)
+* **Livrables** :
+** US-1 Domaine `codebase.store` créé (5 prod + 3 test, ~330 lignes) : migration verbatim `codex.store.CodexVectorStore` → `codebase.store.RagVectorStore` + `StoreStatements` (ex-`IngestStatements`) + `IngestIndexing` + types autonomes `RetrieveResult`/`DocumentChunk`. Tables pgvector INCHANGÉES (Loi Économie d'Encre).
+** Pré-requis bump versions : codex 0.0.5 → mavenLocal, codebase `libs.versions.toml` BOM 0.0.22→0.0.24 + codex 0.0.3→0.0.5, codebase 0.0.8 republié mavenLocal.
+** Archive session 199 créée.
+* **Tests** : 25/25 characterization tests PASSED (6 `IngestIndexingTest` + 9 `StoreStatementsTest` + 10 `RagVectorStoreTest`), mirror des tests codex. Gate `codebase.rag.*` non-régression VERT. `compileKotlin`/`compileTestKotlin` VERT.
+* **Fichiers** : 8 nouveaux (5 prod `codebase.store` + 3 test), 2 modifiés (`libs.versions.toml` bump).
+* **Leçons** :
+** Verbatim migration délibérée (pas refactor) : characterization tests mirroir verrouillent le contrat comportemental avant RAG-2 (bascule call sites).
+** Types autonomes (`DocumentChunk`/`RetrieveResult` dans `codebase.store`, pas d'import `codex.tasks.*`) — prérequis pour RAG-4 (retrait `libs.codex.plugin`).
+** Bump préventif avant de coder évite le drift pendant RAG-1/RAG-3.
+* **Zéro bump BOM (pré-requis), zéro secret, zéro régression.** EPIC CDX-RAG-SOCLE 2/6 US.

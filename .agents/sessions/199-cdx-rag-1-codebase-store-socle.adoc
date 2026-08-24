@@ -1,0 +1,130 @@
+= Session 199 — CDX-RAG-1 socle codebase.store + bump versions
+
+_Date_ : 2026-08-24
+_EPIC_ : CDX-RAG-SOCLE (cross-borough Brooklyn pilote)
+_US_ : CDX-RAG-1 (codebase — domaine `codebase.store`)
+
+== Contexte
+
+EPIC CDX-RAG-SOCLE (cadrage S-097 côté codex) : le RAG appartient au
+socle N1 (codebase), pas au borough métier N2 (codex). Le store
+vectoriel migre de `codex.store.CodexVectorStore` vers
+`codebase.store.RagVectorStore`. Gate débloquée : EPIC CDX-OCR-BOUNDARY
+TERMINÉ 4/4 US (S-096→S-101).
+
+US CDX-RAG-1 scope codebase seul : créer le domaine `codebase.store`
+avec les classes migrées verbatim + characterization tests mirroir des
+tests codex. Les call sites codebase restent sur `CodexVectorStore`
+(bascule RAG-2).
+
+== Pré-requis — Bump versions
+
+Avant de coder RAG-1, alignement des versions (drift détecté audit) :
+
+. `codex-plugin` 0.0.5 → mavenLocal (`publishToMavenLocal` codex-plugin).
+  Central avait 0.0.5 (S-095) mais mavenLocal manquait 0.0.5.
+. `codebase-plugin/gradle/libs.versions.toml` :
+  * `workspace-bom 0.0.22 → 0.0.24`
+  * `codex-plugin 0.0.3 → 0.0.5`
+. `codebase-plugin 0.0.8` republié mavenLocal (contraintes à jour pour
+  consommateurs locaux).
+. `compileKotlin` VERT après bump.
+
+Consommateurs vérifiés : seul consommateur réel de `codex-plugin` =
+codebase (déjà bumpé). `codebase-plugin` : bakery a `0.0.6` explicite
+(retard 2 versions), planner/slider/capsule résolvent via BOM.
+
+== Actions — Baby-step TDD strict RED → GREEN → REFACTOR
+
+Nouveau domaine `codebase.store` (5 fichiers prod + 3 fichiers test,
+~330 lignes) :
+
+=== IngestIndexing (object pur)
+* RED : `IngestIndexingTest` 6 tests → 9 `Unresolved reference`.
+* GREEN : `DocumentChunk.kt` (data class, mirror `codex.tasks.DocumentChunk`)
+  + `IngestIndexing.kt` (object pur, mirror `codex.store.IngestIndexing`).
+* 6/6 PASSED.
+
+=== StoreStatements (object pur)
+* RED : `StoreStatementsTest` 9 tests → 8 `Unresolved reference 'StoreStatements'`.
+* GREEN : `StoreStatements.kt` (mirror `codex.store.IngestStatements`, renommé).
+* 9/9 PASSED.
+
+=== RagVectorStore (class R2DBC + ONNX)
+* RED : `RagVectorStoreTest` 10 tests → 10 `Unresolved reference 'RagVectorStore'`.
+* GREEN : `RetrieveResult.kt` (data class, mirror `codex.tasks.RetrieveResult`)
+  + `RagVectorStore.kt` (mirror `codex.store.CodexVectorStore`, même API
+  `searchBlocking`/`search`, mêmes tables `codex_documents`/`codex_chunks`
+  inchangées — Loi de l'Économie d'Encre).
+* 10/10 PASSED.
+
+== Commandes exécutées
+
+----
+cd codex-gradle/codex-plugin && ./gradlew publishToMavenLocal --no-daemon
+# bump codebase libs.versions.toml (BOM 0.0.24 + codex 0.0.5)
+cd codebase-gradle/codebase-plugin && ./gradlew publishToMavenLocal --no-daemon
+./gradlew test --tests "codebase.store.*" --no-daemon   # 25/25 PASSED
+./gradlew test --tests "codebase.rag.*" --no-daemon      # non-régression VERT
+./gradlew compileKotlin compileTestKotlin --no-daemon    # VERT
+----
+
+== Résultats
+
+* 25 nouveaux tests (6 + 9 + 10) — 0 FAIL.
+* Domaine `codebase.store` créé (5 prod + 3 test) :
+  `DocumentChunk`, `RetrieveResult`, `IngestIndexing`, `StoreStatements`,
+  `RagVectorStore`.
+* Tables pgvector INCHANGÉES (`codex_documents`/`codex_chunks`) — zéro
+  re-vectorisation, backward compat total.
+* Zéro bump BOM (pré-requis fait en pré-RAG-1).
+* Zéro secret, zéro régression (call sites existants inchangés,
+  `CodexVectorStore` toujours consommé — bascule RAG-2).
+
+== Leçons
+
+* *Verbatim migration* : la copie est délibérée (pas un refactor). Les
+  characterization tests mirroir verrouillent le contrat comportemental
+  avant que RAG-2 ne rewire les call sites. Le risque de divergence
+  est nul tant que les deux classes coexistent.
+* *Types autonomes* : `DocumentChunk` et `RetrieveResult` migrent dans
+  `codebase.store` (pas d'import `codex.tasks.*`). Le store devient
+  autonome — prérequis pour RAG-4 (retrait `libs.codex.plugin`).
+* *Bump préventif* : aligner les versions avant de coder évite le drift
+  pendant RAG-1/RAG-3. Le pattern C-BOM-FIX (versions explicites dans
+  `libs.versions.toml`) outrepasse la BOM — bump explicite obligatoire.
+
+== Prochaine session (S-200)
+
+US CDX-RAG-2 : bascule interne codebase — 6 call sites
+`codex.store.CodexVectorStore` → `codebase.store.RagVectorStore`
+(API identique). Gate non-régression : tests existants verts.
+
+== État EPIC CDX-RAG-SOCLE
+
+[cols="1,3,2,1"]
+|===
+| US | Description | Statut | Pts
+
+| CDX-RAG-0 | Cadrage EPIC (gouvernance pure)
+| ✅ TERMINÉ (S-097) | 1
+
+| CDX-RAG-1 | codebase — domaine `codebase.store` : `RagVectorStore` +
+  `StoreStatements` + `IngestIndexing` + types + characterization tests
+| ✅ TERMINÉ (S-199) | 2
+
+| CDX-RAG-2 | codebase — bascule interne : 6 call sites → `RagVectorStore`
+| 🔲 À FAIRE | 1
+
+| CDX-RAG-3 | codex — bascule + purge : dep `libs.codebase.plugin` +
+  délégation + suppression `codex.store.*`
+| 🔲 À FAIRE | 3
+
+| CDX-RAG-4 | codebase — retrait `libs.codex.plugin` (`build.gradle.kts:49`)
+| 🔲 À FAIRE | 1
+
+| CDX-RAG-5 | Cucumber BDD — scénarios composite context canal Docs + retrieval koog
+| 🔲 À FAIRE | 2
+|===
+
+2/6 US ✅ (reste 4 US ~7 pts).
