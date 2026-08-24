@@ -1,41 +1,45 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 195
-:session: 195
+= Prompt de Reprise — Codebase (Queens N1) — Session 205
+:session: 205
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 194 — EPIC FT-PIPELINE US-2 TERMINÉ (port `FineTuningPipeline` + `FineTuningRequest`/`FineTuningResult` sealed + `FakeFineTuner` + `OllamaFineTunerAdapter` + port interne `OllamaRegistryClient` + impl HTTP `OllamaHttpRegistryClient`). Baby-step TDD strict. 7 fichiers créés (6 prod + 1 fake test + 2 test). 43/43 unit PASSED (8 config + 19 merger + 11 pipeline + 5 adapter). `compileKotlin` VERT, zéro régression, zéro secret, zéro bump BOM. EPIC FT-PIPELINE 2/7 US.
+:session_precedente: 204 — PUB-0.9 TERMINÉ : codebase-plugin 0.0.9 publié Maven Central (POM sans codex-plugin, avec ocr-contracts:0.0.1). TDD PublishedPomCharacterizationTest + fix VersionCatalogTransitiveVersionsTest (échec préexistant). Travail en worktree isolé /tmp/opencode/cb204.
 
-== Mission Session 195
+== Mission Session 205
 
-EPIC FT-PIPELINE en cours (2/7 US). Prochaine US-3.
+[IMPORTANT]
+Pré-requis ABSOLU : vérifier l'état de la zone sale parallèle. Le working
+tree contenait 11 fichiers WIP non commités de la session Brooklyn
+(revert imports `codebase.store.RagVectorStore` → legacy
+`codebase.rag.VectorStore` + ~243 lignes schéma codex dans RagVectorStore.kt).
+Si Brooklyn a commité sa migration CB-STORE-UNIFY, vérifier la baseline ;
+sinon, travailler en worktree isolé (pattern S-203/S-204).
 
-=== Option A — EPIC FT-PIPELINE US-3 (P0 vision, graphe koog itératif)
+=== Option A — Suivi publication 0.0.9
 
-US-3 (4 pts, ~12 unit) : `FineTuningGraph` — graphe koog
-`strategy<FineTuningState, FineTuningState>` 3 nœuds propose/train/validate
-+ edges conditionnels (convergence score, backtracking, maxIterations
-default 3). Méthode `execute` séquentielle pattern
-`KoogAugmentedContextGraph`. `asMermaidDiagram()`. Domaine
-`codebase.finetuning` enrichi. Baby-step TDD strict. Document :
-`.agents/CADRAGE_EPIC_FT_PIPELINE.adoc` US-3.
+* Vérifier propagation repo1 : `codebase-plugin/0.0.9/codebase-plugin-0.0.9.pom`
+  (propagation ~20 min post-bundle S-204).
+* Si propagé : signaler aux consommateurs (slider/capsule/planner consomment
+  codebase via mavenLocal 0.0.8 ou contrainte BOM) — bump à la discrétion
+  MEMPHIS (pratique canonique zéro bump BOM).
 
-=== Option B — Maintenance / déclencheur pilote
+=== Option B — Accueil migration Brooklyn (si commitée)
 
-Borough DORMANT jusqu'à déclencheur pilote.
+* Si le WIP Brooklyn (CB-STORE-UNIFY) est committé sur codebase : audit de
+  la migration (RagVectorStore vs legacy VectorStore), gate compileKotlin +
+  tests ciblés `codebase.store.*`, synchronisation gouvernance Queens.
+* Sinon : borough DORMANT — maintenance seule.
 
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
-* Version alignée : codebase-plugin 0.0.8 = Maven Central = BOM 0.0.19.
-* EPIC FT-PIPELINE (P0 vision, 7 US ~18 pts) — US-1 ✅ S-193, US-2 ✅
-  S-194, US-3→6 À FAIRE.
-* Domaine `codebase.finetuning` (7ème) — 6 prod + 2 test + 1 fake
-  (FineTuningConfig, FineTuningConfigMerger, FineTuningRequest,
-  FineTuningResult, FineTuningPipeline, OllamaRegistryClient,
-  OllamaHttpRegistryClient, OllamaFineTunerAdapter + FakeFineTuner test).
+* codebase-plugin 0.0.9 = Maven Central (S-204). Dep N0 `ocr-contracts:0.0.1`.
+* Gate ciblé : jamais `./gradlew test` global (Cucumber interminable).
+* 41 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
+* Session concurrente possible : vérifier `git status`, mtimes récents,
+  absence d'autre session active AVANT d'éditer.
 
 == Règles absolues
 
 * Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la
   fois, séquentiel pur (interdiction @xp/subagents/parallélisation).
 * Zéro commit/push sans permission explicite du pilote.
-* Gate ciblé : jamais `./gradlew test` global (Cucumber interminable).
 * Zéro secret, zéro token dans le code ou les logs.

@@ -1,12 +1,12 @@
 = BACKLOG — Codebase Gradle
 :toc:
-:last_update: 2026-08-24 (Session 203 — maintenance : fix `BenchmarkRunner.kt` vers socle RagVectorStore, gate worktree isolé VERT ; interruption conservatoire — session codex éditait codebase en parallèle. Constats PUB : ocr-contracts 0.0.1 + BOM 0.0.26 ✅ Central ; codex-plugin 0.0.6 ❌ ABSENT (claim Brooklyn S-104 non matérialisée) ; POM codebase 0.0.8 contient encore codex-plugin:0.0.2 → PUB-0.9 prioritaire S-204)
+:last_update: 2026-08-25 (Session 204 — PUB-0.9 TERMINÉ : codebase-plugin 0.0.9 publié Central, POM sans codex-plugin + ocr-contracts:0.0.1. Option B résolue : codex 0.0.6 EST sur Central. Ancien header : Session 203 — maintenance : fix `BenchmarkRunner.kt` vers socle RagVectorStore, gate worktree isolé VERT ; interruption conservatoire — session codex éditait codebase en parallèle. Constats PUB : ocr-contracts 0.0.1 + BOM 0.0.26 ✅ Central ; codex-plugin 0.0.6 ❌ ABSENT (claim Brooklyn S-104 non matérialisée) ; POM codebase 0.0.8 contient encore codex-plugin:0.0.2 → PUB-0.9 prioritaire S-204)
 
 == Statut Global
 
 **EPIC CDX-OCR-CONTRACTS ✅ TERMINÉ (5/5 — S-103→S-202)** — extraction port OCR en artefact N0 `ocr-contracts` (US-1 MEMPHIS artefact, US-2 typealiases codex, US-3 bascule codebase + retrait `libs.codex.plugin`, US-4 Cucumber BDD boundary). **EPIC CDX-RAG-SOCLE ✅ TERMINÉ (6/6 — S-097→S-201)** — RAG socle N1 (`codebase.store.RagVectorStore`), inversion N1→N2 morte. **EPIC FT-PIPELINE ✅ TERMINÉ (7/7 — S-188→S-198)**. **EPIC VIBE-HARDENING ✅ TERMINÉ (6/6 — S184-S187)** — durcissement vibecoding P1 (S1 allowlist shell + gradle, C2 retry single counter, C5 timeout LLM, Cucumber BDD). **EPIC PUB (bump 0.0.8) ✅ TERMINÉ (S183)**. **EPIC SUBGRAPH ✅ TERMINÉ (4/4 — S182)** — contexte augmenté Graphify réel. Le reste du backlog est dormant :
 
-. *PUB-0.9 (PRIORITAIRE S-204)* — republier codebase-plugin 0.0.9 : POM Central 0.0.8 contient encore `codex-plugin:0.0.2` runtime (inversion N1→N2 morte côté code mais pas côté Central). TDD test POM publié (ocr-contracts:0.0.1 présent, codex-plugin absent) + publishToMavenLocal + Central sur accord pilote.
+. *PUB-0.9 ✅ TERMINÉ (S-204)* — codebase-plugin 0.0.9 publié Maven Central (accord pilote). TDD `PublishedPomCharacterizationTest` (ocr-contracts présent, codex-plugin absent) + fix `VersionCatalogTransitiveVersionsTest` (échec préexistant) + publication `publishAggregationToCentralPortal` depuis worktree isolé.
 . *Cross-borough* — signaler à Brooklyn que `codex-plugin:0.0.6` est ABSENT de Maven Central (repo1 vérifié S-203, dernier = 0.0.5 malgré claim S-104).
 . *CB-STORE-UNIFY* — en cours côté session opencode codex (migration legacy VectorStore → RagVectorStore détectée sur 8 fichiers S-203). NE PAS interférer ; re-baseline obligatoire à la prochaine session Queens.
 . *SLD-8 US-8.2/8.3* — côté slider (consommation LlmBuildService codebase), hors scope Queens.

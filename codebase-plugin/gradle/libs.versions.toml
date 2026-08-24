@@ -50,6 +50,7 @@ vibecoding-contracts = { module = "education.cccp:vibecoding-contracts", version
 llm-pool-contracts = { module = "education.cccp:llm-pool-contracts", version = "0.0.2" }
 opencode-session-contracts = { module = "education.cccp:opencode-session-contracts", version = "0.0.2" }
 i18n-contracts = { module = "education.cccp:i18n-contracts", version = "0.0.2" }
+ocr-contracts = { module = "education.cccp:ocr-contracts", version = "0.0.1" }
 
 [bundles]
 cucumber = [

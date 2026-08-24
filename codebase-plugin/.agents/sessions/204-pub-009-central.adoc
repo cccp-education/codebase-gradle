@@ -1,0 +1,100 @@
+= Session 204 — PUB-0.9 : codebase-plugin 0.0.9 publié Maven Central
+
+:session: 204
+:borough: Queens — codebase-gradle (N1)
+:date: 2026-08-25
+:type: PUB (publication + TDD caractérisation POM)
+:status: TERMINÉE
+
+== Contexte
+
+Mission S-204 (PROMPT_REPRISE) : Option A PUB-0.9 prioritaire — le POM Central
+`codebase-plugin:0.0.8` contenait encore `codex-plugin:0.0.2` runtime et pas
+`ocr-contracts:0.0.1` : l'inversion N1→N2 était morte côté code mais PAS côté
+Central.
+
+Pré-requis mission : baseline VERTE post-migration Brooklyn + non-conflit du
+fix BenchmarkRunner S-203.
+
+== Constats d'ouverture
+
+. *Zone sale parallèle* : 11 fichiers modifiés non commités dans le working
+  tree codebase (mtimes 23h36–23h39 S-24) — revert des imports
+  `codebase.store.RagVectorStore` → legacy `codebase.rag.VectorStore` sur 10
+  fichiers + ~243 lignes ajoutées à `RagVectorStore.kt` (méthodes schéma codex
+  `initSchema`/`insertDocument`/`updateEmbedding`). WIP de la session Brooklyn
+  (codex S-105, CB-STORE-UNIFY cadrage, commit `9f30ffa` à 00h17 sur
+  codex-gradle) — 2 autres instances opencode actives.
+. *Option B résolue* : `codex-plugin:0.0.6` EST présent sur Central (repo1
+  vérifié direct, POM complet avec ocr-contracts 0.0.1) — le constat S-203
+  « absent » était périmé, Brooklyn a publié entre-temps.
+. *Baseline HEAD VERTE* en worktree isolé `/tmp/opencode/cb204`
+  (`git worktree add` + `compileKotlin` OK) après restauration du
+  BenchmarkRunner.kt à HEAD (ma copie initiale du fichier dirty avait cassé
+  la compile — import reverté mais corps encore RagVectorStore).
+. *Échec préexistant à HEAD* :
+  `VersionCatalogTransitiveVersionsTest > all transitive education cccp
+  artifacts have explicit versions` — le test listait `codex-plugin` (retiré
+  du catalogue par S-201) ET pointait vers le catalogue racine
+  `codebase-gradle/gradle/libs.versions.toml` (minimal, sans les artefacts
+  education.cccp) au lieu du catalogue du plugin.
+
+== Actions (baby-step TDD strict RED → GREEN → REFACTOR)
+
+=== US PUB-0.9-1 — bump + TDD caractérisation POM
+
+. *RED* : `PublishedPomCharacterizationTest.kt` créé (package
+  `codebase.publishing`, 2 tests) — parse
+  `~/.m2/repository/education/cccp/codebase-plugin/0.0.9/*.pom` :
+  - `published pom declares N0 ocr contracts dependency`
+  - `published pom no longer declares codex plugin dependency`
+  → 2 FAILED (POM 0.0.9 inexistant).
+. Bump `version = "0.0.8"` → `"0.0.9"` (`build.gradle.kts:8`).
+. Entrée catalogue `ocr-contracts = { module = "education.cccp:ocr-contracts",
+  version = "0.0.1" }` + bascule `implementation(libs.ocr.contracts)` (la
+  dépendance était un littéral — alignement pattern contracts N0).
+. Fix `VersionCatalogTransitiveVersionsTest` : `codex-plugin` retiré de
+  `transitiveArtifacts`, `ocr-contracts` ajouté ; résolution chemin corrigée
+  vers `codebase-plugin/gradle/libs.versions.toml`.
+. *GREEN* : `publishToMavenLocal` VERT (gpg signing OK) — POM ~/.m2 validé
+  (ocr-contracts présent, zéro codex-plugin) — 4/4 tests publishing PASSED.
+
+=== Gate non-régression ciblé
+
+`compileKotlin` + `CodebasePluginTest` + `codebase.store.*` → BUILD
+SUCCESSFUL (1m16s). Jamais `./gradlew test` global (Cucumber interminable,
+pratique canonique gates ciblés S175/S179/S182).
+
+=== US PUB-0.9-2 — publication Central (accord pilote obtenu : « 1 »)
+
+. Travail exécuté dans le worktree isolé (HEAD + mes 4 fichiers) — jamais
+  depuis l'arbre sale du repo principal.
+. Port des 4 fichiers vers le repo principal via `git apply` patch
+  (aucun fichier dans la zone sale parallèle).
+. `./gradlew publishAggregationToCentralPortal --no-daemon` → BUILD
+  SUCCESSFUL 31s — déploiement VALIDATING → publishing (bundle visible
+  portal UI).
+
+== Fichiers modifiés (4)
+
+. `codebase-plugin/build.gradle.kts` — bump 0.0.9 + `libs.ocr.contracts`
+. `codebase-plugin/gradle/libs.versions.toml` — entrée `ocr-contracts 0.0.1`
+. `codebase-plugin/src/test/kotlin/codebase/publishing/PublishedPomCharacterizationTest.kt` — NOUVEAU (2 tests)
+. `codebase-plugin/src/test/kotlin/codebase/publishing/VersionCatalogTransitiveVersionsTest.kt` — fix artifact list + résolution chemin
+
+== Leçons
+
+. Worktree isolé = seule façon sûre de travailler quand une session
+  parallèle laisse l'arbre sale (pattern S-203 reconduit).
+. Ne JAMAIS copier un fichier dirty dans un worktree propre pour tester la
+  baseline — restaurer à HEAD d'abord (`git checkout -- <file>`).
+. Un test « catalogue » doit lire LE catalogue qui porte les dépendances
+  runtime (celui du plugin), pas celui du repo consommateur.
+. Vérifier les claims cross-borough sur repo1 direct avant de les relayer :
+  le constat S-203 « codex 0.0.6 absent » était périmé en ~1h.
+
+== Références
+
+- `.agents/sessions/203-benchmark-ragvectorstore-fix-interruption.adoc`
+- `.agents/sessions/183-epic-pub-0.0.8-central.adoc` (procédure nmcp)
+- EPIC CDX-RAG-SOCLE RAG-4 FINAL / CDX-OCR-CONTRACTS (S-104, S-201/202)

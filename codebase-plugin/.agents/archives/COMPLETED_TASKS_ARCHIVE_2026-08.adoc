@@ -1,5 +1,29 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026 — Codebase Gradle (Queens)
 
+== Session 204 — PUB-0.9 : codebase-plugin 0.0.9 publié Maven Central
+
+|===
+| Tâche | Statut
+
+| Bump codebase-plugin 0.0.8 → 0.0.9 + TDD `PublishedPomCharacterizationTest` (ocr-contracts présent / codex-plugin absent sur POM ~/.m2)
+| ✅ TERMINÉ (S-204)
+
+| Fix échec préexistant `VersionCatalogTransitiveVersionsTest` (retrait codex-plugin + résolution vers catalogue plugin) + entrée catalogue ocr-contracts + bascule libs.ocr.contracts
+| ✅ TERMINÉ (S-204)
+
+| Gate non-régression ciblé VERT (compileKotlin + CodebasePluginTest + codebase.store.*)
+| ✅ TERMINÉ (S-204)
+
+| Publication Central `publishAggregationToCentralPortal` (accord pilote) depuis worktree isolé /tmp/opencode/cb204
+| ✅ TERMINÉ (S-204)
+
+| Signal Brooklyn trou codex-plugin 0.0.6 sur Central (Option B S-203)
+| ✅ CADUQUE — codex 0.0.6 EST sur Central (repo1 vérifié direct S-204, constat S-203 périmé)
+
+| Zone sale parallèle : 11 fichiers WIP Brooklyn non commités (revert RagVectorStore→VectorStore + méthodes schéma codex)
+| ⏳ À AUDITER S-205 (si commitée par Brooklyn) ou laisser à Brooklyn
+|===
+
 == Session 203 — Maintenance BenchmarkRunner + interruption session concurrente
 
 |===

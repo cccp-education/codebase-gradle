@@ -5,7 +5,7 @@ import java.time.Duration
 fun isCI() = System.getenv("CI") == "true"
 
 group = "education.cccp"
-version = "0.0.8"
+version = "0.0.9"
 
 plugins {
     `java-library`
@@ -50,7 +50,7 @@ dependencies {
     // inversion is fully dead. The OCR boundary port (VisionOcrEngineAdapter)
     // now consumes the N0 `ocr-contracts` artifact (EPIC CDX-OCR-CONTRACTS
     // US-3): both codex (N2) and codebase (N1) depend on N0, no cycle.
-    implementation("education.cccp:ocr-contracts:0.0.1")
+    implementation(libs.ocr.contracts)
     implementation(libs.planner.plugin)
     implementation(libs.graphify.plugin)
 

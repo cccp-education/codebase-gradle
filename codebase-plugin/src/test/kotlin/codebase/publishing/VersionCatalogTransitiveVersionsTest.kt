@@ -9,8 +9,8 @@ class VersionCatalogTransitiveVersionsTest {
 
     private val tomlFile: File by lazy {
         val projectDir = File(System.getProperty("user.dir"))
-        val rootDir = if (projectDir.name == "codebase-plugin") projectDir.parentFile else projectDir
-        File(rootDir, "gradle/libs.versions.toml")
+        val pluginDir = if (projectDir.name == "codebase-plugin") projectDir else projectDir.resolve("codebase-plugin")
+        File(pluginDir, "gradle/libs.versions.toml")
     }
 
     private val tomlContent: String by lazy { tomlFile.readText() }
@@ -21,7 +21,7 @@ class VersionCatalogTransitiveVersionsTest {
         "llm-pool-contracts",
         "opencode-session-contracts",
         "i18n-contracts",
-        "codex-plugin",
+        "ocr-contracts",
     )
 
     @Test

@@ -1,5 +1,18 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-08-24
+:date: 2026-08-25
+
+== Session 204 — PUB-0.9 (TDD caractérisation POM publié)
+
+* *Tests créés* : `PublishedPomCharacterizationTest` (package `codebase.publishing`, 2 tests unitaires)
+  - `published pom declares N0 ocr contracts dependency` — parse `~/.m2/repository/education/cccp/codebase-plugin/0.0.9/*.pom`, assert `education.cccp` + `ocr-contracts`
+  - `published pom no longer declares codex plugin dependency` — assert absence `<artifactId>codex-plugin</artifactId>` (inversion N1→N2 morte côté Central)
+  - RED initial : 2 FAILED (POM 0.0.9 inexistant) → GREEN après bump + publishToMavenLocal
+* *Tests modifiés* : `VersionCatalogTransitiveVersionsTest` — correction d'un échec préexistant à HEAD :
+  - `codex-plugin` retiré de `transitiveArtifacts` (artefact supprimé du catalogue par S-201), `ocr-contracts` ajouté
+  - Résolution chemin corrigée : le test lisait le catalogue racine consommateur (`codebase-gradle/gradle/libs.versions.toml`, minimal) au lieu du catalogue du plugin (`codebase-plugin/gradle/libs.versions.toml`) — `user.dir` sous worker Gradle = codebase-plugin
+* *Tests supprimés* : aucun
+* *Gate exécuté* : 4/4 tests publishing PASSED + non-régression ciblée VERT (`compileKotlin` + `CodebasePluginTest` + `codebase.store.*`, 1m16s). Suite complète NON exécutée (pratique canonique gates ciblés, Cucumber interminable).
+* *Note prod* : bascule `implementation("education.cccp:ocr-contracts:0.0.1")` → `implementation(libs.ocr.contracts)` (entrée catalogue ajoutée, versions.toml) — zéro changement sémantique de dépendance.
 
 == Session 203 — Maintenance BenchmarkRunner (interruption session concurrente)
 

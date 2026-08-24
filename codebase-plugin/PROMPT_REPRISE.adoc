@@ -1,42 +1,41 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 204
-:session: 204
+= Prompt de Reprise — Codebase (Queens N1) — Session 205
+:session: 205
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 203 — Fix `BenchmarkRunner.kt` vers socle `codebase.store.RagVectorStore` (pattern codex `searchBlocking`), gate worktree isolé VERT. Session écourtée : session opencode codex (Brooklyn) éditait codebase en parallèle (migration legacy `VectorStore` → `RagVectorStore` en cours).
+:session_precedente: 204 — PUB-0.9 TERMINÉ : codebase-plugin 0.0.9 publié Maven Central (POM sans codex-plugin, avec ocr-contracts:0.0.1). TDD PublishedPomCharacterizationTest + fix VersionCatalogTransitiveVersionsTest (échec préexistant). Travail en worktree isolé /tmp/opencode/cb204.
 
-== Mission Session 204
+== Mission Session 205
 
 [IMPORTANT]
-Pré-requis ABSOLU : vérifier que la session codex a terminé et commité sa
-migration sur codebase. Baseline doit être VERTE (`./gradlew compileKotlin`)
-avant de coder. Si la migration Brooklyn est commitée, vérifier que mon fix
-`BenchmarkRunner.kt` n'a pas été absorbé/conflitté.
+Pré-requis ABSOLU : vérifier l'état de la zone sale parallèle. Le working
+tree contenait 11 fichiers WIP non commités de la session Brooklyn
+(revert imports `codebase.store.RagVectorStore` → legacy
+`codebase.rag.VectorStore` + ~243 lignes schéma codex dans RagVectorStore.kt).
+Si Brooklyn a commité sa migration CB-STORE-UNIFY, vérifier la baseline ;
+sinon, travailler en worktree isolé (pattern S-203/S-204).
 
-=== Option A — PUB-0.9 : republier codebase-plugin (prioritaire)
+=== Option A — Suivi publication 0.0.9
 
-Constat S-203 (repo1 vérifié en direct) :
+* Vérifier propagation repo1 : `codebase-plugin/0.0.9/codebase-plugin-0.0.9.pom`
+  (propagation ~20 min post-bundle S-204).
+* Si propagé : signaler aux consommateurs (slider/capsule/planner consomment
+  codebase via mavenLocal 0.0.8 ou contrainte BOM) — bump à la discrétion
+  MEMPHIS (pratique canonique zéro bump BOM).
 
-* POM Central `codebase-plugin:0.0.8` contient encore `codex-plugin:0.0.2`
-  runtime → l'inversion N1→N2 est morte côté code mais PAS côté Central.
-* Baby-steps :
-  . Bump version 0.0.8 → 0.0.9
-  . TDD : test unitaire caractérisant le POM publié (contient
-    `ocr-contracts:0.0.1`, NE contient plus `codex-plugin`)
-  . `publishToMavenLocal` vert + validation POM ~/.m2
-  . Publication Central (`publishAggregationToCentralPortal`) — accord pilote
+=== Option B — Accueil migration Brooklyn (si commitée)
 
-=== Option B — Signal cross-borough à relayer
-
-* `codex-plugin:0.0.6` ABSENT de Maven Central (dernier = 0.0.5) malgré
-  la claim Brooklyn S-104 — à signaler au pilote pour Brooklyn.
+* Si le WIP Brooklyn (CB-STORE-UNIFY) est committé sur codebase : audit de
+  la migration (RagVectorStore vs legacy VectorStore), gate compileKotlin +
+  tests ciblés `codebase.store.*`, synchronisation gouvernance Queens.
+* Sinon : borough DORMANT — maintenance seule.
 
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
-* codebase-plugin 0.0.8 = Maven Central. Dep N0 `ocr-contracts:0.0.1`.
+* codebase-plugin 0.0.9 = Maven Central (S-204). Dep N0 `ocr-contracts:0.0.1`.
 * Gate ciblé : jamais `./gradlew test` global (Cucumber interminable).
 * 41 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
-* Session concurrente détectée S-203 : toujours vérifier `git status`,
-  mtimes récents, et l'absence d'autre session active AVANT d'éditer.
+* Session concurrente possible : vérifier `git status`, mtimes récents,
+  absence d'autre session active AVANT d'éditer.
 
 == Règles absolues
 
