@@ -4,7 +4,7 @@
 
 _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux. Pour le backlog à jour détaillé, voir `.agents/BACKLOG.adoc`._
 
-== Synthèse Backlog (Session 201 — 2026-08-24)
+== Synthèse Backlog (Session 202 — 2026-08-24)
 
 [cols="1,3,1,2"]
 |===
@@ -18,11 +18,11 @@ _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de 
 | EPIC VIBE-HARDENING-2 | Durcissement vibecoding P2/P3 (CR-GLOBALE-004 suite) | ✅ TERMINÉ 8/8 US (S-188→S-192) | S2 ✅, S3 ✅, C4 ✅, C1 ✅, C3 ✅ S-192, C7 ✅ S-192, C6 ✅ S-192, Cucumber ✅ S-192
 | EPIC FT-PIPELINE | Pipeline de fine-tuning N1 (P0 vision) | ✅ TERMINÉ 7/7 US (S-188→S-198) | Domaine `codebase.finetuning` clos, cross-borough training-gradle TRN-8 reformulé
 | EPIC CDX-RAG-SOCLE | RAG appartient au socle N1 (cross-borough Brooklyn) | ✅ TERMINÉ 6/6 US (S-097→S-201) | **Inversion N1→N2 morte** — RAG-4 final S-201 via N0 `ocr-contracts`, `libs.codex.plugin` retiré
-| EPIC CDX-OCR-CONTRACTS | Extraction port OCR en artefact N0 `ocr-contracts` (cross-borough MEMPHIS+codex+codebase) | 🟡 EN COURS 4/5 US (S-103, S-104, S-201) | US-1 MEMPHIS ✅, US-2 codex typealiases ✅, US-3 codebase bascule ✅. Reste US-4 Cucumber BDD + publications Central
+| EPIC CDX-OCR-CONTRACTS | Extraction port OCR en artefact N0 `ocr-contracts` (cross-borough MEMPHIS+codex+codebase) | ✅ TERMINÉ 5/5 US (S-103, S-104, S-201, S-202) | US-1 MEMPHIS ✅, US-2 codex typealiases ✅, US-3 codebase bascule ✅, US-4 Cucumber BDD boundary ✅ (5 scénarios `@ocr-contracts`, 41e CucumberTaskSpec). Publications Central en attente accord pilote
 | Tous autres EPICs | V, W, X, Y, Z, K, L, OCR, CR, TRAD, PUB, V-LOCAL, SP, V-6, V-7, V-8, V-9, 2→12 | ✅ TERMINÉ | Voir détails ci-dessous
 |===
 
-*Backlog réellement restant* : EPIC CDX-OCR-CONTRACTS (🟡 4/5 US — reste US-4 Cucumber BDD + publications Central ocr-contracts/codex/BOM) + SLD-8 US-8.2/8.3 (côté slider) + EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5. EPIC CDX-RAG-SOCLE ✅ TERMINÉ 6/6 US (S-201). EPIC FT-PIPELINE ✅ TERMINÉ 7/7 US (S-198). EPIC VIBE-HARDENING-2 ✅ TERMINÉ 8/8 US (S-192).
+*Backlog réellement restant* : SLD-8 US-8.2/8.3 (côté slider) + EPIC V-FLYWAY (P2 conditionnel) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5 + publications Central en attente accord pilote (ocr-contracts 0.0.1, BOM 0.0.26, codex 0.0.6). EPIC CDX-OCR-CONTRACTS ✅ TERMINÉ 5/5 US (S-202). EPIC CDX-RAG-SOCLE ✅ TERMINÉ 6/6 US (S-201). EPIC FT-PIPELINE ✅ TERMINÉ 7/7 US (S-198). EPIC VIBE-HARDENING-2 ✅ TERMINÉ 8/8 US (S-192).
 
 == EPIC VIBE-HARDENING — Durcissement vibecoding P1 (CR-GLOBALE-004)
 

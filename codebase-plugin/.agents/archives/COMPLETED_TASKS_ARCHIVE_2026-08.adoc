@@ -1,5 +1,30 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026 — Codebase Gradle (Queens)
 
+== Session 202 — EPIC CDX-OCR-CONTRACTS US-4 (Cucumber BDD boundary port N0)
+
+|===
+| Tâche | Statut
+
+| `codebase_ocr_contracts.feature` 5 scénarios `@ocr-contracts` (fake AI engine, miroir métadonnées, port stateless, rejet tesseract, AI-only fallback)
+| ✅ TERMINÉ (S-202)
+
+| `OcrContractsCucumberRunner` pattern S-082 + 41e `CucumberTaskSpec("cucumberTestOcrContracts")`
+| ✅ TERMINÉ (S-202)
+
+| `OcrContractsWorld` + `StubVisionProvider` fake AI engine (FIFO + call count)
+| ✅ TERMINÉ (S-202)
+
+| `OcrContractsSteps` préfixés S-088 (23 steps)
+| ✅ TERMINÉ (S-202)
+
+| Gates : cucumberTestOcrContracts 5/5 + adapter unit 4/4 + boundary 2/2 + cucumberTestEpicOcr 29/29
+| ✅ TERMINÉ (S-202)
+
+| EPIC CDX-OCR-CONTRACTS clôturé 5/5 US (publications Central en attente accord pilote)
+| ✅ TERMINÉ (S-202)
+
+|===
+
 == Session 194 — EPIC FT-PIPELINE US-2 (port `FineTuningPipeline` + `OllamaFineTunerAdapter`)
 
 |===

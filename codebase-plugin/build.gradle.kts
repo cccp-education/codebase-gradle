@@ -188,6 +188,7 @@ val cucumberTaskSpecs = listOf(
     CucumberTaskSpec("cucumberTestVibeHardening2", "Runs Cucumber BDD tests — EPIC VIBE-HARDENING-2 (write_file size guard, expectedOutput, flag+value, remaining coerce) only", "codebase.scenarios.VibeHardening2CucumberRunner"),
     CucumberTaskSpec("cucumberTestFineTuning", "Runs Cucumber BDD tests — EPIC FT-PIPELINE US-5 (fine-tuning N1 pipeline — dataset→GGUF→manifest, iterative convergence, degraded fallback, validation threshold) only", "codebase.scenarios.FineTuningCucumberRunner"),
     CucumberTaskSpec("cucumberTestRagSocle", "Runs Cucumber BDD tests — EPIC CDX-RAG-SOCLE US-5 (RagVectorStore socle + composite context Docs channel, fake in-memory) only", "codebase.scenarios.RagSocleCucumberRunner"),
+    CucumberTaskSpec("cucumberTestOcrContracts", "Runs Cucumber BDD tests — EPIC CDX-OCR-CONTRACTS US-4 (N0 ocr-contracts port boundary — fake AI engine, degraded Tesseract rejection) only", "codebase.scenarios.OcrContractsCucumberRunner"),
 )
 
 val cucumberTasks = cucumberTaskSpecs.map { registerCucumberTask(it) }

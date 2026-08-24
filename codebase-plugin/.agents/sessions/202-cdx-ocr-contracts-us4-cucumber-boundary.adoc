@@ -1,0 +1,77 @@
+= Session 202 — CDX-OCR-CONTRACTS US-4 : Cucumber BDD boundary port N0
+
+*Date* : 2026-08-24
+*Borough* : Queens (codebase-gradle N1)
+*EPIC* : CDX-OCR-CONTRACTS (US-4/4 — EPIC TERMINÉ 5/5 US)
+*Méthode* : baby-step BDD strict RED → GREEN → REFACTOR, pure BDD zéro prod modifié
+
+== Contexte
+
+Suite S-201 (US-3 bascule `VisionOcrEngineAdapter` sur `contracts.ocr.*` +
+retrait `libs.codex.plugin`). Dernière US de l'EPIC : validation BDD
+end-to-end du contrat N0 `ocr-contracts:0.0.1`.
+
+== Actions
+
+. *RED*
+   .. `src/test/features/codebase_ocr_contracts.feature` créé
+      (`@ocr-contracts`, 5 scénarios).
+   .. `OcrContractsCucumberRunner.kt` créé (pattern S-082, 41e
+      `CucumberTaskSpec("cucumberTestOcrContracts")` dans `build.gradle.kts`).
+   .. Run → 5 échecs `UndefinedStepException` (23 steps undefined).
+
+. *GREEN*
+   .. `OcrContractsWorld.kt` créé : `StubVisionProvider` fake AI engine
+      (FIFO réponses + call count, pattern `RecordingVisionProvider`
+      + `FakeFineTuningLlm`), zéro réseau/zéro clé API.
+   .. `OcrContractsSteps.kt` créé : steps préfixés "OCR contracts" /
+      "N0 OCR engine" / "vision provider stub" / "codebase OCR task"
+      (anti-collision glue pattern S-088). Minimal PNG copié de
+      `OcrTaskAiOnlyBoundaryTest`. ProjectBuilder fixture pour la voie
+      dégradée `executeOcr`.
+   .. Run → 5/5 scénarios PASSED.
+
+. *REFACTOR* — rien à refactorer (pure BDD, zéro prod modifié).
+
+== Scénarios couverts
+
+. Fake AI engine → AsciiDoc structuré via le port N0 (`structuredText`,
+  classe `contracts.ocr.OcrResult`, confidence 1.0)
+. Miroir des métadonnées requête→résultat (`language`, `sourceFormat`,
+  `model`)
+. Port N0 stateless réutilisable (2 appels successifs, réponses FIFO,
+  stub appelé 2×)
+. Provider logiciel `tesseract` rejeté → erreur contient "codex",
+  aucun fichier output (boundary préservée)
+. Gemini+Ollama both failing → message AI-only pointant vers `collectOcr`
+
+== Écart mission vs livrable
+
+Le « cache hit » de la mission n'a pas d'équivalent testable côté codebase :
+le cache modèle de `GeminiVisionProvider.resolveModel` exige clé API + réseau ;
+le cache OCR par hash vit côté codex. Remplacé par le scénario stateless
+réutilisable (même intention : comportement du moteur à travers le port N0).
+
+== Commandes
+
+----
+./gradlew compileTestKotlin cucumberTestOcrContracts   # RED puis GREEN
+./gradlew test --tests "codebase.koog.llm.adapter.VisionOcrEngineAdapterTest" --tests "codebase.ocr.OcrTaskAiOnlyBoundaryTest"
+./gradlew cucumberTestEpicOcr
+----
+
+== Résultats
+
+* `cucumberTestOcrContracts` : 5/5 PASSED, 0 FAIL
+* Gate unit : adapter 4/4 + boundary 2/2 PASSED
+* `cucumberTestEpicOcr` : 29/29 PASSED (non-régression)
+* Zéro fichier production modifié, zéro secret, zéro bump BOM
+
+== Leçons
+
+* Le filtre runner (`includeTestsMatching`) isole bien les features —
+  les autres XML Cucumber restent en `skipped`, seuls les compteurs de
+  la feature ciblée comptent.
+* Toujours vérifier le libellé exact d'une constante avant de l'écrire
+  en Gherkin (`AI_ONLY_ERROR_MESSAGE` ne contient pas "AI-only"
+  littéralement → step ajusté sur "collectOcr").

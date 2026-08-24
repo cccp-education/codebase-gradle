@@ -1,36 +1,35 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 202
-:session: 202
+= Prompt de Reprise — Codebase (Queens N1) — Session 203
+:session: 203
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 201 — CDX-OCR-CONTRACTS US-3 cross-borough : bascule `VisionOcrEngineAdapter` imports `codex.ocr.*`→`contracts.ocr.*` + retrait `libs.codex.plugin` (dep N0 `ocr-contracts:0.0.1`). **RAG-4 FINAL — EPIC CDX-RAG-SOCLE TERMINÉ 6/6 US, l'inversion N1→N2 est morte.**
+:session_precedente: 202 — CDX-OCR-CONTRACTS US-4 Cucumber BDD boundary port N0 (`codebase_ocr_contracts.feature` 5 scénarios `@ocr-contracts`, runner `OcrContractsCucumberRunner` 41e CucumberTaskSpec, `StubVisionProvider` fake). **EPIC CDX-OCR-CONTRACTS TERMINÉ 5/5 US.**
 
-== Mission Session 202
+== Mission Session 203
 
 [STRATEGIE]
-EPIC CDX-OCR-CONTRACTS US-4 : Cucumber BDD boundary port N0.
+Borough retombe DORMANT côté EPICs. Deux pistes possibles (accord pilote) :
 
-=== US CDX-OCR-CONTRACTS-4 — Cucumber BDD
-
-Scénarios boundary OCR sur le port N0 `contracts.ocr.OcrEngine`
-(fake AI engine + degraded Tesseract + cache hit). Validation
-end-to-end du contrat N0. Pure BDD, zéro prod modifié.
-Runner dédié pattern S-082 (41e `CucumberTaskSpec`).
-
-Clôture EPIC CDX-OCR-CONTRACTS après US-4.
-
-=== Publications en attente (accord pilote requis)
+=== Option A — Publications Central en attente (accord pilote requis)
 
 * MEMPHIS : `ocr-contracts:0.0.1` Maven Central (nmcp) + BOM 0.0.26
 * codex : `codex-plugin:0.0.6` Maven Central (PUB-3.12)
 * codebase : republier si bump nécessaire (dep N0 déjà explicite)
+
+=== Option B — Maintenance / dette
+
+* SLD-8 US-8.2/8.3 : côté slider (consommation LlmBuildService)
+* EPIC V-FLYWAY : P2 conditionnel (seuil 5+ migrations, actuellement 4)
+* PublishingConventionsPlugin pom.name+description (conventions-gradle)
+* Warnings CI actions@v4→v5
 
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
 * codebase-plugin 0.0.8 = Maven Central. Dep N0 `ocr-contracts:0.0.1`
   mavenLocal (publication Central à coordonner avec MEMPHIS).
-* EPIC CDX-RAG-SOCLE ✅ TERMINÉ 6/6 (S-097→S-201).
+* EPICs récents tous terminés : CDX-RAG-SOCLE 6/6 (S-201),
+  CDX-OCR-CONTRACTS 5/5 (S-202), FT-PIPELINE 7/7 (S-198).
 * Gate ciblé : jamais `./gradlew test` global (Cucumber interminable).
-* 40 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
+* 41 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
 
 == Règles absolues
 

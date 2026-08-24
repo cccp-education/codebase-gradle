@@ -1,5 +1,31 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-08-19
+:date: 2026-08-24
+
+== Session 202 — CDX-OCR-CONTRACTS US-4 (Cucumber BDD boundary port N0)
+
+=== Tests créés
+
+* **Cucumber BDD** (`src/test/features/codebase_ocr_contracts.feature`) : 5 scénarios `@ocr-contracts` (23 steps)
+  - *Fake AI engine retourne AsciiDoc structuré via le port N0* : `VisionOcrEngineAdapter` + `StubVisionProvider` → `structuredText`, classe `contracts.ocr.OcrResult`, confidence 1.0
+  - *Miroir métadonnées requête→résultat* : JPEG/en + model "gemini-2.5-pro" → `language`/`sourceFormat`/`model` reflétés
+  - *Port N0 stateless réutilisable* : 2 requêtes successives, réponses FIFO ("= Page un"/"= Page two"), stub appelé 2×
+  - *Rejet provider logiciel tesseract* : `OcrTask.executeOcr()` → erreur contient "codex", aucun fichier output
+  - *Gemini+Ollama both failing* → message AI-only pointant vers codex `collectOcr`
+
+* **Cucumber BDD infrastructure** (3 fichiers créés) :
+  - `OcrContractsWorld.kt` : world PicoContainer + `StubVisionProvider` fake AI engine (FIFO réponses + call count + capture args, zéro réseau/zéro clé API)
+  - `OcrContractsSteps.kt` : steps préfixés "OCR contracts" / "N0 OCR engine" / "vision provider stub" / "codebase OCR task" pattern S-088 + minimal PNG helper
+  - `OcrContractsCucumberRunner.kt` : runner dédié pattern S-082 (filtre `@ocr-contracts and not @integration`)
+
+* **Build wiring** : `CucumberTaskSpec("cucumberTestOcrContracts", ...)` 41e câblé `build.gradle.kts`.
+
+=== Résultats
+
+* `./gradlew cucumberTestOcrContracts` : 5/5 scénarios PASSED, 0 FAIL (RED préalable : 5 UndefinedStepException / 23 steps)
+* Gate unit non-régression : `VisionOcrEngineAdapterTest` 4/4 + `OcrTaskAiOnlyBoundaryTest` 2/2 PASSED
+* `./gradlew cucumberTestEpicOcr` : 29/29 PASSED (ocr.feature non-régression)
+* Zéro fichier prod modifié — pure BDD ; zéro bump BOM ; zéro secret
+* 41 cucumber runners dédiés dans `build.gradle.kts`
 
 == Session 197 — FT-PIPELINE US-5 (Cucumber BDD)
 
