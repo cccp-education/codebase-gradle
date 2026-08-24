@@ -1,0 +1,43 @@
+= Session 201 — CDX-OCR-CONTRACTS US-3 : bascule codebase + RAG-4 FINAL
+:date: 2026-08-24
+:epic: CDX-OCR-CONTRACTS / CDX-RAG-SOCLE
+:status: ✅ TERMINÉ (RAG-4 final — EPIC CDX-RAG-SOCLE 6/6 US)
+
+== Contexte
+
+Session 200 a livré US-2/4 partial/5 de CDX-RAG-SOCLE. `libs.codex.plugin`
+était conservé pour le port OCR (`VisionOcrEngineAdapter` consommait
+`codex.ocr.*`). L'EPIC cross-borough CDX-OCR-CONTRACTS extrait ce port en
+N0 — cette session bascule codebase et retire la dernière inversion N1→N2.
+
+== Actions
+
+* Cross-borough prérequis (livrés en parallèle) :
+.. MEMPHIS S-104 : artefact N0 `ocr-contracts:0.0.1` créé (3 types purs
+   `contracts.ocr.{OcrEngine,OcrRequest,OcrResult}`, 14/14 unit PASSED,
+   mavenLocal).
+.. codex S-104 : typealiases `codex.ocr.*` → `contracts.ocr.*`, bump 0.0.6.
+
+* Codebase (cette session) :
+.. `VisionOcrEngineAdapter.kt` + test : imports `codex.ocr.*` →
+   `contracts.ocr.*`.
+.. `build.gradle.kts` : `implementation(libs.codex.plugin)` RETIRÉ,
+   remplacé par `implementation("education.cccp:ocr-contracts:0.0.1")`.
+.. `libs.versions.toml` : entrée `codex-plugin` supprimée.
+.. Vérification : `rg "import codex\."` = zéro dans src/main.
+
+== Résultats
+
+* **EPIC CDX-RAG-SOCLE TERMINÉ 6/6 US** — RAG-4 FINAL : l'inversion N1→N2
+  est totalement morte. Flèche unique restante : codex → codebase (N2→N1).
+* Tables pgvector INCHANGÉES, zéro re-vectorisation.
+* Zéro bump BOM local, zéro secret.
+* Reste EPIC CDX-OCR-CONTRACTS : US-4 Cucumber BDD + publications Central
+  (ocr-contracts 0.0.1, codex 0.0.6, BOM 0.0.26) — accord pilote requis.
+
+== Leçons
+
+* Le pattern "contrat pur N0 + typealiases N2" élimine une inversion sans
+  breaking change pour les consommateurs existants.
+* Cross-borough 3 repos coordonnés en 1 session (MEMPHIS socle → codex
+  compat → codebase bascule).

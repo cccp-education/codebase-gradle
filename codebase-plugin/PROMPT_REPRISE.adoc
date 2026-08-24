@@ -1,44 +1,36 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 200
-:session: 200
+= Prompt de Reprise — Codebase (Queens N1) — Session 202
+:session: 202
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 199 — EPIC CDX-RAG-SOCLE US-1 (cross-borough Brooklyn pilote). Domaine `codebase.store` créé (5 prod + 3 test) : migration verbatim `RagVectorStore`/`StoreStatements`/`IngestIndexing` + types autonomes `RetrieveResult`/`DocumentChunk` depuis `codex.store`. 25/25 characterization tests PASSED. Pré-requis bump versions : codex 0.0.5 mavenLocal + codebase BOM 0.0.24 + codex 0.0.5 + codebase 0.0.8 republié mavenLocal. Zéro régression (call sites `CodexVectorStore` inchangés — bascule RAG-2). EPIC CDX-RAG-SOCLE 2/6 US.
+:session_precedente: 201 — CDX-OCR-CONTRACTS US-3 cross-borough : bascule `VisionOcrEngineAdapter` imports `codex.ocr.*`→`contracts.ocr.*` + retrait `libs.codex.plugin` (dep N0 `ocr-contracts:0.0.1`). **RAG-4 FINAL — EPIC CDX-RAG-SOCLE TERMINÉ 6/6 US, l'inversion N1→N2 est morte.**
 
-== Mission Session 200
+== Mission Session 202
 
 [STRATEGIE]
-EPIC CDX-RAG-SOCLE US-2 : bascule interne codebase.
+EPIC CDX-OCR-CONTRACTS US-4 : Cucumber BDD boundary port N0.
 
-=== US CDX-RAG-2 — Bascule 6 call sites
+=== US CDX-OCR-CONTRACTS-4 — Cucumber BDD
 
-Remplacer les 6 call sites `codex.store.CodexVectorStore` →
-`codebase.store.RagVectorStore` (API identique `searchBlocking`).
+Scénarios boundary OCR sur le port N0 `contracts.ocr.OcrEngine`
+(fake AI engine + degraded Tesseract + cache hit). Validation
+end-to-end du contrat N0. Pure BDD, zéro prod modifié.
+Runner dédié pattern S-082 (41e `CucumberTaskSpec`).
 
-Fichiers concernés (audit S-097) :
-. `codebase/rag/CompositeContextBuilder.kt:7,17,63,75` (param + log messages)
-. `codebase/rag/CodebaseCompositeContextTask.kt:3,41,54,56` (import + instanciation + logs)
-. `codebase/koog/KoogAugmentedContextGraph.kt:14,125` (import + instanciation)
-. `codebase/koog/MultiChannelContextGraph.kt:17,142,150` (import + instanciation + log)
-. `codebase/koog/KoogPlanningOrchestrator.kt:14,153` (import + instanciation)
-. `codebase/CodebasePlugin.kt:176` (description task)
+Clôture EPIC CDX-OCR-CONTRACTS après US-4.
 
-Gate non-régression : tests `codebase.rag.*` + `codebase.koog.*` VERTS.
-Pure mécanique — API identique. Zéro bump BOM, zéro secret.
+=== Publications en attente (accord pilote requis)
 
-=== Suite EPIC (après RAG-2)
-
-* RAG-3 : codex — bascule + purge `codex.store.*` (dep `libs.codebase.plugin`)
-* RAG-4 : codebase — retrait `libs.codex.plugin` (`build.gradle.kts:49`)
-* RAG-5 : Cucumber BDD — composite context canal Docs + retrieval koog
+* MEMPHIS : `ocr-contracts:0.0.1` Maven Central (nmcp) + BOM 0.0.26
+* codex : `codex-plugin:0.0.6` Maven Central (PUB-3.12)
+* codebase : republier si bump nécessaire (dep N0 déjà explicite)
 
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
-* Version alignée : codebase-plugin 0.0.8 = Maven Central. BOM 0.0.24
-  (bump S-199). codex-plugin 0.0.5 (bump S-199).
-* Domaine `codebase.store` créé S-199 (5 prod + 3 test, 25 tests).
-* Gate ciblé : `./gradlew test --tests "codebase.store.*"` +
-  `--tests "codebase.rag.*"` (pas de `./gradlew test` global — Cucumber interminable).
-* 39 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
+* codebase-plugin 0.0.8 = Maven Central. Dep N0 `ocr-contracts:0.0.1`
+  mavenLocal (publication Central à coordonner avec MEMPHIS).
+* EPIC CDX-RAG-SOCLE ✅ TERMINÉ 6/6 (S-097→S-201).
+* Gate ciblé : jamais `./gradlew test` global (Cucumber interminable).
+* 40 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
 
 == Règles absolues
 

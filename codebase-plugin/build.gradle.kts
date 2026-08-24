@@ -46,13 +46,11 @@ dependencies {
     implementation(libs.langchain4j.ollama)
     implementation(libs.googleAiGemini)
     implementation(libs.bundles.r2dbc)
-    // EPIC CDX-RAG-4: `libs.codex.plugin` kept — the RAG store inversion is
-    // resolved (CodexVectorStore no longer imported), but the OCR boundary
-    // (S-099) keeps a legitimate N1->N2 port dependency: codebase's
-    // VisionOcrEngineAdapter implements codex.ocr.OcrEngine. Full removal
-    // is gated by extracting codex.ocr port types into a N0 contracts
-    // artifact (future EPIC CDX-OCR-CONTRACTS).
-    implementation(libs.codex.plugin)
+    // EPIC CDX-RAG-4 FINAL (S-104): `libs.codex.plugin` REMOVED — the N1->N2
+    // inversion is fully dead. The OCR boundary port (VisionOcrEngineAdapter)
+    // now consumes the N0 `ocr-contracts` artifact (EPIC CDX-OCR-CONTRACTS
+    // US-3): both codex (N2) and codebase (N1) depend on N0, no cycle.
+    implementation("education.cccp:ocr-contracts:0.0.1")
     implementation(libs.planner.plugin)
     implementation(libs.graphify.plugin)
 

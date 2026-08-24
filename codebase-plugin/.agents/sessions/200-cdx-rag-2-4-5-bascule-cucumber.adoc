@@ -1,0 +1,71 @@
+= Session 200 — CDX-RAG-SOCLE US-2 + US-4 partial + US-5 Cucumber BDD
+:date: 2026-08-24
+:epic: CDX-RAG-SOCLE
+:status: ✅ TERMINÉ (3 US en 1 session, pattern S-113)
+
+== Contexte
+
+Reprise codebase post-session 199 (US-1 domaine `codebase.store` créé).
+Mission : US-2 bascule 6 call sites `CodexVectorStore` → `RagVectorStore`.
+
+== Actions
+
+=== US-2 — Bascule 6 call sites (pure mécanique, API identique)
+
+Remplacement `codex.store.CodexVectorStore` → `codebase.store.RagVectorStore`
+dans 6 fichiers :
+
+. `codebase/rag/CompositeContextBuilder.kt:7,17,63,75` (import + param + 2 logs)
+. `codebase/rag/CodebaseCompositeContextTask.kt:3,16,41,54,56` (import + description + instanciation + 2 logs)
+. `codebase/koog/KoogAugmentedContextGraph.kt:14,125` (import + instanciation)
+. `codebase/koog/MultiChannelContextGraph.kt:17,142,150` (import + instanciation + log)
+. `codebase/koog/KoogPlanningOrchestrator.kt:14,153` (import + instanciation)
+. `codebase/CodebasePlugin.kt:176` (description task composite context)
+
+Gate non-régression : `codebase.rag.*` + `codebase.koog.*` VERTS.
+
+=== US-4 (partielle) — Imports codex.store.* éliminés
+
+Les imports `codex.store.*` sont morts (plus aucun call site).
+`libs.codex.plugin` CONSERVÉ car `VisionOcrEngineAdapter` (S-099) consomme
+encore `codex.ocr.OcrEngine`/`OcrRequest`/`OcrResult`.
+
+Gate : extraction `codex.ocr` en artefact N0 (future EPIC
+CDX-OCR-CONTRACTS) pour retirer totalement `libs.codex.plugin`.
+
+=== US-5 — Cucumber BDD `@rag-socle`
+
+Feature `codebase_rag_socle.feature` 6 scénarios :
+. Store canonical defaults (host/port/dimensions/table names)
+. Store custom params (injectable via constructor)
+. RetrieveResult type mapping (score/content/metadata)
+. CompositeContextBuilder Docs channel null store → fallback message
+. CompositeContextBuilder Docs channel throwing store → fallback message
+. CompositeContextBuilder Docs channel returning store → Docs section
+
+Infra :
+. `RagSocleCucumberRunner` (pattern S-082, 40e `CucumberTaskSpec`)
+. `RagSocleWorld` (PicoContainer, `StubRagStore` fake in-memory)
+. `RagSocleSteps` (step defs, `StubRagStore` extends `RagVectorStore`)
+
+`RagVectorStore` ouvert pour testabilité (1 keyword + 2 `open fun`).
+
+Baby-step RED → GREEN : 6/6 scénarios PASSED.
+
+== Résultats
+
+* `check` VERT, non-régression préservée (3 échecs préexistants non liés)
+* 12 fichiers modifiés, 316 insertions, 20 suppressions
+* Zéro bump BOM, zéro secret, zéro régression, backward compat total
+* EPIC CDX-RAG-SOCLE : 4/6 US (US-0 ✅ S-097, US-1 ✅ S-199, US-2 ✅ S-200, US-4 partial ✅ S-200, US-5 ✅ S-200)
+* Reste : US-3 cross-borough codex (bascule+purge `codex.store.*`), US-4 complétion (extraction `codex.ocr` N0)
+
+== Commit
+
+`3a95c96` — feat(cdx-rag-2-5): switch codebase to RagVectorStore socle + Cucumber BDD @rag-socle
+
+== Leçons
+
+* API identique = bascule mécanique sans TDD (tests existants suffisent comme gate)
+* `RagVectorStore.open` pour testabilité Cucumber : pattern minimal, pas de factory lourde
+* `libs.codex.plugin` retained pour OCR port — extraction N0 future propre solution

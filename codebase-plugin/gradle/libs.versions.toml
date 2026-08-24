@@ -40,7 +40,8 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 
 # Internal education.cccp deps — versions explicites pour propagation POM transitive
 # (le BOM en implementation(platform()) ne propage pas ses contraintes aux consommateurs transitifs)
-codex-plugin = { module = "education.cccp:codex-plugin", version = "0.0.5" }
+# codex-plugin REMOVED (EPIC CDX-RAG-4 FINAL S-104 — N1->N2 inversion dead,
+# OCR port now consumed via ocr-contracts N0)
 planner-plugin = { module = "education.cccp:planner-plugin", version = "0.0.1" }
 graphify-plugin = { module = "education.cccp:graphify-plugin", version.ref = "graphify" }
 codebase-contracts = { module = "education.cccp:codebase-contracts", version = "0.0.2" }

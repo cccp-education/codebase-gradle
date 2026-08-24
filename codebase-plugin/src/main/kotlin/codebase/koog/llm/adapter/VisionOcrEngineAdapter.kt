@@ -1,21 +1,23 @@
 package codebase.koog.llm.adapter
 
 import codebase.koog.llm.VisionProvider
-import codex.ocr.OcrEngine
-import codex.ocr.OcrRequest
-import codex.ocr.OcrResult
+import contracts.ocr.OcrEngine
+import contracts.ocr.OcrRequest
+import contracts.ocr.OcrResult
 import kotlinx.coroutines.runBlocking
 import java.time.Instant
 
 /**
- * Adapter that implements the codex [OcrEngine] port by delegating to a
+ * Adapter that implements the N0 [OcrEngine] port by delegating to a
  * codebase [VisionProvider] (AI-assisted OCR).
  *
  * Boundary rule (EPIC CDX-OCR-BOUNDARY): software OCR (Tesseract) is
  * actioned by codex; AI-assisted OCR is actioned by the codebase socle.
  * This adapter lives on the codebase side so the composition root can
  * inject AI vision into a codex `OcrPipeline`/`CollectOcrTask` without
- * creating an N2→N1 cycle: codebase already depends on the codex artifact.
+ * creating an N2→N1 cycle: both codex and codebase depend on the N0
+ * `ocr-contracts` artefact (EPIC CDX-OCR-CONTRACTS US-3 — the N1→N2
+ * inversion is now fully eliminated).
  *
  * @param provider the AI vision provider backing this engine
  * @param model vision model identifier forwarded to the provider

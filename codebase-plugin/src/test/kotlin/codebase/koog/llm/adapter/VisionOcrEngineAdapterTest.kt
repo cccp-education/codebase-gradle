@@ -1,7 +1,7 @@
 package codebase.koog.llm.adapter
 
 import codebase.koog.llm.VisionProvider
-import codex.ocr.OcrRequest
+import contracts.ocr.OcrRequest
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -9,8 +9,8 @@ import kotlin.test.assertTrue
 
 /**
  * Unit tests for [VisionOcrEngineAdapter] — the codebase-side adapter that
- * implements the codex `OcrEngine` port by delegating to a codebase
- * `VisionProvider` (AI-assisted OCR boundary, EPIC CDX-OCR-BOUNDARY US-2).
+ * implements the N0 `OcrEngine` port by delegating to a codebase
+ * `VisionProvider` (AI-assisted OCR boundary, EPIC CDX-OCR-CONTRACTS US-3).
  */
 class VisionOcrEngineAdapterTest {
 
