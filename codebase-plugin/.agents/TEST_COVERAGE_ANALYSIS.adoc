@@ -1,6 +1,15 @@
 = Test Coverage Analysis — Codebase Gradle
 :date: 2026-08-24
 
+== Session 203 — Maintenance BenchmarkRunner (interruption session concurrente)
+
+* *Tests créés* : aucun
+* *Tests modifiés* : aucun
+* *Tests supprimés* : aucun
+* *Couverture* : inchangée (fichier prod `BenchmarkRunner.kt` sans test dédié — classe main/benchmark, aucun test ne référence `buildContext` vérifié par grep)
+* *Gate exécuté* : `compileKotlin` VERT en worktree isolé (`git worktree add` HEAD + fichier seul). Suite complète NON exécutée (session concurrente codex active sur le repo — interdiction d'interférer).
+* *Note* : la migration en cours côté codex (legacy `VectorStore` → `RagVectorStore`) touche des fichiers de test (FilteredQuerySteps, PrepareContextSteps, PrepareContextUnitTest) — leur couverture sera à re-vérifier à la clôture de CETTE session-là.
+
 == Session 202 — CDX-OCR-CONTRACTS US-4 (Cucumber BDD boundary port N0)
 
 === Tests créés

@@ -1,0 +1,64 @@
+= Session 203 — Fix BenchmarkRunner vers socle RagVectorStore + interruption session concurrente
+
+*Date* : 2026-08-24
+*Borough* : Queens (codebase-gradle N1)
+*EPIC* : Maintenance (aucun EPIC actif — borough DORMANT)
+*Méthode* : baby-step TDD (complétion WIP existant), gate worktree isolé
+
+== Contexte
+
+Ouverture S-203 sur le prompt de reprise : borough DORMANT, deux options
+(publications Central vs maintenance). Constats d'ouverture :
+
+. *Baseline ROUGE* — WIP non commité dans `BenchmarkRunner.kt`
+   (reliquat probable S-199/200) : imports `EmbeddingPipeline`/`VectorStore`
+   supprimés mais référencés, `RagVectorStore()` sans import,
+   signature `buildContext` cassée. `compileKotlin` FAILED.
+. *Audit publications Central (repo1 vérifié en direct)* :
+   - `ocr-contracts:0.0.1` ✅ Central (2026-08-24)
+   - `workspace-bom:0.0.26` ✅ Central
+   - `codex-plugin:0.0.6` ❌ ABSENT (dernier = 0.0.5) malgré la claim
+     Brooklyn S-104 — à signaler à Brooklyn
+   - `codebase-plugin:0.0.8` ⚠️ POM publié contient encore
+     `codex-plugin:0.0.2` runtime → l'inversion N1→N2 est morte côté code
+     mais PAS côté Central → bump 0.0.9 justifié
+
+== Actions
+
+. Consigne pilote : « va prendre la dernière version dans le borough codex »
+   .. Pattern codex latest (`CodexRetrieveTask`) : construction
+      `RagVectorStore(...)` + appel direct `store.searchBlocking(q, k)`.
+   .. Complétion du WIP `BenchmarkRunner.kt` suivant ce pattern :
+      suppression `embeddingPipeline`, `vectorStore: RagVectorStore?`,
+      branche RAG via `searchBlocking(queryText, topK = 10)` +
+      `r.chunkText`/`r.similarity`, imports nettoyés.
+. *Interruption* — détection d'activité concurrente : la session opencode
+   codex (Brooklyn) édite `codebase-plugin` en parallèle (6 puis 8 fichiers
+   modifiés à 23:04–23:10 : `MultiChannelContextGraph`, `OcrIngestTask`,
+   `VectorQueryService`, steps de test, `RagVectorStore.kt` — migration
+   legacy `codebase.rag.VectorStore` → `codebase.store.RagVectorStore`
+   en cours, non compilable car inachevée). Stop immédiat de toute édition.
+. *Gate en worktree isolé* — validation sans toucher au repo live :
+   `git worktree add /tmp/opencode/cb203 HEAD` + copie du seul fichier
+   `BenchmarkRunner.kt` + `./gradlew compileKotlin` → *BUILD SUCCESSFUL*.
+   Le fix est valide standalone contre HEAD (les erreurs vues en live
+   proviennent des WIP de la session codex).
+
+== Résultats
+
+* `BenchmarkRunner.kt` : migration RAG channel complétée vers le socle
+  `codebase.store.RagVectorStore` (pattern codex `searchBlocking`)
+* Gate `compileKotlin` VERT (worktree isolé HEAD + fichier)
+* Aucune publication exécutée, aucun bump de version
+* Session écourtée par l'activité concurrente — clôture conservatoire
+
+== Leçons
+
+. Toujours vérifier `git status` complet ET les mtimes à l'ouverture :
+  un WIP non commité peut venir d'une autre session cross-borough.
+. Deux sessions sur le même repo = interdiction (règle d'or) — détecter,
+  stopper, clôturer conservatoirement.
+. Le gate en worktree isolé (`git worktree add` + copie fichier) permet
+  de valider un fix sans interférer avec une session active.
+. Le POM Central 0.0.8 contient encore `codex-plugin:0.0.2` : la republish
+  0.0.9 est prioritaire pour la prochaine session Queens (post-stabilisation).

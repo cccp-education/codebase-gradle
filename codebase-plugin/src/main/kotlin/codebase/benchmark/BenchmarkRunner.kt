@@ -1,7 +1,6 @@
 package codebase.benchmark
 
-import codebase.rag.EmbeddingPipeline
-import codebase.rag.VectorStore
+import codebase.store.RagVectorStore
 import dev.langchain4j.model.ollama.OllamaChatModel
 import dev.langchain4j.service.AiServices
 import dev.langchain4j.service.SystemMessage
@@ -297,11 +296,10 @@ class BenchmarkRunner(
 
         val useRag = scenarioChannels.contains("RAG")
         val useGraphify = scenarioChannels.contains("Graphify")
-        val vectorStore = if (useRag && pgJdbcUrl != null) VectorStore(pgJdbcUrl, pgUser ?: "codebase", pgPassword ?: "codebase") else null
-        val embeddingPipeline = if (useRag && pgJdbcUrl != null) {
-            log.info("RAG channel active — connecting to pgvector")
-            EmbeddingPipeline(vectorStore!!)
+        val vectorStore = if (useRag && pgJdbcUrl != null) {
+            RagVectorStore()
         } else null
+        log.info("RAG channel active — unified RagVectorStore (codebase.store N1 socle)")
         val graphModel = if (useGraphify && graphJsonPath != null) {
             val f = File(graphJsonPath)
             if (f.exists()) {
@@ -321,7 +319,7 @@ class BenchmarkRunner(
             var errors = 0
 
             for (sample in samples) {
-                val context = buildContext(scenarioChannels, sample, threshold, vectorStore, embeddingPipeline, graphModel)
+                val context = buildContext(scenarioChannels, sample, threshold, vectorStore, graphModel)
 
                 log.debug("{} @ {} — classifying {} (context={} chars)", scenarioId, label, sample.id, context.length)
 
@@ -358,8 +356,7 @@ class BenchmarkRunner(
         channels: List<String>,
         sample: SampleDocument,
         targetTokens: Int,
-        vectorStore: VectorStore?,
-        embeddingPipeline: EmbeddingPipeline?,
+        vectorStore: RagVectorStore?,
         graphModel: GraphModel?
     ): String {
         val isBaseline = channels.isEmpty()
@@ -381,19 +378,18 @@ class BenchmarkRunner(
             eagerTokens = eagerBudget
         }
 
-        if (channels.contains("RAG") && vectorStore != null && embeddingPipeline != null) {
+        if (channels.contains("RAG") && vectorStore != null) {
             sb.appendLine("=== RAG Context (pgvector) ===")
             try {
                 val queryText = if (scopeFilter == "project")
                     "codebase benchmark gradle plugin opencode augmentation"
                 else
                     "cercles de confiance workspace foundry office configuration"
-                val queryVec = embeddingPipeline.embedQuery(queryText)
-                val results = vectorStore.querySimilar(queryVec, topK = 10)
+                val results = vectorStore.searchBlocking(queryText, topK = 10)
                 for (r in results) {
-                    val chunkTokens = r.text.length / 4
+                    val chunkTokens = r.chunkText.length / 4
                     if (ragTokens + chunkTokens > budgetPerChannel) break
-                    sb.appendLine("[${String.format("%.2f", r.similarity)}] ${r.text}")
+                    sb.appendLine("[${String.format("%.2f", r.similarity)}] ${r.chunkText}")
                     sb.appendLine()
                     ragTokens += chunkTokens
                 }
