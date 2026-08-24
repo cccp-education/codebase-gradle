@@ -29,7 +29,7 @@ import reactor.core.publisher.Flux
  * @property username PostgreSQL username (default: "codex")
  * @property password PostgreSQL password (default: "codex")
  */
-class RagVectorStore(
+open class RagVectorStore(
     private val host: String = "localhost",
     private val port: Int = 5432,
     private val database: String = "codex",
@@ -46,7 +46,7 @@ class RagVectorStore(
      * @param topK number of results to return (default: 10)
      * @return list of [RetrieveResult] ordered by similarity descending
      */
-    fun searchBlocking(query: String, topK: Int = 10): List<RetrieveResult> =
+    open fun searchBlocking(query: String, topK: Int = 10): List<RetrieveResult> =
         runBlocking { search(query, topK) }
 
     /**
@@ -56,7 +56,7 @@ class RagVectorStore(
      * @param topK number of results to return (default: 10)
      * @return list of [RetrieveResult] ordered by similarity descending
      */
-    suspend fun search(query: String, topK: Int = 10): List<RetrieveResult> {
+    open suspend fun search(query: String, topK: Int = 10): List<RetrieveResult> {
         val embedding = computeEmbedding(query)
         val factory = buildConnectionFactory()
         return searchSimilar(factory, embedding, topK)

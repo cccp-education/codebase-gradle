@@ -14,7 +14,7 @@ import codebase.rag.OpencodeInjector
 import codebase.rag.PgVectorConfig
 import codebase.rag.VectorQueryService
 import codebase.rag.VectorStore
-import codex.store.CodexVectorStore
+import codebase.store.RagVectorStore
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -139,7 +139,7 @@ class MultiChannelContextGraph(
 
     private fun collectDocsNode(state: MultiChannelState): MultiChannelState {
         val content = try {
-            val codexStore = CodexVectorStore()
+            val codexStore = RagVectorStore()
             val results = codexStore.searchBlocking(state.intention, topK = 5)
             if (results.isEmpty()) "[Docs] Aucun resultat dans le corpus codex"
             else results.joinToString("\n\n") { r ->
@@ -147,7 +147,7 @@ class MultiChannelContextGraph(
             }
         } catch (e: Exception) {
             log.debug("[collectDocs] codex store unavailable: {}", e.message)
-            "[Docs] CodexVectorStore indisponible — ${e.message}"
+            "[Docs] RagVectorStore indisponible — ${e.message}"
         }
         val channel = ContextChannel.Docs(content).truncateToTokens(state.budget.docsTokens)
         return state.copy(channels = state.channels + channel)

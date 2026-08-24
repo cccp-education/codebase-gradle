@@ -1,6 +1,6 @@
 package codebase.rag
 
-import codex.store.CodexVectorStore
+import codebase.store.RagVectorStore
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
@@ -13,7 +13,7 @@ import org.gradle.work.DisableCachingByDefault
 import java.io.File
 import java.time.Instant
 
-@DisableCachingByDefault(because = "pgvector RAG + Codex VectorStore — external dependencies, non-cacheable")
+@DisableCachingByDefault(because = "pgvector RAG + RagVectorStore (codebase.store) — external dependencies, non-cacheable")
 abstract class CodebaseCompositeContextTask : DefaultTask() {
 
     @get:Input
@@ -38,7 +38,7 @@ abstract class CodebaseCompositeContextTask : DefaultTask() {
 
         val codexEntries = mutableListOf<Map<String, Any>>()
         runCatching {
-            val store = CodexVectorStore()
+            val store = RagVectorStore()
             val results = store.searchBlocking(q, k)
             results.forEach { r ->
                 codexEntries.add(mapOf(
@@ -51,9 +51,9 @@ abstract class CodebaseCompositeContextTask : DefaultTask() {
                     "similarity" to r.similarity
                 ))
             }
-            logger.lifecycle("[codebase] CodexVectorStore OK — {} resultats", results.size)
+            logger.lifecycle("[codebase] RagVectorStore OK — {} resultats", results.size)
         }.onFailure { e ->
-            logger.warn("[codebase] CodexVectorStore indisponible: {}", e.message)
+            logger.warn("[codebase] RagVectorStore indisponible: {}", e.message)
         }
 
         val trainingEntries = mutableListOf<Map<String, Any>>()

@@ -46,6 +46,12 @@ dependencies {
     implementation(libs.langchain4j.ollama)
     implementation(libs.googleAiGemini)
     implementation(libs.bundles.r2dbc)
+    // EPIC CDX-RAG-4: `libs.codex.plugin` kept — the RAG store inversion is
+    // resolved (CodexVectorStore no longer imported), but the OCR boundary
+    // (S-099) keeps a legitimate N1->N2 port dependency: codebase's
+    // VisionOcrEngineAdapter implements codex.ocr.OcrEngine. Full removal
+    // is gated by extracting codex.ocr port types into a N0 contracts
+    // artifact (future EPIC CDX-OCR-CONTRACTS).
     implementation(libs.codex.plugin)
     implementation(libs.planner.plugin)
     implementation(libs.graphify.plugin)
@@ -183,6 +189,7 @@ val cucumberTaskSpecs = listOf(
     CucumberTaskSpec("cucumberTestVibeHardening", "Runs Cucumber BDD tests — EPIC VIBE-HARDENING (allowlist deny-by-default, LLM timeout, single retry counter) only", "codebase.scenarios.VibeHardeningCucumberRunner"),
     CucumberTaskSpec("cucumberTestVibeHardening2", "Runs Cucumber BDD tests — EPIC VIBE-HARDENING-2 (write_file size guard, expectedOutput, flag+value, remaining coerce) only", "codebase.scenarios.VibeHardening2CucumberRunner"),
     CucumberTaskSpec("cucumberTestFineTuning", "Runs Cucumber BDD tests — EPIC FT-PIPELINE US-5 (fine-tuning N1 pipeline — dataset→GGUF→manifest, iterative convergence, degraded fallback, validation threshold) only", "codebase.scenarios.FineTuningCucumberRunner"),
+    CucumberTaskSpec("cucumberTestRagSocle", "Runs Cucumber BDD tests — EPIC CDX-RAG-SOCLE US-5 (RagVectorStore socle + composite context Docs channel, fake in-memory) only", "codebase.scenarios.RagSocleCucumberRunner"),
 )
 
 val cucumberTasks = cucumberTaskSpecs.map { registerCucumberTask(it) }

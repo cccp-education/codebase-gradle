@@ -11,7 +11,7 @@ import ai.koog.agents.core.dsl.builder.strategy
 import codebase.rag.CompositeContextBuilder
 import codebase.rag.EmbeddingPipeline
 import codebase.rag.PgVectorConfig
-import codex.store.CodexVectorStore
+import codebase.store.RagVectorStore
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -150,7 +150,7 @@ class KoogPlanningOrchestrator {
         }
 
         val pipeline = EmbeddingPipeline(store)
-        val codexStore = CodexVectorStore()
+        val codexStore = RagVectorStore()
         val builder = CompositeContextBuilder(rootDir, store, pipeline, config, codexStore)
         return builder.build(question)
     }

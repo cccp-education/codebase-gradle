@@ -4,7 +4,7 @@ import contracts.context.CompositeContext
 import contracts.context.CompositeContextConfig
 import codebase.graph.GraphifyContextProvider
 import codebase.walker.WorkspaceWalker
-import codex.store.CodexVectorStore
+import codebase.store.RagVectorStore
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.Locale
@@ -14,7 +14,7 @@ class CompositeContextBuilder(
     private val vectorStore: VectorStore,
     private val embeddingPipeline: EmbeddingPipeline,
     private val config: CompositeContextConfig = CompositeContextConfig(),
-    private val codexStore: CodexVectorStore? = null,
+    private val codexStore: RagVectorStore? = null,
     graphFile: File? = null,
 ) {
     private val log = LoggerFactory.getLogger(CompositeContextBuilder::class.java)
@@ -60,7 +60,7 @@ class CompositeContextBuilder(
     }
 
     private fun loadDocsContext(query: String): String {
-        if (codexStore == null) return "[Doc] CodexVectorStore non configure — corpus documentaire indisponible"
+        if (codexStore == null) return "[Doc] RagVectorStore non configure — corpus documentaire indisponible"
         return try {
             val results = codexStore.searchBlocking(query, topK = 5)
             if (results.isEmpty()) return "[Doc] Aucun resultat dans le corpus codex"
@@ -72,7 +72,7 @@ class CompositeContextBuilder(
             }
         } catch (e: Exception) {
             log.debug("Codex store query failed: {}", e.message)
-            "[Doc] CodexVectorStore indisponible — ${e.message}"
+            "[Doc] RagVectorStore indisponible — ${e.message}"
         }
     }
 

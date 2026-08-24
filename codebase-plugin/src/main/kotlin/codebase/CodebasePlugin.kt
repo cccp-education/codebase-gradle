@@ -173,7 +173,7 @@ class CodebasePlugin : Plugin<Project> {
             CodebaseCompositeContextTask::class.java
         ) { task ->
             task.group = "generate"
-            task.description = "Contexte composite N1+N2 : CodexVectorStore (codex) + training-gradle (AFNOR/REAC) → composite-context.json"
+            task.description = "Contexte composite N1+N2 : RagVectorStore (codebase.store) + training-gradle (AFNOR/REAC) → composite-context.json"
             task.query.set(project.providers.gradleProperty("query").orElse("architecture du workspace"))
             task.topK.set(project.providers.gradleProperty("topK").orElse("10"))
             task.trainingProjectDir.set(trainingPluginDir.absolutePath)
