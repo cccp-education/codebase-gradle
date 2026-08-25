@@ -458,7 +458,7 @@ VERTS. Zéro régression, zéro bump BOM, zéro secret.
 *Total* : ~6 pts (4/4 US ✅ — EPIC CADUQUE. Hardening ciblé `initSchema()`
 non-destructeur appliqué en S-206.)
 
-== 🟡 EPIC MEMPHIS-BOM-FIX — BOM MEMPHIS référence `slider` (artifactId périmé) — EN COURS (S-208)
+== ✅ EPIC MEMPHIS-BOM-FIX — BOM MEMPHIS référence `slider` (artifactId périmé) — TERMINÉ (S-208→S-209)
 
 _Source_ : session 208 cross-borough (Queens + Memphis + Detroit audit).
 Bug bloquant capsule découvert via gate `cucumberTestTranscript` Détroit.
@@ -517,13 +517,13 @@ _Portée_ : cross-borough Memphis (workspace-bom) + Queens (codebase) + Detroit 
 | US-3
 | Publier BOM 0.0.27 sur Central. `./gradlew publishAggregationToCentralPortal --no-daemon` (workspace-bom).
   Gate : repo1 HTTP 200, POM référence `slider-plugin:0.0.18`.
-| 🟡 À FAIRE
+| ✅ TERMINÉ (S-024 MEMPHIS)
 | 1
 
 | US-4
 | Republier `codebase-plugin:0.0.10` (POM importera BOM 0.0.27). Bump `codebase = "0.0.10"` +
   bump BOM constraint + publication Central. Gate : POM repo1 importe BOM 0.0.27.
-| 🟡 À FAIRE
+| ✅ TERMINÉ (S-209 Queens)
 | 3
 
 | US-5
@@ -531,11 +531,13 @@ _Portée_ : cross-borough Memphis (workspace-bom) + Queens (codebase) + Detroit 
   bump `workspace-bom = "0.0.27"` + bump `codebase = "0.0.10"`) + valider
   `./gradlew test cucumberTestTranscript` VERT (917 unit + cucumber dédiés, gate non-régression).
   Clôture EPIC + sync BACKLOG Détroit (CAP-TRANSCRIPT US-5 `⬜ TODO` → `✅ TERMINÉ S-119`).
-| 🟡 À FAIRE
+| ✅ TERMINÉ (S-120 Detroit)
 | 3
 
 |===
 
-*Total* : ~8 pts (1/5 US ✅ — EPIC EN COURS. US-3/4/5 À FAIRE, publications Central accord pilote).
+*Total* : ~8 pts (5/5 US ✅ — EPIC TERMINÉ. US-1 catalogue S-208, US-2 CADUQUE,
+US-3 BOM 0.0.27 Central S-024, US-4 codebase 0.0.10 Central S-209, US-5
+capsule fix S-120).
 *Pattern* : baby-step TDD (gate résolution Gradle + POM Central HTTP 200).
 *Zéro secret, zéro code production modifié (catalogue + publications).*

@@ -6,10 +6,11 @@ graphify = "0.0.2"
 
 [libraries]
 # BOM — source unique de vérité pour toutes les versions
-workspace-bom = { module = "education.cccp:workspace-bom", version = "0.0.24" }
+workspace-bom = { module = "education.cccp:workspace-bom", version = "0.0.27" }
 
 # External deps — versions explicites pour propagation POM transitive
 # (le BOM en implementation(platform()) ne propage pas ses contraintes aux consommateurs transitifs)
+kotlin-stdlib-jdk8 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version = "2.21.2" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version = "2.21.2" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version = "2.21.2" }

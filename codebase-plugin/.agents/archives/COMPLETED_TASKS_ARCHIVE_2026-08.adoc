@@ -667,3 +667,15 @@ depuis le sous-graphe (GovernanceContextLoader.kt:68 + ContextChannel.Resource,
   * Rollback capsule en clôture (régression `test` tant que US-4 non livrée)
 * **Fichiers** : `workspace-bom/gradle/libs.versions.toml` (ligne 261), `workspace-bom/build.gradle.kts` (version 0.0.27), `codebase-gradle/codebase-plugin/PROMPT_REPRISE.adoc` (S-208), `.agents/INDEX.adoc` (session 208 + EPIC table), `.agents/sessions/208-cross-borough-memphis-bom-fix.adoc`
 * **Impact** : US-1 corrige le bug à la source (BOM catalogue). US-3/4/5 restantes pour casser la cascade BOM 0.0.24 et débloquer capsule (CAP-TRANSCRIPT US-5 clôture Détroit). Zéro code production modifié, zéro secret.
+
+== Session 209 — EPIC MEMPHIS-BOM-FIX US-4 TERMINÉ (2026-08-25)
+
+codebase-plugin 0.0.10 publié Central. Fix kotlin-stdlib-jdk8 version
+explicite (oubli EPIC C-BOM-FIX S-172). BOM 0.0.24 → 0.0.27.
+
+Cross-borough :
+* US-3 BOM 0.0.27 Central (MEMPHIS S-024, bundle `648c037e`).
+* US-5 capsule fix (Detroit S-120, 917 unit 0 FAIL + retrait
+  testImplementation(libs.slider) Groovy 3.x conflit ProjectBuilder).
+
+EPIC MEMPHIS-BOM-FIX TERMINÉ 5/5 US. Bug bloquant capsule résolu.

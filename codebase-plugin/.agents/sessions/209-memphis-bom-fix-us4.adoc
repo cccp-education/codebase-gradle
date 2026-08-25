@@ -1,0 +1,79 @@
+= Session 209 — Codebase (Queens N1) — EPIC MEMPHIS-BOM-FIX US-4 TERMINÉ
+
+:borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
+:session: 209
+:date: 2026-08-25
+:session_precedente: 208 — Cross-borough MEMPHIS-BOM-FIX cadrage (US-1 ✅)
+
+== Mission
+
+EPIC MEMPHIS-BOM-FIX US-4 : Republier `codebase-plugin:0.0.10` (POM importera
+BOM 0.0.27 au lieu de 0.0.24) — casse la cascade `slider:0.0.18` 404.
+
+== Contexte
+
+POM Central `codebase-plugin:0.0.9` importe BOM 0.0.24 qui référence
+`slider:0.0.18` (ancien artifactId, 404 Central). Le fix BOM 0.0.27 (US-1/US-3
+MEMPHIS) corrige le catalogue `slider` → `slider-plugin`, mais codebase doit
+être republié pour propager le fix via son POM.
+
+== Réalisations
+
+=== US-4 — Republier codebase-plugin 0.0.10 Central
+
+. Bump version `build.gradle.kts` : `0.0.9` → `0.0.10`.
+. Bump BOM référence catalogue `libs.versions.toml` ligne 9 :
+  `workspace-bom = { ..., version = "0.0.24" }` → `"0.0.27" }`.
+. **Fix POM Central** : `kotlin-stdlib-jdk8` n'avait pas de version explicite
+  dans le POM (dépendance `kotlin("stdlib-jdk8")` ne propage pas via BOM).
+  Central Portal a rejeté le 1er upload avec :
+  `"Dependency version information is missing for dependency:
+  org.jetbrains.kotlin:kotlin-stdlib-jdk8"`.
+  Fix : ajout `kotlin-stdlib-jdk8` au catalogue (version.ref = "kotlin" =
+  2.4.10) + remplacement `kotlin("stdlib-jdk8")` → `libs.kotlin.stdlib.jdk8`
+  dans `build.gradle.kts` ligne 40. Oubli de l'EPIC C-BOM-FIX S-172
+  (27 deps externes explicites, mais kotlin-stdlib-jdk8 manquait).
+. `compileKotlin --rerun-tasks` VERT (BOM 0.0.27 résolvable depuis mavenLocal).
+. `publishToMavenLocal` VERT. POM local vérifié :
+  `kotlin-stdlib-jdk8:2.4.10` + importe BOM 0.0.27.
+. `publishAggregationToCentralPortal --no-daemon` VERT (bundle AUTOMATIC).
+. Propagation repo1 confirmée : `codebase-plugin:0.0.10` HTTP 200.
+  POM Central importe BOM 0.0.27 ✅.
+
+=== Cross-borough US-5 (capsule S-120)
+
+. Fix capsule catalogue + retrait `testImplementation(libs.slider)` (bug
+  Groovy 3.x ProjectBuilder — voir rapport capsule S-120).
+
+== Fichiers modifiés
+
+. `codebase-gradle/codebase-plugin/build.gradle.kts` — version 0.0.9 → 0.0.10,
+  `kotlin("stdlib-jdk8")` → `libs.kotlin.stdlib.jdk8`.
+. `codebase-gradle/codebase-plugin/gradle/libs.versions.toml` — BOM 0.0.24 →
+  0.0.27, ajout `kotlin-stdlib-jdk8` (version.ref = "kotlin").
+
+== Gates
+
+| Gate | Résultat |
+|------|----------|
+| `compileKotlin --rerun-tasks` | ✅ BUILD SUCCESSFUL |
+| `publishToMavenLocal` | ✅ BUILD SUCCESSFUL |
+| POM local `kotlin-stdlib-jdk8:2.4.10` + BOM 0.0.27 | ✅ vérifié |
+| `publishAggregationToCentralPortal` | ✅ BUILD SUCCESSFUL |
+| repo1 `codebase-plugin:0.0.10` | ✅ HTTP 200 |
+| POM Central importe BOM 0.0.27 | ✅ vérifié |
+
+== EPIC MEMPHIS-BOM-FIX — TERMINÉ 5/5 US
+
+| US | Statut |
+|----|--------|
+| US-1 | ✅ catalogue MEMPHIS fixé + BOM 0.0.27 (S-208) |
+| US-2 | ✅ CADUQUE (fusionné US-5) |
+| US-3 | ✅ BOM 0.0.27 Central (S-024 MEMPHIS) |
+| US-4 | ✅ codebase 0.0.10 Central (S-209 Queens) |
+| US-5 | ✅ Fix capsule + 917 unit 0 FAIL (S-120 Detroit) |
+
+== Zéro
+
+Zéro code production modifié (version bumps + catalogue uniquement).
+Zéro secret, zéro token, zéro régression.

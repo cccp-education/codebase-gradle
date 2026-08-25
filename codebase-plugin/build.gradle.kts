@@ -5,7 +5,7 @@ import java.time.Duration
 fun isCI() = System.getenv("CI") == "true"
 
 group = "education.cccp"
-version = "0.0.9"
+version = "0.0.10"
 
 plugins {
     `java-library`
@@ -37,7 +37,7 @@ publishing {
 
 dependencies {
     implementation(platform(libs.workspace.bom))
-    implementation(kotlin("stdlib-jdk8"))
+    implementation(libs.kotlin.stdlib.jdk8)
     implementation(gradleApi())
     implementation(gradleKotlinDsl())
     api(libs.langchain4j)

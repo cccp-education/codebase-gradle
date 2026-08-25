@@ -1,13 +1,13 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 208
-:session: 208
+= Prompt de Reprise — Codebase (Queens N1) — Session 210
+:session: 210
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 207 — Migration .agents/ racine → codebase-plugin/.agents/ (pattern S-105 codex). Un seul dossier gouvernance désormais, 198 sessions, archives fusionnées. Baseline préservée (GovernanceContextLoaderTest 7/7, EndSessionBlogTaskTest 2/2, zéro source modifiée).
+:session_precedente: 209 — EPIC MEMPHIS-BOM-FIX US-4 TERMINÉ (codebase 0.0.10 Central)
 
-== Mission Session 208
+== Mission Session 210
 
 Borough DORMANT — tous EPICs terminés (V-9, OCR, CR, VIBE-HARDENING,
 VIBE-HARDENING-2, FT-PIPELINE, CDX-RAG-SOCLE, CDX-OCR-CONTRACTS,
-CB-STORE-UNIFY CADUQUE). Maintenance uniquement.
+CB-STORE-UNIFY CADUQUE, MEMPHIS-BOM-FIX TERMINÉ). Maintenance uniquement.
 
 === Options
 
@@ -20,11 +20,13 @@ CB-STORE-UNIFY CADUQUE). Maintenance uniquement.
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
-* codebase-plugin 0.0.9 = Maven Central (S-204). Dep N0 `ocr-contracts:0.0.1`.
+* codebase-plugin 0.0.10 = Maven Central (S-209). Dep N0 `ocr-contracts:0.0.1`.
 * Gate ciblé : jamais `./gradlew test` global (Cucumber interminable).
 * 41 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
 * `VectorStore.initSchema()` = non-destructeur (S-206). Tests use `clean()`.
 * Gouvernance unifiée dans `codebase-plugin/.agents/` (S-207).
+* Catalogue : `kotlin-stdlib-jdk8` version explicite (fix S-209 C-BOM-FIX).
+* BOM 0.0.27 (fix `slider-plugin` artifactId, S-024 MEMPHIS).
 
 == Règles absolues
 

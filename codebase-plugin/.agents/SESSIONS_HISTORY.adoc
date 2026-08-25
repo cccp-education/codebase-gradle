@@ -527,3 +527,35 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** BOM importée transitivement (codebase 0.0.9 POM importe BOM 0.0.24) crée une cascade de contraintes. Fix catalogue seul insuffisant : il faut republier les consommateurs directs (codebase 0.0.10) pour casser la chaîne BOM périmée.
 ** Rollback capsule en clôture : le fix catalogue appliqué avant republication codebase provoque une régression `test` (conflit résolution). Préserver le baseline > appliquer un fix partiel.
 * **Zéro code production modifié (catalogue + doc), zéro secret.** US-3/4/5 À FAIRE (publications Central accord pilote).
+
+=== Session 209 — 2026-08-25
+* **EPICs** : MEMPHIS-BOM-FIX US-4 TERMINÉ (cross-borough MEMPHIS + Detroit)
+* **Livrables** :
+** codebase-plugin 0.0.9 → 0.0.10 (bump version build.gradle.kts).
+** BOM 0.0.24 → 0.0.27 (catalogue libs.versions.toml ligne 9).
+** Fix POM Central : `kotlin-stdlib-jdk8` version explicite ajoutée au
+   catalogue (oubli EPIC C-BOM-FIX S-172 — Central Portal rejette deps sans
+   version, 1er upload rejeté `"Dependency version information is missing for
+   dependency: org.jetbrains.kotlin:kotlin-stdlib-jdk8"`). Remplacement
+   `kotlin("stdlib-jdk8")` → `libs.kotlin.stdlib.jdk8` (build.gradle.kts:40).
+** `compileKotlin --rerun-tasks` VERT, `publishToMavenLocal` VERT. POM local
+   vérifié : `kotlin-stdlib-jdk8:2.4.10` + importe BOM 0.0.27.
+** Publication Central : `codebase-plugin:0.0.10` HTTP 200, POM Central
+   importe BOM 0.0.27 ✅ (cascade `slider:0.0.18` 404 cassée).
+** Cross-borough : US-3 BOM 0.0.27 Central (MEMPHIS S-024, bundle
+   `648c037e`) + US-5 capsule fix (Detroit S-120, 917 unit 0 FAIL +
+   cucumberTestTranscript 4/4 PASSED + retrait testImplementation(libs.slider)
+   Groovy 3.x conflit ProjectBuilder).
+* **Fichiers** : `build.gradle.kts` (version 0.0.10 + libs.kotlin.stdlib.jdk8),
+   `gradle/libs.versions.toml` (BOM 0.0.27 + kotlin-stdlib-jdk8 entry).
+* **Leçons** :
+** Central Portal enforcement : les deps sans version explicite dans le POM
+   sont rejetées. Le BOM en `implementation(platform())` ne propage pas ses
+   contraintes aux consommateurs transitifs (problème C-BOM-FIX S-172).
+   `kotlin("stdlib-jdk8")` échappe au catalogue — toujours utiliser
+   `libs.kotlin.stdlib.jdk8` pour POM Central.
+** Bug Groovy 3.x (capsule S-120) : `testImplementation(libs.slider)` amenait
+   `asciidoctor-gradle-jvm-slides` → `jrubygradle-resolver` → `groovy-nio:3.0.17`
+   qui cassait ProjectBuilder (Groovy 4). Retrait — aucun test n'importait
+   slider. Le `compileOnly` suffit pour le runtime.
+* **EPIC MEMPHIS-BOM-FIX TERMINÉ 5/5 US.** Zéro code production, zéro secret.
