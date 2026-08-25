@@ -1,9 +1,9 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 207
-:session: 207
+= Prompt de Reprise — Codebase (Queens N1) — Session 208
+:session: 208
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 206 — CB-STORE-UNIFY CADUQUE + hardening initSchema. Store legacy `codebase.rag.VectorStore` sécurisé (DROP CASCADE isolé en `clean()` test-only, `initSchema()` non-destructeur). ÉPIC clos comme CADUQUE (deux domaines distincts : documents vs code source). Baseline préservée.
+:session_precedente: 207 — Migration .agents/ racine → codebase-plugin/.agents/ (pattern S-105 codex). Un seul dossier gouvernance désormais, 198 sessions, archives fusionnées. Baseline préservée (GovernanceContextLoaderTest 7/7, EndSessionBlogTaskTest 2/2, zéro source modifiée).
 
-== Mission Session 207
+== Mission Session 208
 
 Borough DORMANT — tous EPICs terminés (V-9, OCR, CR, VIBE-HARDENING,
 VIBE-HARDENING-2, FT-PIPELINE, CDX-RAG-SOCLE, CDX-OCR-CONTRACTS,
@@ -24,6 +24,7 @@ CB-STORE-UNIFY CADUQUE). Maintenance uniquement.
 * Gate ciblé : jamais `./gradlew test` global (Cucumber interminable).
 * 41 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
 * `VectorStore.initSchema()` = non-destructeur (S-206). Tests use `clean()`.
+* Gouvernance unifiée dans `codebase-plugin/.agents/` (S-207).
 
 == Règles absolues
 
