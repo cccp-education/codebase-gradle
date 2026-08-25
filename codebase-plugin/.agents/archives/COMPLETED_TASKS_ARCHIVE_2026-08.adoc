@@ -652,3 +652,18 @@ depuis le sous-graphe (GovernanceContextLoader.kt:68 + ContextChannel.Resource,
 * **Tests** : 33/33 VectorStoreTest + OcrIngestTaskTest + 5/5 PrepareContextUnitTest + 3 cucumber dédiés VERTS
 * **Fichiers** : 1 prod (`VectorStore.kt`), 3 tests (`VectorStoreTest.kt`, `OcrIngestTaskTest.kt`, `OcrIngestSteps.kt`)
 * **Impact** : DROP CASCADE destructif isolé du chemin prod, `initSchema()` non-destructeur. Défense en profondeur sans casser l'existant. Zéro régression.
+
+== Session 208 — Cross-borough MEMPHIS-BOM-FIX cadrage (2026-08-25)
+
+* **EPIC** : MEMPHIS-BOM-FIX (cadrage cross-borough Queens + Memphis + Detroit)
+* **Statut** : 🟡 EN COURS (US-1 ✅, US-3/4/5 À FAIRE)
+* **Actions** :
+  * Option A S-205 : propagation repo1 codebase-plugin 0.0.9 confirmée HTTP 200 (POM propre zéro codex-plugin, ocr-contracts:0.0.1 + codebase-contracts présents)
+  * PROMPT_REPRISE Queens rafraîchi S-205 → S-208 (clôture S-206 CB-STORE-UNIFY CADUQUE + S-207 migration .agents/)
+  * Cross-borough : CAP-TRANSCRIPT US-5 déjà codée (commit `0842c33` S-119, BACKLOG Détroit stale)
+  * Bug bloquant découvert : BOM MEMPHIS catalogue ligne 261 `slider-plugin = { module = "education.ccp:slider", ... }` référence ancien artifactId `slider` (max 0.0.16 Central) au lieu de `slider-plugin` (réel depuis aplatissement S-067, 0.0.18 publié Central). BOM 0.0.24/0.0.26 Central référencent `slider:0.0.18` → 404
+  * Cascade bloquante : capsule → BOM 0.0.27 (fix) → codebase 0.0.9 → BOM 0.0.24 importé → `slider:0.0.18` 404. `cucumberTestTranscript` PASSED (résolution unique), `test` FAILED 79/917 (NoClassDefFoundError InvokerHelper, conflit résolution double)
+  * US-1 ✅ : catalogue MEMPHIS fixé `slider` → `slider-plugin` + bump BOM 0.0.26 → 0.0.27. POM généré vérifié `slider-plugin:0.0.18`. publishToMavenLocal VERT
+  * Rollback capsule en clôture (régression `test` tant que US-4 non livrée)
+* **Fichiers** : `workspace-bom/gradle/libs.versions.toml` (ligne 261), `workspace-bom/build.gradle.kts` (version 0.0.27), `codebase-gradle/codebase-plugin/PROMPT_REPRISE.adoc` (S-208), `.agents/INDEX.adoc` (session 208 + EPIC table), `.agents/sessions/208-cross-borough-memphis-bom-fix.adoc`
+* **Impact** : US-1 corrige le bug à la source (BOM catalogue). US-3/4/5 restantes pour casser la cascade BOM 0.0.24 et débloquer capsule (CAP-TRANSCRIPT US-5 clôture Détroit). Zéro code production modifié, zéro secret.

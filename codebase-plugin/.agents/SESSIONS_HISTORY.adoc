@@ -511,3 +511,19 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** Architecture N2→N1 valide : codex ingère, codebase stocke + RAG, flèche unique. Les deux stores légitimes servent des domaines distincts. La "consolidation" n'était pas nécessaire.
 ** Hardening ciblé vs refactoring global : le `DROP CASCADE` destructif était le seul vrai risque. Isolé en `clean()` test-only, `initSchema()` devient non-destructeur. Défense en profondeur sans casser l'existant.
 * **Zéro bump BOM, zéro secret, zéro régression.** EPIC CB-STORE-UNIFY ✅ CADUQUE.
+
+=== Session 208 — 2026-08-25
+* **EPICs** : MEMPHIS-BOM-FIX (cadrage cross-borough, US-1 ✅)
+* **Livrables** :
+** Option A S-205 : propagation repo1 `codebase-plugin:0.0.9` confirmée HTTP 200, POM propre (zéro codex-plugin résiduel, ocr-contracts:0.0.1 + codebase-contracts présents). Fix S-204 propagé Central.
+** PROMPT_REPRISE rafraîchi S-205 → S-208 (clôture S-206 CB-STORE-UNIFY CADUQUE + S-207 migration .agents/). Options A/B marquées FAITES.
+** Cross-borough : CAP-TRANSCRIPT US-5 déjà codée (commit `0842c33` S-119, feature + runner + steps + CucumberTaskSpec 15ème). BACKLOG Détroit stale (`⬜ TODO`).
+** Bug bloquant découvert : BOM MEMPHIS catalogue `slider-plugin = { module = "education.cccp:slider", ... }` (ligne 261) référence ancien artifactId `slider` (max 0.0.16 Central) au lieu de `slider-plugin` (artifactId réel depuis aplatissement S-067, 0.0.18 publié Central). BOM 0.0.24/0.0.26 Central référencent `slider:0.0.18` → 404.
+** Cascade bloquante : capsule → BOM 0.0.27 (fix) → codebase 0.0.9 → BOM 0.0.24 importé → `slider:0.0.18` 404. `cucumberTestTranscript` PASSED avec fix catalogue (résolution unique), mais `test` (ProjectBuilder) FAILED 79/917 — `NoClassDefFoundError InvokerHelper` (conflit classpath induit par résolution double slider/slider-plugin).
+** EPIC MEMPHIS-BOM-FIX cadré 5 US : US-1 ✅ catalogue MEMPHIS fixé + bump BOM 0.0.27 + publishToMavenLocal VERT, US-3 publier BOM 0.0.27 Central, US-4 republier codebase 0.0.10, US-5 re-appliquer fix capsule + valider check.
+* **Fichiers** : `workspace-bom/gradle/libs.versions.toml` (ligne 261 slider → slider-plugin), `workspace-bom/build.gradle.kts` (version 0.0.26 → 0.0.27), `codebase-gradle/codebase-plugin/PROMPT_REPRISE.adoc` (S-208), `.agents/INDEX.adoc` (session 208 + EPIC table), `.agents/sessions/208-cross-borough-memphis-bom-fix.adoc` (rapport).
+* **Leçons** :
+** Aplatissement structure borough (slider S-067 `slider/` → `slider-plugin/`) a changé l'artifactId Maven (`slider` → `slider-plugin`). Le BOM MEMPHIS n'a pas suivi — dette technique latente révélée par tentative de build capsule.
+** BOM importée transitivement (codebase 0.0.9 POM importe BOM 0.0.24) crée une cascade de contraintes. Fix catalogue seul insuffisant : il faut republier les consommateurs directs (codebase 0.0.10) pour casser la chaîne BOM périmée.
+** Rollback capsule en clôture : le fix catalogue appliqué avant republication codebase provoque une régression `test` (conflit résolution). Préserver le baseline > appliquer un fix partiel.
+* **Zéro code production modifié (catalogue + doc), zéro secret.** US-3/4/5 À FAIRE (publications Central accord pilote).

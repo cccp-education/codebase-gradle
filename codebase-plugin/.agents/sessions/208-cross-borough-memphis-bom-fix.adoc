@@ -1,0 +1,101 @@
+= Session 208 — Codebase (Queens) + Cross-borough MEMPHIS-BOM-FIX cadrage
+:date: 2026-08-25
+:boroughs: Queens (codebase-gradle), Memphis (workspace-bom), Detroit (capsule-gradle audit)
+:status: CLOTURE
+
+== Résumé
+
+Session multi-boroughs. Queens DORMANT — maintenance + rafraîchissement
+gouvernance. Cross-borough assistance a révélé un bug bloquant dans le BOM
+MEMPHIS (artifactId slider périmé). EPIC MEMPHIS-BOM-FIX cadré (5 US).
+
+== Queens (codebase-gradle) — Option A S-205
+
+. Propagation repo1 `codebase-plugin:0.0.9` confirmée : HTTP 200, POM
+   propre (zéro `codex-plugin` résiduel, `ocr-contracts:0.0.1` +
+   `codebase-contracts` présents). Fix S-204 propagé sur Central.
+. PROMPT_REPRISE rafraîchi S-205 → S-208 (clôture S-206
+   CB-STORE-UNIFY CADUQUE + S-207 migration .agents/ racine →
+   `codebase-plugin/.agents/`). Options A/B marquées FAITES, Option C
+   (maintenance/cross-borough/nouvel EPIC) laissée ouverte.
+
+== Cross-borough — Découverte bug MEMPHIS-BOM-FIX
+
+=== Constat initial (capsule-gradle)
+
+. CAP-TRANSCRIPT US-5 est **déjà codée** (commit `0842c33` S-119 : feature
+   `capsule_transcript.feature` + runner `CapsuleTranscriptCucumberRunner`
+   + steps `CapsuleTranscriptSteps` + `CucumberTaskSpec("cucumberTestTranscript")`
+   15ème câblé `build.gradle.kts`). BACKLOG Détroit désynchronisé (`⬜ TODO`),
+   INDEX en-tête stale (S-118) — mais table sessions enregistre S-119.
+. Gate `cucumberTestTranscript` → BUILD FAILED :
+   `Could not resolve education.ccp:slider:0.0.18`.
+
+=== Root cause (BOM MEMPHIS)
+
+. `workspace-bom/gradle/libs.versions.toml:261` déclare
+  `slider-plugin = { module = "education.ccp:slider", ... }` — ancien
+  artifactId `slider`. Depuis l'aplatissement structure slider S-067
+  (`rootProject.name = "slider-plugin"`), l'artifactId réel est
+  `slider-plugin`.
+. `slider-plugin:0.0.18` est publié sur Central (HTTP 200). `slider:0.0.18`
+  n'existe pas (404, max `slider:0.0.16`).
+. Le BOM MEMPHIS 0.0.24 ET 0.0.26 (publiés Central) référencent
+  `slider:0.0.18` → bug. Le commit `d1e4e84` "publish slider 0.0.18" a
+  publié le nouvel artifactId mais le BOM n'a pas suivi.
+
+=== Cascade bloquante
+
+Le fix catalogue seul est insuffisant. La chaîne de résolution Gradle :
+
+----
+capsule → BOM 0.0.27 (fix, slider-plugin:0.0.18 ✅)
+       → codebase 0.0.9 (POM Central)
+           → BOM 0.0.24 (importé dans POM codebase 0.0.9)
+              → slider:0.0.18 (ancien artifactId, 404 ❌)
+----
+
+`codebase-plugin:0.0.9` POM importe `workspace-bom:0.0.24` qui référence
+l'ancien `slider:0.0.18`. Tant que codebase 0.0.9 importe BOM 0.0.24, la
+résolution Gradle voit deux artefacts concurrents (`slider` + `slider-plugin`)
+et échoue sur `slider:0.0.18` 404.
+
+. `cucumberTestTranscript` PASSED avec fix catalogue (résolution unique).
+. `test` (ProjectBuilder) FAILED 79/917 — `NoClassDefFoundError
+  org.codehaus.groovy.runtime.InvokerHelper` (conflit classpath induit
+  par la résolution double `slider`/`slider-plugin`).
+
+== EPIC MEMPHIS-BOM-FIX — Cadrage (5 US ~8 pts)
+
+. *US-1 ✅ TERMINÉ* — Corriger catalogue MEMPHIS
+  `slider-plugin = { module = "education.ccp:slider-plugin", ... }` +
+  bump BOM 0.0.26 → 0.0.27. POM généré vérifié : `slider-plugin:0.0.18`.
+  `publishToMavenLocal` VERT. (appliqué, commit pending)
+. *US-2 REPORTÉ* — Corriger catalogue capsule `slider` → `slider-plugin`
+  + bump `workspace-bom = "0.0.27"` + `slider = "0.0.18"`. Rollback
+  effectué en clôture (régression `test` tant que US-4 non livrée).
+. *US-3 À FAIRE* — Publier BOM 0.0.27 sur Central
+  (`publishAggregationToCentralPortal`). Accord pilote requis.
+. *US-4 À FAIRE* — Republier `codebase-plugin:0.0.10` (POM importera
+  BOM 0.0.27). Bump `codebase = "0.0.10"` dans catalogue codebase +
+  bump BOM constraint. Publication Central.
+. *US-5 À FAIRE* — Re-appliquer US-2 (catalogue capsule) + valider
+  `./gradlew test cucumberTestTranscript` VERT (gate non-régression
+  917 unit + cucumber dédiés). Clôture EPIC + sync BACKLOG Détroit
+  (CAP-TRANSCRIPT US-5 `⬜ TODO` → `✅ TERMINÉ S-119`).
+
+== Méthode
+
+Baby-step DDD/TDD/BDD strict (RED → GREEN → REFACTOR) pour US-4/US-5
+(code). US-1/US-2/US-3 = correction catalogue + publication (gate =
+résolution Gradle + POM Central HTTP 200).
+
+== Artefacts modifiés
+
+. `workspace-bom/gradle/libs.versions.toml` — ligne 261 `slider` →
+  `slider-plugin` (US-1).
+. `workspace-bom/build.gradle.kts` — version 0.0.26 → 0.0.27 (US-1).
+. `codebase-gradle/codebase-plugin/PROMPT_REPRISE.adoc` — rafraîchi
+  S-205 → S-208 (Queens clôture gouvernance).
+
+== Zéro secret, zéro code production modifié (catalogue + doc uniquement).

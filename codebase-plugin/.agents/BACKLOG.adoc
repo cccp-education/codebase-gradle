@@ -457,3 +457,85 @@ VERTS. Zéro régression, zéro bump BOM, zéro secret.
 
 *Total* : ~6 pts (4/4 US ✅ — EPIC CADUQUE. Hardening ciblé `initSchema()`
 non-destructeur appliqué en S-206.)
+
+== 🟡 EPIC MEMPHIS-BOM-FIX — BOM MEMPHIS référence `slider` (artifactId périmé) — EN COURS (S-208)
+
+_Source_ : session 208 cross-borough (Queens + Memphis + Detroit audit).
+Bug bloquant capsule découvert via gate `cucumberTestTranscript` Détroit.
+_Doc session_ : `.agents/sessions/208-cross-borough-memphis-bom-fix.adoc`.
+_Pattern_ : gouvernance + correction catalogue + publications Central.
+_Portée_ : cross-borough Memphis (workspace-bom) + Queens (codebase) + Detroit (capsule).
+
+=== Constats (audit S-208)
+
+. BOM MEMPHIS `workspace-bom/gradle/libs.versions.toml:261` déclare
+  `slider-plugin = { module = "education.ccp:slider", ... }` — ancien
+  artifactId `slider`. Depuis l'aplatissement structure slider S-067
+  (`rootProject.name = "slider-plugin"`), l'artifactId Maven réel est
+  `slider-plugin`.
+. `slider-plugin:0.0.18` est publié sur Central (HTTP 200). `slider:0.0.18`
+  n'existe pas (404, max `slider:0.0.16`). Le commit `d1e4e84` "publish
+  slider 0.0.18" a publié le nouvel artifactId mais le BOM n'a pas suivi.
+. BOM 0.0.24 ET 0.0.26 (publiés Central) référencent `slider:0.0.18` → bug.
+. Cascade bloquante : capsule → BOM 0.0.27 (fix US-1) → codebase 0.0.9
+  (POM Central) → BOM 0.0.24 (importé dans POM codebase 0.0.9) →
+  `slider:0.0.18` (ancien artifactId, 404). Gradle voit deux artefacts
+  concurrents (`slider` + `slider-plugin`) et échoue sur `slider:0.0.18` 404.
+. `cucumberTestTranscript` PASSED avec fix catalogue (résolution unique),
+  mais `test` (ProjectBuilder) FAILED 79/917 — `NoClassDefFoundError
+  org.codehaus.groovy.runtime.InvokerHelper` (conflit classpath induit
+  par résolution double slider/slider-plugin).
+
+=== Décisions clés
+
+. Fix à la source : BOM MEMPHIS catalogue `slider` → `slider-plugin`.
+. Bump BOM 0.0.26 → 0.0.27 pour propager le fix aux consommateurs.
+. Republier `codebase-plugin:0.0.10` (POM importera BOM 0.0.27 au lieu
+  de 0.0.24) — casse la cascade `slider:0.0.18` 404.
+. Fix capsule (catalogue `slider` → `slider-plugin` + bump BOM 0.0.27 +
+  bump codebase 0.0.8 → 0.0.10) reporté US-5 (après US-4 republication
+  codebase) pour éviter la régression `test` (conflit résolution double).
+. Publications Central requièrent accord pilote explicite (règle absolue).
+
+=== US (5 US ~8 pts)
+
+[cols="1,4,1,1"]
+|===
+| US | Description | Statut | Pts
+
+| US-1
+| Corriger catalogue MEMPHIS `slider-plugin = { module = "education.ccp:slider-plugin", ... }` +
+  bump BOM 0.0.26 → 0.0.27. Gate : POM généré `slider-plugin:0.0.18` + publishToMavenLocal VERT.
+| ✅ TERMINÉ (S-208)
+| 1
+
+| US-2
+| (obsolète — fusionné US-5) Corriger catalogue capsule. Reporté après US-4.
+| ✅ CADUQUE (fusionné US-5)
+| 0
+
+| US-3
+| Publier BOM 0.0.27 sur Central. `./gradlew publishAggregationToCentralPortal --no-daemon` (workspace-bom).
+  Gate : repo1 HTTP 200, POM référence `slider-plugin:0.0.18`.
+| 🟡 À FAIRE
+| 1
+
+| US-4
+| Republier `codebase-plugin:0.0.10` (POM importera BOM 0.0.27). Bump `codebase = "0.0.10"` +
+  bump BOM constraint + publication Central. Gate : POM repo1 importe BOM 0.0.27.
+| 🟡 À FAIRE
+| 3
+
+| US-5
+| Re-appliquer fix capsule (catalogue `slider` → `slider-plugin` + bump `slider = "0.0.18"` +
+  bump `workspace-bom = "0.0.27"` + bump `codebase = "0.0.10"`) + valider
+  `./gradlew test cucumberTestTranscript` VERT (917 unit + cucumber dédiés, gate non-régression).
+  Clôture EPIC + sync BACKLOG Détroit (CAP-TRANSCRIPT US-5 `⬜ TODO` → `✅ TERMINÉ S-119`).
+| 🟡 À FAIRE
+| 3
+
+|===
+
+*Total* : ~8 pts (1/5 US ✅ — EPIC EN COURS. US-3/4/5 À FAIRE, publications Central accord pilote).
+*Pattern* : baby-step TDD (gate résolution Gradle + POM Central HTTP 200).
+*Zéro secret, zéro code production modifié (catalogue + publications).*

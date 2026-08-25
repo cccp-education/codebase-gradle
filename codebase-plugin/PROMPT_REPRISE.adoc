@@ -1,45 +1,69 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 205
-:session: 205
+= Prompt de Reprise — Codebase (Queens N1) — Session 208
+:session: 208
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 204 — PUB-0.9 TERMINÉ : codebase-plugin 0.0.9 publié Maven Central (POM sans codex-plugin, avec ocr-contracts:0.0.1). TDD PublishedPomCharacterizationTest + fix VersionCatalogTransitiveVersionsTest (échec préexistant). Travail en worktree isolé /tmp/opencode/cb204.
+:session_precedente: 207 — Migration .agents/ racine → codebase-plugin/.agents/ (pattern S-105 codex). 4 fichiers racine-seuls déplacés, 3 fichiers plugin écrasés par version S-206 plus récente, 24 sessions migrées, 3 archives fusionnées. Baseline préservée — GovernanceContextLoaderTest 7/7 PASSED.
+:session_pre_precedente: 206 — CB-STORE-UNIFY ✅ CADUQUE + hardening VectorStore.initSchema() non-destructeur (alias ensureSchema()), DROP CASCADE isolé en clean() test-only. Les deux stores légitimes servent des domaines sémantiquement distincts (corpus documentaire codex vs code source workspace).
+:pub: codebase-plugin 0.0.9 publié Maven Central (S-204, bundle propagé repo1 HTTP 200, POM sans codex-plugin + ocr-contracts:0.0.1 + codebase-contracts).
 
-== Mission Session 205
+== Mission Session 208
 
 [IMPORTANT]
-Pré-requis ABSOLU : vérifier l'état de la zone sale parallèle. Le working
-tree contenait 11 fichiers WIP non commités de la session Brooklyn
-(revert imports `codebase.store.RagVectorStore` → legacy
-`codebase.rag.VectorStore` + ~243 lignes schéma codex dans RagVectorStore.kt).
-Si Brooklyn a commité sa migration CB-STORE-UNIFY, vérifier la baseline ;
-sinon, travailler en worktree isolé (pattern S-203/S-204).
+Borough DORMANT — tous EPICs TERMINÉS ou CADUQUES. Maintenance uniquement.
 
-=== Option A — Suivi publication 0.0.9
+=== Option A — Suivi publication 0.0.9 (FAIT)
 
-* Vérifier propagation repo1 : `codebase-plugin/0.0.9/codebase-plugin-0.0.9.pom`
-  (propagation ~20 min post-bundle S-204).
-* Si propagé : signaler aux consommateurs (slider/capsule/planner consomment
-  codebase via mavenLocal 0.0.8 ou contrainte BOM) — bump à la discrétion
-  MEMPHIS (pratique canonique zéro bump BOM).
+* Vérifier propagation repo1 : `codebase-plugin/0.0.9/codebase-plugin-0.0.9.pom`.
+* Statut : ✅ PROPAGÉ (HTTP 200, POM propre — zéro codex-plugin résiduel,
+  ocr-contracts:0.0.1 + codebase-contracts présents). Vérifié S-208 ouverture.
 
-=== Option B — Accueil migration Brooklyn (si commitée)
+=== Option B — Accueil migration Brooklyn (FAIT)
 
-* Si le WIP Brooklyn (CB-STORE-UNIFY) est committé sur codebase : audit de
-  la migration (RagVectorStore vs legacy VectorStore), gate compileKotlin +
-  tests ciblés `codebase.store.*`, synchronisation gouvernance Queens.
-* Sinon : borough DORMANT — maintenance seule.
+* CB-STORE-UNIFY ✅ CADUQUE (S-206) — audit révèle deux stores légitimes
+  servent des domaines sémantiquement distincts. Hardening ciblé
+  `VectorStore.initSchema()` non-destructeur appliqué côté Queens.
+* Migration .agents/ racine → plugin (S-207) terminée.
+
+=== Option C — Maintenance / cross-borough / nouvel EPIC
+
+* Maintenance : dette technique ciblée, code review, bumps.
+* Cross-borough : EPIC MEMPHIS-BOM-FIX en cours (US-1 ✅ S-208, US-3/4/5
+  À FAIRE — voir session 208 + EPIC ci-dessous). Bug bloquant capsule
+  (Détroit) : BOM MEMPHIS référence `slider:0.0.18` (artifactId périmé
+  → 404 Central, vrai artifactId = `slider-plugin`).
+* Cadrer un nouvel EPIC si besoin identifié.
+
+== EPIC MEMPHIS-BOM-FIX (cross-borough, démarré S-208)
+
+. *US-1 ✅ TERMINÉ S-208* — Catalogue MEMPHIS `slider` → `slider-plugin`
+  + bump BOM 0.0.27. Commit pending.
+. *US-3 À FAIRE* — Publier BOM 0.0.27 Central.
+. *US-4 À FAIRE* — Republier `codebase-plugin:0.0.10` (POM importera
+  BOM 0.0.27 au lieu de 0.0.24). Cassera la chaîne `slider:0.0.18` 404.
+. *US-5 À FAIRE* — Re-appliquer fix capsule (catalogue slider →
+  slider-plugin + BOM 0.0.27) + valider `test cucumberTestTranscript`
+  VERT. Clôture EPIC + sync BACKLOG Détroit CAP-TRANSCRIPT US-5.
 
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
-* codebase-plugin 0.0.9 = Maven Central (S-204). Dep N0 `ocr-contracts:0.0.1`.
+* codebase-plugin 0.0.9 = Maven Central (S-204). Dep N0 ocr-contracts:0.0.1.
 * Gate ciblé : jamais `./gradlew test` global (Cucumber interminable).
 * 41 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
 * Session concurrente possible : vérifier `git status`, mtimes récents,
   absence d'autre session active AVANT d'éditer.
+* Dossier gouvernance unique : `codebase-plugin/.agents/` (migration S-207).
 
 == Règles absolues
 
 * Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la
   fois, séquentiel pur (interdiction @xp/subagents/parallélisation).
 * Zéro commit/push sans permission explicite du pilote.
+  (Exception session 208 : commit + push autorisés en clôture.)
 * Zéro secret, zéro token dans le code ou les logs.
+
+== References
+
+* `.agents/sessions/207-agents-migration-to-plugin.adoc`
+* `.agents/sessions/206-cb-store-unify-caduc-hardening.adoc`
+* `.agents/BACKLOG.adoc` § EPIC CB-STORE-UNIFY (✅ CADUQUE S-206)
+* `.agents/INDEX.adoc` (dernière mise à jour S-207)
