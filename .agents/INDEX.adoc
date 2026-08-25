@@ -3,7 +3,7 @@
 :icons: font
 
 *Date de creation* : 2026-06-16
-*Derniere mise a jour* : 2026-08-24 (session 202 — CDX-OCR-CONTRACTS US-4 Cucumber BDD : `codebase_ocr_contracts.feature` 5 scénarios `@ocr-contracts` + `OcrContractsCucumberRunner` 41e CucumberTaskSpec + `StubVisionProvider` fake AI engine. **EPIC CDX-OCR-CONTRACTS TERMINÉ 5/5 US**. Session 201 — CDX-OCR-CONTRACTS US-3 cross-borough : bascule `VisionOcrEngineAdapter` imports `codex.ocr.*`→`contracts.ocr.*` + retrait `libs.codex.plugin` (dep N0 `ocr-contracts:0.0.1`) — **RAG-4 FINAL, EPIC CDX-RAG-SOCLE TERMINÉ 6/6 US, l'inversion N1→N2 est morte**. Prérequis parallèles : MEMPHIS S-104 ocr-contracts mavenLocal + codex S-104 typealiases bump 0.0.6). EPIC FT-PIPELINE TERMINÉ 7/7 US (S-188→S-198). EPIC VIBE-HARDENING TERMINÉ 6/6 US (S-184→S-187). EPIC VIBE-HARDENING-2 TERMINÉ 8/8 US (S-188→S-192).
+*Derniere mise a jour* : 2026-08-25 (session 205 — EPIC CDX-RAG-SOCLE TERMINÉ 6/6 US (confirmation via backlog update), EPIC CDX-OCR-CONTRACTS TERMINÉ 5/5 US (session 202), RAG-4 FINAL, l'inversion N1→N2 est morte. Prérequis parallèles : MEMPHIS S-104 ocr-contracts mavenLocal + codex S-104 typealiases bump 0.0.6). EPIC FT-PIPELINE TERMINÉ 7/7 US (S-188→S-198). EPIC VIBE-HARDENING TERMINÉ 6/6 US (S-184→S-187). EPIC VIBE-HARDENING-2 TERMINÉ 8/8 US (S-188→S-192).
 
 == Regles Absolues
 

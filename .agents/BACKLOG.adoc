@@ -325,9 +325,9 @@ _Portée_ : cross-borough Brooklyn (codex) + Queens (codebase).
 
 | CDX-RAG-2
 | codebase — bascule interne : 6 call sites `codex.store.CodexVectorStore`
-  → `codebase.store.RagVectorStore` (API identique). Gate non-régression :
-  tests existants verts.
-| 🔲 À FAIRE
+|   → `codebase.store.RagVectorStore` (API identique). Gate non-régression :
+|   tests existants verts.
+| ✅ TERMINÉ (S-205)
 | 1
 
 | CDX-RAG-3
@@ -335,20 +335,20 @@ _Portée_ : cross-borough Brooklyn (codex) + Queens (codebase).
   `CodexIngestTask` / `CodexRetrieveTask` délèguent au socle ; suppression
   `codex.store.CodexVectorStore` + `IngestStatements` + `IngestIndexing` ;
   tests migrés ; KDoc profile actualisé. `check` VERT.
-| 🔲 À FAIRE
+| ✅ TERMINÉ (S-205)
 | 3
 
 | CDX-RAG-4
 | codebase — retrait `implementation(libs.codex.plugin)`
-  (`build.gradle.kts:49`) après vérification `rg "import codex\."` = zéro
-  résultat. CI verte. L'inversion N1→N2 est morte.
-| 🔲 À FAIRE
+|   (`build.gradle.kts:49`) après vérification `rg "import codex\."` = zéro
+|   résultat. CI verte. L'inversion N1→N2 est morte.
+| ✅ TERMINÉ (S-205)
 | 1
 
 | CDX-RAG-5
 | Cucumber BDD — scénarios composite context canal Docs + retrieval koog
-  sur store socle (fake in-memory). Pure BDD.
-| 🔲 À FAIRE
+|   sur store socle (fake in-memory). Pure BDD.
+| ✅ TERMINÉ (S-205)
 | 2
 
 |===
