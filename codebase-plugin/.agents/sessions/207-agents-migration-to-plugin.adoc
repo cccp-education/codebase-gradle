@@ -1,0 +1,95 @@
+= Session 207 — Migration .agents/ racine → codebase-plugin/.agents/
+
+*Date* : 2026-08-25
+*Type* : governance (refactor structure borough)
+*Pattern* : S-105 codex (migration gouvernance racine → plugin/.agents)
+*Méthode* : baby-step, 1 étape à la fois, build + tests entre chaque
+
+== Contexte
+
+Le borough `codebase-gradle` possédait **deux** dossiers `.agents/` :
+. `codebase-gradle/.agents/` (racine du borough)
+. `codebase-gradle/codebase-plugin/.agents/` (dans le sous-dossier plugin)
+
+Pattern correct (acté pour codex-gradle en S-105) : la gouvernance agentique
+vit dans le plugin, pas à la racine. La racine était un résidu historique
+pré-montée du plugin en sous-projet.
+
+== Audit pré-migration
+
+. **Racine `.agents/`** : 9 fichiers + 24 sessions + 3 archives
+  - Fichiers racine-seuls (manquants plugin) : `AGENT.adoc` (219 lignes),
+    `ARCHITECTURE.adoc` (190), `SESSION_PROCEDURE.adoc` (334),
+    `CADRAGE_METHODE_EPIC_V9.adoc` (478).
+  - Fichiers communs divergents : `BACKLOG.adoc`, `INDEX.adoc`,
+    `SESSIONS_HISTORY.adoc` — version racine **plus récente** (S-206,
+    commit 236677a) que plugin (S-204, commit 3ab993e).
+  - `TEST_COVERAGE_ANALYSIS.adoc` : version plugin plus récente (S-204).
+  - `SESSION_CHECKLIST.adoc` : identique (commit 661dcc7).
+  - 24 sessions racine toutes absentes du plugin (intermédiaires 084-171
+    + récentes 199, 205, 206).
+  - 3 archives racine avec chevauchement partiel (sessions manquantes).
+
+. **Plugin `codebase-plugin/.agents/`** : 12 fichiers + 174 sessions +
+  5 archives + backup + encyclopedies. Version la plus riche mais en
+  retard sur S-206 pour BACKLOG/INDEX/SESSIONS_HISTORY.
+
+== Actions (baby-step)
+
+. **4 fichiers racine-seuls déplacés** (git mv) :
+  `AGENT.adoc`, `ARCHITECTURE.adoc`, `SESSION_PROCEDURE.adoc`,
+  `CADRAGE_METHODE_EPIC_V9.adoc` → `codebase-plugin/.agents/`.
+
+. **3 fichiers plugin écrasés** par version racine S-206 (plus récente) :
+  `BACKLOG.adoc` (459 lignes), `INDEX.adoc` (98 lignes),
+  `SESSIONS_HISTORY.adoc` (489 lignes).
+
+. **24 sessions racine migrées** vers `codebase-plugin/.agents/sessions/`
+  (toutes manquantes). Total plugin : 174 + 24 = 198 sessions.
+
+. **3 archives fusionnées** — sessions manquantes append dans archives plugin :
+  - `COMPLETED_TASKS_ARCHIVE_2026-06.adoc` : +7 sessions (134, 156, 164,
+    165, 166, 168, 169). Total 37 sessions.
+  - `COMPLETED_TASKS_ARCHIVE_2026-07.adoc` : +1 session (173). Total 2.
+  - `COMPLETED_TASKS_ARCHIVE_2026-08.adoc` : +4 sessions (174, 175, 186,
+    206). Total 22.
+
+. **Dossier racine `.agents/` supprimé** (git rm -r).
+
+. **PROMPT_REPRISE.adoc plugin conservé** (déjà à S-207, non modifié).
+
+== Vérification (gates)
+
+. `compileKotlin` VERT (UP-TO-DATE — zéro source touché).
+. `GovernanceContextLoaderTest` (7 tests) VERT — valide le pattern
+  multi-module : `resolveFile` cherche `.agents/INDEX.adoc` puis
+  `codebase-plugin/.agents/INDEX.adoc` (sous-répertoire direct).
+  Test "loads governance files from first level subproject" PASSED.
+. `EndSessionBlogTaskTest` (2 tests) VERT — parcoure `.agents/sessions/`.
+. Zéro source Kotlin modifié — migration pure gouvernance `.adoc`.
+
+== Résultat
+
+. **Un seul** `.agents/` désormais : `codebase-plugin/.agents/`.
+. 20 entrées (fichiers + sous-dossiers), 198 sessions, 6 archives.
+. Pattern aligné sur codex-gradle (S-105), capsule-gradle, slider-gradle.
+. `GovernanceContextLoader.resolveFile` (lignes 87-97) résout déjà les
+  sous-répertoires directs — zéro changement code nécessaire.
+. Backward compat totale : tests governance + blog PASS.
+
+== Statistiques
+
+. 42 changements git (R renommages + M modifications + D suppressions).
+. +1173 insertions, -2284 deletions (net -1111 lignes, doublons éliminés).
+. Zéro bump BOM, zéro secret, zéro régression code.
+
+== Leçons
+
+. `GovernanceContextLoader` était déjà conçu pour la structure multi-module
+  (resolveFile itère sous-répertoires) — la migration est un non-événement
+  côté code, preuve que le design DDD défensif paie.
+. Deux `.agents/` coexistant = anti-pattern de分裂 : versions divergentes,
+  sessions manquantes, archives chevauchantes. La centralisation dans le
+  plugin (pattern S-105) élimine la classe entière de bugs.
+. Les tests de characterization (`GovernanceContextLoaderTest`) ont servi
+  de filet de sécurité : aucun test à modifier, tous PASS post-migration.

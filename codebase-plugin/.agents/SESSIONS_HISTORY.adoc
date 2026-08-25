@@ -1,91 +1,513 @@
-= SESSIONS_HISTORY — Codebase Gradle
-:date: 2026-08-25
+= Sessions History — Codebase Gradle
+:toc: left
+:icons: font
 
-|===
-| Session | Date | EPIC | Résultat
+== Session 207 — 2026-08-25
 
-| 204 | 2026-08-25 | PUB-0.9 | **PUB-0.9 TERMINÉ — codebase-plugin 0.0.9 publié Maven Central** (baby-step TDD strict RED → GREEN → REFACTOR, accord pilote obtenu). RED : `PublishedPomCharacterizationTest` créé (package `codebase.publishing`, 2 tests — parse `~/.m2/.../codebase-plugin-0.0.9.pom` : `ocr-contracts` présent / `<artifactId>codex-plugin</artifactId>` absent) → 2 FAILED (POM inexistant). GREEN : bump `version = "0.0.9"` (`build.gradle.kts:8`) + entrée catalogue `ocr-contracts = { module = "education.cccp:ocr-contracts", version = "0.0.1" }` + bascule `implementation(libs.ocr.contracts)` (littéral → catalogue, pattern contracts N0) + fix `VersionCatalogTransitiveVersionsTest` (échec préexistant à HEAD : `codex-plugin` retiré de `transitiveArtifacts` suite S-201 + résolution chemin corrigée vers le catalogue du plugin — le test lisait le catalogue racine consommateur, sans les artefacts education.cccp). `publishToMavenLocal` VERT, POM ~/.m2 validé, 4/4 tests publishing PASSED. Gate non-régression ciblé VERT (compileKotlin + CodebasePluginTest + codebase.store.*, 1m16s). Publication `publishAggregationToCentralPortal --no-daemon` BUILD SUCCESSFUL 31s depuis worktree isolé `/tmp/opencode/cb204` (HEAD + 4 fichiers portés via git apply patch). ⚠️ Zone sale parallèle : 11 fichiers WIP Brooklyn non commités (revert imports RagVectorStore→legacy VectorStore + ~243 lignes méthodes schéma codex dans RagVectorStore.kt, mtimes 23h36-23h39) — laissés intacts, NE PAS TOUCHER sans audit. Option B S-203 RÉSOLUE : `codex-plugin:0.0.6` EST sur Central (repo1 vérifié direct, POM complet ocr-contracts 0.0.1 — constat S-203 périmé). 4 fichiers modifiés (1 créé + 3 modifiés), zéro secret. Rapport : `.agents/sessions/204-pub-009-central.adoc`.
+* **EPICs** : Aucun (migration gouvernance — refactor structure borough)
+* **Type** : governance (pattern S-105 codex)
+* **Livrables** :
+** Migration du dossier `.agents/` racine vers `codebase-plugin/.agents/` —
+   un seul `.agents/` désormais (pattern borough correct).
+** 4 fichiers racine-seuls déplacés (git mv) : `AGENT.adoc`, `ARCHITECTURE.adoc`,
+   `SESSION_PROCEDURE.adoc`, `CADRAGE_METHODE_EPIC_V9.adoc`.
+** 3 fichiers plugin écrasés par version racine S-206 plus récente :
+   `BACKLOG.adoc`, `INDEX.adoc`, `SESSIONS_HISTORY.adoc`.
+** 24 sessions racine migrées vers plugin (intermédiaires 084-171 + récentes
+   199, 205, 206). Total plugin : 198 sessions.
+** 3 archives fusionnées — sessions manquantes append (2026-06: +7, 2026-07:
+   +1, 2026-08: +4).
+** Dossier racine `.agents/` supprimé (git rm -r).
+** Rapport : `.agents/sessions/207-agents-migration-to-plugin.adoc`.
+* **Tests** : `compileKotlin` UP-TO-DATE, `GovernanceContextLoaderTest` 7/7
+  PASSED (valide pattern multi-module — `resolveFile` cherche sous-répertoires
+  directs), `EndSessionBlogTaskTest` 2/2 PASSED. Zéro source modifiée.
+* **Build** : VERT. 42 changements git (+1173/-2284, net -1111 doublons).
+  Zéro bump BOM, zéro secret, zéro régression.
+* **Score** : 9/10
 
-| 203 | 2026-08-24 | Maintenance (DORMANT) | **Fix BenchmarkRunner vers socle RagVectorStore + interruption session concurrente.** Complétion WIP `BenchmarkRunner.kt` (reliquat S-199/200 non compilable : imports supprimés mais référencés, `RagVectorStore` sans import, `buildContext` cassé) suivant le pattern codex latest `CodexRetrieveTask` : construction `RagVectorStore()` + appel direct `searchBlocking(queryText, topK = 10)` + champs `chunkText`/`similarity`, suppression `EmbeddingPipeline`, signature `buildContext(vectorStore: RagVectorStore?, graphModel?)`. Gate `compileKotlin` VERT en worktree isolé (`git worktree add /tmp/opencode/cb203 HEAD` + copie du seul fichier — les erreurs live provenaient des WIP concurrents). ⚠️ Session opencode codex (Brooklyn) éditait codebase en parallèle (23:04–23:10, 8 fichiers : MultiChannelContextGraph, OcrIngestTask, VectorQueryService, 3 steps de test, RagVectorStore — migration legacy `codebase.rag.VectorStore` → `RagVectorStore` inachevée non compilable) → stop immédiat de toute édition, clôture conservatoire. Audit publications Central (repo1 vérifié direct) : `ocr-contracts:0.0.1` ✅ + `workspace-bom:0.0.26` ✅ ; **`codex-plugin:0.0.6` ❌ ABSENT** (dernier 0.0.5, claim Brooklyn S-104 non matérialisée sur Central) ; **POM `codebase-plugin:0.0.8` contient encore `codex-plugin:0.0.2` runtime** → inversion N1→N2 morte côté code mais pas côté Central → bump 0.0.9 prioritaire S-204 (TDD test POM publié + publishToMavenLocal + Central sur accord pilote). Zéro bump BOM, zéro secret. Rapport : `.agents/sessions/203-benchmark-ragvectorstore-fix-interruption.adoc`.
+== Session 198 — 2026-08-19
 
-| 202 | 2026-08-24 | CDX-OCR-CONTRACTS | **US-4 TERMINÉ — EPIC CDX-OCR-CONTRACTS 5/5 US** (pure BDD, zéro prod modifié, baby-step BDD strict RED → GREEN → REFACTOR). `codebase_ocr_contracts.feature` 5 scénarios `@ocr-contracts` (fake AI engine AsciiDoc via port N0 `contracts.ocr.OcrResult`, miroir métadonnées requête→résultat language/sourceFormat/model, port stateless réutilisable 2 appels FIFO stub 2×, rejet provider logiciel tesseract → erreur "codex" sans output, Gemini+Ollama both failing → AI-only pointant vers codex collectOcr) + `OcrContractsCucumberRunner` (pattern S-082, 41e `CucumberTaskSpec("cucumberTestOcrContracts")`) + `OcrContractsWorld`/`StubVisionProvider` (fake AI engine FIFO + call count, pattern RecordingVisionProvider + FakeFineTuningLlm) + `OcrContractsSteps` (préfixés S-088). RED : 5 UndefinedStepException / 23 steps → GREEN : 5/5 PASSED. Gates : adapter unit 4/4 + OcrTaskAiOnlyBoundaryTest 2/2 + cucumberTestEpicOcr 29/29 VERT. Écart mission : « cache hit » non testable codebase-side (cache modèle exige clé+réseau ; cache hash côté codex) → scénario stateless équivalent. Publications Central en attente accord pilote (ocr-contracts 0.0.1, BOM 0.0.26, codex 0.0.6). Zéro bump BOM, zéro secret.
+* **EPICs** : EPIC FT-PIPELINE (US-6 — cross-borough training-gradle, clôture EPIC 7/7 US)
+* **Livrables** :
+** TRN-8 training-gradle reformulé : "Pipeline fine-tuning experts CDA/FPA ~21 pts" → "Recettes CDA/FPA consommant FT-PIPELINE" (~10 pts). Séparation N1/N2 actée — machinerie générique N1 dans codebase (FT-PIPELINE TERMINÉ 7/7 US S-188→S-198), recettes métier N2 dans training (datasets corpus AFNOR/REAC + modèles de base + noms experts + curation Bloom/Qualiopi). Dépendance N2→N1 propre (training appelle `fineTuneExpert` de codebase via DSL, spécifie datasets/modèles). Pattern identique à `LlmBuildService` (pool N1 consommé par N2 slider/capsule/planner).
+** Littérature agentique préparatoire posée dans BACKLOG training (constat N1/N2 + plan baby-steps TRN-8.0→8.6), démarrage coding reporté post-travaux codex prioritaires (signal pilote).
+** BACKLOG training mis à jour (TRN-8 reformulé, charge ~21→~10 pts, dépendance codebase FT-PIPELINE, plan baby-steps préparatoire). INDEX training mis à jour (table EPICs + statut). PROMPT_REPRISE training mis à jour (Session 070, contexte S-198 cross-borough).
+** BACKLOG codebase mis à jour (US-6 ✅ S-198, EPIC FT-PIPELINE TERMINÉ 7/7 US, statut global + section détaillée + table US). INDEX codebase mis à jour (table EPICs + entrée session 198). PROMPT_REPRISE codebase mis à jour (Session 199, EPIC TERMINÉ).
+* **Tests** : zéro (gouvernance pure, zéro code modifié).
+* **Build** : zéro (gouvernance pure cross-borough pattern S-057). Zéro bump BOM, zéro secret, zéro régression.
+* **Score** : 9/10
 
-| 201 | 2026-08-24 | CDX-OCR-CONTRACTS / CDX-RAG-SOCLE | **US-3 TERMINÉ — RAG-4 FINAL, EPIC CDX-RAG-SOCLE 6/6 US** (cross-borough MEMPHIS+codex+codebase). `VisionOcrEngineAdapter` + test : imports `codex.ocr.*` → `contracts.ocr.*` (artefact N0 `ocr-contracts:0.0.1` créé S-104 MEMPHIS, typealiases codex S-104). Retrait `implementation(libs.codex.plugin)` + entrée catalog. **Inversion N1→N2 totalement morte** — flèche unique codex→codebase. Tables pgvector inchangées. Zéro bump BOM local, zéro secret. Reste EPIC CDX-OCR-CONTRACTS US-4 Cucumber BDD + publications Central.
+== Session 193 — 2026-08-18
 
-| 200 | 2026-08-24 | CDX-RAG-SOCLE | **US-2 + US-4 partial + US-5 Cucumber BDD TERMINÉS** (3 US en 1 session, pattern S-113). US-2 bascule 6 call sites `CodexVectorStore` → `RagVectorStore` (API identique, pure mécanique, 6 fichiers). US-4 partielle : imports `codex.store.*` éliminés (RAG inversion dead), `libs.codex.plugin` conservé pour port OCR `VisionOcrEngineAdapter` (gate extraction `codex.ocr` N0 future EPIC CDX-OCR-CONTRACTS). US-5 Cucumber BDD `codebase_rag_socle.feature` 6 scénarios `@rag-socle` + `RagSocleCucumberRunner` (40e `CucumberTaskSpec`) + `RagSocleWorld`/`StubRagStore` fake + `RagVectorStore.open` pour testabilité. `check` VERT. EPIC CDX-RAG-SOCLE 4/6 US (reste US-3 cross-borough codex + US-4 complétion). Commit `3a95c96`. Zéro bump BOM, zéro secret.
+* **EPICs** : EPIC FT-PIPELINE (US-1 — domaine `codebase.finetuning` 7ème)
+* **Livrables** :
+** `FineTuningConfig.kt` — data class 5 champs (`epochs=3`, `learningRate=2e-4`, `batchSize=4`, `corpusGlobs=[]`, `continualPreTrainingRatio=0.10`) + invariants `init` × 4 (epochs/batchSize > 0, learningRate > 0, ratio 0..1).
+** `FineTuningConfigMerger.kt` — object pur, `merge(projectDir, yamlConfig, cliParams, yamlLoaded)` + `loadFromGradleProperties` (prefix `codebase.finetuning.`) + `loadFromEnvironment` (prefix `CODEBASE_FINETUNING_`) + helpers `mergeInt`/`mergeDouble`/`mergeStrList` + `splitCommaList`. Precedence ENV < props < YAML < CLI.
+* **Tests** : 27/27 unit PASSED (8 FineTuningConfigTest + 19 FineTuningConfigMergerTest), 0 FAIL.
+* **Build** : `compileKotlin` VERT, zéro bump BOM, zéro secret, zéro régression.
+* **Score** : 9/10
 
-| 199 | 2026-08-22 | CDX-OCR-BOUNDARY (cross-borough Brooklyn pilote) | **CDX-OCR-2 TERMINÉ côté Queens** (US-2/4, baby-step TDD strict RED → GREEN → REFACTOR — session codex S-099). `VisionOcrEngineAdapter` créé (`codebase.koog.llm.adapter`, implémente le port codex `codex.ocr.OcrEngine` fun interface, wrappe `VisionProvider` IA, bridge suspend→runBlocking, 4 unit RED→GREEN). Suppression `CodexOcrEngineAdapter.kt` (sens inverse de la boundary) + `OcrTask` IA-uniquement : imports codex retirés, propriété `tesseractOcrProvider` supprimée, provider "tesseract" et fallback software gemini+ollama → `GradleException(AI_ONLY_ERROR_MESSAGE)` pointant vers codex `collectOcr`. Migration tests : `OcrTaskAiOnlyBoundaryTest` 2 unit remplace `OcrTaskTesseractFallbackTest`, `OcrSteps` capture d'erreur, `ocr.feature` 2 scénarios boundary réécrits PASSED. Gate : cucumberTestEpicOcr 29 PASSED, `check` VERT 41m26s ; 3 échecs préexistants au baseline vérifiés par stash (`VersionCatalogTransitiveVersionsTest`, Z-6 Autofocus flaky). Tesseract reste intégralement dans codex. Zéro bump BOM, zéro secret.
+== Session 187 — 2026-08-17
 
-| 197 | 2026-08-19 | FT-PIPELINE | **US-5 Cucumber BDD `codebase_finetuning.feature` TERMINÉ** (P0vision, 2 pts, baby-step BDD strict RED → GREEN → REFACTOR). 4 scénarios `@finetuning` (pipeline complet dataset→GGUF→manifest, cycle itératif convergence après ajustement corpus ratio, fallback degraded Ollama registry indisponible 503, validation seuil dès la 1re itération) dans `codebase_finetuning.feature` (36 lignes) + `FineTuningCucumberRunner.kt` (pattern S-082, filtre `@finetuning and not @integration`) + `FineTuningWorld.kt` (`StubRegistryClient` in-memory `OllamaRegistryClient` + state shared PicoContainer) + `FineTuningSteps.kt` (16 step defs préfixés "finetuning" pattern S-088 + `FakeFineTuningLlm` FIFO queues propose/validate + `StubPromptBuilder` deterministic — zéro appel Gradle task, zéro I/O réseau, pure BDD domaine). `build.gradle.kts` modifié : `CucumberTaskSpec("cucumberTestFineTuning", ...)` 39e câblé. 4/4 scénarios PASSED 9s (17 steps). Zéro fichier prod modifié — pure BDD pattern VibeHardening2 S-192. Gate `codebase.finetuning.*` + `CodebasePluginTest` non-régression VERT 0 FAIL. Domaine `codebase.finetuning` clos BDD. EPIC FT-PIPELINE 5/7 US (reste US-6 cross-borough training-gradle). Zéro bump BOM, zéro secret, zéro régression. Rapport : `.agents/sessions/197-ft-pipeline-us5-cucumber-bdd.adoc`.
-| 196 | 2026-08-19 | FT-PIPELINE | **US-4 TERMINÉ — tâches Gradle + extension DSL** (P0 vision, 4 pts, baby-step TDD strict RED → GREEN → REFACTOR, pattern S-113 multi-US 1 session). 4 fichiers prod créés : `CodebaseFineTuningExtension.kt` (abstract class, 10 propriétés DSL `baseModel`/`dataset`/`outputModelName`/`corpusRatio`/`maxIterations`/`epochs`/`learningRate`/`batchSize`/`corpusGlobs`/`validationThreshold` + helpers `toConfig()`/`toRequest()`, pattern `CodebaseExpertExtension`, defaults backward compat mirrors `FineTuningConfig`) + `PrepareFineTuningDatasetTask.kt` (groupe `finetuning`, `@DisableCachingByDefault`, `@Input` baseModel/dataset/corpusGlobs/outputModelName/corpusRatio + `@OutputFile`, `executePrepare()` assemble Modelfile section `FROM baseModel` + corpus ratio + Dataset section globs, `corpusGlobs` fallback when dataset empty, 3 invariants GradleException) + `FineTuneExpertTask.kt` (groupe `finetuning`, `dependsOn("prepareFineTuningDataset")`, `@Internal pipeline: FineTuningPipeline?` injectable — défaut `OllamaFineTunerAdapter(OllamaHttpRegistryClient(baseUrl), ggufDir)`, `@OutputFile outputReport` + `@OutputDirectory ggufOutputDir`, `executeFineTune()` délègue à `pipeline.fineTune(request)` + rapport texte SUCCESS/FAILURE avec baseModel/dataset/score/reason) + `PublishExpertToOllamaTask.kt` (groupe `finetuning`, `dependsOn("fineTuneExpert")`, `@Internal expertRegistry: ExpertRegistry` injectable, `executePublish()` enregistre `ExpertRegistration` dans `ExpertRegistry` (domaine `codebase.koog.expert` existant — boucle fabrication→exposition) + délègue manifest JSON à `ExpertExposureTask` via `findByName` + fallback `register` pour isolation test). `CodebasePlugin.kt` câblé (+87 lignes) : extension `fineTuning` créée + 3 tâches enregistrées + 13 props CLI `-Pcodebase.finetuning.*` (baseModel/dataset/outputModelName/corpusRatio/maxIterations/epochs/learningRate/batchSize/corpusGlobs/validationThreshold/domainName/domainLabel/ollamaBaseUrl, pattern `ocrDocument`/`ingestGovernance`). 5 fichiers test créés : `CodebaseFineTuningExtensionTest` (10 unit) + `PrepareFineTuningDatasetTaskTest` (11 unit) + `FineTuneExpertTaskTest` (12 unit — default Ollama adapter degraded → FAILURE validé) + `PublishExpertToOllamaTaskTest` (11 unit) + `FineTuningFunctionalTest` (3 functional). `CodebasePluginTest.kt` mis à jour : 8→11 tâches attendues + 5 nouveaux tests (3 groupes `finetuning`, 2 dependsOn via `taskDependencies.getDependencies().map { it.name }` — `dependsOn` String lazily-resolved non visible via `TaskReference` cast dans `ProjectBuilder`, extension registered). Bug `DuplicateTaskException` `exposeExperts` (CodebasePlugin déjà enregistré) → fix `findByName` + fallback `register` (idempotent). Bug `contains("0.10")` fragile (`Double.toString()` supprime zéro final `0.1`) → `contains("corpus ratio: 0.1")`. Gate `codebase.finetuning.*` + `CodebasePluginTest` VERT **140 tests 0 FAIL** (8 config + 19 merger + 11 pipeline + 5 adapter + 18 state + 17 graph + 10 extension + 11 prepare + 12 fineTune + 11 publish + 3 functional + 15 plugin). `compileKotlin` + `validatePlugins` VERT. Domaine `codebase.finetuning` 13→17 fichiers prod. Zéro bump BOM (version 0.0.8 inchangée), zéro secret, zéro régression. EPIC FT-PIPELINE 4/7 US. Rapport : `.agents/sessions/196-ft-pipeline-us4.adoc`.
-| 195 | 2026-08-19 | FT-PIPELINE | **US-3 `FineTuningGraph` TERMINÉ — koog itératif 3 nœuds propose/train/validate** (P0 vision, 4 pts, baby-step TDD strict RED → GREEN → REFACTOR). 5 fichiers prod créés : `FineTuningStage.kt` enum 6 stages (INITIALIZED/PROPOSED/TRAINED/VALIDATED/CONVERGED/FAILED, pattern `slider.pipeline.DeckStage`) + `FineTuningState.kt` data class immutable 11 champs (request, config, proposal, trainResult, validationScore, validationThreshold, iteration, maxIterations, error, stage) + 10 invariants croisés `init` (pattern `slider.pipeline.DeckState`) + `FineTuningPromptBuilder.kt` port 2 méthodes (buildProposePrompt, buildValidatePrompt, pattern `DeckPromptBuilder`) + `FineTuningLlm.kt` port 2 méthodes sync (propose, validate, pattern `DeckLlm`) + `FineTuningGraph.kt` graphe koog `AIAgentGraphStrategy<FineTuningState, FineTuningState>` 3 nœuds propose/train/validate + 7 edges conditionnels (train→validate on Success, train→finish on Failure, validate→finish on convergence, validate→propose on retry budget, validate→finish on max iterations exhausted) + `execute` séquentielle pattern `KoogAugmentedContextGraph.execute` + `asMermaidDiagram()` + `adjustedCorpusRatio()` parser (Regex premier Double `[0,1]` du proposal, fallback ratio request). 2 fichiers test créés : `FineTuningStateTest.kt` 18 unit (default state, PROPOSED/TRAINED/CONVERGED/FAILED invariants, ranges, copy preservation) + `FineTuningGraphTest.kt` 17 unit (happy path convergence, proposal populated, loop back to propose, MaxIterationsExhausted, train Failure, propose/train/validate LLM throws, prompt builder state forwarded, validate skipped on Failure, LLM prompts forwarded, asMermaidDiagram non-blank, request+config preserved, corpus ratio parsed/fallback). Bug loop invariant découvert RED : re-entry `proposeNode` cassait `trainResult non-null requires stage >= TRAINED` car `trainResult`/`proposal`/`validationScore` restaient du tour précédent — fix `state.copy(proposal="", trainResult=null, validationScore=0.0, stage=INITIALIZED)` avant re-proposer. Bug backtick Kotlin `0..1` illegal chars → renommé `0 to 1 range`. Gate `codebase.finetuning.*` 78/78 PASSED (+35 nets : 17 graph + 18 state), 0 FAIL. `compileKotlin` + `compileTestKotlin` VERT. Domaine `codebase.finetuning` enrichi (7 prod + 5 test). Zéro bump BOM, zéro secret, zéro régression. EPIC FT-PIPELINE 3/7 US. Rapport : `.agents/sessions/195-ft-pipeline-us3-finetuning-graph.adoc`.
-| 194 | 2026-08-19 | FT-PIPELINE | **US-2 TERMINÉ — port `FineTuningPipeline` + `OllamaFineTunerAdapter`** (P0 vision, 3 pts, baby-step TDD strict RED → GREEN → REFACTOR, pattern S-113 multi-US 1 session). Domaine `codebase.finetuning` (7ème) enrichi : `FineTuningRequest.kt` data class 4 champs + invariants × 4 + `FineTuningResult.kt` sealed Success/Failure + factory + `FineTuningPipeline.kt` fun interface sync (pattern `TranscriptLlmEnhancer`) + `OllamaRegistryClient.kt` port interne createModel/pushModel + `RegistryResponse` sealed Ok/Fail + `OllamaHttpRegistryClient.kt` impl HTTP JDK 24 (`POST /api/create` + `/api/push`, pattern `OllamaOcrProvider`) + `OllamaFineTunerAdapter.kt` adapter pipeline Modelfile→create→push→GGUF marker + fallback degraded economy of ink (Failure préserve dataset original) + `FakeFineTuner.kt` test (FIFO + defaultResult + capture, pattern `FakeLlmTranslator`). 43/43 unit PASSED (8 config + 19 merger + 11 pipeline + 5 adapter). 9 fichiers créés (6 prod + 1 fake + 2 test). `compileKotlin` VERT, zéro régression, zéro secret, zéro bump BOM. EPIC FT-PIPELINE 2/7 US. Rapport : `.agents/sessions/194-ft-pipeline-us2.adoc`.
-| 193 | 2026-08-18 | FT-PIPELINE | **US-1 TERMINÉ — domaine `codebase.finetuning` (7ème) ouvert** (P0 vision, 3 pts, baby-step TDD strict RED → GREEN → REFACTOR). `FineTuningConfig.kt` data class 5 champs (`epochs=3`, `learningRate=2e-4`, `batchSize=4`, `corpusGlobs=[]`, `continualPreTrainingRatio=0.10`) + invariants `init` × 4. `FineTuningConfigMerger.kt` object pur (merge 4 sources + loadFromGradleProperties + loadFromEnvironment + helpers). 27/27 unit PASSED. 4 fichiers créés. `compileKotlin` VERT, zéro régression, zéro secret, zéro bump BOM. 1/7 US FT-PIPELINE. Rapport : `.agents/sessions/193-ft-pipeline-us1.adoc`.
-| 192 | 2026-08-18 | VIBE-HARDENING-2 | **EPIC VIBE-HARDENING-2 TERMINÉ 8/8 US** (pattern S-113, 4 US en 1 session). US-5 C3 cleanup doc INSERT-X1..X6 — 32 lignes KDoc stale supprimées `VibecodingGraph.kt:53-85` (section "EPIC X Audit" + 6 blocs `[INSERT-X1]` à `[INSERT-X6]`, insertions faites en EPIC X S-101→S-105), `VibecodingPlan` toujours utilisé (import L13), zéro test impacté. US-6 C7 coerceAtLeast(0) — bug `buildPromptForIteration` L430 produisait `"Plan remaining tasks: -2"` quand `executedTasks.size > total plan tasks` (retry, tâche hors plan) ; baby-step TDD strict RED (2 unit `VibecodingGraphTest.buildPromptForIteration*` — le test négatif FAIL car la ligne contient `-`, test positif PASSED par accident car 2 est positif ; `buildPromptForIteration` rendu `internal` pour testabilité, pattern `buildReplanPrompt`) → GREEN (`val totalTasks = plan.epics.sumOf { it.userStories.sumOf { s -> s.tasks.size } }; val remaining = (totalTasks - state.executedTasks.size).coerceAtLeast(0)`) → REFACTOR (gate 24 VibecodingGraph +2 + 13 StepVerifier + 26 TaskResultVerifier = 63 tests 0 FAIL). US-7 C6 SessionProtocolEngine extraction — `SessionProtocolEngine.kt` créé (105 lignes) shared engine qui encapsule `executeVibecoding(promptText, workspaceRootPath, maxActions, sessionId, agentContext, model)` + `resolveAgentContext(context, workspaceRootPath, onContextResolved)` + `buildOutput(state)` ; `SessionProtocolServer.executePrompt` délégué (69→32 lignes, -37) + `SessionProtocolTask.executeVibecoding` délégué (329→280 lignes, -49) + `buildOutput` privé dupliqué supprimé des deux + imports inutilisés nettoyés (TokenTracker, TokenUsage, ToolCallRecord, SessionStatus dans Server ; TokenTracker, TokenUsage, ToolCallRecord, VibecodingState dans Task) ; 9 unit `SessionProtocolEngineTest` dédiés (executeVibecoding sessionId/ERROR/toolCalls/output format, resolveAgentContext provided/fallback, buildOutput error/plan/blank) + 4 classes SessionProtocol non-régression (Task + Server + E2E + Lifecycle) VERT. US-8 Cucumber BDD `codebase_vibe_hardening_2.feature` `@vibe-hardening-2` 4 scénarios (write_file rejects content exceeding MAX_WRITE_CHARS, TaskResultVerifier matches custom expectedOutput against stdout, ExecGradleTool accepts flag with separate value argument, Plan remaining tasks coerced to zero when executed exceeds plan total) + `VibeHardening2World` (PicoContainer) + `VibeHardening2Steps` (14 step defs préfixés "vibe hardening 2", bug S-088 glue `codebase.scenarios` partagée évité — step texts uniques) + `VibeHardening2CucumberRunner` (pattern S-082, filter `@vibe-hardening-2 and not @integration`, glue `codebase.scenarios`, plugin pretty/html/json reports `cucumber-vibe-hardening-2`) + `CucumberTaskSpec("cucumberTestVibeHardening2")` 38e cucumber dédié câblé `build.gradle.kts` après `cucumberTestVibeHardening`. 4/4 scénarios PASSED. Bug `TaskResultVerifier.verify` est méthode d'instance (classe, pas object) — corrigé dans steps (`TaskResultVerifier().verify(...)`). Bug `AgentContext.eagerRules` est `String` pas `List<String>` (contrat N0) — corrigé dans test. 11 fichiers (5 modifiés + 6 créés). `compileKotlin` + `compileTestKotlin` VERT. Zéro régression (gate SessionProtocol + VibecodingGraph + planning VERT). Zéro bump BOM (EPIC local à codebase-plugin). Zéro secret, zéro token. Rapport : `.agents/sessions/192-vibe-hardening-2-cloture.adoc`.
-| 191 | 2026-08-18 | VIBE-HARDENING-2 | **US-4 C1 TaskResultVerifier refonte TERMINÉ** (P1, 4 pts, baby-step TDD strict RED → GREEN → REFACTOR). `TaskResultVerifier.kt` : surcharge `verify(stdout, stderr, expectedOutput)` + branche `isCustomExpected` (check `build failed`/`compilation error`/`hasActualFailure` → FAILED ; sinon `stdout.contains(expected)` case insensitive → SUCCESS sinon FAILED) + branche default heuristique fallback conservée + `hasActualFailure` raffiné (`FAILED_PATTERN = \\bfailed\\b` findAll → any match non précédé de `0 `/`no ` — exclut `0 failed tests` faux positif). Bug subtil lowercase : `DEFAULT_EXPECTED_OUTPUT_LOWER` const séparée (`expected` est lowercased mais `DEFAULT_EXPECTED_OUTPUT` non lowercased → `isCustomExpected` toujours true → tous les tests default cassés). `StepVerifier.kt` : `verify(state.lastToolResult, "")` → `verify(state.lastToolResult, "", step.expectedOutput)` — câble contrat N0 `expectedOutput` du `VibecodingStep` (PLN-VERIFY S-064, GradleTask N0 S-064). `TaskResultVerifierTest.kt` : 17→26 tests (+9 nouveaux expectedOutput + failed raffiné). `StepVerifierTest.kt` : 11→13 tests (+2 nouveaux custom expectedOutput matching/not matching, 2 adaptés `BLOCKED`/`UNKNOWN` → `DEFAULT_EXPECTED_OUTPUT` car expectedOutput custom est maintenant comparé). 26 TaskResultVerifier + 13 StepVerifier + 22 VibecodingGraph + 97 gate (`codebase.koog.tools.*` + `codebase.koog.discovery.*` + `ToolRegistryTest`) = 158 tests VERT 0 FAIL. `compileKotlin` VERT. Zéro bump BOM, zéro secret, zéro régression. 4/8 US VIBE-HARDENING-2. Rapport : `.agents/sessions/191-vibe-hardening-2-us4-task-result-verifier.adoc`.
-| 190 | 2026-08-18 | VIBE-HARDENING-2 | **US-3 C4 GradleTaskArgsMapper flags cassés TERMINÉ** (P2, 3 pts, baby-step TDD strict RED → GREEN → REFACTOR). `ExecGradleTool.kt` : `GRADLE_ARG_ALLOWLIST` étendu `--\w+` → `--\w+(?:=\S+)?` (flag seul ou `--flag=value`) + `isBareLongFlag(token)` helper (détecte flag sans `=` précédant une valeur séparée) + `validateGradleTask` refondu : un token d'arg qui ne matche pas l'allowlist est accepté si le token précédent est un `bareLongFlag`, à condition de ne pas commencer par `-` et de ne pas contenir `;&|` (defense in depth préservée). `ExecGradleToolTest.kt` : +5 tests (3 positifs pair flag+value/flag=value/mixed + 2 négatifs bare value/standalone token), 15→20 tests. **Fail préexistant C4 résolu** : `GradleTaskArgsMapperTest > execute structured gradle task via handler()` PASSED (subprocess Gradle `test --tests FakeTestClassName` ne lance plus `SecurityException`). Description `ExecGradleTool` mise à jour. Gate combinée `codebase.koog.tools.*` + `codebase.koog.discovery.*` + `ToolRegistryTest` VERT 110 tests 0 FAIL (20 ExecGradleTool + 17 ExecShellTool + 60 discovery + 13 ToolRegistry). `compileKotlin` VERT. Zéro bump BOM, zéro secret, zéro régression. 3/8 US VIBE-HARDENING-2. Rapport : `.agents/sessions/190-vibe-hardening-2-us3-gradle-task-args-mapper.adoc`.
-| 189 | 2026-08-17 | VIBE-HARDENING-2 | **US-1 + US-2 TERMINÉS** (pattern S-113 multi-US 1 session). US-1 S2 Allowlist TaskDiscoveryRegistrar : `TASK_ALLOWLIST` (2 regex bare tasks + project:task) + `TASK_DENYLIST` (6 regex publishToMavenCentral/publishAggregation/clean/purge/wrapper/bootstrap) + `validateTaskName` companion (allowlist deny-by-default + deny-list second ride, pattern `ExecGradleTool.validateGradleTask`) + `registerAll` filtre via validateTaskName (skip denied). 18 unit allowlist + 6 tests existants réécrits sécuritaires (vibecode/qualityGate devenus denied — tasks métier plugin ne sont plus auto-enregistrées, sécuritaire). US-2 S3 Garde taille write_file/edit_file : `MAX_WRITE_CHARS = 1_000_000` const companion + 3 checks (write_file content, edit_file newString, edit_file resulting updated) → `IllegalArgumentException` avant writeText. Pattern `read_file MAX_OUTPUT_CHARS` mirror. +5 unit. Gate `codebase.koog.discovery.*` + `ToolRegistryTest` VERT 105 tests (1 fail préexistant C4 US-3). 2/8 US VIBE-HARDENING-2. Zéro bump BOM, zéro secret, zéro régression. Rapport : `.agents/sessions/189-vibe-hardening-2-us1-us2.adoc`.
+* **EPICs** : EPIC VIBE-HARDENING (US-3+US-4+US-5 — clôture EPIC 6/6 US)
+* **Livrables** :
+** US-3 C5 Timeout LLM : `withTimeout(llmTimeoutMs)` sur 3 sites `runBlocking { llmProvider.call }` (callLLMNode L413, error recovery replan L288, StepVerifier L44) + constructor param `llmTimeoutMs: Long = DEFAULT_LLM_TIMEOUT_MS = 30_000L` (VibecodingGraph + StepVerifier, propagation via default param — `llmTimeoutMs` déplacé AVANT `stepVerifier` pour résoudre référence circulaire) + catch `TimeoutCancellationException` → `withError("LLMTimeout: ${ms}ms exceeded")` (callLLMNode terminal) / `clearError().nextIteration().copy(lastToolResult="LLMTimeout...")` (replan récupérable) / `lastToolResult="LLMTimeout..."` (StepVerifier). Imports `kotlinx.coroutines.withTimeout` + `TimeoutCancellationException`.
+** US-4 C2 Retry single counter : supprimé `retryCount = state.retryCount + 1` dans `executePlanTasks` (2 sites L587 isFailure + L604 catch) + `incrementRetry()` consolidé en début de bloc error recovery (après zoomInOnError, avant vérification `retryCount <= maxRetries`) + supprimé 3 `incrementRetry()` dans branches replan (L291, L298, L302). Source de vérité unique : retryCount incrémenté une seule fois par essai.
+** US-5 Cucumber BDD : `codebase_vibe_hardening.feature` 4 scénarios `@vibe-hardening` (shell allowlist deny, gradle allowlist allow, LLM timeout, retry single counter) + `VibeHardeningWorld` (PicoContainer world) + `VibeHardeningSteps` (14 step defs préfixés "vibe hardening" — bug S-088 DuplicateStepDefinition évité) + `VibeHardeningCucumberRunner` (pattern S-082, filter `@vibe-hardening and not @integration`) + `CucumberTaskSpec("cucumberTestVibeHardening")` 37e cucumber dédié.
+* **Tests** : gate `codebase.koog.tools.*` + VibecodingGraph + StepVerifier VERT 64 tests 0 FAIL (17 ExecShellTool + 15 ExecGradleTool + 22 VibecodingGraph + 10 StepVerifier) + 4/4 cucumber `cucumberTestVibeHardening` PASSED en 47s. +7 unit (3 StepVerifier timeout + 4 VibecodingGraph timeout) + 1 unit US-4 retry counter.
+* **Build** : `compileTestKotlin` VERT, zéro bump BOM, zéro secret, zéro régression
+* **Score** : 9/10
 
-| 188 | 2026-08-17 | FT-PIPELINE + VIBE-HARDENING-2 + cross-borough | **Maintenance + cross-borough audit + cadrage 2 EPICs + propagation 5 boroughs** (gouvernance pure + bump catalogues consommateurs). Phase 1 maintenance : INDEX/BACKLOG/SESSIONS_HISTORY/PROMPT_REPRISE synchronisés post-S-187. Phase 2 cross-borough audit : 6 consommateurs audités. Phase 3 cadrage EPIC VIBE-HARDENING-2 : 7 constats P2/P3 (S2/S3/C1/C3/C4/C6/C7), 12 décisions archi, 8 US ~21 pts, `CADRAGE_EPIC_VIBE_HARDENING_2.adoc`. Phase 4 propagation : 5 boroughs bumpés codebase 0.0.8 (planner `d724e5e`, slider `f2612e0`, capsule `e8f1fec`, codex `e0ff21d`, training `3073b52`) — 4 compileKotlin VERT, codex fail préexistant hors scope. Phase 5 cadrage EPIC FT-PIPELINE : audit alignement vision globale (WORKSPACE_AS_PRODUCT.adoc:642-658 — codebase propriétaire pipeline fine-tuning), récupération conception notebook-gradle (vestige LA HAVANA), 16 décisions archi, 7 US ~18 pts, domaine `codebase.finetuning` (7ème), boucle fabrication→exposition avec domaine `codebase.koog.expert` existant (13 fichiers), `CADRAGE_EPIC_FT_PIPELINE.adoc`. 3 bugs découverts : MEMPHIS BOM 0.0.19 slider 0.0.8 non publié, ABIDJAN codex kotlin-stdlib, capsule codebase-contracts 0.1.0 local-only. Zéro fichier production codebase modifié. Rapport : `.agents/sessions/188-maintenance-cross-borough-vibe-hardening-2-cadrage.adoc`.
-| 187 | 2026-08-17 | VIBE-HARDENING | **US-3+US-4+US-5 TERMINÉ — EPIC VIBE-HARDENING CLOS 6/6 US** (pattern S-113, 3 US en 1 session). US-3 C5 Timeout LLM : `StepVerifier.kt` constructor param `llmTimeoutMs: Long = DEFAULT_LLM_TIMEOUT_MS (30_000L)` + wrap `withTimeout(llmTimeoutMs)` site replan L44 (catch `TimeoutCancellationException`) ; `VibecodingGraph.kt` constructor param déplacé AVANT `stepVerifier` (default param propagation) + wrap `withTimeout` 2 sites (callLLMNode L413 terminal `withError("LLMTimeout")`, error recovery replan L288 récupérable `clearError().nextIteration().copy(lastToolResult="LLMTimeout...")`). US-4 C2 Retry single counter : supprimé `retryCount = state.retryCount + 1` 2 sites `executePlanTasks` (L587/L604) + 3 `incrementRetry()` branches replan → 1 `incrementRetry()` début bloc error recovery. US-5 Cucumber BDD : `codebase_vibe_hardening.feature` 4 scénarios `@vibe-hardening` + `VibeHardeningWorld` + `VibeHardeningSteps` (14 step defs préfixés "vibe hardening", bug S-088) + `VibeHardeningCucumberRunner` (pattern S-082) + `CucumberTaskSpec("cucumberTestVibeHardening")` 37e. 4/4 PASSED 47s. Gate `codebase.koog.tools.*` + VibecodingGraph + StepVerifier VERT 64 tests 0 FAIL. Zéro bump BOM, zéro secret. Rapport : `.agents/sessions/187-vibe-hardening-us3-us4-us5-clos.adoc`.
-| 186 | 2026-08-17 | VIBE-HARDENING | **US-2 ExecGradleTool allowlist deny-by-default TERMINÉ** (baby-step TDD strict, pattern US-1 shell). 4 regex `GRADLE_BLACKLIST` (bypassables) remplacées par `GRADLE_TASK_ALLOWLIST` (2 patterns bare tasks + project:task) + `GRADLE_ARG_ALLOWLIST` (2 patterns -Pprop + --flag) + `GRADLE_DENYLIST` (8 patterns second ride : clean build, --refresh-dependencies, rm, delete, sudo, curl, semicolon, pipe). `validateGradleTask` split tokens + allowlist par position + deny-list second ride. `ExecGradleToolTest` 6→17 tests (15/15 PASSED, 2 @integration exclus). Gate `codebase.koog.tools.*` VERT 32 tests 0 FAIL (17 shell + 15 gradle). `ToolRegistryTest` 8/8 non-régression. Zéro bump BOM. Rapport : `.agents/sessions/186-vibe-hardening-us2-gradle-allowlist.adoc`.
-| 185 | 2026-08-17 | VIBE-HARDENING | **US-1 ExecShellTool allowlist deny-by-default TERMINÉ** (baby-step TDD strict RED → GREEN → REFACTOR). `BASH_BLACKLIST` (10 regex bypassables `ExecShellTool.kt:10-21`) remplacé par `SHELL_ALLOWLIST` (10 patterns : git read, rg, ls, find ., mkdir /tmp, echo, cat, head/tail, ./gradlew, pwd) + `SHELL_DENYLIST` second ride (10 patterns : rm -[rR], sudo, curl, wget, chmod 0?777, pipe sh/bash, /etc/, /dev/, redirect /). `validateCommand` : allowlist passe d'abord (deny-by-default), deny-list en second ride (defense in depth). Messages "denied" au lieu de "blacklisted". `ExecShellToolTest` 11→17 tests (6 nouveaux : `rm -Rf` uppercase, `chmod 0777` zero-prefixed, `curl localhost` rejeté allowlist, `unknown command` deny-by-default, `git push` subcommand non-allowlistée, `redirect to root` ; 1 supprimé : `sleep 5` timeout — non-allowlisté rejeté avant timeout process ; 1 adapté : `exit 42` → `git show deadbeef` allowed non-zero exit). Gate `codebase.koog.tools.*` VERT 21 tests 0 FAIL (17 shell + 4 gradle non-régression US-2). `ToolRegistryTest` 8/8 PASSED (consommateur non régressé). 2 fichiers modifiés. Zéro bump BOM. Zéro secret. Rapport : `.agents/sessions/185-vibe-hardening-us1-shell-allowlist.adoc`.
-| 184 | 2026-08-17 | VIBE-HARDENING | **US-0 Cadrage EPIC VIBE-HARDENING (gouvernance pure, zéro code)**. 3 constats P1 audités (S1 blacklists bypassables `ExecShellTool.kt:10-21` 10 regex + `ExecGradleTool.kt:10-15` 4 regex, C2 retryCount double-compté `VibecodingGraph.kt:587/604` + bloc error `:291/298/302`, C5 3 sites `runBlocking { llmProvider.call(...) }` sans timeout `:413/:288/StepVerifier:44`). 7 rappels P2/P3 (S2/S3/C1/C3/C4/C6/C7). 10 décisions architecturales : allowlist deny-by-default 10 patterns shell + 8 gradle + deny-list second ride, domaine `contracts.vibecoding.tools` conservé, un seul compteur retry via `withRecoverableError` (déjà correct L46-47), `withTimeout(llmTimeoutMs=30_000L)` configurable catch `TimeoutCancellationException`, backward compat préservée, baby-step TDD strict, zéro bump BOM, Cucumber BDD `@vibe-hardening` US-5 runner dédié, pas de nouvelle tâche Gradle, P2/P3 reportés EPIC VIBE-HARDENING-2. 6 US ~12 pts (US-0 ✅, US-1→5 À FAIRE). Document `.agents/CADRAGE_EPIC_VIBE_HARDENING.adoc`. Pattern S-057/S-063. `compileKotlin` VERT pré-cadrage. Working tree propre.
-| 183 | 2026-08-16 | PUB | **EPIC PUB TERMINÉ 3/3 US — codebase-plugin 0.0.8 publié Maven Central**. US-0.0.8-1 : POM `withType<MavenPublication>` (name/description) + signing `useGpgCmd` (conventions-gradle publishing 0.0.2 ligne 112) + release deps vérifiées (zéro SNAPSHOT, 12 artefacts education.cccp en release Central) + nmcpSettings AUTOMATIC (ossrhUsername/Password ~/.gradle/gradle.properties). US-0.0.8-2 : `publishAggregationToCentralPortal --no-daemon` BUILD SUCCESSFUL 28s — bundle `4ae55e92-a116-4a25-8edf-b1f7cc9a56d4` AUTOMATIC, HTTP 200 repo1 `codebase-plugin-0.0.8.pom` après ~20 min propagation (404 à 90s/5min — ne pas conclure prématurément). US-0.0.8-3 : zéro tag local/origin (ls-remote vide) → cleanup néant ; BOM non bumpé (constraint codebase 0.0.5 dans BOM Central 0.0.18 — bump à la discrétion MEMPHIS, pratique canonique zéro bump BOM S073/S179/S182). Zéro fichier source modifié — publication pure. Rapport : `.agents/sessions/183-epic-pub-0.0.8-central.adoc`.
-| 182 | 2026-08-16 | SUBGRAPH | **US-3 + US-4 TERMINÉS — EPIC SUBGRAPH CLÔTURÉ 4/4**. US-3 : `GovernanceContextLoader(graphFile: File? = null, lensConfig: LensConfig = LensConfig())` — `graphRelations = graphFile?.let { GraphifyContextProvider(it, lensConfig).provide() } ?: ""` (fallbacks conservés) ; `MultiChannelContextGraph(graphFile: File? = null)` — `collectGraphifyNode` + `assembleNode` consomment `graphFile ?: rootDir.resolve("office/graph.json")`, canal `ContextChannel.Resource` alimenté depuis le sous-graphe réel (tronqué au `resourceTokens`) ; câblage `SessionProtocolTask.loadGovernanceContext()` + `SessionProtocolServer.resolveAgentContext()` passent `root.resolve("office/graph.json")` → `LiveContextInjector` effectif. 6 unit (4 GovernanceContextLoaderTest + 2 MultiChannelContextGraphTest budget resource 0.10). TDD strict RED (compileTestKotlin `No parameter with name 'graphFile'` 3 sites) → GREEN → REFACTOR. US-4 : `src/test/features/codebase_subgraph.feature` 4 scénarios @subgraph (Graphify channel réel, Resource channel réel, graphRelations peuplé, fallback fichier manquant) + `SubgraphWorld` (picocontainer, graph.json synthétique @TempDir) + `SubgraphSteps` (14 step defs) + `SubgraphCucumberRunner` (pattern EpicSld8LlmServiceCucumberRunner) + `CucumberTaskSpec("cucumberTestSubgraph")` câblé build.gradle.kts. RED : UndefinedStepException 4 scénarios + `CucumberExpressionException createAlternativeMayNotBeEmpty` (slash `/` final dans l'expression → alternation vide — corrigé en retirant `in office/`/`office/graph.json` des expressions). GREEN : 4/4 PASSED 21s, zéro production modifié — pure BDD. Gates ciblés VERT : 4 classes 0 FAIL (~4min 25s) + `codebase.graph.*` 37/37 + SessionProtocol 0 FAIL. Glob `codebase.koog.*` timeout 420s×2 (pratique canonique gates ciblés S175/S179/S180). Zéro bump BOM. Working tree bump 0.0.8 + repo `GradlePluginPortal` non commités (diff pré-session, EPIC PUB S181). Rapport : `.agents/sessions/182-subgraph-us3-us4.adoc`.
-| 181 | 2026-08-15 | PUB | **Audit version + EPIC PUB (gouvernance pure, zéro code)** — delta codebase-plugin 0.0.7 vs Central 0.0.7 (bundle e08acb47 S-073) + commits post-publication non propagés (`f840b93` SUBGRAPH US-1+US-2). Décision : bump 0.0.7→0.0.8 reporté fin d'EPIC SUBGRAPH (S179) → cadré EPIC PUB dédié (3 US PUB-0.0.8-1/2/3) ajouté au BACKLOG. Zéro code modifié — gouvernance pure pattern bakery S199.
-| 180 | 2026-08-15 | SUBGRAPH | **US-2 TERMINÉ — canal Graphify alimenté par le sous-graphe réel** (faux positif stats regex éliminé). US-2a `GraphContextRenderer` (object pur, format texte structuré ligne par ligne compatible troncature : header `[Graphify] subgraph: N nodes, M edges, C communities` + ligne par nœud/arête/communauté, 6 unit). US-2b `GraphifyContextProvider` (File+LensConfig injectables, pipeline load→extract→render, fallbacks conservés contrat backward-compat `"[Graphify] graph.json non trouve dans office/"` + `"illisible:"`, 5 unit — fixture corrigée `.kt`→`.adoc` car défaut `fileExtensions=["adoc","md","html"]`). US-2c câblage `CompositeContextBuilder` (param `graphFile: File? = null` + `graphifyProvider` constructeur, `loadGraphifyStats` regex supprimé) + `MultiChannelContextGraph.collectGraphifyNode` (provider `rootDir/office/graph.json`, regex supprimé). 3 functional `CompositeContextBuilderGraphifyTest` (URL jdbc bogus localhost:1 → fallback RAG hors docker) + 1 nouveau test `MultiChannelContextGraphTest` graphify (graph.json réel @TempDir, 7 total). Baby-step TDD strict RED → GREEN → REFACTOR. Gate ciblé VERT 24s 0 FAIL, `codebase.graph.*` 37 tests 0 FAIL. Suite complète `codebase.koog.*` interminable (2 timeouts 420s/720s — pratique canonique S175/S179 gates ciblés). ⚠️ Incident environnemental (non lié US-2) : racine `codebase-gradle` ne configure plus (`:help` FAILED — strict `kotlin-stdlib:2.3.21` embedded Gradle 9.6.1 vs `workspace-bom:0.0.4` requires 2.3.20 sur buildscript classpath via plugin publié `0.0.3`→`codebase-plugin:0.0.5` mavenLocal, artefacts inchangés depuis 08-11/06-26) — validation via build autonome `codebase-plugin/` (settings.gradle.kts propre) ✅
-| 179 | 2026-08-15 | SUBGRAPH | **US-1 TERMINÉ — domaine `codebase.graph` ouvert (portage bakery → N1)**. Dépendance `education.cccp:graphify-plugin:0.0.2` (catalog + build.gradle.kts implementation, pattern bakery). `LensConfig` (scope/communities/nodeTypes/edgeTypes/maxDepth/fileExtensions + enum LensScope SUBGRAPH/FULL/SEMANTIC_ONLY, defaults identiques bakery ; DSL Gradle Action + rules/rag LENS-2 NON portés — YAGNI) + `SubgraphExtractor` (loadGraph/extract/extractFromPath/expandBfs + `SiteSubgraph` : nodeCount/edgeCount/communityCount/nodeIds/communityIds/nodesByCommunity/edgesByType/nodesInCommunity/edgesOfType/neighbors). 26 unit portés de bakery `SubgraphExtractorTest` (GraphModel synthétique, package `com.cheroliv.graphify.model` — WORKAROUND relocalisé confirmé). Baby-step TDD strict RED (compileTestKotlin FAILED `Unresolved reference`) → GREEN (BUILD SUCCESSFUL 13s) → REFACTOR. Gate non-régression VERT : `--tests codebase.graph.* codebase.koog.* contracts.vibecoding.*` → 912 tests / 105 classes / 0 FAIL (suite complète non relancée — Cucumber, pratique canonique S175). Zéro bump BOM. Décision : bump 0.0.7→0.0.8 + publication Central reportés en fin d'EPIC (après US-2/3/4) ✅
-| 178 | 2026-08-15 | SUBGRAPH | Cadrage EPIC SUBGRAPH (gouvernance pure, zéro code). 4 constats audités (stats regex `loadGraphifyStats` CompositeContextBuilder.kt:138 + MultiChannelContextGraph.kt:130, `graphRelations` hardcodé `""` GovernanceContextLoader.kt:68, `ContextChannel.Resource` vide, zéro dépendance graphify-plugin). Precedent bakery `SubgraphExtractor`+`LensConfig`+`BfsProximityCache` (graphify-plugin 0.0.2, sous-graphe ~200 nœuds) identifié. 10 décisions architecturales : dépendance graphify-plugin 0.0.2 (WORKAROUND package relocalisé `com.cheroliv.graphify.model`), domaine `codebase.graph` 6ème, portage extracteur bakery → N1 socle, câblage canal Graphify réel budget 0.20, `graphRelations` alimenté, source office/graph.json surchargeable DSL, GraphModel synthétique tests, bump 0.0.6, zéro bump BOM. 5 US découpées (~39 pts). Bénéfice : planner + tous consommateurs codebase construisent leur graphe/sous-graphes. BACKLOG/INDEX/PROMPT_REPRISE/SESSIONS_HISTORY mis à jour ✅
-| 176 | 2026-08-05 | SLD-8 US-8.1 | LlmBuildService Gradle bridge + corrections architecture. Pattern « Plugin Indépendant + Racine Consommateur » restauré (article 0124). codebase-plugin/ autonome avec son catalog. BOM 0.0.16 + codebase 0.0.5 mavenLocal. plugin.serialization fix (codebase + planner). US-8.1 livrée TDD/BDD 3 niveaux (5 unit + 3 functional + 4 cucumber = 12 tests, 0 FAIL). 2 fichiers prod additifs (LlmServiceResolver + LlmBuildService), zéro modification existant ✅
-| 175 | 2026-06-26 | CR | Clôture code review vibecoding CR-GLOBALE-004. 10 findings archivés. Borough DORMANT ✅
-| 172 | 2026-07-16 | EPIC C-BOM-FIX | C-BOM-FIX TERMINÉ 3/3 US (8/8 pts) — Versions explicites pour 6 artefacts `education.cccp` + 27 deps externes dans `libs.versions.toml` (le BOM en `implementation(platform(...))` ne propage pas ses contraintes aux consommateurs transitifs). Bump 0.0.5→0.0.6. `publishToMavenLocal` OK. POM 0.0.6 + `.module` contiennent les versions. 3 nouveaux UT `VersionCatalogTransitiveVersionsTest`. 22/22 UT bakery LangSwitch GREEN. Zéro régression codebase. Débloque bakery BKY-LANG-SWITCH ✅
-| 171 | 2026-06-30 | — | Réduction bruit pgvector logs. 8 log.warn→debug dans 4 fichiers Koog/RAG. compileKotlin + cucumberTestEpicVLocal PASS ✅
-| 169 | 2026-06-26 | — | CI-green confirmé (run 28206228434 fast-tests ✅ + full-tests ✅ 33m50s). Backlog synchronisé ✅
-| 168 | 2026-06-26 | CI | 19 échecs JUnit5 full-tests résolus — @integration tag + EpicV6CucumberRunner excludes ✅
-| 167 | 2026-06-26 | CI | V-6 runner @integration fix — EpicV6CucumberRunner excludes @integration ✅
-| 161 | 2026-06-23 | Code Review | Affinage `CODE_REVIEW_MATURITY_ANALYSIS.adoc` — 5/10 critiques déjà résolues, 3 actions sûres appliquées (CVE-2015-6420→7501, README.md créé, CI split fast/full/publish), 3 concerns transverses dispatchés vers BACKLOG global. Compile OK ✅
-| 160 | 2026-06-23 | Backlog Cleanup | Backlog & Roadmap cleanup — 4 fichiers gouvernance mis à jour (`.agents/BACKLOG.adoc` réécrit, `INDEX.adoc` V-9→TERMINÉ+V-LOCAL/TRAD ajoutés, `BACKLOG.adoc` root EPIC 1→STALE, `STRATEGIC_ROADMAP.adoc` phases 1-3→DELIVERED). Version bump 0.0.3→0.0.4. Borough confirmé dormant — aucun EPIC actif ✅
-| 159 | 2026-06-23 | EPIC OCR-1/OCR-2 | OCR-1/OCR-2 restants TERMINÉS (9/9 items) — HTTP 429 detection + rotation auto (`GeminiKeyPool.markRateLimited`/`isRateLimited`, `GeminiVisionProvider` catch 429), env var mapping `GEMINI_API_KEY_1..N` (`GeminiPoolFactory.fromKeys`/`fromEnvVars`), multi-compte Google (`GeminiMultiAccountPool`), Tesseract fallback harmonisé boundary codex↔codebase (`OcrEngine`+`TesseractOcrEngine` dans codex Brooklyn, `CodexOcrEngineAdapter` dans codebase Queens), 35 tests nouveaux + 11 Cucumber `@epic_ocr_1`/`@epic_ocr_2` PASS, codex publishToMavenLocal 0.0.1, EPIC OCR complet 7/7 ✅
-| 158 | 2026-06-23 | EPIC V-6-POOL | V-6-POOL terminé 4/4 : AUTHORIZED_MODELS aligné sur AGENTS.adoc (2 modèles `gpt-oss:120b-cloud` + `gemma4:31b-cloud`) dans `OllamaInstanceFactory` + `OllamaInstanceScanner`, `LlmProviderResolver` cycle les 2 modèles sur `OLLAMA_POOL_PORTS` au lieu de `DEFAULT_MODEL` statique, feature Cucumber `epic_v6_pool.feature` (3 scénarios @epic_v6_pool) + runner + step `includes model`, tous tests unitaires + Cucumber PASS, zéro régression V-6 ollama_cloud + V-6 resolver ✅
-| 155 | 2026-06-23 | EPIC V-9 | V-9.19 Auto-detection of new governance files — `GovernanceFileSnapshot`/`GovernanceFileDiff`/`GovernanceFileChangeDetector`/`JsonGovernanceStateStore`/`IncrementalReport` DDD, mode incrémental câblé `IngestGovernanceTask` (diff snapshot précédente → `ingestFiltered`), extension DSL `incremental.set(true)` + CLI `-Pcodebase.governance.incremental=true`, 15 unit + 7 fonctionnel + 5 Cucumber @epic_v_9_19 PASS, régressions V-9.3→V-9.18 vertes ✅. Contrainte Ollama globale sauvegardée `AGENTS.adoc` + `AGENT.adoc`, 52/52 inférences `gpt-oss:120b-cloud`+`gemma4:31b-cloud` PASS.
-| 154 | 2026-06-23 | EPIC V-9 | V-9.18 Compilation vers Gradle tasks — `AgenticGradleTaskRegistrar` enregistre GRADLE_TASK/CONSTRAINT_CHECK/VALIDATION comme tâches Gradle dynamiques, câblage `IngestGovernanceTask`, enrichissement `AgenticChunker` verbes taxonomiques, 7 JUnit5 + 3 fonctionnels + 3 Cucumber @epic_v_9_18 PASS, régressions V-9.3→V-9.17 vertes ✅
-| 153 | 2026-06-23 | EPIC V-9 | V-9.17 Ingestion Summary DSL — extension Gradle `codebaseGovernance { strictValidation.set(true) }` + propriété projet `codebase.governance.strictValidation`, `GovernanceSummaryConfig` DDD + `CodebaseGovernanceExtension`, câblage `IngestGovernanceTask.governanceConfig`, 3 JUnit5 + 4 fonctionnels + 3 Cucumber @epic_v_9_17 PASS, régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11/9.13/9.14/9.15/9.16 vertes ✅
-| 152 | 2026-06-23 | EPIC V-9 | V-9.16 StrictValidationMode — option Gradle `strictValidation` dans `IngestGovernanceTask`, levée de `GradleException` si chunks invalides en mode strict, 3 JUnit5 + 3 Cucumber @epic_v_9_16 PASS, régression V-9.4 batch TAXONOMIE_WORKSPACE corrigée, régressions V-9.x vertes ✅
-| 151 | 2026-06-23 | EPIC V-9 | V-9.15 Invalid Chunk Quarantine — port `InvalidChunkRepository` + implémentations in-memory/R2DBC (migration V4) + `InvalidChunkQuarantine` câblé dans `AgenticIngestor`, `IngestionReport.invalidChunks` + JSON, 12 JUnit5 + 2 Cucumber @epic_v_9_15 PASS, régressions V-9.x vertes ✅
-| 150 | 2026-06-23 | EPIC V-9 | V-9.14 Auto-activation du hook d'interdiction — `GovernanceEnforcementWirer` câblé dans `VibecodingTask` et `SessionProtocolTask`, 5 JUnit5 + 2 fonctionnels + 2 Cucumber @epic_v_9_14 PASS, zéro régression V-9.x ✅
-| 149 | 2026-06-23 | EPIC V-9 | V-9.13 ToolRegistry enforcement hook — `EnforcementHook` contrat N0, `buildEnforcementHook()` N1, `ToolRegistry` bloque nativement exec_shell/exec_gradle, 8 JUnit5 + 3 fonctionnels + 5 Cucumber @epic_v_9_13 PASS, zéro régression V-9.x ✅
-| 148 | 2026-06-23 | EPIC V-9 | V-9.12 AgenticExecutor — `AgenticExecutor` PRE_HOOK runner, `IngestionReport.executables`, câblage `IngestGovernanceTask.lastExecutor`, 8 JUnit5 + 5 Cucumber @epic_v_9_12 PASS, zéro régression V-9.x et tests Y-4/Y-7. ✅
-| 147 | 2026-06-23 | EPIC V-9 | V-9.11 AgenticCompiler exécutable — `ExecutableArtifact` + `ArtifactPayload` + `ExecutionResult`, `compileExecutable()`, `AgenticChunkEnforcement` consomme PreHookPayload, 8 JUnit5 + 4 Cucumber @epic_v_9_11 PASS, zéro régression V-9.x et tests Y-4/Y-7. ✅
-| 146 | 2026-06-23 | EPIC V-9 | V-9.10 ChunkValidationReport — `ChunkValidationErrorType`, `lineStart`/`lineEnd`, `validationErrorsByType` JSON, 3 JUnit5 + 1 test fonctionnel + 3 Cucumber @epic_v_9_10 PASS, zéro régression V-9.x ✅
-| 145 | 2026-06-23 | EPIC V-9 | V-9.9 ChunkValidationGate — `ChunkValidator` câblé dans `AgenticIngestor`, `IngestionReport` enrichi `chunksInvalid`/`validationErrors`, JSON enrichi, 3 JUnit5 + 2 Cucumber @epic_v_9_9 PASS, régressions V-9.3/9.5/9.7/9.8 vertes. BACKLOG.adoc synchronisé.
-| 144 | 2026-06-23 | EPIC V-9 | V-9.8 Governance ingestion report — `GovernanceOntologizer` intégré dans `AgenticIngestor`/`IngestGovernanceTask`, `IngestionReport` enrichi de `sectionsAdded`/`sectionsTotal`, JSON enrichi, tâches Cucumber V-9.3/9.5/9.7/9.8 enregistrées. 10 JUnit5 + 3 Cucumber @epic_v_9_8 PASS ✅
-| 143 | 2026-06-22 | EPIC V-9 | V-9.7 GovernanceOntologizer — enum `GovernanceSection` + classifieur par nom de fichier + 8 JUnit5 + 7 Cucumber @epic_v_9_7 PASS ✅ (V-9.6 déjà livré par EPIC Y-2). Under-EPIC 2 démarré.
-| 142 | 2026-06-22 | EPIC V-9 | V-9.3 ScanAgent — `ScanAgent` scanner récursif `.agents/` + `ScannedFile` value object + 8 JUnit5 + 6 Cucumber @epic_v_9_3 PASS ✅ + refactor `IngestGovernanceTask.collectGovernanceFiles` (liste hardcoded supprimée). Under-EPIC 1 complet 5/5.
-| 141 | 2026-06-22 | EPIC V-9 | V-9.5 ChunkValidator — 10 JUnit5 + 5 Cucumber @epic_v_9_5 PASS ✅ (anti-duplication V-9.1/V-9.2/V-9.4 vérifiée)
-| 140 | 2026-06-22 | EPIC 8 | ExpertManifestReader + round-trip + Cucumber cross-borough — 8 JUnit5 + 2 round-trip + 6/6 @epic8 PASS ✅ (EPIC 8 clôturé 4/4)
-| 139 | 2026-06-22 | EPIC V-6 | LlmProviderResolver factory déterministe + Cucumber @epic_v6_resolver — 9 JUnit5 + 3 Cucumber PASS ✅
-| 138 | 2026-06-22 | EPIC V-6 | OllamaInstanceFactory + contrat N0 volumeTag + feature @epic_v6_ollama_cloud — 2 scénarios PASS ✅
-| 137 | 2026-06-22 | EPIC V-6 | OllamaPoolKeyAdapter + câblage OllamaLlmProvider — 26/27 tests PASS ✅
-| 136 | 2026-06-22 | EPIC V-6 | OllamaInstanceScanner actif + ports DDD + câblage resolver — 22 tests PASS ✅
-| 135 | 2026-06-22 | EPIC PUB | N0 migration + codebase-plugin 0.0.3 publié Central (propagation en cours) ✅
-| 134 | 2026-06-22 | EPIC PUB | Doublon + catalogue stale + N0 Central publiés ✅
+== Session 186 — 2026-08-17
 
-| 133 | 2026-06-22 | EPIC TRAD | TranslationService N1 (contrat N0 + LlmTranslator + Fake + 8 JUnit5 + 6 Cucumber) ✅
-| 132 | 2026-06-22 | EPIC V-LOCAL | V-LOCAL-4/5/6 terminés — 5 scénarios Cucumber + IngestGovernanceTask stub ✅
-| 131 | 2026-06-22 | EPIC V-LOCAL | GovernanceContextLoader fallback + compliance ports ✅
-| 130 | 2026-06-22 | EPIC L | Koog 1.0.0 replacement forwardTo ✅
-| 129 | 2026-06-22 | EPIC V-LOCAL | GovernanceContextLoader + tests + docs ✅
-| 128 | 2026-06-16 | Documentation Locale Vibecoding | LOCAL_VIBECODING_LOOP.adoc terminé
-| 127 | 2026-06-16 | EPIC 8 Expert Exposure | 21/21 PASS ✅
-| 126 | 2026-06-16 | EPIC 7 Expert Dispatcher | 60/60 PASS ✅
-| 125 | 2026-06-14 | CR-14 BUILDING.md | TERMINE ✅
-| 124 | 2026-06-14 | CR-12/13 Audit+Alias | TERMINE ✅
-| 123 | 2026-06-14 | CR-10/11 Dependencies | TERMINE ✅
-| 122 | 2026-06-14 | CR-8/9 Postgres+Kover | TERMINE ✅
-| 121 | 2026-06-14 | CR-5/6/7 Root+CI+JVM | TERMINE ✅
-| 120 | 2026-06-14 | CR-2/3/4 Timeout+Cache+Heap | TERMINE ✅
-| 119 | 2026-06-14 | CR-1 Cucumber Factory | TERMINE ✅
-| 118 | 2026-06-14 | OCR-3b FakeVision+CI | TERMINE ✅
-|===
+* **EPICs** : EPIC VIBE-HARDENING (US-2 ExecGradleTool allowlist)
+* **Livrables** :
+** 4 regex `GRADLE_BLACKLIST` remplacées par `GRADLE_TASK_ALLOWLIST` (2 patterns : bare tasks + project:task form) + `GRADLE_ARG_ALLOWLIST` (2 patterns : -Pproperty + --long-flag) + `GRADLE_DENYLIST` (8 patterns second ride : clean build, --refresh-dependencies, rm, delete, sudo, curl, semicolon, pipe)
+** `validateGradleTask` refactor : split tokens par `\\s+`, allowlist par position (1er token = task, reste = args), puis deny-list sur chaîne complète (defense in depth)
+** `ExecGradleToolTest` 6→17 tests (5 allowlist pass + 9 deny-list/deny-by-default + 2 @integration préservés + 1 backward compat)
+** Description tool enrichie (allowlist + deny-list second ride)
+* **Tests** : 15/15 ExecGradleToolTest PASSED + gate `codebase.koog.tools.*` VERT 32 tests + ToolRegistryTest 8/8 non-régression
+* **Build** : `compileTestKotlin` VERT, zéro bump BOM, zéro secret
+* **Score** : 9/10
 
+== Session 185 — 2026-08-17
+
+* **EPICs** : EPIC VIBE-HARDENING (US-1 ExecShellTool allowlist)
+* **Livrables** :
+** 10 regex `BASH_BLACKLIST` remplacées par `SHELL_ALLOWLIST` (10 patterns) + `SHELL_DENYLIST` (10 patterns second ride)
+** `validateCommand` allowlist deny-by-default + deny-list second ride
+** `ExecShellToolTest` 11→17 tests
+* **Tests** : gate `codebase.koog.tools.*` VERT 21 tests + ToolRegistryTest 8/8 non-régression
+* **Score** : 9/10
+
+== Session 184 — 2026-08-17
+
+* **EPICs** : EPIC VIBE-HARDENING (US-0 cadrage)
+* **Livrables** :
+** 3 constats P1 audités (S1 blacklists bypassables, C2 retry double-compté, C5 LLM sans timeout) + 7 rappels P2/P3
+** 10 décisions architecturales + 6 US ~12 pts découpees
+** Document `CADRAGE_EPIC_VIBE_HARDENING.adoc` (301 lignes)
+* **Tests** : zéro (gouvernance pure, pattern S-057/S-063)
+* **Score** : 9/10
+
+== Session 175 — 2026-08-05
+
+* **EPICs** : Aucun (code review + clôture)
+* **Livrables** :
+** Gate tests `codebase.koog.*` + `contracts.vibecoding.*` BUILD SUCCESSFUL (5m44s, Kotlin 2.4.10)
+** Commit atomique `b12a092` — libs.versions.toml Kotlin 2.4.10 centralisé (version.ref), doublon non suivi purgé, plugin.serialization via catalog, bloc publishing pom name+description, LlmTranslator.buildPrompt préservation backticks
+** CR-GLOBALE-004 archivée dans GLOBAL_CODE_REVIEW.adoc racine (10 findings S1-S3/C1-C7), CR-GLOBALE-003 rétrogradée *(historique)*
+** Backlog EPIC VIBE-HARDENING ajouté (P1 : S1 allowlist deny-by-default, C2 retry, C5 timeout LLM)
+* **Tests** : koog + vibecoding contracts verts, suite complète non exécutée (borough dormant)
+* **Build** : zéro changement structurel
+* **Score** : 9/10
+
+== Session 174 — 2026-08-05
+
+* **EPICs** : Aucun (code review lecture seule)
+* **Livrables** :
+** Code review du vibecoding agent autonome : 3 interfaces (vibecode, sessionProtocol, sessionProtocolDaemon), pipeline koog 5 nœuds, ToolRegistry, outils exec
+** 10 findings : S1-S3 sécurité (blacklists bypassables, pas d'allowlist Gradle, edit/write sans garde taille) + C1-C7 correctifs (heuristique `contains("failed")`, retry double-compté, VibecodingPlan dead code, flags Gradle cassés, LLM sans timeout, duplication, compteur négatif)
+** Audit working tree : bump Kotlin 2.4.10 non validé, catalog dupliqué non suivi, fichiers non suivis archives/sessions
+* **Tests** : compileKotlin BUILD OK Kotlin 2.4.10
+* **Score** : 8/10
+
+== Session 173 — 2026-07-16
+
+* **EPICs** : EPIC PUB (publication Maven Central 0.0.6)
+* **Livrables** :
+** `codebase-plugin:0.0.6` publié sur Maven Central (bundle `e4263c78`)
+** Fix POM `<name>`+`<description>` manquants (rejet Central Portal 1er upload)
+** Ajout bloc `publishing { pom { name.set / description.set } }` dans `codebase-plugin/build.gradle.kts`
+** Débloque bakery BKY-LANG-SWITCH sur CI (testRuntimeClasspath résolu)
+
+== Session 171 — 2026-06-30
+
+* **EPICs** : Aucun (réduction bruit logs)
+* **Livrables** :
+** 8 `log.warn` → `log.debug` dans 4 fichiers production (CompositeContextBuilder, KoogAugmentedContextGraph, KoogPlanningOrchestrator, MultiChannelContextGraph)
+** Mode dégradé sans pgvector = nominal en test — messages passés en debug au lieu de warn
+** Bruit `Cannot connect to localhost/<unresolved>:5432` + `pgvector schema init failed` + `RAG section unavailable` éliminé de la sortie standard
+* **Tests** : `compileKotlin` BUILD SUCCESSFUL (23s) + `cucumberTestEpicVLocal` BUILD SUCCESSFUL (1m32s)
+* **Build** : Aucun changement structurel, juste niveau de log
+* **Fichiers** : 4 fichiers Kotlin (8 lignes modifiées)
+* **Score** : 9/10
+
+== Session 170 — 2026-06-29
+
+* **EPICs** : SEC-1 purge deepseek
+* **Livrables** :
+** Purge deepseek des features + CI anonymize.yml
+** Bump 0.0.4 → 0.0.5
+** workspace-bom 0.0.4 + codebase-plugin 0.0.5 publiés Maven Central
+* **Score** : 8/10
+
+== Session 169 — 2026-06-26
+
+* **EPICs** : Aucun (validation CI + synchronisation backlog)
+* **Livrables** :
+** CI run 28206228434 validé : `fast-tests` ✅ 2m31s + `full-tests` ✅ 33m50s (19 fixes session 168 validés end-to-end)
+** Backlog synchronisé : EPIC 1 stale purgé (8/8 TERMINÉ), EPIC OCR stale corrigé (✅ TERMINÉ), EPIC CR stale corrigé (✅ TERMINÉ)
+** INDEX.adoc : session 169 ajoutée + tableau EPICs aligné (EPIC 1, OCR, CR, SP corrigés, doublon EPIC Y supprimé)
+** PROMPT_REPRISE.adoc : session 170, déclencheur CI retiré (validé), backlog restant = V-FLYWAY + warnings CI
+** Archive session 169 créée
+* **Tests** : Aucun test lancé (session de gouvernance uniquement)
+* **Build** : `compileKotlin` UP-TO-DATE — BUILD SUCCESSFUL
+* **Backlog restant** : EPIC V-FLYWAY (P2 conditionnel, seuil 5+ migrations, actuellement 4) + warnings CI Node.js 20 deprecated
+* **Leçons** :
+** Backlog doit être audité à chaque fin de session pour détecter statuts stale
+** CI `full-tests` nécessite ~35 min (Docker Ollama + testAll)
+** Annotations CI non bloquantes (Node.js deprecated) doivent être trackées
+
+== Session 168 — 2026-06-26
+
+* **EPICs** : Aucun (fix CI full-tests)
+* **Livrables** :
+** Bug 1 : `TokenTracker.kt` `COST_PER_MILLION` deepseek→gpt-oss/gemma4/qwen3 (modèles AGENTS.adoc) + `TokenTrackerTest` aligné
+** Bug 2 : `DilutionExecutor.kt` + `StimulusCascade.kt` — `Locale.FRENCH` sur `DateTimeFormatter` + `String.format` (6 tests : 3 DilutionExecutor + 3 StimulusCascade)
+** Bug 3 : `MigrationTest` attendus 2→4 migrations (V1-V4, V3+V4 ajoutés sessions 142/151 sans màj test)
+** Bug 4 : `KoogPlanningOrchestratorTest` accepte `ContextBuildPartial` comme cas valide (pgvector down)
+** Bug 5 : `TaskSchemaScannerTest` — `scanAll` teste présence 13 tasks plugin (pas compte exact), `scanByGroup` 3→4 collect, 3→7 generate
+** 7 tests `@integration` légitimes exclus via `excludeTags("integration")` dans `tasks.withType<Test>()` : `ExecGradleToolTest` (2, subprocess Gradle conflit catalog), `VibecodingGraphTest.v6 retry` (1, idem), `PgVectorConfigTest.fromEnv` (1, reflection JDK24), `LlmConfigTest` (1, llm-config.yml gitignoré), `MultiChannelContextGraphTest` (1, path hardcodé), `GovernanceContextLoaderTest` (1, path hardcodé)
+** Archive session 168 créée
+* **Tests** : `test` ✅ (42 tests ciblés, 0 failed), `testFast` ✅ (BUILD SUCCESSFUL 41s)
+* **CI** : Full Test Suite run 28197805505 avait 19 échecs JUnit5 — tous résolus
+* **Leçons** :
+** `String.format()` sans Locale explicite = bug latent en CI (Locale JVM par défaut `en_US` vs `fr_FR`)
+** Tests de comptage doivent suivre l'évolution du plugin (register ajoutés au fil des sessions)
+** Lancer `./gradlew` en subprocess depuis un test Gradle = anti-pattern (conflit daemon/catalog `Unresolved reference 'libs'`)
+** `@Tag("integration")` + `excludeTags` JUnit5 = mécanisme propre pour tests env-dependents
+
+== Session 166 — 2026-06-25
+
+* **EPICs** : EPIC CI/CD (déclencheur 4 — valider workflow full-tests)
+* **Livrables** :
+** Fix #1 : `TaskResultVerifier` reconnaît `DRY RUN` comme `SUCCESS` (+2 tests unitaires JUnit5)
+** Fix #2 : `VibecodingGraph.executePlanTasks` ne marque plus tâches échouées comme exécutées + `checkProgressNode` utilise `drainAutofocusStack()` (vide la stack sans écraser `focusLevel`) + cas "no work remaining" ne dépile plus
+** Fix #3 : 3 scénarios dépendants de l'environnement taggés `@integration` (pgvector container stop, V-6 retry LLM, US-9.10 CompositeContext EAGER)
+** 7 fichiers modifiés (+65/-5 lignes) : TaskResultVerifier.kt, VibecodingGraph.kt, 9_1_pgvector_container.feature, TaskResultVerifierTest.kt, VibecodingGraphAutofocusTest.kt
+* **Résultats** :
+** 12 tests JUnit5 préexistants rouges corrigés (VibecodingGraphAutofocusTest)
+** 4/4 Cucumber Z-6 verts, 16/16 TaskResultVerifierTest verts
+** testFast vert (1m 9s)
+** CI full-tests en attente validation push
+
+== Session 163 — 2026-06-24
+
+* **EPICs** : DOC-I18N (architecture README)
+* **Livrables** :
+** Architecture README Plugin + Consommateur déployée (article 0124)
+** `README.plugin/` déplacé de la racine vers `codebase-plugin/README.plugin/`
+** `README.md` (master EN plugin) remonté à la racine de `codebase-plugin/`
+** `README.consommateurs/README.md` (consumer guide EN) remonté à la racine du borough
+** Liens i18n recréés : `README.plugin/README.{lang}.md` (plugin) + `README.consommateurs/README.{lang}.md` (consumer), 10 langues
+** Ancien README.md racine (legacy court) remplacé par version consommateur
+* **Résultats** :
+** 20 fichiers repositionnés (10 plugin + 10 consumer)
+** Aucun code Kotlin modifié
+** Borough DORMANT
+
+== Session 162 — 2026-06-24
+
+* **EPICs** : DOC-I18N (documentation)
+* **Livrables** :
+** 20 fichiers README créés (10 langues × consumer + plugin) dans `README.consommateurs/` et `README.plugin/`
+** Badges shields.io (Maven Central, Plugin Portal, CI, License), block markers (version, build, tests, coverage)
+** Switcher i18n 10 langues, AR/UR RTL, traductions marquées `translated from README.md rev 0.0.4`
+** README.md racine mis à jour (section "Multilingual documentation")
+** Coordination des 9 autres boroughs consommateurs (workspace-bom + codex, planner, slider, plantuml, readme, bakery, capsule, graphify)
+* **Résultats** :
+** 200 fichiers README au total (10 projets × 20 fichiers)
+** Aucun code Kotlin modifié, aucun test lancé, aucune régression
+** Borough DORMANT (déclencheur externe uniquement)
+* **Leçons** :
+** Structure `README.consommateurs/` + `README.plugin/` sépare proprement les audiences
+** Agents parallèles essentiels pour 200 fichiers
+** AR/UR RTL géré nativement par GitHub Markdown (pas de `dir="rtl"` explicite)
+
+== Session 000 — 2026-06-16
+
+* **EPICs** : Bootstrap gouvernance — AGENT.adoc, INDEX.adoc, SESSION_CHECKLIST.adoc, SESSION_PROCEDURE.adoc
+* **Livrables** : Gouvernance agent complete, planning analysis vibecoding agentique
+* **Resultats** :
+** AGENT.adoc — regles absolues, conventions, architecture, cercles de confiance
+** INDEX.adoc — dashboard, etat EPICs, roadmap
+** SESSION_CHECKLIST.adoc — checklist debut/fin session (6 etapes)
+** SESSION_PROCEDURE.adoc — procedure de travail complete (3 phases, 8 etapes)
+* **Lecons** :
+** Le vibecoding couvre bien le code applicatif mais pas la gouvernance agentique
+** Les fichiers agentiques (AGENT, INDEX, SESSION_CHECKLIST, etc.) ne sont pas analyses/structures
+** Necessite une famille d'EPICs.complete pour l'analyse agile (7 ateliers)
+
+== Session 084 — 2026-06-17
+
+* **EPICs** : EPIC V-9 — Vibecoding Gouvernance Agentique (cadrage complété)
+* **Livrables** : CADRAGE_METHODE_EPIC_V9.adoc (7 ateliers, 35 items), BACKLOG.adoc aligné, INDEX.adoc mis à jour
+* **Resultats** :
+** CADRAGE_METHODE_EPIC_V9.adoc — cadrage agile complet (7 ateliers, 441 lignes)
+** SESSION_CHECKLIST.adoc — checklist debut/fin session (6 etapes)
+** SESSION_PROCEDURE.adoc — procedure de travail complete (3 phases, 8 etapes)
+** Alignment garden secret/anonymisation documenté (filtre d'intimité + filtre de protection)
+* **Lecons** :
+** Le jardin secret (Cercle 0) = filtre d'intimité (pas de git, snapshot horodaté)
+** L'anonymisation = filtre de protection des données sensibles (complémentaire)
+** Ces 2 filtres sont essentiels pour EPIC V-9 (fichiers agentiques sensibles)
+** Architecture EAGER/LAZY cross-borough : chaque borough a sa propre structure de fichiers (codebase, plantuml, bakery, runner, magic-stick)
+
+== Pattern d'archivage
+
+Les sessions sont archivées mensuellement dans `.agents/archives/COMPLETED_TASKS_ARCHIVE_{mois}.adoc`.
+
+Ce fichier de base sert de historique summary, reperant les sessions importantes par leur EPIC ou livrable majeur.
+
+=== 2026-06
+
+* Session 000 — Bootstrap gouvernance (AGENT, INDEX, SESSION_CHECKLIST, SESSION_PROCEDURE)
+** Vibecoding agentique non achevé — fichiers agentiques/gouvernance non analysés
+** Planning analysis agile avec 7 ateliers (référence : 0054_memo_cadrage_post.adoc)
+* Session 084 — EPIC V-9 cadrage (CADRAGE_METHODE_EPIC_V9, SESSION_CHECKLIST, SESSION_PROCEDURE)
+** Garden secret/anonymisation aligné
+** Architecture EAGER/LAZY cross-borough validée (codebase, plantuml, bakery, runner, magic-stick)
+** EPIC V-9 prêt à démarrer (35 items, ~70 pts, 7-10 sessions)
+* Session 129 — EPIC PUB Preflight + Pivot Gouvernance Locale (session de reprise)
+** Fix conflit annotations 13.0 vs 26.0.2-1 (resolutionStrategy)
+** Alignement codex-plugin 0.1.0-SNAPSHOT → 0.0.1 (Central)
+** Correction 8 erreurs validatePlugins (annotations Gradle task inputs/outputs)
+** publishToMavenLocal OK (signé GPG)
+** Mise à jour gouvernance : archive 129, INDEX, PROMPT_REPRISE
+** Décision : publication Central différée → priorité boucle vibecoding locale + gouvernance augmentée
+** Création `GovernanceContextLoader` + tests JUnit5
+* Session 130 — Koog 1.0.0 : replacement forwardTo (EPIC L maintenance)
+** Retrait import `forwardTo` dans 5 fichiers (koog 1.0.0 : membre vs top-level)
+** BUILD SUCCESSFUL — compileKotlin + compileTestKotlin OK
+
+* Session 131 — GovernanceContextLoader fallback + ports/models compliance
+** Câblage fallback auto dans `SessionProtocolTask` et `SessionProtocolServer`
+** Tests unitaires/fonctionnels ciblés PASS
+** Correction ports 11434 → 11437-11465 et modèles → `gpt-oss:120b-cloud`
+** Cucumber non finalisé (timeout lifecycle sans pgvector)
+
+* Session 134 — Doublon + catalogue stale + Publication N0 Central
+** `FakeAgenticChunkRepository.kt` (src/test) supprimé — strict doublon de `InMemoryAgenticChunkRepository` (src/main). 2 tests migrés, 14/14 PASS.
+** `codebase-plugin/gradle/libs.versions.toml` supprimé — catalogue stale jamais résolu par Gradle.
+** Découverte : `opencode-session-contracts:0.0.1` et `i18n-contracts:0.0.1` supprimés de workspace-bom en session 084 mais toujours dépendus par codebase + bakery.
+** Restauration depuis git history MEMPHIS : `git checkout 5472115 -- opencode-session-contracts/` + `git checkout 633219d -- i18n-contracts/`.
+** Ajout `TranslationService.kt` dans i18n-contracts (depuis code local session 133).
+** Publication Maven Central via nmcp : `opencode-session-contracts:0.0.1` (deployment 97aceef0, HTTP 200 ✅) + `i18n-contracts:0.0.1` (deployment 01a0198a, propagation en cours).
+** EPIC PUB codebase-plugin lui-même : reporté à session 135 (retrait duplications locales + migration nmcp settings + bump 0.0.3).
+* Session 135 — EPIC PUB clôturé + reprise EPIC V-6
+** `codebase-plugin:0.0.3` HTTP 200 sur Maven Central ✅
+** EPIC PUB passé à ✅ TERMINÉ dans `.agents/INDEX.adoc` et `codebase-plugin/BACKLOG.adoc`
+** Config publication validée (nmcp 1.5.0) — aucun remplacement nécessaire
+** Build propre (`./gradlew build -x test -x cucumberTest -x koverVerify -x validateDependencies --no-daemon`)
+** Analyse EPIC V-6 (OllamaPool, OllamaLlmProvider, LlmProviderResolver, article 0120)
+** Prochain baby-step défini : `OllamaInstanceScanner.kt` + tests JUnit5
+* Session 136 — EPIC V-6 `OllamaInstanceScanner` actif + ports DDD + câblage `LlmProviderResolver`
+** Scanner HTTP `GET /api/tags` sur ports 11437-11465, fallback `OLLAMA_POOL_PORTS`
+** `InstanceScanner` + `EnvironmentReader` ports injectables
+** 13+ tests JUnit5 PASS (`OllamaInstanceScannerTest`, `LlmProviderResolverTest`)
+* Session 137 — EPIC V-6 `OllamaPoolKeyAdapter` + câblage `OllamaLlmProvider`
+** Wrapper résilient rotation proactive quota / connexion refusée
+** `OllamaLlmProvider.call()` branché sur `adapter.callWithRotation`
+** 27 tests ciblés PASS
+* Session 138 — EPIC V-6 pattern Docker SSH key + Cucumber Ollama cloud
+** Article 0120 lu, pattern canonique extrait (port + volume SSH)
+** Contrat N0 `LlmInstance.volumeTag` ajouté (backward-compatible), publié mavenLocal
+** `OllamaInstanceFactory` génère 29 instances sur ports 11437-11465, modèles cyclés, volumeTag
+** 7 JUnit5 `OllamaInstanceFactoryTest` + 2 scénarios Cucumber `@epic_v6_ollama_cloud` PASS (zéro réseau)
+** Build codebase-gradle SUCCESSFUL
+
+== Session 147 — 2026-06-23
+
+* **EPICs** : EPIC V-9.11 AgenticCompiler
+* **Livrables** :
+** `AgenticCompiler.compile` retourne `null` pour chunks non compilables, `shouldCompile` explicite
+** `PostHookPayload` ajouté à `ArtifactPayload` ; `ExecutableArtifact.execute` gère PreHook/PostHook/Validation/Constraint
+** `AgenticCompilerTest` complété à 30 JUnit5 + `ExecutableArtifactTest` à 8 JUnit5
+** `cucumberTestEpicV911` enregistré dans `build.gradle.kts`
+** Feature `@epic_v_9_11` enrichie (6 scénarios : RULE, dry-run, PROCEDURE, CONSTRAINT, METADATA, CONCEPT)
+* **Tests** :
+** 30 JUnit5 + 8 JUnit5 + 6 Cucumber `@epic_v_9_11` PASS
+** Régressions V-9.3/9.5/9.7/9.8/9.9/9.10/9.11 vertes
+** Build `:codebase-plugin:build -x test -x cucumberTest -x koverVerify -x validateDependencies` SUCCESSFUL
+* **Lecons** :
+** `compileExecutable` doit toujours retourner un `ExecutableArtifact` (non nullable) ; la décision de compilation se fait dans `compile`
+** `shouldCompile` doit rester permissive : la sémantique du fallback (CI_GATE/VALIDATION/METADATA) suffit
+** Ajouter la tâche Gradle Cucumber dès qu'un runner EpicV9XX existe pour éviter les oublis de filtrage
+
+== Session 146 — 2026-06-23
+
+* **EPICs** : EPIC V-9.10 ChunkValidationReport
+* **Livrables** :
+** `ChunkValidationErrorType` enum DDD (8 types)
+** `ChunkValidationError` enrichi avec `lineStart`, `lineEnd`, `errorType`
+** `ChunkValidator` émet des erreurs typées + parse `sourceLines`
+** `IngestGovernanceTask` expose `validationErrorsByType` dans le JSON
+* **Tests** :
+** 3 JUnit5 ajoutés dans `ChunkValidatorTest` (line range + types)
+** 1 test fonctionnel `IngestGovernanceTaskTest` (JSON typé)
+** 3 scénarios Cucumber `@epic_v_9_10` PASS
+** Régressions V-9.3/9.5/9.7/9.8/9.9 vertes
+* **Lecons** :
+** Garder `ValidationResult` stable mais le remplir d'objets métier typés plutôt que de String
+** Le parser de line range doit tolérer `blank`, `single` et `start-end`
+
+== Session 156 — 2026-06-23
+
+* **EPICs** : EPIC V-9.20 Chunk diff incrémental entre sessions (niveau chunk)
+* **Livrables** :
+** `ChunkSnapshot`/`ChunkSnapshotEntry` DDD (fromChunks depuis AgenticChunk)
+** `ChunkDiff` DDD (added/modified/removed/unchanged + chunksToIngest)
+** `ChunkChangeDetector` service DDD (diff par id + checksum)
+** `JsonChunkStateStore` persistance JSON (build/governance/chunk-state.json, parser regex 4 champs)
+** `ChunkIncrementalReport` DDD (from(ChunkDiff), counts)
+** Câblage `IngestGovernanceTask.lastChunkIncrementalReport` + `mergeChunkSnapshots` + JSON `chunkIncremental`
+** `GovernanceSummaryConfig.chunkIncremental` + `CodebaseGovernanceExtension.chunkIncremental` + CLI `-Pcodebase.governance.chunkIncremental=true`
+** `GovernanceIngestor.IngestResult` enrichi `chunkSnapshot`
+** `CodebasePlugin` refactor 3 propriétés CLI via `project.provider` (composition indépendante)
+** Cucumber `@epic_v_9_20` (5 scénarios) + `EpicV920Steps` + `EpicV920CucumberRunner` + tâche `cucumberTestEpicV920`
+** `IngestGovernanceWorld` étendu (`lastChunkIncrementalReport`, `runTask(chunkIncremental=...)`)
+* **Tests** :
+** 40 JUnit5 unitaires (9 ChunkSnapshot + 7 ChunkDiff + 8 ChunkChangeDetector + 9 ChunkStateStore + 7 ChunkIncrementalReport)
+** 5 tests fonctionnels `IngestGovernanceTaskTest` V-9_20
+** 5/5 Cucumber `@epic_v_9_20` PASS
+** Régressions V-9.3 → V-9.19 Cucumber vertes
+** `compileKotlin` vert, `jar` vert
+* **Lecons** :
+** Le parser regex de V-9.19 (2 champs) étendu à 4 champs pour ChunkSnapshotEntry — même style maison, pas de Jackson
+** `GovernanceIngestor.IngestResult` ne portait pas la ChunkSnapshot — enrichi pour exposer l'état après ingestion
+** Le câblage CLI `orElse` chaîné (mutuellement exclusif) refactoré en `project.provider` composant les 3 propriétés CLI indépendamment
+** `mergeChunkSnapshots` : en mode fichier incrémental, retire les chunks des fichiers modifiés/supprimés, conserve les chunks des fichiers inchangés
+
+== Session 157 — 2026-06-23
+
+* **EPICs** : EPIC V-9 — Clôture (marquage CLOSED + bilan)
+* **Livrables** :
+** EPIC V-9 marqué ✅ TERMINE (20/20 items) dans `.agents/INDEX.adoc`
+** EPIC V-9 marqué ✅ TERMINE dans `codebase-plugin/BACKLOG.adoc`
+** `.agents/BACKLOG.adoc` restructuré : 5 Under-EPICs alignés, bilan EPIC V-9 rédigé, 3 anti-patterns résolus, doublon V-9.11 supprimé
+** Archive session 157 créée (`.agents/sessions/157-v-9-closure.adoc`)
+* **Résultats** :
+** `compileKotlin` vert avant et après modifications (zéro régression)
+** EPIC V-9 clôturé : 73 sessions (084→156), 20 items (V-9.1→V-9.20), 5 Under-EPICs complets
+** Pipeline complet livré : Texte → Chunk → Ontologie → Validation → Compilation → Enforcement → Quarantaine → Mode strict → DSL → Tâches dynamiques → Incrémental fichier → Diff inter-sessions
+* **Leçons** :
+** Double source de vérité (.agents/BACKLOG + codebase-plugin/BACKLOG) = risque de divergence — résolu par alignement
+** L'EPIC V-9 recentré de 35 items (cadrage) à 20 items effectifs (anti-duplication avec EPIC Y)
+** Méthodologie baby-step DDD/TDD/BDD a porté 20 items sur 73 sessions sans régression
+
+== Session 164 — 2026-06-25
+
+* **EPICs** : Aucun (borough dormant) — CI/CD + bugfix Cucumber préexistants
+* **Livrables** :
+** Exception CI/CD Ollama documentée dans `codebase-plugin/AGENT.adoc` + `AGENTS.adoc` racine (ports 11466-11467 + `qwen3:0.6b` pour tests d'intégration GitHub Actions uniquement)
+** Workflow `.github/workflows/test.yml` enrichi : cache Docker `ollama/ollama:0.20.2` + cache models + 2 instances Ollama ports 11466-11467 + pull `qwen3:0.6b` + env vars `OLLAMA_TEST_PORT`/`OLLAMA_TEST_MODEL`
+** `OllamaInstanceScannerTest.kt` + `OllamaLlmProviderTest.kt` : tests d'intégration portés vers ports CI dédiés via env vars, `assumeTrue`/`@EnabledIf` préserve skip hors CI
+** Fix `DuplicateStepDefinitionException` : `Ocr1PoolSteps.poolUsageReset()` renommé `geminiKeyPoolUsageReset()` + `ocr.feature` step aligné ("the Gemini key pool usage is reset")
+** Fix assertion stale `epic_v_pool.feature` : "5 distinct authorized models" → "2 distinct authorized models" (alignement AGENTS.adoc session 158)
+** Archive session 164 créée (`.agents/sessions/164-ci-ollama-exception-cucumber-fix.adoc`)
+* **Résultats** :
+** `testFast` (PR gate CI) BUILD SUCCESSFUL — 324 tests, 0 failed
+** Compilation verte après chaque baby step (5 vérifications)
+** 7 fichiers modifiés : 118 insertions, 23 suppressions
+** Bugs préexistants confirmés via `git stash` (non introduits par la session)
+* **Leçons** :
+** `testFast` échouait depuis session 159 (DuplicateStepDefinition) sans être remarqué — la CI GitHub Actions n'était pas active. Importance de valider `testFast` après chaque modification de steps Cucumber.
+** Contrainte AGENTS.adoc modèles/ports légitime pour vibecoding production, doit céder devant réalité runner CI gratuit (RAM limitée, pas d'auth cloud). Exception documentée préserve la règle générale.
+** Baby steps DDD/TDD/BDD : 1 fichier à la fois, compilation entre chaque, test ciblé sur runners impactés avant `testFast` complet.
+
+== Session 165 — 2026-06-25
+
+* **EPICs** : EPIC BOM (transverse — debug CI/CD + migration BOM)
+* **Livrables** :
+** Debug CI/CD en cascade (4 erreurs résolues en baby steps)
+** Fix 1 : `gradle-wrapper.jar` dé-gitignoré + versionné (`.gitignore` corrigé)
+** Fix 2 : `org.gradle.java.home` retiré des 2 `gradle.properties` (path SDKMAN inexistant sur CI)
+** Fix 3 : Credentials nmcp optionnels dans `settings.gradle.kts` (fallback `?: ""` au lieu de `error()`)
+** Fix 4 : Migration vers `workspace-bom:0.0.3` (source unique vérité versions)
+** `codex-plugin:0.0.2` re-publié sur Central (OcrEngine/TesseractOcrEngine)
+** `llm-pool-contracts:0.0.2` re-publié sur Central (volumeTag)
+** 4 contracts N0 re-publiés en 0.0.2 (agent, codebase, opencode-session, i18n)
+** `workspace-bom:0.0.3` publié sur Central (constraints internes activées)
+** `libs.versions.toml` migré : deps sans version (gérées par BOM)
+** `implementation(platform(libs.workspace.bom))` ajouté au `build.gradle.kts`
+** Archive session 165 créée
+* **Résultats** :
+** Compilation locale verte avec BOM
+** CI en attente propagation Central (15-30 min) — `Could not find workspace-bom:0.0.3`
+** 4 commits poussés sur `main`
+* **Leçons** :
+** Wrapper jar DOIT être versionné (convention workspace : 4 autres boroughs le font)
+** `org.gradle.java.home` ne doit jamais être hardcodé dans un fichier versionné
+** `nmcpSettings` ne doit pas `error()` au settings phase — fallback optionnel
+** BOM = source unique de vérité versions cross-borough (pattern Maven standard)
+** Versions cross-borough doivent être publiées sur Central avant que les consommateurs puissent compiler en CI
+** Planner-plugin (Manhattan) : borough dormant à structure cassée (catalog inaccessible depuis sous-module). À traiter séparément.
+
+=== Session 167 — 2026-06-25
+* **EPICs** : Aucun (fix CI)
+* **Livrables** :
+** `EpicV6CucumberRunner.kt` : filtre `@epic_v_6` → `@epic_v_6 and not @integration` (1 ligne)
+** `.github/workflows/ingest-governance.yml` supprimé (workflow cassé depuis session 160, task inexistante)
+** Archive session 167 créée
+* **Tests** : cucumberTestEpicV6 vert (scénario @integration SKIPPED), testFast vert
+* **CI** : Fast Tests ✅ (2m5s), Full Test Suite run 28196553990 en cours validation
+* **Leçons** :
+** Tag `@integration` sur feature ne suffit pas — chaque runner dédié doit aussi exclure `@integration` dans `FILTER_TAGS_PROPERTY_NAME`
+** Workflow CI non testé localement avant commit = anti-pattern (ingest-governance.yml appelait task inexistante depuis session 160)
+** `gh run view --log --job=<id>` = outil debug CI le plus efficace (stack traces complètes)
+
+=== Sessions 168-188 — 2026-06-26 → 2026-08-17
+* Voir INDEX.adoc table sessions 168-188 + archives `.agents/sessions/`.
+* S-168 fix 19 échecs JUnit5 CI, S-169 CI-green, S-170 SEC-1, S-171 pgvector logs,
+  S-172 C-BOM-FIX, S-173 pub Central 0.0.6, S-174 code review, S-175 clôture CR,
+  S-184 VIBE-HARDENING US-0, S-185 US-1, S-186 US-2, S-187 US-3+4+5 TERMINÉ,
+  S-188 maintenance + cadrage 2 EPICs (FT-PIPELINE + VIBE-HARDENING-2) + propagation 5 boroughs.
+
+=== Session 189 — 2026-08-17
+* **EPICs** : VIBE-HARDENING-2 (US-1 + US-2)
+* **Livrables** :
+** US-1 S2 Allowlist `TaskDiscoveryRegistrar` : `TASK_ALLOWLIST` + `TASK_DENYLIST` + `validateTaskName` companion (pattern `ExecGradleTool.validateGradleTask`). `registerAll` filtre via validateTaskName. 18 unit allowlist + 6 tests existants réécrits (vibecode/qualityGate devenus denied — tasks métier plugin non auto-enregistrées, sécuritaire).
+** US-2 S3 Garde taille `write_file`/`edit_file` : `MAX_WRITE_CHARS = 1_000_000` const + 3 checks (content, newString, resulting updated) → `IllegalArgumentException` avant writeText. Pattern `read_file MAX_OUTPUT_CHARS` mirror. +5 unit.
+** Archive session 189 créée.
+* **Tests** : Gate `codebase.koog.discovery.*` + `ToolRegistryTest` VERT 105 tests (1 fail préexistant C4 US-3 GradleTaskArgsMapperTest). Non-régression ExecShellTool (9) + ExecGradleTool (15) VERTS.
+* **Fichiers** : 4 modifiés + 1 nouveau (AllowlistTest). +157 lignes prod/test.
+* **Leçons** :
+** Allowlist deny-by-default pour tasks découvertes : la deny-list n'est qu'un second ride pour les composed commands qui passent l'allowlist (`:plugin:publishToMavenCentral`). Pour les noms purs (`clean`, `purge`), c'est l'allowlist qui rejette — message "not in allowlist".
+** Changement comportemental US-1 sécuritaire mais majeur : tasks métier du plugin (vibecode, qualityGate, generatePlan, etc.) ne sont plus auto-enregistrées comme tools `gradle_*`. Un agent LLM ne doit pas piloter la boucle agentique elle-même via tools découverts (récursion dangereuse).
+** Pattern S-113 (multi-US 1 session) applicable car US-1 et US-2 indépendants et triviaux.
+* **Zéro bump BOM, zéro secret, zéro régression.** 2/8 US VIBE-HARDENING-2.
+
+=== Session 199 — 2026-08-24
+* **EPICs** : CDX-RAG-SOCLE (cross-borough Brooklyn pilote, US-1)
+* **Livrables** :
+** US-1 Domaine `codebase.store` créé (5 prod + 3 test, ~330 lignes) : migration verbatim `codex.store.CodexVectorStore` → `codebase.store.RagVectorStore` + `StoreStatements` (ex-`IngestStatements`) + `IngestIndexing` + types autonomes `RetrieveResult`/`DocumentChunk`. Tables pgvector INCHANGÉES (Loi Économie d'Encre).
+** Pré-requis bump versions : codex 0.0.5 → mavenLocal, codebase `libs.versions.toml` BOM 0.0.22→0.0.24 + codex 0.0.3→0.0.5, codebase 0.0.8 republié mavenLocal.
+** Archive session 199 créée.
+* **Tests** : 25/25 characterization tests PASSED (6 `IngestIndexingTest` + 9 `StoreStatementsTest` + 10 `RagVectorStoreTest`), mirror des tests codex. Gate `codebase.rag.*` non-régression VERT. `compileKotlin`/`compileTestKotlin` VERT.
+* **Fichiers** : 8 nouveaux (5 prod `codebase.store` + 3 test), 2 modifiés (`libs.versions.toml` bump).
+* **Leçons** :
+** Verbatim migration délibérée (pas refactor) : characterization tests mirroir verrouillent le contrat comportemental avant RAG-2 (bascule call sites).
+** Types autonomes (`DocumentChunk`/`RetrieveResult` dans `codebase.store`, pas d'import `codex.tasks.*`) — prérequis pour RAG-4 (retrait `libs.codex.plugin`).
+** Bump préventif avant de coder évite le drift pendant RAG-1/RAG-3.
+* **Zéro bump BOM (pré-requis), zéro secret, zéro régression.** EPIC CDX-RAG-SOCLE 2/6 US.
+
+=== Session 205 — 2026-08-25
+* **EPICs** : CDX-RAG-SOCLE (US-2, US-3, US-4, US-5 terminés — confirmation via backlog update)
+* **Livrables** : Mise à jour backlog + INDEX pour marquer EPIC TERMINÉ 6/6 US. Vérification zone sale parallèle Brooklyn (aucune modification non committée). Tests package `codebase.store.*` tous verts. Build compile.
+* **Zéro code prod modifié, zéro bump BOM, zéro secret.** EPIC CDX-RAG-SOCLE TERMINÉ 6/6 US.
+
+=== Session 206 — 2026-08-25
+* **EPICs** : CB-STORE-UNIFY ✅ CADUQUE + hardening `VectorStore.initSchema()`
+* **Livrables** :
+** Audit pré-coding révèle cadrage CB-STORE-UNIFY existant trop simpliste : APIs très différentes (`RagVectorStore` search-only R2DBC vs `VectorStore` ingestion+query JDBC), schémas distincts (`codex_documents`/`codex_chunks` vs `documents`/`chunks`), consommateurs profonds (OcrIngestTask, MultiChannelContextGraph utilise les deux, KoogAugmentedContextGraph, KoogPlanningOrchestrator, VectorQueryService, EmbeddingPipeline, PgVectorConfig + 7 tests), usages sémantiquement distincts (corpus documentaire codex vs code source workspace).
+** Discussion pilote confirme architecture N2→N1 (codex ingère, codebase stocke + RAG, flèche unique, zéro cycle) — les deux stores légitimes servent des domaines distincts. ÉPIC clos comme CADUQUE.
+** Hardening ciblé baby-step TDD strict RED → GREEN → REFACTOR : `initSchema()` devient alias `ensureSchema()` (non-destructeur, `CREATE TABLE IF NOT EXISTS`), `clean()` publique ajoutée (destructeur test-only, isolé du chemin prod). 3 `@BeforeEach` mis à jour (`VectorStoreTest`, `OcrIngestTaskTest`, `OcrIngestSteps`). `PrepareContextUnitTest` inchangé (setup one-shot idempotent, flag `datasetIndexed`).
+* **Tests** : 33/33 VectorStoreTest (dont 2 nouveaux tests non-destructeur) + OcrIngestTaskTest + 5/5 PrepareContextUnitTest + 3 cucumber dédiés (cucumberTestEpicOcr + cucumberTestRagSocle + cucumberTestOcrContracts) VERTS. Zéro régression.
+* **Fichiers** : 1 prod (`VectorStore.kt` — `initSchema()` alias `ensureSchema()` + `clean()` + KDoc hardening), 3 tests (`VectorStoreTest.kt`, `OcrIngestTaskTest.kt`, `OcrIngestSteps.kt` — `@BeforeEach` use `clean()`).
+* **Leçons** :
+** Audit pré-coding obligatoire : cadrage existant prévoyait "remplacer les appels par searchBlocking (API identique)" — faux. L'audit a évité un EPIC lourd (~15-20 pts) qui aurait cassé l'indexation du code source.
+** Architecture N2→N1 valide : codex ingère, codebase stocke + RAG, flèche unique. Les deux stores légitimes servent des domaines distincts. La "consolidation" n'était pas nécessaire.
+** Hardening ciblé vs refactoring global : le `DROP CASCADE` destructif était le seul vrai risque. Isolé en `clean()` test-only, `initSchema()` devient non-destructeur. Défense en profondeur sans casser l'existant.
+* **Zéro bump BOM, zéro secret, zéro régression.** EPIC CB-STORE-UNIFY ✅ CADUQUE.

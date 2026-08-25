@@ -1,385 +1,459 @@
-= BACKLOG — Codebase Gradle
-:toc:
-:last_update: 2026-08-25 (Session 204 — PUB-0.9 TERMINÉ : codebase-plugin 0.0.9 publié Central, POM sans codex-plugin + ocr-contracts:0.0.1. Option B résolue : codex 0.0.6 EST sur Central. Ancien header : Session 203 — maintenance : fix `BenchmarkRunner.kt` vers socle RagVectorStore, gate worktree isolé VERT ; interruption conservatoire — session codex éditait codebase en parallèle. Constats PUB : ocr-contracts 0.0.1 + BOM 0.0.26 ✅ Central ; codex-plugin 0.0.6 ❌ ABSENT (claim Brooklyn S-104 non matérialisée) ; POM codebase 0.0.8 contient encore codex-plugin:0.0.2 → PUB-0.9 prioritaire S-204)
+= Backlog — Codebase Gradle
+:sectnums:
+:date: 2026-06-16
 
-== Statut Global
+== EPIC V-9 — Vibecoding Gouvernance Agentique
 
-**EPIC CDX-OCR-CONTRACTS ✅ TERMINÉ (5/5 — S-103→S-202)** — extraction port OCR en artefact N0 `ocr-contracts` (US-1 MEMPHIS artefact, US-2 typealiases codex, US-3 bascule codebase + retrait `libs.codex.plugin`, US-4 Cucumber BDD boundary). **EPIC CDX-RAG-SOCLE ✅ TERMINÉ (6/6 — S-097→S-201)** — RAG socle N1 (`codebase.store.RagVectorStore`), inversion N1→N2 morte. **EPIC FT-PIPELINE ✅ TERMINÉ (7/7 — S-188→S-198)**. **EPIC VIBE-HARDENING ✅ TERMINÉ (6/6 — S184-S187)** — durcissement vibecoding P1 (S1 allowlist shell + gradle, C2 retry single counter, C5 timeout LLM, Cucumber BDD). **EPIC PUB (bump 0.0.8) ✅ TERMINÉ (S183)**. **EPIC SUBGRAPH ✅ TERMINÉ (4/4 — S182)** — contexte augmenté Graphify réel. Le reste du backlog est dormant :
+**Statut** : CADRÉ — Prêt à démarrer (7 ateliers, 35 items, ~70 pts)
+**Priorite** : P0
+**Origine** : Session 000 (2026-06-16) — diagnostic du gap vibecoding incomplet
 
-. *PUB-0.9 ✅ TERMINÉ (S-204)* — codebase-plugin 0.0.9 publié Maven Central (accord pilote). TDD `PublishedPomCharacterizationTest` (ocr-contracts présent, codex-plugin absent) + fix `VersionCatalogTransitiveVersionsTest` (échec préexistant) + publication `publishAggregationToCentralPortal` depuis worktree isolé.
-. *Cross-borough* — signaler à Brooklyn que `codex-plugin:0.0.6` est ABSENT de Maven Central (repo1 vérifié S-203, dernier = 0.0.5 malgré claim S-104).
-. *CB-STORE-UNIFY* — en cours côté session opencode codex (migration legacy VectorStore → RagVectorStore détectée sur 8 fichiers S-203). NE PAS interférer ; re-baseline obligatoire à la prochaine session Queens.
-. *SLD-8 US-8.2/8.3* — côté slider (consommation LlmBuildService codebase), hors scope Queens.
-. *EPIC V-FLYWAY* (P2, conditionnel) — ne se déclenchera que quand 5+ fichiers de migration de schéma existeront (actuellement 4 : V1→V4).
-. *PublishingConventionsPlugin pom.name+description* (conventions-gradle) + warnings CI actions@v4→v5.
+=== Prerequis
 
-== Dette Technique (Résolue)
+* [ ] **EPIC V-9.0** : Cadrage agile (7 ateliers) — CADRAGE_METHODE_EPIC_V9.adoc livré (session 000)
+* [ ] **EPIC V-9.1** : Analyser les 10 fichiers .adoc de governance dans .agents/ (AGENT, INDEX, SESSION_CHECKLIST, etc.)
+* [ ] **EPIC V-9.2** : Extraire les chunks (rules, concepts, procedures, metadata, constraints)
+* [ ] **EPIC V-9.3** : Ontologiser les chunks (map on TAXONOMIE_WORKSPACE)
+* [ ] **EPIC V-9.4** : Compiler les règles (ToolRegistry pre/post hooks, gates, validation)
+* [ ] **EPIC V-9.5** : Stocker les chunks dans pgvector avec embedding
+* [ ] **EPIC V-9.6** : Intégrer VibecodingGovernanceTask dans VibecodingTask (EAGER 40%)
+* [ ] **EPIC V-9.7** : Benchmark (extraction, ontologisation, pipeline complet)
+* [ ] **EPIC V-9.8** : Documentation (AGENT.adoc, SESSION_CHECKLIST.adoc, etc.)
 
-=== P0 — `ignoreFailures` ✅ RÉSOLU
-`ignoreFailures = !isCI()` dans build.gradle.kts:201. CI-aware, non silencieux en local.
+=== Under-EPIC 1 : Analyse et Extract (V-9.1→V-9.5)
 
-=== P1 — Duplication vibecoding-contracts ✅ RÉSOLU
-Package local `src/main/kotlin/vibecoding/contracts/` supprimé. Consommation via `education.cccp:vibecoding-contracts:0.0.1` Maven Central.
+* [ ] **V-9.1** : AgenticChunker — Analyse un fichier .adoc et segmente en chunks (14 JUnit5 + 8 Cucumber)
+* [ ] **V-9.2** : AgenticChunkType — Enum 5 types (RULE, CONCEPT, PROCEDURE, METADATA, CONSTRAINT) (16 JUnit5)
+* [ ] **V-9.3** : ScanAgent — Scan les fichiers .adoc du dossier .agents/
+* [ ] **V-9.4** : ChunkExtractor — Extraire les chunks avec signature sémantique
+* [ ] **V-9.5** : ChunkValidator — Validate le chunk (id, source, content, type)
 
-=== P2 — `println()` résiduels ✅ RÉSOLU
-Remplacés par `project.logger`.
+=== Under-EPIC 2 : Ontologisation (V-9.6→V-9.10)
 
-=== P2 — Wrapper Gradle 9.5.1 ✅ RÉSOLU
-Wrapper à 9.5.1.
+* [ ] **V-9.6** : AgenticOntologizer — Mappe chaque chunk sur TAXONOMIE_WORKSPACE (24 JUnit5)
+* [ ] **V-9.7** : TaxonomyMatcher — Pattern matching (regex, keywords) (12 JUnit5)
+* [ ] **V-9.8** : OntologyEnricher — Ajoute metadata (weight, deadline, dependencies) (10 JUnit5)
+* [ ] **V-9.9** : ChunkOntologyStore — Store chunk ontologise avec embedding (12 JUnit5)
+* [ ] **V-9.10** : OntologyQueryService — Query ontologized chunks (RAG) (14 JUnit5)
 
-== EPICs Terminés (récapitulatif)
+=== Under-EPIC 3 : Compilation et Enforcement (V-9.11→V-9.15)
 
-[cols="2,2,3"]
+* [ ] **V-9.11** : AgenticCompiler — Transforme chunk en artefact executable (27 JUnit5, session 094)
+* [ ] **V-9.12** : RuleCompiler — RULE → ToolRegistry pre/post hook (14 JUnit5)
+* [ ] **V-9.13** : ProcedureCompiler — PROCEDURE → Plan multi-step (EPIC X) (10 JUnit5)
+* [ ] **V-9.14** : ConstraintCompiler — CONSTRAINT → Gate, validation automatique (8 JUnit5)
+* [ ] **V-9.15** : EnforceAgent — Execute les rules enforces (ToolRegistry) (17 JUnit5 + 7 Cucumber)
+
+=== Under-EPIC 4 : Stockage et RAG (V-9.16→V-9.20)
+
+* [ ] **V-9.16** : AgenticIngestor — Pipeline complet (chunk→ontologize→store) (12 JUnit5, session 095)
+* [ ] **V-9.17** : ChunkEmbedder — Embedding ONNX (AllMiniLmL6V2) (14 JUnit5)
+* [ ] **V-9.18** : PgvectorStore — Store chunk avec embedding pgvector (12 JUnit5)
+* [ ] **V-9.19** : PgvectorQueryService — Query chunks RAG pgvector (14 JUnit5)
+* [ ] **V-9.20** : CompositeContextBuilder — EAGER + RAG + Graphify + Ressources (session 046)
+
+=== Under-EPIC 5 : Instrumentation Gradle (V-9.21→V-9.25)
+
+* [ ] **V-9.21** : VibecodingGovernanceTask — Tâche Gradle unique (vibecodingGovernance) (session 000)
+* [ ] **V-9.22** : GovernanceExtension — Extension DSL (action, verbose, debug) (12 JUnit5)
+* [ ] **V-9.23** : GovernanceCliOptions — CLI options (--action, --chunkId, --ruleId) (10 JUnit5)
+* [ ] **V-9.24** : GovernanceDashboardTask — Tableau de bord (chunks, rules, traceability) (14 JUnit5)
+* [ ] **V-9.25** : GovernanceMetricsCalculator — Metrics (chunks count, rules count, enforce rate) (10 JUnit5)
+
+=== Under-EPIC 6 : Benchmark et Validation (V-9.26→V-9.30) — ABANDONNÉ
+
+_Recentrage session 141 : EPIC V-9 recentré de 35 à 20 items. Under-EPICs 6-7 abandonnés (couverts par EPIC 4 Benchmark + tests Cucumber existants)._
+
+=== Under-EPIC 7 : Documentation et Example (V-9.31→V-9.35) — ABANDONNÉ
+
+_Recentrage session 141 : EPIC V-9 recentré de 35 à 20 items. Documentation répartie dans les archives de session + INDEX.adoc + SESSIONS_HISTORY.adoc._
+
+=== Estimation (recentrée)
+
+* **Total items** : 20 (recentré depuis 35)
+* **Items livrés** : 20/20 (V-9.1→V-9.20)
+* **Sessions** : 73 (084-156)
+
+== EPICs Existent
+
+=== EPIC Y — Agentic Literature Compiler
+
+**Statut** : ✅ TERMINE (8/8 — Y-0→Y-7, session 097). 120+ PASS.
+**Priorite** : P1
+**Dépend de** : EPIC K (Taxonomie Workspace), EPIC W (TaskSchemaScanner)
+
+* [x] Y-0 : Analyse — Inventaire des sources textuelles agentiques du workspace
+* [x] Y-1 : AgenticChunker — Analyse .adoc et segmente en chunks (14 JUnit5 + 8 Cucumber)
+* [x] Y-2 : AgenticOntologizer — Mappe chunks sur TAXONOMIE_WORKSPACE (24 JUnit5)
+* [x] Y-3 : AgenticSchema — Modèle relationnel pgvector (31/31 PASS)
+* [x] Y-4 : AgenticCompiler — Transforme chunk en artefact executable (27/27 PASS)
+* [x] Y-5 : AgenticIngestor — Pipeline complet d'ingestion (12/12 PASS)
+* [x] Y-6 : AgenticExternalImporter — Import littérature agentique externe (12/12 PASS)
+* [x] Y-7 : AgenticChunkEnforcement — Pipeline complet : règle→chunk→ontologize→compile→enforce (17/17 PASS)
+
+=== EPIC V — Vibecoding Task
+
+**Statut** : ✅ TERMINE (15/15 pts — sessions 041-045)
+**Priorite** : P0
+
+=== EPIC V-SESSION-REPO — Session 059
+
+**Statut** : ✅ TERMINE (audité 2026-06-14)
+**Priorite** : P0
+
+* [x] SessionRepository — persistance cross-session dans pgvector via R2DBC (SessionRepository.kt 295 lignes)
+* [x] TokenTracker — mesure réelle consommation tokens LLM (TokenTracker.kt 64 lignes)
+* [x] Dashboard — visibilité historique sessions + coût (Dashboard.kt 95 lignes + DashboardTask.kt 78 lignes)
+
+=== EPIC W — Auto-discovery Gradle Tasks
+
+**Statut** : ✅ TERMINE (7/7 sous-EPICs, session 100)
+**Priorite** : P1
+
+* [x] W-0 : Analyse — Inventaire des schémas de tâches Gradle existants
+* [x] W-1 : Implementer TaskSchemaScanner — inspecte task graph Gradle
+* [x] W-2 : Generer schema structuré (JSON/OpenAPI)
+* [x] W-3 : Auto-registrer les tâches découvertes dans ToolRegistry
+* [x] W-4 : Exposer catalogue au LLM via tool `list_tasks`
+* [x] W-5 : Mapping `--option` → arguments structurés (GradleTaskArgsMapper)
+* [x] W-6 : Cache des schémas + invalidation à chaud
+
+=== EPIC X — Decision Multi-Step
+
+**Statut** : ✅ TERMINÉ (7/7 — sessions 101-105)
+**Priorite** : P1
+
+* [x] X-0 : Analyse — Audit de la boucle actuelle VibecodingGraph.execute()
+* [x] X-1 : VibecodingPlan — Promouvoir le plan vers structure multi-step (14 JUnit5 + 8 Cucumber)
+* [x] X-2 : TaskResultVerifier — Parse sortie tâche Gradle (14 JUnit5 + 6 Cucumber)
+* [x] X-3 : Boucle `verify → adapt` — StepVerifier intégré (7 JUnit5)
+* [x] X-4 : RollbackStrategy — STOP_ON_ERROR / REVERT_AND_CONTINUE / MARK_SKIPPED / FALLBACK_HUMAN (8 JUnit5 + 5 Cucumber)
+* [x] X-5 : Integration avec TaskSchemaScanner (EPIC W) (3 Cucumber)
+* [x] X-6 : Tests — Scénario Cucumber "agent planifie, échoue, adapte, réussit" (3 Cucumber)
+
+=== EPIC Z — Autofocus
+
+**Statut** : ✅ TERMINÉ (7/7 — Z-0→Z-7, session 108)
+**Priorite** : P1
+
+* [x] Z-0 : Cadrage — CADRAGE_AUTOFOCUS.adoc (7 ateliers agile)
+* [x] Z-1 : AutofocusLevel — Enum 4 niveaux (BIG_PICTURE/ARCHITECTURE/MODULE/IMPLEMENTATION) (16/16 JUnit5)
+* [x] Z-2 : AutofocusClassifier — Classifieur heuristique regex + fallback LLM (32/32 JUnit5)
+* [x] Z-3 : ContextZoomer — Filtrage contexte par niveau (14/14 JUnit5)
+* [x] Z-4 : AutofocusStack — Pile LIFO push/pop/currentLevel/isEmpty/clear (14/14 JUnit5)
+* [x] Z-5 : Intégration VibecodingGraph — Node 0 (classify) + Node 1 (zoom) (16 JUnit5)
+* [x] Z-6 : Intégration V-6 Feedback Loop — verifyResult FAILED → zoom(IMPLEMENTATION) (4 Cucumber)
+* [x] Z-7 : Validation cross-borough — Scénario bout-en-bout (4 Cucumber)
+
+=== EPIC OCR — OCR Assisté IA (Gemini Vision)
+
+**Statut** : ✅ TERMINÉ (sessions 117-120)
+**Priorite** : P0
+
+* [x] OCR-0 : Contrats partagés dans codex-gradle (OcrRequest, OcrResult, OcrConfig)
+* [x] OCR-1 : GeminiKeyPool — rotation de clés API (4/6, audité 2026-06-14)
+* [x] OCR-2 : GeminiVisionProvider — multimodal (95 lignes, support UserMessage.multimodal)
+* [x] OCR-2b : OllamaOcrProvider — OCR cloud via Ollama (6/6, session 103)
+* [x] OCR-3 : OcrTask Gradle (341 lignes, support batch, integration GeminiConfig)
+* [x] OCR-3b : FakeVisionProvider + CI + Config YAML/CLI/gradle.properties (8/8, session 118)
+* [x] OCR-4 : Intégration pipeline complet (anonymize→chunk→embed→pgvector) (5/5, session 117)
+
+=== EPICsession-proTOCOL — opencode↔Gradle Thin Client
+
+**Statut** : ✅ TERMINÉ (7/7 — SP-0→SP-6, session 114)
+**Priorite** : P1
+
+* [x] SP-0 : Cadrage — Définir les contrats opencode-session-contracts (SessionPrompt, SessionResponse, AgentContext)
+* [x] SP-1 : Implémenter SessionProtocolTask — point d'entrée unique pour thin client
+* [x] SP-2 : Mode serveur/daemon — Tâche Gradle en écoute continue (stdin/stdout JSON-lines)
+* [x] SP-3 : Cycle de vie de session — SessionProtocolLifecycleManager (create/resume/close/list)
+* [x] SP-4 : Tests E2E — opencode → runner → codebase → session (9/9 PASS)
+* [x] SP-5 : ToolEventStream — Événements structurés temps réel (thinking/tool_call/tool_result/progress/error)
+* [x] SP-6 : LiveContextInjector — Injection contexte conversation active (9/9 PASS)
+
+=== EPIC K — Ontologie Workspace
+
+**Statut** : ✅ TERMINE (2026-05-19, K-0→K-5 toutes les 6 phases)
+**Priorite** : P0
+
+=== EPIC L — Migration langgraph4j → koog+langchain4j
+
+**Statut** : ✅ TERMINE (8/8 pts, sessions 034-049)
+**Priorite** : P0
+
+=== EPIC CR — Code Review Deep Analysis
+
+**Statut** : ✅ TERMINÉ (14/14 items — CR-1→CR-14, sessions 119-125)
+**Priorite** : P3
+**Source** : `codebase-plugin/CODE_REVIEW_DEEP_ANALYSIS.adoc` (1535 lignes, score 4.0/5.0)
+
+* [x] CR-1 : Cucumber Task Factory (session 119)
+* [x] CR-2 : Test Timeouts (session 120)
+* [x] CR-3 : Build Cache (session 120)
+* [x] CR-4 : Adaptive Heap (session 120)
+* [x] CR-5 : Root build.gradle.kts (session 121)
+* [x] CR-6 : ignoreFailures CI-aware (session 121)
+* [x] CR-7 : JVM Tuning (session 121)
+* [x] CR-8 : PostgreSQL Testcontainer Reuse (session 122)
+* [x] CR-9 : Kover Coverage Threshold (session 122)
+* [x] CR-10 : Dependency Conflict Validation (session 123)
+* [x] CR-11 : Version Catalog Centralisé (session 123)
+* [x] CR-12 : Transitive Dependency Audit + CVE (session 124)
+* [x] CR-13 : Test Task Aliases (session 124)
+* [x] CR-14 : BUILDING.md (session 125)
+
+=== EPIC V-9 — Vibecoding Gouvernance Agentique
+
+**Statut** : ✅ TERMINE (20/20 — V-9.1→V-9.20, sessions 084-156, clôturé session 157)
+**Priorite** : P0
+**Origine** : Session 000 (2026-06-16) — gap vibecoding incomplet
+**Cadrage** : `codebase-plugin/.agents/CADRAGE_METHODE_EPIC_V9.adoc` (7 ateliers, 35 items initialement, recentré 20 items)
+
+==== Under-EPIC 1 : Acquisition & Chunking (5/5 ✅)
+
+* [x] V-9.1 : AgenticChunker — *déjà livré par EPIC Y-1* (AgenticChunker.kt 439 lignes + 16 JUnit5 PASS)
+* [x] V-9.2 : AgenticChunkType — *déjà livré par EPIC Y* (ChunkType enum 5 types dans AgenticChunk.kt)
+* [x] V-9.3 : ScanAgent — ✅ TERMINÉ session 142 (8 JUnit5 + 6 Cucumber @epic_v_9_3 PASS)
+* [x] V-9.4 : ChunkExtractor — *couvert par AgenticChunker*
+* [x] V-9.5 : ChunkValidator — ✅ TERMINÉ session 141 (10 JUnit5 + 5 Cucumber @epic_v_9_5 PASS)
+
+==== Under-EPIC 2 : Ontologisation & Rapport (3/3 ✅)
+
+* [x] V-9.6 : AgenticOntologizer — *déjà livré par EPIC Y-2* (24 JUnit5 PASS)
+* [x] V-9.7 : GovernanceOntologizer — ✅ TERMINÉ session 143 (classifie AGENT/INDEX/BACKLOG/SESSIONS_HISTORY/TEST_COVERAGE/PROMPT_REPRISE → sections)
+* [x] V-9.8 : IngestionReport sections — ✅ TERMINÉ session 144 (`sectionsAdded`/`sectionsTotal` par `GovernanceSection`)
+
+==== Under-EPIC 3 : Validation Gate & Qualité (2/2 ✅)
+
+* [x] V-9.9 : ChunkValidationGate — ✅ TERMINÉ session 145 (`ChunkValidator` câblé dans `AgenticIngestor`, `IngestionReport.chunksInvalid`/`validationErrors`)
+* [x] V-9.10 : ChunkValidationReport — ✅ TERMINÉ session 146 (`ChunkValidationErrorType`, `lineStart`/`lineEnd`, `validationErrorsByType` dans JSON)
+
+==== Under-EPIC 4 : Compilation Exécutable et Enforcement (4/4 ✅)
+
+* [x] V-9.11 : AgenticCompiler — ✅ TERMINÉ session 147 (`compile`/`compileExecutable`/`shouldCompile`, `PostHookPayload`, 30 JUnit5 + 6 Cucumber)
+* [x] V-9.12 : AgenticExecutor — ✅ TERMINÉ session 148 (`AgenticExecutor.check()`, `IngestGovernanceTask.lastExecutor`, 8 JUnit5 + 5 Cucumber)
+* [x] V-9.13 : ToolRegistry enforcement hook — ✅ TERMINÉ session 149 (`EnforcementHook` contrat N0, `ToolRegistry` bloque nativement, 8 JUnit5 + 3 fonctionnels + 5 Cucumber)
+* [x] V-9.14 : Auto-activation du hook — ✅ TERMINÉ session 150 (`GovernanceEnforcementWirer` câblé dans `VibecodingTask` et `SessionProtocolTask`, 5 JUnit5 + 2 fonctionnels + 2 Cucumber)
+
+==== Under-EPIC 5 : Qualité et Robustesse (6/6 ✅)
+
+* [x] V-9.15 : InvalidChunkQuarantine — ✅ TERMINÉ session 151 (`InvalidChunkRepository` port + 2 impls + migration V4 + 12 JUnit5 + 2 Cucumber)
+* [x] V-9.16 : StrictValidationMode — ✅ TERMINÉ session 152 (`strictValidation` option Gradle, `GradleException`, 3 JUnit5 + 3 Cucumber)
+* [x] V-9.17 : Ingestion Summary DSL — ✅ TERMINÉ session 153 (`GovernanceSummaryConfig` DDD + `CodebaseGovernanceExtension` + CLI, 3 JUnit5 + 4 fonctionnels + 3 Cucumber)
+* [x] V-9.18 : Compilation vers Gradle tasks — ✅ TERMINÉ session 154 (`AgenticGradleTaskRegistrar` enregistre GRADLE_TASK/CONSTRAINT_CHECK/VALIDATION, 7 JUnit5 + 3 fonctionnels + 3 Cucumber)
+* [x] V-9.19 : Auto-détection de nouveaux fichiers de gouvernance — ✅ TERMINÉ session 155 (mode incrémental `GovernanceFileSnapshot`/`GovernanceFileDiff`/`JsonGovernanceStateStore`, 15 unit + 7 fonctionnels + 5 Cucumber)
+* [x] V-9.20 : Diff/incrémental entre sessions — ✅ TERMINÉ session 156 (`ChunkSnapshot`/`ChunkDiff`/`ChunkChangeDetector`/`JsonChunkStateStore`/`ChunkIncrementalReport`, 40 JUnit5 + 5 fonctionnels + 5 Cucumber)
+
+==== Bilan EPIC V-9 (clôturé session 157)
+
+* **Sessions** : 084 (cadrage) → 156 (V-9.20), soit 73 sessions
+* **Items livrés** : 20/20 (V-9.1→V-9.20)
+* **Under-EPICs** : 5/5 complets
+* **Tests** : ~200+ JUnit5 + ~60+ Cucumber ajoutés sur l'EPIC
+* **Pipeline complet** : Texte → Chunk → Ontologie → Validation → Compilation → Enforcement → Quarantaine → Mode strict → DSL Gradle → Tâches dynamiques → Mode incrémental → Diff inter-sessions
+* **Contrat respecté** : zéro régression V-9.3→V-9.20 à chaque livraison
+
+== Backlog stale (résolu)
+
+_Tous les EPICs ci-dessous sont TERMINÉS. Gardés pour traçabilité historique._
+
+* [x] **EPIC CI/CD** : Workflow GitHub Actions `full-tests` (✅ TERMINÉ session 168 — 19 échecs JUnit5 résolus : TokenTracker COST_PER_MILLION, Locale.FRENCH DilutionExecutor+StimulusCascade, MigrationTest attendus V1-V4, KoogPlanningOrchestratorTest, TaskSchemaScannerTest, 7 tests @integration légitimes exclus via excludeTags. test + testFast verts.)
+* [x] **EPIC 3** : Architecture Multi-Canal Convergent — Formalisation (TERMINE, session 046)
+* [x] **EPIC 4** : Benchmark de perception spatiale LLM (TERMINE, session 026)
+* [x] **EPIC 5** : Pipeline fine-tuning experts CDA/FPA (MIGRÉ vers training-gradle TRN-8)
+* [x] **EPIC 6** : Integration ONNX — boucle qualite (TERMINE, session 056)
+* [x] **EPIC 7** : Wiring LangChain4j + pgvector experts (TERMINE, session 126)
+* [x] **EPIC 8** : Exposer experts via Ollama (✅ TERMINÉ — session 140)
+* [x] **EPIC V-9** : Vibecoding Gouvernance Agentique (✅ TERMINÉ session 157 — 20/20 items V-9.1→V-9.20)
+* [x] **EPIC 9** : Opencode Augmenté — Réalité Augmentée Développeur (TERMINE, sessions 001-021)
+* [x] **EPIC 10** : Instrumentation Gradle du Pattern STIMULUS (TERMINE, sessions 022 + 025)
+* [x] **EPIC 12** : Dilution Article de Blog (TERMINE, session 109)
+
+== Anti-patterns à detection
+
+| # | Anti-pattern | Symptome | Status |
+|---|--------------|----------|--------|
+| 1 | **Backlog stale** | EPICs listes mais non priorises (EPIC 3→12) | RÉSOLU (V-9 clôturé, backlog aligné) |
+| 2 | **Backlog doublon** | EPIC V-9 = extension EPIC Y (Agentic Literature Compiler) | RÉSOLU (V-9 = exécution, Y = compilation) |
+| 3 | **Backlog non aligné** | EPIC V-9 non aligné avec roadmap (EPIC K, L, W, X, Z, OCR) | RÉSOLU (V-9 complète le pipeline) |
+'''
+== ✅ EPIC CDX-RAG-SOCLE — Le RAG appartient au socle (codebase N1) — Cadrage S-097 (Brooklyn)
+
+_Source_ : décision pilote session 097 (« le RAG est un élément du contexte
+augmenté, donc le RAG se fait dans codebase »).
+_Doc cadrage_ : `CADRAGE_EPIC_CDX_RAG_SOCLE.adoc` (côté codex-gradle).
+_Pattern_ : gouvernance pure S-057/S-063 + baby-step TDD strict.
+_Portée_ : cross-borough Brooklyn (codex) + Queens (codebase).
+
+=== Constats (audit S-097)
+
+. Store vectoriel dans codex N2 (`codex.store.CodexVectorStore`) au lieu du socle N1.
+. Inversion N1→N2 : 6 fichiers codebase importent `codex.store.CodexVectorStore`.
+. Deux stores coexistent côté codebase (`codebase.rag.VectorStore` JDBC legacy
+  vs l'emprunt codex R2DBC) — duplication + divergence.
+. Surface API consommée par codebase : minimale (constructeur + `searchBlocking`).
+. Dépendance build inversée : `codebase-plugin/build.gradle.kts:49` `implementation(libs.codex.plugin)`.
+. Loi de l'Économie d'Encre : embeddings déjà stockés = vérité — ni renommage
+  de tables, ni re-vectorisation.
+
+=== Décisions clés
+
+. Nouveau domaine `codebase.store` côté socle — `RagVectorStore` (nom neutre)
+  reprend la logique verbatim de `CodexVectorStore`.
+. Templates SQL migrent avec le store (`IngestStatements` → `StoreStatements`).
+. Tables pgvector INCHANGÉES (`codex_documents`/`codex_chunks`) — zéro migration de données.
+. codex dépend de codebase (`implementation(libs.codebase.plugin)`) ; codebase
+  retire `libs.codex.plugin` → flèche unique N2→N1, zéro cycle.
+. Consolidation `codebase.rag.VectorStore` JDBC legacy HORS SCOPE (EPIC futur CB-STORE-UNIFY).
+
+[cols="1,3,2,1", options="header"]
 |===
-| EPIC | Statut | Sessions
-
-| EPIC 1 Gouvernance
-| STALE (6/8 — items obsolètes, projet publié Central)
-| 001
-
-| EPIC 2 Anonymisation
-| ✅ TERMINE
-| 009
-
-| EPIC 3 Multi-Canal
-| ✅ TERMINE
-| 046
-
-| EPIC 4 Benchmark
-| ✅ TERMINE
-| 026
-
-| EPIC 5 Fine-tuning
-| MIGRÉ → training-gradle TRN-8
-| 110
-
-| EPIC 6 ONNX Qualité
-| ✅ TERMINE
-| 056
-
-| EPIC 7 Expert Dispatcher
-| ✅ TERMINE
-| 126
-
-| EPIC 8 Exposer experts
-| ✅ TERMINÉ (4/4)
-| 127, 140
-
-| EPIC 9 Opencode Augmenté
-| ✅ TERMINE (15/15)
-| 001-021
-
-| EPIC 10 STIMULUS
-| ✅ TERMINE
-| 022+025
-
-| EPIC 12 Blog Narration
-| ✅ TERMINE
-| 109
-
-| EPIC K Ontologie
-| ✅ TERMINE
-| 015-020
-
-| EPIC L koog+langchain4j
-| ✅ TERMINE
-| 034-049
-
-| EPIC V Vibecoding
-| ✅ TERMINE (15/15)
-| 041-045
-
-| EPIC V-6 Ollama Cloud
-| ✅ TERMINÉ (10/10 + V-6-POOL 4/4)
-| 136-139, 158
-
-| EPIC V-7 Resolver + CLI
-| ✅ TERMINÉ
-| 068
-
-| EPIC V-8 Resume + Dashboard
-| ✅ TERMINÉ
-| 069
-
-| EPIC V-9 Gouvernance Agentique
-| ✅ TERMINÉ (20/20)
-| 141-157
-
-| EPIC V-LOCAL Boucle Locale
-| ✅ TERMINÉ (7/7)
-| 129-132
-
-| EPIC W Auto-discovery
-| ✅ TERMINÉ (7/7)
-| 100
-
-| EPIC X Multi-Step
-| ✅ TERMINÉ (7/7)
-| 101-105
-
-| EPIC Y AgenticSchema
-| ✅ TERMINÉ (8/8)
-| 097
-
-| EPIC Z Autofocus
-| ✅ TERMINÉ (7/7)
-| 108
-
-| EPIC OCR
-| ✅ TERMINÉ (7/7)
-| 027-159
-
-| EPIC SP SessionProtocol
-| ✅ TERMINÉ (7/7)
-| 114
-
-| EPIC TRAD TranslationService
-| ✅ TERMINÉ
-| 133
-
-| EPIC CR Code Review
-| ✅ TERMINÉ (14/14)
-| 119-125
-
-| EPIC PUB Publication
-| ✅ TERMINÉ — codebase-plugin 0.0.3 Central
-| 135
-
-| Documentation Locale
-| ✅ TERMINÉ
-| 128
-|===
-
-== EPIC PUB — Publication Maven Central codebase-plugin 0.0.8
-
-**Statut** : ✅ TERMINÉ (3/3 US — session 183)
-**Priorité** : P1
-**Sessions** : 181 (audit, gouvernance pure) → 183 (exécution)
-
-=== Constat (audité S181)
-
-. `codebase-plugin/build.gradle.kts:8` → `version = "0.0.7"` (code local)
-. Central 0.0.7 publié (bundle `e08acb47`, S-073 LLM-ADAPTER-EXTRACT)
-. Commits post-publication non propagés : `f840b93` SUBGRAPH US-1+US-2 (domaine `codebase.graph` + canal Graphify réel)
-. Bump 0.0.7→0.0.8 reporté fin d'EPIC SUBGRAPH (décision S179) — désormais cadré comme EPIC dédié
-
-=== Décision
-
-Bump + publication Maven Central codebase-plugin **0.0.7 → 0.0.8** au backlog uniquement (pas d'exécution dans cette tâche — gouvernance pure, pattern bakery S199).
-
-=== US découpées (~3 US)
-
-. US-0.0.8-1 — ✅ S183 : POM `withType<MavenPublication>` (name/description codebase-plugin) + signing `useGpgCmd` (conventions-gradle publishing 0.0.2) + release deps vérifiées (zéro SNAPSHOT, 12 artefacts education.cccp en release Central)
-. US-0.0.8-2 — ✅ S183 : `publishAggregationToCentralPortal --no-daemon` BUILD SUCCESSFUL 28s, bundle `4ae55e92-a116-4a25-8edf-b1f7cc9a56d4` AUTOMATIC, HTTP 200 repo1 `codebase-plugin-0.0.8.pom`
-. US-0.0.8-3 — ✅ S183 : zéro tag local/origin à aligner (cleanup néant) + BOM non bumpé (constraint codebase 0.0.5 dans BOM 0.0.18 Central — géré MEMPHIS, pratique canonique zéro bump BOM)
-
-== EPIC SUBGRAPH — Contexte Augmenté Graphify (graphe + sous-graphes réels)
-
-**Statut** : ✅ TERMINÉ (4/4 US — session 182)
-**Priorité** : P1
-**Sessions** : 178 (cadrage) → 179 (US-1) → 180 (US-2) → 182 (US-3+US-4)
-
-=== Problème (constat audité)
-
-Le canal `ContextChannel.Graphify` (N0, budget 0.20) n'est **jamais alimenté avec du contenu réel** :
-
-. `CompositeContextBuilder.loadGraphifyStats` (CompositeContextBuilder.kt:138) — ne fait que des *stats regex* sur `office/graph.json` brut (`"name":`/`"source":` comptés) → `"[Graphify] global graph: ~N nodes, ~M edges"`. Zéro contenu structurel.
-. `MultiChannelContextGraph.collectGraphifyNode` (MultiChannelContextGraph.kt:130) — appelle la même `loadGraphifyStats` (même faux positif).
-. `GovernanceContextLoader.graphRelations` (GovernanceContextLoader.kt:68) — hardcodé `""`, jamais alimenté (le canal existe dans `LiveContextInjector` mais reste vide).
-. `ContextChannel.Resource` (MultiChannelContextGraph.kt:154) — hardcodé `""`.
-. Aucune dépendance codebase → graphify-plugin dans `build.gradle.kts`/`libs.versions.toml` (grep vide).
-. Contrats N0 (`codebase-contracts`) : `ContextChannel.Graphify` est un simple type de canal — aucun contrat de graphe (GraphModel/communities/edges).
-
-=== Pattern existant à copier (precedent bakery)
-
-`bakery-gradle` (N2, LENTILLE) est le **seul consommateur structuré du graphe** — le standard de fait du workspace :
-
-. Dépendance réelle : `education.cccp:graphify-plugin:0.0.2` (bakery-plugin/build.gradle.kts:38 + catalog).
-. `SubgraphExtractor.loadGraph` (bakery/lens/SubgraphExtractor.kt:37) — parse réel du graph.json (11 MB, 203k nœuds) en `GraphModel` via Jackson.
-. `LensConfig` (communautés/type nœuds/type edges/profondeur max/extensions) → sous-graphe ciblé ~200 nœuds.
-. `BfsProximityCache` + `AugmentedArticlesService` (β = 0.30) — scoring de proximité structurelle.
-. Contrat DAG documenté : bakery (N2) importe graphify-plugin (N0).
-
-=== Décisions architecturales (US-0 cadrage)
-
-. **Dépendance** : codebase → `education.cccp:graphify-plugin:0.0.2` (déjà Central, pattern bakery). Attention WORKAROUND bakery : 0.0.2 publié avec package relocalisé `com.cheroliv.graphify.model` au lieu de `graphify.model` — consommer le package réel, revoir si 0.0.3 corrigé.
-. **Domaine** : nouveau domaine DDD `codebase.graph` (6ème domaine de contexte, pattern `codebase.rag`).
-. **Portage** : `SubgraphExtractor` + `LensConfig` portés depuis bakery vers codebase (N1 socle partagé — bakery doit ensuite consommer codebase au lieu de dupliquer). Source de vérité unique N1.
-. **Câblage** : `loadGraphifyStats` remplacé par le vrai extracteur dans `CompositeContextBuilder` ET `MultiChannelContextGraph.collectGraphifyNode` — le canal `Graphify` reçoit le sous-graphe réel (nodes/edges/communities, format texte structuré, tronqué au `graphifyTokens` existant).
-. **`graphRelations`** : alimenté depuis le sous-graphe (au lieu de `""`) — `GovernanceContextLoader` + `LiveContextInjector` deviennent effectifs.
-. **Budget** : respecter `budgetGraphify = 0.20` (`graphifyTokens`) — le sous-graphe est tronqué au budget existant, zéro changement de contrat.
-. **Source graph.json** : défaut `office/graph.json` (11 MB), surchargeable via extension DSL.
-. **Testabilité** : `GraphModel` synthétique en tests (pattern `SiteContextCollectorTest`/`SubgraphExtractorTest` bakery), `LensConfig` scope FULL/SEMANTIC_ONLY/ciblé.
-. **Bump** : version 0.0.6 (après 0.0.5 publié). Zéro bump BOM si graphify-plugin 0.0.2 déjà sur Central.
-
-=== Bénéfice
-
-Chaque projet consommant codebase (planner, slider, capsule, training, plantuml...) obtient la capacité de construire **son graphe et ses sous-graphes** — le contexte augmenté devient complet : EAGER + RAG + GRAPHIFY réel + Docs + Resource.
-
-=== US découpées (~5 US)
-
-. US-0 — Cadrage EPIC (✅ session 178, ce document)
-. US-1 — Dépendance graphify-plugin + domaine `codebase.graph` (✅ session 179 : `LensConfig` + `SubgraphExtractor` + `SiteSubgraph` portés de bakery, 26 unit, gate non-régression VERT 912 tests/0 FAIL, WORKAROUND package `com.cheroliv.graphify.model` confirmé, bump 0.0.7→0.0.8 reporté en fin d'EPIC)
-. US-2 — Câblage `CompositeContextBuilder` + `MultiChannelContextGraph` (canal Graphify réel, ~8 unit + 2 functional) — ✅ session 180 : `GraphContextRenderer` (6 unit) + `GraphifyContextProvider` (5 unit) + câblage `CompositeContextBuilder` (param `graphFile` + `graphifyProvider`) + `MultiChannelContextGraph.collectGraphifyNode` (provider `office/graph.json`), `loadGraphifyStats` regex supprimé × 2, 3 functional `CompositeContextBuilderGraphifyTest` + 1 test graphify `MultiChannelContextGraphTest`, gate ciblé VERT 24s 0 FAIL, `codebase.graph.*` 37 tests 0 FAIL
-. US-3 — `graphRelations` alimenté (GovernanceContextLoader + LiveContextInjector, ~8 unit) — ✅ session 182 : `GovernanceContextLoader(graphFile: File? = null, lensConfig: LensConfig = LensConfig())` + `graphRelations = graphFile?.let { GraphifyContextProvider(it, lensConfig).provide() } ?: ""` (fallbacks conservés) + `MultiChannelContextGraph(graphFile: File? = null)` + canal `ContextChannel.Resource` alimenté depuis le sous-graphe (budget resource 0.10) + câblage `SessionProtocolTask`/`SessionProtocolServer` (`root.resolve("office/graph.json")`) → `LiveContextInjector` effectif. 6 unit, TDD strict RED → GREEN → REFACTOR, gates ciblés VERT
-. US-4 — Cucumber BDD (`codebase_subgraph.feature`, ~4 scénarios @subgraph) — ✅ session 182 : feature 4 scénarios @subgraph + `SubgraphWorld`/`SubgraphSteps` (14 step defs) + `SubgraphCucumberRunner` + `CucumberTaskSpec("cucumberTestSubgraph")`, 4/4 PASSED 21s, zéro production modifié — pure BDD
-
-== EPIC VIBE-HARDENING — Durcissement Vibecoding (CR-GLOBALE-004)
-
-**Statut** : ✅ TERMINÉ (6/6 US — sessions 184-187)
-**Priorité** : P1
-**Origine** : CR-GLOBALE-004 (session 175, code review vibecoding) — 10 findings (3 P1 + 7 P2/P3)
-**Cadrage** : `CADRAGE_EPIC_VIBE_HARDENING.adoc` (10 décisions architecturales)
-
-=== Constats P1 audités (3)
-
-. **S1 — Blacklists bypassables** : 10 regex `BASH_BLACKLIST` + 4 `GRADLE_BLACKLIST` contournables (`rm -Rf` uppercase, `chmod 0777` zero-prefixed, `clean  build` double espace, variations `--refresh-dependencies`, `rm`/`delete` ne couvrent pas `sudo`/`curl`/`;`/`|`).
-. **C2 — Retry double-compté** : `retryCount = state.retryCount + 1` dans `executePlanTasks` (L587/L604) + 3 `incrementRetry()` dans branches replan (L291/L298/L302) = 2 incréments/essai, `maxRetries=3` épuisé en 2 essais.
-. **C5 — LLM sans timeout** : 3 sites `runBlocking { llmProvider.call(...) }` sans `withTimeout` (callLLMNode L413, replan L288, StepVerifier L44) — hang indéfini possible.
-
-=== P2/P3 reportés (7) — EPIC VIBE-HARDENING-2 si déclencheur
-
-S2 (pas d'allowlist Gradle globale), S3 (edit/write sans garde taille), C1 (heuristique `contains("failed")`), C3 (VibecodingPlan dead code), C4 (flags Gradle cassés), C6 (duplication), C7 (compteur négatif).
-
-=== US découpées (~12 pts)
-
-. US-0 — ✅ S184 : Cadrage EPIC (gouvernance pure, 3 constats P1 + 7 rappels P2/P3 + 10 décisions archi, 6 US ~12 pts)
-. US-1 — ✅ S185 : ExecShellTool allowlist deny-by-default (10 patterns `SHELL_ALLOWLIST` + 10 `SHELL_DENYLIST` second ride, `validateCommand` allowlist puis deny-list, `ExecShellToolTest` 11→17 tests, gate VERT 21 tests 0 FAIL)
-. US-2 — ✅ S186 : ExecGradleTool allowlist deny-by-default (2 `GRADLE_TASK_ALLOWLIST` + 2 `GRADLE_ARG_ALLOWLIST` + 8 `GRADLE_DENYLIST`, `validateGradleTask` split tokens + allowlist par position, `ExecGradleToolTest` 6→17 tests, gate VERT 32 tests 0 FAIL)
-. US-3 — ✅ S187 : C5 Timeout LLM (`withTimeout(llmTimeoutMs=30_000L)` sur 3 sites + catch `TimeoutCancellationException` → error/lastToolResult, constructor param propagé au StepVerifier via default param, 3 StepVerifierTest + 4 VibecodingGraphTest)
-. US-4 — ✅ S187 : C2 Retry single counter (supprimé `retryCount = state.retryCount + 1` 2 sites + 3 `incrementRetry()` branches replan → 1 `incrementRetry()` début bloc error recovery, 1 VibecodingGraphTest)
-. US-5 — ✅ S187 : Cucumber BDD (`codebase_vibe_hardening.feature` 4 scénarios `@vibe-hardening` + `VibeHardeningWorld` + `VibeHardeningSteps` 14 step defs préfixés "vibe hardening" + `VibeHardeningCucumberRunner` pattern S-082 + `CucumberTaskSpec("cucumberTestVibeHardening")` 37e, 4/4 PASSED 47s)
-
-=== Résultats
-
-* Gate `codebase.koog.tools.*` + VibecodingGraph + StepVerifier : 64 tests 0 FAIL (17 ExecShellTool + 15 ExecGradleTool + 22 VibecodingGraph + 10 StepVerifier)
-* Cucumber `cucumberTestVibeHardening` : 4/4 scénarios PASSED
-* 3 fichiers prod modifiés (`ExecShellTool.kt`, `ExecGradleTool.kt`, `VibecodingGraph.kt`, `StepVerifier.kt` — signatures backward compat)
-* Zéro bump BOM (EPIC local à codebase-plugin, contrats dans le même artefact)
-* Zéro secret, zéro régression
-
-== ✅ EPIC VIBE-HARDENING-2 — Durcissement Vibecoding P2/P3 (CR-GLOBALE-004 suite) — TERMINÉ 8/8 US (S-192)
-
-**Statut** : ✅ TERMINÉ 8/8 US (US-0 ✅ S-188, US-1 ✅ S-189, US-2 ✅ S-189, US-3 ✅ S-190, US-4 ✅ S-191, US-5 ✅ S-192, US-6 ✅ S-192, US-7 ✅ S-192, US-8 ✅ S-192)
-**Priorité** : P2/P3
-**Origine** : CR-GLOBALE-004 (session 175) — 7 findings P2/P3 restants post-EPIC VIBE-HARDENING P1
-**Cadrage** : `CADRAGE_EPIC_VIBE_HARDENING_2.adoc` (12 décisions architecturales)
-
-=== Constats P2/P3 audités (7)
-
-* **S2** (P2) — ✅ US-1 S-189 : `TaskDiscoveryRegistrar` auto-registration libre `gradle_*` sans allowlist.
-* **S3** (P2) — ✅ US-2 S-189 : `write_file`/`edit_file` (`ToolRegistry.kt:125/138`) sans garde de taille (OOM potentiel).
-* **C1** (P1 mais refonte) — ✅ US-4 S-191 : `TaskResultVerifier` `contains("failed")` faux positif + `expectedOutput` jamais comparé. Résolu : surcharge `verify(stdout, stderr, expectedOutput)` + `hasActualFailure` raffiné (`\\bfailed\\b` non précédé de `0 `/`no `) + `StepVerifier` câble `step.expectedOutput` (contrat N0 PLN-VERIFY). Bug subtil `DEFAULT_EXPECTED_OUTPUT_LOWER` fix. 26+13+22+97 = 158 tests VERT.
-* **C3** (P2) — ✅ US-5 S-192 : `VibecodingGraph.kt:53-85` commentaires `INSERT-X1..X6` stale supprimés (32 lignes KDoc, EPIC X déjà fait S-101→S-105). `VibecodingPlan` toujours utilisé (import L13). Zéro test impacté.
-* **C4** (P2) — ✅ US-3 S-190 : `GradleTaskArgsMapper.buildCommand` (L18) flags `--key value` cassés vs `GRADLE_ARG_ALLOWLIST` US-2. Résolu : `GRADLE_ARG_ALLOWLIST` étendu + `isBareLongFlag` + `validateGradleTask` accepte pair flag+value. Fail préexistant `GradleTaskArgsMapperTest > execute structured gradle task via handler` résolu.
-* **C6** (P3) — ✅ US-7 S-192 : Extraction `SessionProtocolEngine` (105 lignes) — shared engine `executeVibecoding` + `resolveAgentContext` + `buildOutput`. `SessionProtocolServer` délégué (-37 lignes) + `SessionProtocolTask` délégué (-49 lignes) + `buildOutput` privé dupliqué supprimé. 9 unit dédiés + 4 classes SessionProtocol non-régression VERT.
-* **C7** (P3) — ✅ US-6 S-192 : `VibecodingGraph.kt:430` `Plan remaining tasks` négatif possible. Résolu : `(totalTasks - state.executedTasks.size).coerceAtLeast(0)`. `buildPromptForIteration` rendu `internal` pour testabilité. 2 unit RED→GREEN. Gate 63 tests 0 FAIL.
-
-=== US découpées (~21 pts, 8 US)
-
-. US-0 — ✅ S188 : Cadrage EPIC (gouvernance pure, 7 constats + 12 décisions archi, ce document)
-. US-1 — ✅ S189 : S2 Allowlist TaskDiscoveryRegistrar (18 unit + 6 réécrits, 4 pts) — `TASK_ALLOWLIST` + `TASK_DENYLIST` + `validateTaskName` companion. Tasks métier plugin (vibecode, qualityGate) ne sont plus auto-enregistrées (sécuritaire).
-. US-2 — ✅ S189 : S3 Garde de taille write_file/edit_file MAX_WRITE_CHARS 1MB (+5 unit, 2 pts) — 3 checks (content, newString, resulting updated) → IAE avant writeText.
-. US-3 — ✅ S190 : C4 GradleTaskArgsMapper flags cassés (+5 unit, 3 pts) — `GRADLE_ARG_ALLOWLIST` étendu `--\w+(?:=\S+)?` + `isBareLongFlag` + `validateGradleTask` accepte pair flag+value (defense in depth préservée). Fail préexistant `GradleTaskArgsMapperTest > execute structured gradle task via handler` résolu. Gate 110 tests 0 FAIL.
-. US-4 — ✅ S191 : C1 TaskResultVerifier refonte expectedOutput comparison + failed raffiné (+9 unit TaskResultVerifier +2 StepVerifier, 4 pts) — surcharge `verify(3-arg)` + `hasActualFailure` raffiné + `StepVerifier` câble `step.expectedOutput` + bug `DEFAULT_EXPECTED_OUTPUT_LOWER` fix. 158 tests VERT 0 FAIL.
-. US-5 — ✅ S192 : C3 Cleanup doc INSERT-X1..X6 (32 lignes KDoc stale supprimées, 0 test, 1 pt)
-. US-6 — ✅ S192 : C7 coerceAtLeast(0) remaining tasks (2 unit RED→GREEN, `buildPromptForIteration` internal, 1 pt)
-. US-7 — ✅ S192 : C6 Extraction SessionProtocolEngine (105 lignes, 9 unit dédiés, Server -37 + Task -49 lignes, 4 pts)
-. US-8 — ✅ S192 : Cucumber BDD `codebase_vibe_hardening_2.feature` 4 scénarios `@vibe-hardening-2` + runner dédié `VibeHardening2CucumberRunner` + `CucumberTaskSpec("cucumberTestVibeHardening2")` 38e (4/4 PASSED, 2 pts)
-
-=== Ordre de priorité
-
-P2 d'abord (US-1 S2 ✅, US-2 S3 ✅, US-3 C4 ✅), puis C1 (US-4 P1 refonte), puis P3 triviaux (US-5 C3, US-6 C7), puis P3 refactor (US-7 C6), puis Cucumber (US-8). US-1→US-7 indépendants. US-8 dépend de US-1→US-7.
-
-=== Backward compat
-
-Toutes les US préservent la backward compat (heuristique fallback conservée C1, MAX_WRITE_CHARS 1MB n'impacte aucun test S3, extension allowlist C4 accepte plus C4, etc.).
-
-== EPIC V-FLYWAY — Migration Flyway (BACKLOG CONDITIONNEL)
-
-**Statut** : BACKLOG
-**Priorité** : P2
-**Seuil déclencheur** : 5+ fichiers de migration de schéma
-
-Le schema SQL est versionné avec la convention Flyway
-(`src/main/resources/db/migration/V1__init_vibecoding.sql`) mais sans la dépendance
-Flyway. Le `initSchema()` de SessionRepository gère les `CREATE TABLE IF NOT EXISTS`
-directement en R2DBC. Quand le nombre de migrations dépassera 5, importer
-`org.flywaydb:flyway-database-postgresql` et basculer sur `Flyway.migrate()`.
-
-Actuellement 4 migrations (V1→V4). Non applicable.
-
-== ✅ EPIC FT-PIPELINE — Pipeline de Fine-Tuning N1 (Session 188 — Cadrage, TERMINÉ 7/7 US S-198)
-
-**Statut** : ✅ TERMINÉ (7 US ~18 pts, US-0 ✅ S-188, US-1 ✅ S-193, US-2 ✅ S-194, US-3 ✅ S-195, US-4 ✅ S-196, US-5 ✅ S-197, US-6 ✅ S-198)
-**Priorité** : P0 vision (WORKSPACE_AS_PRODUCT.adoc:642-658)
-**Source de conception** : `foundry/public/notebook-gradle/ARCHITECTURE.adoc` (vestige récupéré)
-**Document** : `.agents/CADRAGE_EPIC_FT_PIPELINE.adoc`
-
-Pipeline de fine-tuning N1 générique — fabrication modèle fine-tuné (dataset
-prep + continual pre-training 10% corpus + export GGUF + push Ollama).
-Boucle fabrication→exposition avec domaine `codebase.koog.expert` existant
-(13 fichiers — `ExpertExposureTask`, `ExpertRegistry`, `ExpertAgent`).
-TRN-8 training-gradle reformulé en recettes N2 consommant le pipeline.
-
-*16 décisions architecturales* : EPIC codebase-only, domaine `codebase.finetuning`
-(7ème sous `codebase`), `FineTuningPipeline` port + `FakeFineTuner`,
-`OllamaFineTunerAdapter` (pattern `ChatModelTranscriptEnhancer`),
-3 tâches Gradle (prepareFineTuningDataset/fineTuneExpert/publishExpertToOllama),
-`FineTuningGraph` koog itératif (pattern `KoogPlanningGraph`), continual
-pre-training 10% corpus (ACL 2024 arXiv 2311.08545), `AugmentedContext`
-consommé, BYOK `api-key-pool` N0, output GGUF + manifest via
-`ExpertExposureTask` (boucle fermée), `ValidationResult` sealed, zéro bump BOM,
-pas de runtime Colab (CI/CD Gradle), Cucumber BDD `@finetuning`, budget pool
-11437-11465, EPIC notebook-gradle caduc, TRN-8 reformulé recettes N2.
-
-[cols="1,3,2,1]
-|===
-| US | Description | Tests | Pts
-
-| US-0
-| ✅ Cadrage EPIC — 16 décisions, 7 US, source notebook (ce document + CADRAGE_EPIC_FT_PIPELINE.adoc)
-| 0
+| US | Description | Statut | Pts
+
+| CDX-RAG-0
+| Cadrage EPIC (gouvernance pure, zéro code)
+| ✅ TERMINÉ (S-097)
 | 1
 
-| US-1
-| ✅ TERMINÉ (S-193) : `FineTuningConfig` data class 5 champs (`epochs=3`, `learningRate=2e-4`, `batchSize=4`, `corpusGlobs=[]`, `continualPreTrainingRatio=0.10`) + invariants `init` × 4 + `FineTuningConfigMerger` 4 sources (ENV < props < YAML < CLI). Domaine `codebase.finetuning` (7ème) créé. Pattern `ValidationConfig`/`CapsuleConfigMerger`. _Note : US-1 redéfinie par PROMPT_REPRISE S-193 (config+merger) — le port `FineTuningPipeline` + `FakeFineTuner` initialement cadré est reporté US-2._
-| 27 unit
-| 3
-
-| US-2
-| ✅ TERMINÉ (S-194) : port `FineTuningPipeline` (fun interface sync, pattern `TranscriptLlmEnhancer`) + `FineTuningRequest` (4 champs + invariants × 4) + `FineTuningResult` sealed (Success/Failure + factory) + `OllamaRegistryClient` port interne (`createModel`/`pushModel` + `RegistryResponse` sealed Ok/Fail) + `OllamaHttpRegistryClient` impl HTTP JDK 24 (`POST /api/create` + `/api/push`, pattern `OllamaOcrProvider`) + `OllamaFineTunerAdapter` adapter `FineTuningPipeline` (pipeline Modelfile→create→push→GGUF marker, fallback degraded economy of ink — `createResponse !isOk`/`pushResponse !isOk`/`catch Exception` → `Failure` avec dataset original préservé) + `FakeFineTuner` test (FIFO + defaultResult + capture, pattern `FakeLlmTranslator`). 43/43 unit PASSED (8 config + 19 merger + 11 pipeline + 5 adapter). 9 fichiers créés (6 prod + 1 fake + 2 test).
-| 16 unit
-| 3
-
-| US-3
-| ✅ TERMINÉ (S-195) : `FineTuningGraph` — graphe koog `strategy<FineTuningState, FineTuningState>` 3 nœuds propose/train/validate + 7 edges conditionnels (convergence score, backtracking, maxIterations default 3). Méthode `execute` séquentielle pattern `KoogAugmentedContextGraph`. `asMermaidDiagram()`. 5 fichiers prod créés (FineTuningStage, FineTuningState 11 champs + 10 invariants, FineTuningPromptBuilder port, FineTuningLlm port, FineTuningGraph) + 2 test (FineTuningStateTest 18 unit, FineTuningGraphTest 17 unit). Gate 78/78 VERT.
-| 35 unit
-| 4
-
-| US-4
-| ✅ TERMINÉ (S-196) : tâches Gradle `prepareFineTuningDataset` (groupe `finetuning`, `@OutputFile`, assemble Modelfile + Dataset globs) + `fineTuneExpert` (groupe `finetuning`, dependsOn prepare, `@Internal pipeline` injectable — défaut `OllamaFineTunerAdapter`, `@OutputFile report` + `@OutputDirectory ggufDir`) + `publishExpertToOllama` (groupe `finetuning`, dependsOn fineTune, register `ExpertRegistry` + manifest JSON via `ExpertExposureTask`). Extension `fineTuning {}` 10 propriétés DSL + helpers `toConfig()`/`toRequest()`. `CodebasePlugin.kt` câblé (+87 lignes, extension + 3 tâches + 13 props CLI `-Pcodebase.finetuning.*`). 4 fichiers prod créés + 5 test créés + 1 modifié. 140 tests 0 FAIL (gate finetuning + plugin).
-| 47 unit + 3 functional
-| 4
-
-| US-5
-| ✅ TERMINÉ (S-197) : Cucumber BDD `codebase_finetuning.feature` 4 scénarios `@finetuning` (pipeline complet dataset→GGUF→manifest, cycle itératif convergence après ajustement corpus ratio, fallback degraded Ollama registry indisponible 503, validation seuil dès la 1re itération) + `FineTuningCucumberRunner` (pattern S-082, filtre `@finetuning and not @integration`) + `FineTuningWorld` (`StubRegistryClient` in-memory `OllamaRegistryClient` + state shared PicoContainer) + `FineTuningSteps` (16 step defs préfixés "finetuning" pattern S-088 + `FakeFineTuningLlm` FIFO queues propose/validate + `StubPromptBuilder` object deterministic — zéro appel Gradle task, zéro I/O réseau, pure BDD domaine). `build.gradle.kts` modifié : `CucumberTaskSpec("cucumberTestFineTuning", ...)` 39e câblé. 4/4 scénarios PASSED 9s (17 steps). Zéro fichier prod modifié — pure BDD pattern VibeHardening2 S-192. Gate `codebase.finetuning.*` + `CodebasePluginTest` non-régression VERT 0 FAIL. Domaine `codebase.finetuning` clos BDD.
-| 4 scénarios
+| CDX-RAG-1
+| codebase — domaine `codebase.store` : `RagVectorStore` migré verbatim +
+  `StoreStatements` (ex-`IngestStatements`) + `IngestIndexing` + types
+  `RetrieveResult`/`DocumentChunk` + characterization tests (mirror tests
+  codex). 25/25 PASSED. Domaine autonome (zéro import `codex.tasks.*`).
+| ✅ TERMINÉ (S-199)
 | 2
 
-| US-6
-| ✅ TERMINÉ (S-198) : Cross-borough wiring — training-gradle TRN-8 reformulé en recettes CDA/FPA consommant `fineTuneExpert` de codebase. Séparation N1/N2 actée : machinerie générique N1 dans codebase (FT-PIPELINE TERMINÉ 7/7), recettes métier N2 dans training (datasets corpus AFNOR/REAC + modèles de base + noms experts + curation Bloom/Qualiopi). Dépendance N2→N1 propre (training appelle codebase pipeline, spécifie datasets/modèles). Littérature agentique préparatoire posée dans BACKLOG training (constat N1/N2 + plan baby-steps TRN-8.0→8.6), démarrage coding reporté post-travaux codex prioritaires. INDEX/PROMPT_REPRISE training mis à jour. EPIC FT-PIPELINE TERMINÉ 7/7 US. Zéro code modifié — gouvernance pure cross-borough pattern S-057.
-| 0 (gouvernance)
+| CDX-RAG-2
+| codebase — bascule interne : 6 call sites `codex.store.CodexVectorStore`
+|   → `codebase.store.RagVectorStore` (API identique). Gate non-régression :
+|   tests existants verts.
+| ✅ TERMINÉ (S-205)
 | 1
+
+| CDX-RAG-3
+| codex — dep `libs.codebase.plugin` ajoutée ; `CodexCompositeContextTask` /
+  `CodexIngestTask` / `CodexRetrieveTask` délèguent au socle ; suppression
+  `codex.store.CodexVectorStore` + `IngestStatements` + `IngestIndexing` ;
+  tests migrés ; KDoc profile actualisé. `check` VERT.
+| ✅ TERMINÉ (S-205)
+| 3
+
+| CDX-RAG-4
+| codebase — retrait `implementation(libs.codex.plugin)`
+|   (`build.gradle.kts:49`) après vérification `rg "import codex\."` = zéro
+|   résultat. CI verte. L'inversion N1→N2 est morte.
+| ✅ TERMINÉ (S-205)
+| 1
+
+| CDX-RAG-5
+| Cucumber BDD — scénarios composite context canal Docs + retrieval koog
+|   sur store socle (fake in-memory). Pure BDD.
+| ✅ TERMINÉ (S-205)
+| 2
+
 |===
 
-Ordre : US-0 ✅ → US-1 ✅ → US-2 ✅ → US-3 ✅ → US-4 ✅ → US-5 ✅ → US-6 ✅.
-EPIC FT-PIPELINE TERMINÉ 7/7 US.
-Gate ciblé : `./gradlew test --tests "codebase.finetuning.*"`.
+*Total* : ~10 pts (6/6 US ✅ — EPIC TERMINÉ. L'inversion N1→N2 est morte, flèche unique codex→codebase.)
 
-== Kover Coverage
+== ✅ EPIC CB-STORE-UNIFY — Consolidation `codebase.rag.VectorStore` JDBC legacy — ✅ CADUQUE (S-206)
 
-Session 079-080 (30 mai 2026). Kover configuré avec `koverThresholdCheck`.
-*Couverture :* 85.81% → **100.00%** (55 classes métier, 0 missed).
-*Exclusions :* 60+ classes excluded stratégiquement (DTOs, générés, tests).
-*Commande :* `./gradlew :codebase-plugin:koverThresholdCheck`
+_Source_ : décision archi S-097 (consolidation JDBC legacy HORS SCOPE de
+CDX-RAG-SOCLE, reportée à un EPIC futur dédié).
+_Doc cadrage_ : `CADRAGE_EPIC_CB_STORE_UNIFY.adoc` (côté codex-gradle).
+_Pattern_ : gouvernance pure S-057/S-063 + baby-step TDD strict.
+
+=== Constats (audit S-206 pré-coding)
+
+. Cadrage CB-STORE-UNIFY existant trop simpliste : prévoyait "remplacer les
+  appels par `searchBlocking` (API identique)" — faux. Les APIs sont très
+  différentes.
+. `RagVectorStore` (R2DBC socle, `codebase.store`) : `searchBlocking(query,
+  topK)` seulement — recherche sur corpus documentaire codex (tables
+  `codex_documents`/`codex_chunks`, métadonnées `section_path`,
+  `heading_level`, `source_document`).
+. `VectorStore` legacy (JDBC, `codebase.rag`) : `initSchema`,
+  `ensureSchema`, `insertDocument`, `updateEmbedding`, `fetchAllChunks`,
+  `querySimilar`, `countDocuments`, `countChunks`, `findByPackage` —
+  ingestion + query du code source du workspace (tables `documents`/
+  `chunks`, métadonnées `package_name`, `class_name`, `repo_name`, filtre
+  `fileExtension`).
+. Consommateurs profonds : `OcrIngestTask`, `MultiChannelContextGraph`
+  (utilise les deux stores — legacy pour RAG code, socle pour Docs corpus),
+  `KoogAugmentedContextGraph`, `KoogPlanningOrchestrator`,
+  `VectorQueryService`, `EmbeddingPipeline`, `PgVectorConfig`, plus 7
+  fichiers tests/scénarios Cucumber.
+. Usage sémantiquement distinct : le legacy indexe le code source du
+  workspace (packages, classes, fileExtension) ; le socle indexe le corpus
+  documentaire (livres, PDF, sections AsciiDoc). Les fusionner ferait perdre
+  l'information sémantique (package_name/class_name n'existent pas dans
+  `codex_chunks`).
+
+=== Décision pilote (S-206)
+
+Discussion pilote confirme l'architecture en place depuis CDX-RAG-SOCLE :
+codex (N2) ingère les data et les passe à codebase (N1) qui fait le RAG.
+Codebase fournit le contexte à codex (RAG/graphify/governance). Flèche
+unique N2→N1, zéro dépendance circulaire.
+
+Sous cet angle, les deux stores servent des domaines légitimement distincts
+(documents vs code source). La "consolidation" était un faux positif de
+l'audit S-097 (qui avait déjà signalé la consolidation HORS SCOPE).
+
+**Décision** : Clore CB-STORE-UNIFY comme CADUQUE. Le seul vrai risque
+résiduel — le `DROP TABLE ... CASCADE` destructif dans
+`VectorStore.initSchema()` — s'isole en hardening mineur.
+
+=== Hardening (S-206)
+
+Baby-step TDD strict RED → GREEN → REFACTOR :
+. `VectorStore.initSchema()` devient alias `ensureSchema()` (non-destructeur,
+   `CREATE TABLE IF NOT EXISTS`).
+. `VectorStore.clean()` publique ajoutée (destructeur test-only, isolé du
+   chemin prod).
+. 3 `@BeforeEach` mis à jour (`VectorStoreTest`, `OcrIngestTaskTest`,
+   `OcrIngestSteps`) pour utiliser `clean()` au lieu de `initSchema()`.
+. `PrepareContextUnitTest` inchangé (setup one-shot idempotent, flag
+   `datasetIndexed`).
+
+Gates : 33/33 VectorStoreTest (dont 2 nouveaux tests non-destructeur) +
+OcrIngestTaskTest + 5/5 PrepareContextUnitTest + 3 cucumber dédiés
+(cucumberTestEpicOcr + cucumberTestRagSocle + cucumberTestOcrContracts)
+VERTS. Zéro régression, zéro bump BOM, zéro secret.
+
+[cols="1,3,2,1", options="header"]
+|===
+| US | Description | Statut | Pts
+
+| CB-STORE-UNIFY-0
+| Cadrage EPIC (gouvernance pure) — audit consommateurs résiduels de
+|   `codebase.rag.VectorStore`, mapping schéma `code-index` vs
+|   `codex_documents`/`codex_chunks`, plan de migration/cleanup.
+| ✅ TERMINÉ (S-105 — document côté codex-gradle)
+| 1
+
+| CB-STORE-UNIFY-1
+| Migration des consommateurs résiduels vers `RagVectorStore` (API
+|   identique `searchBlocking`). Characterization tests. Gate non-
+|   régression.
+| ✅ CADUQUE (S-206 — APIs très différentes, usages sémantiquement
+|  distincts, migration non-triviale aurait cassé l'indexation du code
+|  source)
+| 2
+
+| CB-STORE-UNIFY-2
+| Suppression `codebase.rag.VectorStore` + schéma `code-index` (DROP
+|   CASCADE destructif retiré). `check` VERT codebase. Zéro régression.
+| ✅ CADUQUE (S-206 — store legacy légitime, domaine code source distinct.
+|  Hardening ciblé : `initSchema()` non-destructeur + `clean()` test-only)
+| 2
+
+| CB-STORE-UNIFY-3
+| Cucumber BDD — scénarios retrieval sur store unifié (fake in-memory).
+|   Pure BDD.
+| ✅ CADUQUE (S-206 — pas de store unifié, deux stores légitimes distincts)
+| 1
+
+|===
+
+*Total* : ~6 pts (4/4 US ✅ — EPIC CADUQUE. Hardening ciblé `initSchema()`
+non-destructeur appliqué en S-206.)

@@ -41,3 +41,15 @@ Versionner explicitement toutes les deps dans `libs.versions.toml` :
 . `api(platform(...))` ne change rien au `.module` non plus.
 . Le pattern `codex-plugin:0.0.2` (publié Central) confirme : versionner
   explicitement toutes les deps dans le TOML est la bonne approche.
+== Session 173 — Publication Maven Central 0.0.6
+
+* **Date** : 2026-07-16
+* **EPIC** : EPIC PUB (continuation)
+* **Statut** : ✅ TERMINÉ
+* **Bundle** : `e4263c78`
+* **Actions** :
+  * Fix POM `<name>`+`<description>` manquants dans `codebase-plugin/build.gradle.kts`
+  * `publishAggregationToCentralPortal --no-daemon` BUILD SUCCESSFUL
+  * `codebase-plugin:0.0.6` publié sur Maven Central
+* **Impact** : Débloque bakery BKY-LANG-SWITCH sur CI (testRuntimeClasspath résolu)
+

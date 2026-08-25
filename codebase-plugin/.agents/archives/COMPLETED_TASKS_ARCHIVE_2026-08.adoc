@@ -599,3 +599,56 @@ depuis le sous-graphe (GovernanceContextLoader.kt:68 + ContextChannel.Resource,
 | Zéro code modifié, zéro build, zéro test, zéro bump BOM, zéro secret
 | ✅ TERMINÉ (S-198)
 |===
+
+== Session 186 — EPIC VIBE-HARDENING US-2 ExecGradleTool allowlist
+
+* **Date** : 2026-08-17
+* **EPIC** : VIBE-HARDENING (US-2)
+* **Statut** : ✅ TERMINÉ
+* **Actions** :
+  * 4 regex `GRADLE_BLACKLIST` remplacées par `GRADLE_TASK_ALLOWLIST` (2 patterns : bare tasks + project:task form) + `GRADLE_ARG_ALLOWLIST` (2 patterns : -Pproperty + --long-flag) + `GRADLE_DENYLIST` (8 patterns second ride : clean build, --refresh-dependencies, rm, delete, sudo, curl, semicolon, pipe)
+  * `validateGradleTask` refactor : split tokens par `\\s+`, allowlist par position (1er token = task, reste = args), puis deny-list sur chaîne complète (defense in depth)
+  * `ExecGradleToolTest` 6→17 tests (15/15 PASSED + 2 @integration préservés)
+  * Gate `codebase.koog.tools.*` VERT 32 tests + `ToolRegistryTest` 8/8 non-régression
+* **Impact** : Tool Gradle durci (S1 P1 résolu), pattern US-1 mirroré, zéro bump BOM. EPIC VIBE-HARDENING 2/6 US (4 pts / 12 pts).
+
+
+== Session 175 — Clôture code review vibecoding + CR-GLOBALE-004
+
+* **Date** : 2026-08-05
+* **EPIC** : Aucun (code review + clôture)
+* **Statut** : ✅ TERMINÉ
+* **Actions** :
+  * Gate tests `codebase.koog.*` + `contracts.vibecoding.*` BUILD SUCCESSFUL (5m44s, Kotlin 2.4.10)
+  * Commit atomique `b12a092` (Kotlin 2.4.10 centralisé + POM publishing + LlmTranslator prompt)
+  * CR-GLOBALE-004 archivée dans `GLOBAL_CODE_REVIEW.adoc` racine (10 findings S1-S3/C1-C7)
+  * Backlog EPIC VIBE-HARDENING ajouté (P1 : S1 allowlist deny-by-default, C2 retry, C5 timeout LLM)
+* **Impact** : Working tree propre, borough DORMANT maintenu, backlog durcissement tracé
+
+
+== Session 174 — Code review vibecoding (lecture seule)
+
+* **Date** : 2026-08-05
+* **EPIC** : Aucun
+* **Statut** : ✅ TERMINÉ
+* **Actions** :
+  * Code review 3 interfaces (vibecode, sessionProtocol, sessionProtocolDaemon) + pipeline koog 5 nœuds
+  * 10 findings : S1-S3 sécurité (blacklists bypassables, pas d'allowlist Gradle, edit/write sans garde taille) + C1-C7 correctifs
+  * Audit working tree (bump Kotlin 2.4.10, catalog dupliqué non suivi, archives non suivies)
+* **Impact** : Socle des décisions de la session 175
+
+
+== Session 206 — CB-STORE-UNIFY CADUQUE + hardening initSchema
+
+* **Date** : 2026-08-25
+* **EPIC** : CB-STORE-UNIFY ✅ CADUQUE
+* **Statut** : ✅ TERMINÉ
+* **Actions** :
+  * Audit pré-coding CB-STORE-UNIFY : révèle cadrage existant trop simpliste (APIs très différentes, schémas distincts, consommateurs profonds, usages sémantiquement distincts)
+  * Discussion pilote confirme architecture N2→N1 (codex ingère, codebase stocke + RAG, flèche unique, zéro cycle) — deux stores légitimes servent des domaines distincts
+  * ÉPIC clos comme CADUQUE
+  * Hardening `VectorStore.initSchema()` baby-step TDD strict RED → GREEN → REFACTOR : `initSchema()` alias `ensureSchema()` (non-destructeur), `clean()` test-only (destructeur isolé)
+  * 3 `@BeforeEach` mis à jour (`VectorStoreTest`, `OcrIngestTaskTest`, `OcrIngestSteps`)
+* **Tests** : 33/33 VectorStoreTest + OcrIngestTaskTest + 5/5 PrepareContextUnitTest + 3 cucumber dédiés VERTS
+* **Fichiers** : 1 prod (`VectorStore.kt`), 3 tests (`VectorStoreTest.kt`, `OcrIngestTaskTest.kt`, `OcrIngestSteps.kt`)
+* **Impact** : DROP CASCADE destructif isolé du chemin prod, `initSchema()` non-destructeur. Défense en profondeur sans casser l'existant. Zéro régression.
