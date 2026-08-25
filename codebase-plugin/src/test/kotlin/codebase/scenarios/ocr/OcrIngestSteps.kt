@@ -28,7 +28,7 @@ class OcrIngestSteps {
     @Before("@epic_ocr_4_ingest")
     fun startPgvector() {
         store = VectorStore(PostgresFixture.jdbcUrl, PostgresFixture.username, PostgresFixture.password)
-        store!!.initSchema()
+        store!!.clean()
         pipeline = EmbeddingPipeline(store!!)
     }
 

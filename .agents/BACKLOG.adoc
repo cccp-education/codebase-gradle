@@ -277,7 +277,7 @@ _Tous les EPICs ci-dessous sont TERMINÉS. Gardés pour traçabilité historique
 | 2 | **Backlog doublon** | EPIC V-9 = extension EPIC Y (Agentic Literature Compiler) | RÉSOLU (V-9 = exécution, Y = compilation) |
 | 3 | **Backlog non aligné** | EPIC V-9 non aligné avec roadmap (EPIC K, L, W, X, Z, OCR) | RÉSOLU (V-9 complète le pipeline) |
 '''
-== 🟡 EPIC CDX-RAG-SOCLE — Le RAG appartient au socle (codebase N1) — Cadrage S-097 (Brooklyn)
+== ✅ EPIC CDX-RAG-SOCLE — Le RAG appartient au socle (codebase N1) — Cadrage S-097 (Brooklyn)
 
 _Source_ : décision pilote session 097 (« le RAG est un élément du contexte
 augmenté, donc le RAG se fait dans codebase »).
@@ -353,4 +353,107 @@ _Portée_ : cross-borough Brooklyn (codex) + Queens (codebase).
 
 |===
 
-*Total* : ~10 pts (2/6 US ✅ — reste 4 US ~7 pts)
+*Total* : ~10 pts (6/6 US ✅ — EPIC TERMINÉ. L'inversion N1→N2 est morte, flèche unique codex→codebase.)
+
+== ✅ EPIC CB-STORE-UNIFY — Consolidation `codebase.rag.VectorStore` JDBC legacy — ✅ CADUQUE (S-206)
+
+_Source_ : décision archi S-097 (consolidation JDBC legacy HORS SCOPE de
+CDX-RAG-SOCLE, reportée à un EPIC futur dédié).
+_Doc cadrage_ : `CADRAGE_EPIC_CB_STORE_UNIFY.adoc` (côté codex-gradle).
+_Pattern_ : gouvernance pure S-057/S-063 + baby-step TDD strict.
+
+=== Constats (audit S-206 pré-coding)
+
+. Cadrage CB-STORE-UNIFY existant trop simpliste : prévoyait "remplacer les
+  appels par `searchBlocking` (API identique)" — faux. Les APIs sont très
+  différentes.
+. `RagVectorStore` (R2DBC socle, `codebase.store`) : `searchBlocking(query,
+  topK)` seulement — recherche sur corpus documentaire codex (tables
+  `codex_documents`/`codex_chunks`, métadonnées `section_path`,
+  `heading_level`, `source_document`).
+. `VectorStore` legacy (JDBC, `codebase.rag`) : `initSchema`,
+  `ensureSchema`, `insertDocument`, `updateEmbedding`, `fetchAllChunks`,
+  `querySimilar`, `countDocuments`, `countChunks`, `findByPackage` —
+  ingestion + query du code source du workspace (tables `documents`/
+  `chunks`, métadonnées `package_name`, `class_name`, `repo_name`, filtre
+  `fileExtension`).
+. Consommateurs profonds : `OcrIngestTask`, `MultiChannelContextGraph`
+  (utilise les deux stores — legacy pour RAG code, socle pour Docs corpus),
+  `KoogAugmentedContextGraph`, `KoogPlanningOrchestrator`,
+  `VectorQueryService`, `EmbeddingPipeline`, `PgVectorConfig`, plus 7
+  fichiers tests/scénarios Cucumber.
+. Usage sémantiquement distinct : le legacy indexe le code source du
+  workspace (packages, classes, fileExtension) ; le socle indexe le corpus
+  documentaire (livres, PDF, sections AsciiDoc). Les fusionner ferait perdre
+  l'information sémantique (package_name/class_name n'existent pas dans
+  `codex_chunks`).
+
+=== Décision pilote (S-206)
+
+Discussion pilote confirme l'architecture en place depuis CDX-RAG-SOCLE :
+codex (N2) ingère les data et les passe à codebase (N1) qui fait le RAG.
+Codebase fournit le contexte à codex (RAG/graphify/governance). Flèche
+unique N2→N1, zéro dépendance circulaire.
+
+Sous cet angle, les deux stores servent des domaines légitimement distincts
+(documents vs code source). La "consolidation" était un faux positif de
+l'audit S-097 (qui avait déjà signalé la consolidation HORS SCOPE).
+
+**Décision** : Clore CB-STORE-UNIFY comme CADUQUE. Le seul vrai risque
+résiduel — le `DROP TABLE ... CASCADE` destructif dans
+`VectorStore.initSchema()` — s'isole en hardening mineur.
+
+=== Hardening (S-206)
+
+Baby-step TDD strict RED → GREEN → REFACTOR :
+. `VectorStore.initSchema()` devient alias `ensureSchema()` (non-destructeur,
+   `CREATE TABLE IF NOT EXISTS`).
+. `VectorStore.clean()` publique ajoutée (destructeur test-only, isolé du
+   chemin prod).
+. 3 `@BeforeEach` mis à jour (`VectorStoreTest`, `OcrIngestTaskTest`,
+   `OcrIngestSteps`) pour utiliser `clean()` au lieu de `initSchema()`.
+. `PrepareContextUnitTest` inchangé (setup one-shot idempotent, flag
+   `datasetIndexed`).
+
+Gates : 33/33 VectorStoreTest (dont 2 nouveaux tests non-destructeur) +
+OcrIngestTaskTest + 5/5 PrepareContextUnitTest + 3 cucumber dédiés
+(cucumberTestEpicOcr + cucumberTestRagSocle + cucumberTestOcrContracts)
+VERTS. Zéro régression, zéro bump BOM, zéro secret.
+
+[cols="1,3,2,1", options="header"]
+|===
+| US | Description | Statut | Pts
+
+| CB-STORE-UNIFY-0
+| Cadrage EPIC (gouvernance pure) — audit consommateurs résiduels de
+|   `codebase.rag.VectorStore`, mapping schéma `code-index` vs
+|   `codex_documents`/`codex_chunks`, plan de migration/cleanup.
+| ✅ TERMINÉ (S-105 — document côté codex-gradle)
+| 1
+
+| CB-STORE-UNIFY-1
+| Migration des consommateurs résiduels vers `RagVectorStore` (API
+|   identique `searchBlocking`). Characterization tests. Gate non-
+|   régression.
+| ✅ CADUQUE (S-206 — APIs très différentes, usages sémantiquement
+|  distincts, migration non-triviale aurait cassé l'indexation du code
+|  source)
+| 2
+
+| CB-STORE-UNIFY-2
+| Suppression `codebase.rag.VectorStore` + schéma `code-index` (DROP
+|   CASCADE destructif retiré). `check` VERT codebase. Zéro régression.
+| ✅ CADUQUE (S-206 — store legacy légitime, domaine code source distinct.
+|  Hardening ciblé : `initSchema()` non-destructeur + `clean()` test-only)
+| 2
+
+| CB-STORE-UNIFY-3
+| Cucumber BDD — scénarios retrieval sur store unifié (fake in-memory).
+|   Pure BDD.
+| ✅ CADUQUE (S-206 — pas de store unifié, deux stores légitimes distincts)
+| 1
+
+|===
+
+*Total* : ~6 pts (4/4 US ✅ — EPIC CADUQUE. Hardening ciblé `initSchema()`
+non-destructeur appliqué en S-206.)

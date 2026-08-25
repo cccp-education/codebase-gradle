@@ -16,7 +16,7 @@ class VectorStoreTest {
 
     @BeforeEach
     fun cleanDatabase() {
-        store.initSchema()
+        store.clean()
     }
 
     // ── countDocuments / countChunks ──────────────────────────────────────────
@@ -231,16 +231,29 @@ class VectorStoreTest {
         assertEquals("hello", afterUpdate[0].second)
     }
 
-    // ── initSchema idempotent ─────────────────────────────────────────────────
+    // ── initSchema non-destructive (hardening CB-STORE-UNIFY) ──────────────────
 
     @Test
     fun `initSchema is idempotent — can be called twice`() {
         store.insertDocument("a.txt", "/a.txt", 10, listOf("a"))
         assertEquals(1, store.countDocuments())
-        store.initSchema() // re-init drops tables
-        assertEquals(0, store.countDocuments())
+        store.initSchema() // non-destructive: preserves existing data
+        assertEquals(1, store.countDocuments())
         store.initSchema() // second call fine
-        assertEquals(0, store.countDocuments())
+        assertEquals(1, store.countDocuments())
+    }
+
+    @Test
+    fun `initSchema preserves existing documents and chunks`() {
+        store.insertDocument("keep.txt", "/keep.txt", 42, listOf("chunk-keep"))
+        assertEquals(1, store.countDocuments())
+        assertEquals(1, store.countChunks())
+        store.initSchema() // hardening: must NOT drop existing data
+        assertEquals(1, store.countDocuments())
+        assertEquals(1, store.countChunks())
+        val chunks = store.fetchAllChunks()
+        assertEquals(1, chunks.size)
+        assertTrue(chunks[0].second.contains("chunk-keep"))
     }
 
     // ── querySimilar ──────────────────────────────────────────────────────────

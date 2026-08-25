@@ -468,4 +468,22 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
 ** Types autonomes (`DocumentChunk`/`RetrieveResult` dans `codebase.store`, pas d'import `codex.tasks.*`) — prérequis pour RAG-4 (retrait `libs.codex.plugin`).
 ** Bump préventif avant de coder évite le drift pendant RAG-1/RAG-3.
 * **Zéro bump BOM (pré-requis), zéro secret, zéro régression.** EPIC CDX-RAG-SOCLE 2/6 US.
-205 | 2026-08-25 | EPIC CDX-RAG-SOCLE | Terminés US-2, US-3, US-4, US-5
+
+=== Session 205 — 2026-08-25
+* **EPICs** : CDX-RAG-SOCLE (US-2, US-3, US-4, US-5 terminés — confirmation via backlog update)
+* **Livrables** : Mise à jour backlog + INDEX pour marquer EPIC TERMINÉ 6/6 US. Vérification zone sale parallèle Brooklyn (aucune modification non committée). Tests package `codebase.store.*` tous verts. Build compile.
+* **Zéro code prod modifié, zéro bump BOM, zéro secret.** EPIC CDX-RAG-SOCLE TERMINÉ 6/6 US.
+
+=== Session 206 — 2026-08-25
+* **EPICs** : CB-STORE-UNIFY ✅ CADUQUE + hardening `VectorStore.initSchema()`
+* **Livrables** :
+** Audit pré-coding révèle cadrage CB-STORE-UNIFY existant trop simpliste : APIs très différentes (`RagVectorStore` search-only R2DBC vs `VectorStore` ingestion+query JDBC), schémas distincts (`codex_documents`/`codex_chunks` vs `documents`/`chunks`), consommateurs profonds (OcrIngestTask, MultiChannelContextGraph utilise les deux, KoogAugmentedContextGraph, KoogPlanningOrchestrator, VectorQueryService, EmbeddingPipeline, PgVectorConfig + 7 tests), usages sémantiquement distincts (corpus documentaire codex vs code source workspace).
+** Discussion pilote confirme architecture N2→N1 (codex ingère, codebase stocke + RAG, flèche unique, zéro cycle) — les deux stores légitimes servent des domaines distincts. ÉPIC clos comme CADUQUE.
+** Hardening ciblé baby-step TDD strict RED → GREEN → REFACTOR : `initSchema()` devient alias `ensureSchema()` (non-destructeur, `CREATE TABLE IF NOT EXISTS`), `clean()` publique ajoutée (destructeur test-only, isolé du chemin prod). 3 `@BeforeEach` mis à jour (`VectorStoreTest`, `OcrIngestTaskTest`, `OcrIngestSteps`). `PrepareContextUnitTest` inchangé (setup one-shot idempotent, flag `datasetIndexed`).
+* **Tests** : 33/33 VectorStoreTest (dont 2 nouveaux tests non-destructeur) + OcrIngestTaskTest + 5/5 PrepareContextUnitTest + 3 cucumber dédiés (cucumberTestEpicOcr + cucumberTestRagSocle + cucumberTestOcrContracts) VERTS. Zéro régression.
+* **Fichiers** : 1 prod (`VectorStore.kt` — `initSchema()` alias `ensureSchema()` + `clean()` + KDoc hardening), 3 tests (`VectorStoreTest.kt`, `OcrIngestTaskTest.kt`, `OcrIngestSteps.kt` — `@BeforeEach` use `clean()`).
+* **Leçons** :
+** Audit pré-coding obligatoire : cadrage existant prévoyait "remplacer les appels par searchBlocking (API identique)" — faux. L'audit a évité un EPIC lourd (~15-20 pts) qui aurait cassé l'indexation du code source.
+** Architecture N2→N1 valide : codex ingère, codebase stocke + RAG, flèche unique. Les deux stores légitimes servent des domaines distincts. La "consolidation" n'était pas nécessaire.
+** Hardening ciblé vs refactoring global : le `DROP CASCADE` destructif était le seul vrai risque. Isolé en `clean()` test-only, `initSchema()` devient non-destructeur. Défense en profondeur sans casser l'existant.
+* **Zéro bump BOM, zéro secret, zéro régression.** EPIC CB-STORE-UNIFY ✅ CADUQUE.

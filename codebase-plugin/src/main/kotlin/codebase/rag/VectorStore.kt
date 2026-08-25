@@ -7,7 +7,28 @@ class VectorStore(
     private val jdbcUser: String,
     private val jdbcPassword: String
 ) {
-    fun initSchema() {
+    /**
+     * Initializes the schema idempotently and non-destructively.
+     *
+     * Hardening CB-STORE-UNIFY (S-206): the previous implementation
+     * dropped `chunks` and `documents` CASCADE before recreating them,
+     * which silently destroyed indexed data on every call. Callers
+     * (`KoogAugmentedContextGraph`, `MultiChannelContextGraph`,
+     * `KoogPlanningOrchestrator`, `PrepareContextTask`, `OcrIngestTask`)
+     * invoke `initSchema()` as an idempotent setup guard, not as a reset.
+     * The destructive behavior is now delegated to [ensureSchema] which
+     * uses `CREATE TABLE IF NOT EXISTS` — safe to call repeatedly.
+     */
+    fun initSchema() = ensureSchema()
+
+    /**
+     * Drops and recreates the schema (destructive). Test-only utility —
+     * never call this from production code paths; prefer [ensureSchema]
+     * for idempotent setup. Exposed publicly so test classes can clean
+     * their fixtures without relying on the now non-destructive
+     * [initSchema].
+     */
+    fun clean() {
         connection().use { conn ->
             conn.createStatement().use { stmt ->
                 stmt.execute("CREATE EXTENSION IF NOT EXISTS vector")

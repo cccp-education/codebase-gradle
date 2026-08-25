@@ -23,7 +23,7 @@ class OcrIngestTaskTest {
 
     @BeforeEach
     fun cleanDatabase() {
-        store.initSchema()
+        store.clean()
     }
 
     @Test

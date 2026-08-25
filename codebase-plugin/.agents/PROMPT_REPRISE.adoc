@@ -1,32 +1,21 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 205
-:session: 205
+= Prompt de Reprise — Codebase (Queens N1) — Session 207
+:session: 207
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 204 — PUB-0.9 TERMINÉ : codebase-plugin 0.0.9 publié Maven Central (POM sans codex-plugin, avec ocr-contracts:0.0.1). TDD PublishedPomCharacterizationTest + fix VersionCatalogTransitiveVersionsTest (échec préexistant). Travail en worktree isolé /tmp/opencode/cb204.
+:session_precedente: 206 — CB-STORE-UNIFY CADUQUE + hardening initSchema. Store legacy `codebase.rag.VectorStore` sécurisé (DROP CASCADE isolé en `clean()` test-only, `initSchema()` non-destructeur). ÉPIC clos comme CADUQUE (deux domaines distincts : documents vs code source). Baseline préservée.
 
-== Mission Session 205
+== Mission Session 207
 
-[IMPORTANT]
-Pré-requis ABSOLU : vérifier l'état de la zone sale parallèle. Le working
-tree contenait 11 fichiers WIP non commités de la session Brooklyn
-(revert imports `codebase.store.RagVectorStore` → legacy
-`codebase.rag.VectorStore` + ~243 lignes schéma codex dans RagVectorStore.kt).
-Si Brooklyn a commité sa migration CB-STORE-UNIFY, vérifier la baseline ;
-sinon, travailler en worktree isolé (pattern S-203/S-204).
+Borough DORMANT — tous EPICs terminés (V-9, OCR, CR, VIBE-HARDENING,
+VIBE-HARDENING-2, FT-PIPELINE, CDX-RAG-SOCLE, CDX-OCR-CONTRACTS,
+CB-STORE-UNIFY CADUQUE). Maintenance uniquement.
 
-=== Option A — Suivi publication 0.0.9
+=== Options
 
-* Vérifier propagation repo1 : `codebase-plugin/0.0.9/codebase-plugin-0.0.9.pom`
-  (propagation ~20 min post-bundle S-204).
-* Si propagé : signaler aux consommateurs (slider/capsule/planner consomment
-  codebase via mavenLocal 0.0.8 ou contrainte BOM) — bump à la discrétion
-  MEMPHIS (pratique canonique zéro bump BOM).
-
-=== Option B — Accueil migration Brooklyn (si commitée)
-
-* Si le WIP Brooklyn (CB-STORE-UNIFY) est committé sur codebase : audit de
-  la migration (RagVectorStore vs legacy VectorStore), gate compileKotlin +
-  tests ciblés `codebase.store.*`, synchronisation gouvernance Queens.
-* Sinon : borough DORMANT — maintenance seule.
+. **Maintenance** : publication, code review, dette technique ciblée.
+. **Cadrer un nouvel EPIC** si besoin identifié (ex: extension RagVectorStore
+  pour ingestion documentaire côté socle, si codex délègue plus).
+. **Cross-borough** : assister un autre borough (Brooklyn codex,
+  Manhattan planner, etc.) si demandé.
 
 == Contexte technique
 
@@ -34,8 +23,7 @@ sinon, travailler en worktree isolé (pattern S-203/S-204).
 * codebase-plugin 0.0.9 = Maven Central (S-204). Dep N0 `ocr-contracts:0.0.1`.
 * Gate ciblé : jamais `./gradlew test` global (Cucumber interminable).
 * 41 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
-* Session concurrente possible : vérifier `git status`, mtimes récents,
-  absence d'autre session active AVANT d'éditer.
+* `VectorStore.initSchema()` = non-destructeur (S-206). Tests use `clean()`.
 
 == Règles absolues
 

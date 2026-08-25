@@ -1,0 +1,117 @@
+= Session Archive — Session 206 — CB-STORE-UNIFY CADUQUE + hardening initSchema
+
+== Contexte
+
+Reprise codex/codebase avec PROMPT_REPRISE Brooklyn S-106 qui renvoie vers
+Queens pour CB-STORE-UNIFY (consolidation du store JDBC legacy
+`codebase.rag.VectorStore`).
+
+== Mission
+
+CB-STORE-UNIFY était cadré comme "suppression du store legacy après migration
+des consommateurs vers `RagVectorStore`". Audit pré-coding révèle que le
+cadrage existant était trop simpliste :
+
+. **APIs très différentes** : `RagVectorStore` (R2DBC socle) ne fait que
+  `searchBlocking(query, topK)` — recherche sur corpus documentaire codex.
+  `VectorStore` legacy (JDBC) gère `initSchema`, `ensureSchema`,
+  `insertDocument`, `updateEmbedding`, `fetchAllChunks`, `querySimilar`,
+  `countDocuments`, `countChunks`, `findByPackage` — ingestion + query du
+  code source du workspace.
+
+. **Schémas distincts** : legacy `documents`/`chunks` (file_name,
+  package_name, class_name, repo_name, filtre fileExtension) vs socle
+  `codex_documents`/`codex_chunks` (section_path, heading_level,
+  source_document). Métadonnées sémantiquement différentes.
+
+. **Consommateurs profonds** : `OcrIngestTask`, `MultiChannelContextGraph`
+  (utilise les deux stores — legacy pour RAG code, socle pour Docs corpus),
+  `KoogAugmentedContextGraph`, `KoogPlanningOrchestrator`,
+  `VectorQueryService`, `EmbeddingPipeline`, `PgVectorConfig`, plus 7
+  fichiers tests/scénarios Cucumber.
+
+. **Usage sémantiquement distinct** : le legacy indexe le code source du
+  workspace (packages, classes, fileExtension) ; le socle indexe le corpus
+  documentaire (livres, PDF, sections AsciiDoc). Les fusionner ferait perdre
+  l'information sémantique (package_name/class_name n'existent pas dans
+  `codex_chunks`).
+
+== Décision pilote
+
+Discussion avec le pilote confirme l'architecture en place depuis
+CDX-RAG-SOCLE : codex (N2) ingère les data et les passe à codebase (N1) qui
+fait le RAG. Codebase fournit le contexte à codex (RAG/graphify/governance).
+Flèche unique N2→N1, zéro dépendance circulaire.
+
+Sous cet angle, les deux stores servent des domaines légitimement distincts
+(documents vs code source). La "consolidation" était un faux positif de
+l'audit S-097 (qui avait déjà signalé la consolidation HORS SCOPE).
+
+**Décision** : Clore CB-STORE-UNIFY comme CADUQUE. Le seul vrai risque
+résiduel — le `DROP TABLE ... CASCADE` destructif dans
+`VectorStore.initSchema()` — s'isole en hardening mineur.
+
+== Actions
+
+. **Cadrage CB-STORE-UNIFY CADUQUE** (gouvernance pure, pattern S-057/S-063).
+  Le cadrage existant (côté codex-gradle) est marqué CADUQUE avec motivation
+  "deux domaines distincts".
+
+. **Hardening `VectorStore.initSchema()`** (baby-step TDD strict RED → GREEN
+  → REFACTOR) :
+  - RED : 2 nouveaux tests `initSchema preserves existing documents and
+    chunks` + `initSchema is idempotent — can be called twice` réécrit pour
+    verrouiller le contrat non-destructeur. Les 2 tests FAILED (DROP
+    CASCADE détruit les données).
+  - GREEN : `initSchema()` devient alias `ensureSchema()` (non-destructeur,
+    `CREATE TABLE IF NOT EXISTS`). Méthode `clean()` publique ajoutée pour
+    les tests (destructeur explicite, sans ambiguïté).
+  - REFACTOR : `@BeforeEach cleanDatabase()` mis à jour dans
+    `VectorStoreTest`, `OcrIngestTaskTest`, `OcrIngestSteps` pour utiliser
+    `clean()` au lieu de `initSchema()`. `PrepareContextUnitTest` inchangé
+    (setup one-shot idempotent, flag `datasetIndexed`).
+
+== Gates
+
+- `VectorStoreTest` : 33/33 PASSED (dont 2 nouveaux tests non-destructeur).
+- `OcrIngestTaskTest` : tous PASSED.
+- `PrepareContextUnitTest` : 5/5 PASSED.
+- `codebase.rag.*` + `codebase.ocr.*` + `codebase.store.*` :
+  BUILD SUCCESSFUL.
+- Cucumber dédiés `cucumberTestEpicOcr` + `cucumberTestRagSocle` +
+  `cucumberTestOcrContracts` : BUILD SUCCESSFUL.
+- Zéro régression, zéro bump BOM, zéro secret.
+
+== Fichiers modifiés
+
+Prod (1) :
+- `src/main/kotlin/codebase/rag/VectorStore.kt` — `initSchema()` alias
+  `ensureSchema()` (non-destructeur) + `clean()` (destructeur test-only) +
+  KDoc hardening.
+
+Tests (3) :
+- `src/test/kotlin/codebase/rag/VectorStoreTest.kt` — `@BeforeEach` use
+  `clean()`, 2 tests non-destructeur.
+- `src/test/kotlin/codebase/ocr/OcrIngestTaskTest.kt` — `@BeforeEach` use
+  `clean()`.
+- `src/test/kotlin/codebase/scenarios/ocr/OcrIngestSteps.kt` — `@Before`
+  use `clean()`.
+
+== Leçons apprises
+
+. **Audit pré-coding obligatoire** : le cadrage CB-STORE-UNIFY existant
+  prévoyait "remplacer les appels par searchBlocking (API identique)" —
+  faux. Les APIs sont très différentes. L'audit a évité un EPIC lourd
+  (~15-20 pts) qui aurait cassé l'indexation du code source.
+
+. **Architecture N2→N1 valide** : codex ingère, codebase stocke + RAG, flèche
+  unique. Les deux stores légitimes servent des domaines distincts. La
+  "consolidation" n'était pas nécessaire.
+
+. **Hardening ciblé vs refactoring global** : le `DROP CASCADE` destructif
+  était le seul vrai risque. Isolé en `clean()` test-only, `initSchema()`
+  devient non-destructeur. Défense en profondeur sans casser l'existant.
+
+. **Baby-step TDD strict** : RED (2 tests FAILED) → GREEN (alias
+  `ensureSchema()` + `clean()`) → REFACTOR (mise à jour 3 `@BeforeEach`).
+  Méthodologie respectée.
