@@ -5,7 +5,7 @@ import java.time.Duration
 fun isCI() = System.getenv("CI") == "true"
 
 group = "education.cccp"
-version = "0.0.10"
+version = "0.0.11"
 
 plugins {
     `java-library`
@@ -14,6 +14,7 @@ plugins {
     id("education.cccp.build.gradle-plugin") version "0.0.2"
     id("com.gradle.plugin-publish") version "2.1.0"
     id("education.cccp.build.publishing") version "0.0.2"
+    id("education.cccp.codebase") version "0.0.10"
 }
 
 publishingConventions {

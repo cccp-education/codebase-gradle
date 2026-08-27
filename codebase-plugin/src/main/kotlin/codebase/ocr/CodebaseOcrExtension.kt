@@ -3,6 +3,7 @@ package codebase.ocr
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 
 /**
  * Extension DSL pour l'OCR assisté IA (Gemini Vision).
@@ -28,6 +29,8 @@ import org.gradle.api.provider.Property
  * ```
  */
 abstract class CodebaseOcrExtension {
+
+    abstract val ocrEngine: Provider<OcrEngine>
 
     /**
      * Fournisseur IA pour l'OCR.

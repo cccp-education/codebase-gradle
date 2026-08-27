@@ -186,37 +186,58 @@ class CodebasePlugin : Plugin<Project> {
         ) { task ->
             task.group = "collect"
             task.description = "OCR assisté IA — extrait le texte structuré d'un document scanné via Gemini Vision"
-            task.ocrProvider.set(
-                project.providers.gradleProperty("ocrProvider").orElse(ocrExt.ocrProvider)
-            )
-            task.ocrLanguage.set(
-                project.providers.gradleProperty("ocrLanguage").orElse(ocrExt.ocrLanguage)
-            )
-            task.geminiModel.set(
-                project.providers.gradleProperty("geminiModel").orElse(ocrExt.geminiModel)
-            )
-            task.maxTokens.set(
-                project.providers.gradleProperty("maxTokens").map { it.toInt() }.orElse(ocrExt.maxTokens)
-            )
-            task.outputFormat.set(
-                project.providers.gradleProperty("outputFormat").orElse(ocrExt.outputFormat)
-            )
+            val resolvedOcrProvider = project.providers.gradleProperty("ocrProvider").orElse(ocrExt.ocrProvider)
+            task.ocrProvider.set(resolvedOcrProvider)
+            // lifecycle { logger.lifecycle("[OCR Document Task] ocrProvider: {}", resolvedOcrProvider.getOrElse { "<not set>" }) }
+            
+            val resolvedOcrLanguage = project.providers.gradleProperty("ocrLanguage").orElse(ocrExt.ocrLanguage)
+            task.ocrLanguage.set(resolvedOcrLanguage)
+            //             lifecycle { logger.lifecycle("[OCR Document Task] ocrLanguage: {}", resolvedOcrLanguage.getOrElse { "<not set>" }) }
+            
+            val resolvedGeminiModel = project.providers.gradleProperty("geminiModel").orElse(ocrExt.geminiModel)
+            task.geminiModel.set(resolvedGeminiModel)
+            //             lifecycle { logger.lifecycle("[OCR Document Task] geminiModel: {}", resolvedGeminiModel.getOrElse { "<not set>" }) }
+            
+            val resolvedMaxTokens = project.providers.gradleProperty("maxTokens").map { it.toInt() }.orElse(ocrExt.maxTokens)
+            task.maxTokens.set(resolvedMaxTokens)
+            //             lifecycle { logger.lifecycle("[OCR Document Task] maxTokens: {}", resolvedMaxTokens.getOrElse { "<not set>" }) }
+            
+            val resolvedOutputFormat = project.providers.gradleProperty("outputFormat").orElse(ocrExt.outputFormat)
+            task.outputFormat.set(resolvedOutputFormat)
+            //             lifecycle { logger.lifecycle("[OCR Document Task] outputFormat: {}", resolvedOutputFormat.getOrElse { "<not set>" }) }
+            
             // -PinputFile → CLI single-file mode
             val inputFileProp = project.providers.gradleProperty("inputFile")
             if (inputFileProp.isPresent) {
                 task.inputFile.set(project.layout.projectDirectory.file(inputFileProp.get()))
+                //                 lifecycle { logger.lifecycle("[OCR Document Task] inputFile: {}", task.inputFile.get().asFile.absolutePath) }
             }
             // -PinputDir → CLI batch mode
             val inputDirProp = project.providers.gradleProperty("inputDir")
             if (inputDirProp.isPresent) {
                 task.inputDir.set(project.layout.projectDirectory.dir(inputDirProp.get()))
+                //                 lifecycle { logger.lifecycle("[OCR Document Task] inputDir: {}", task.inputDir.get().asFile.absolutePath) }
             } else {
                 task.inputDir.convention(ocrExt.inputDir)
+                //                 lifecycle { logger.lifecycle("[OCR Document Task] inputDir (convention): {}", task.inputDir.get().asFile.absolutePath) }
+            }
+            // -PollamaBaseUrl → CLI ollama base URL
+            val ollamaBaseUrlProp = project.providers.gradleProperty("ollamaBaseUrl")
+            if (ollamaBaseUrlProp.isPresent) {
+                task.ollamaBaseUrl.set(ollamaBaseUrlProp.get())
+                //                 lifecycle { logger.lifecycle("[OCR Document Task] ollamaBaseUrl: {}", task.ollamaBaseUrl.get()) }
+            }
+            // -PollamaModel → CLI ollama model
+            val ollamaModelProp = project.providers.gradleProperty("ollamaModel")
+            if (ollamaModelProp.isPresent) {
+                task.ollamaModel.set(ollamaModelProp.get())
+                //                 lifecycle { logger.lifecycle("[OCR Document Task] ollamaModel: {}", task.ollamaModel.get()) }
             }
             // llm-config.yml → GeminiVisionProvider config
             val llmConfigFile = project.layout.projectDirectory.file("llm-config.yml").asFile
             if (llmConfigFile.exists()) {
                 task.llmConfigFile = llmConfigFile
+                //                 lifecycle { logger.lifecycle("[OCR Document Task] llmConfigFile: {}", llmConfigFile.absolutePath) }
             }
         }
 

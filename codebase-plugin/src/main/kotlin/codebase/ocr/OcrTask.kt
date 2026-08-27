@@ -172,6 +172,7 @@ abstract class OcrTask : DefaultTask() {
         val format = outputFormat.orNull ?: "asciidoc"
         val ollamaUrl = ollamaBaseUrl.orNull ?: "http://localhost:11437"
         val ollamaVisionModel = ollamaModel.orNull ?: "gpt-oss:120b-cloud"
+        logger.lifecycle("[OCR] Ollama base URL: {}, model: {}", ollamaUrl, ollamaVisionModel)
 
         val files = resolveInputFiles()
         if (files.isEmpty()) {
@@ -196,7 +197,13 @@ abstract class OcrTask : DefaultTask() {
         )
 
         val totalFiles = files.size
-        for (file in files) {
+        files.forEachIndexed { idx, file ->
+            if (idx > 0) {
+                val paceMs = 4000L
+                logger.lifecycle("[OCR] Pacing {}ms before next file to respect provider rate limits", paceMs)
+                Thread.sleep(paceMs)
+            }
+            logger.lifecycle("[OCR] Processing file: {} (absolute path: {})", file.name, file.absolutePath)
             processSingleFile(file, lang, model, tokens, provider, ollamaUrl, ollamaVisionModel, outputDir, ext, totalFiles)
         }
 
@@ -243,9 +250,20 @@ abstract class OcrTask : DefaultTask() {
         totalFiles: Int
     ) {
         logger.lifecycle("[OCR] Traitement : {}", file.name)
-
-        val isImage = isImageFile(file)
-        val mimeType = detectMimeType(file.extension)
+        logger.lifecycle("[OCR] File absolute path: {}", file.absolutePath)
+        logger.lifecycle("[OCR] File exists: {}", file.exists())
+        if (!file.exists()) {
+            logger.lifecycle("[OCR] File does not exist!")
+        }
+        logger.lifecycle("[OCR] File extension (file.extension): {}", file.extension)
+        val fileExt = file.extension?.lowercase() ?: ""
+        logger.lifecycle("[OCR] file.extension raw: {}", file.extension)
+        logger.lifecycle("[OCR] Extension: {}", if (fileExt.isEmpty()) "<no extension>" else fileExt)
+        logger.lifecycle("[OCR] IMAGE_EXTENSIONS: {}", IMAGE_EXTENSIONS)
+        val isImage = fileExt in IMAGE_EXTENSIONS
+        logger.lifecycle("[OCR] IsImage: {}", isImage)
+        val mimeType = MIME_MAP[fileExt] ?: "application/octet-stream"
+        logger.lifecycle("[OCR] MimeType: {}", mimeType)
 
         val startTime = System.currentTimeMillis()
         val result = if (isImage) {
@@ -413,7 +431,7 @@ abstract class OcrTask : DefaultTask() {
             "OCR provider 'tesseract' (software OCR) is not actioned by codebase — " +
                 "use the codex plugin's collectOcr task instead (EPIC CDX-OCR-BOUNDARY)"
 
-        private val IMAGE_EXTENSIONS = setOf("png", "jpg", "jpeg", "gif", "bmp", "tiff")
+        private val IMAGE_EXTENSIONS = setOf("png", "jpg", "jpeg", "gif", "bmp", "tiff", "pdf")
 
         private val MIME_MAP = mapOf(
             "png" to "image/png",
@@ -421,7 +439,8 @@ abstract class OcrTask : DefaultTask() {
             "jpeg" to "image/jpeg",
             "gif" to "image/gif",
             "bmp" to "image/bmp",
-            "tiff" to "image/tiff"
+            "tiff" to "image/tiff",
+            "pdf" to "application/pdf"
         )
 
         fun isImageFile(file: File): Boolean =
