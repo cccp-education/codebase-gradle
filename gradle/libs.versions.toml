@@ -1,5 +1,5 @@
 [versions]
-codebase-plugin = "0.0.8"
+codebase-plugin = "0.0.11"
 
 [plugins]
 codebase = { id = "education.cccp.codebase", version.ref = "codebase-plugin" }

@@ -1,5 +1,5 @@
 [versions]
-codebase-plugin = "0.0.3"
+codebase-plugin = "0.0.11"
 koog = "1.0.0"
 kotlin = "2.4.10"
 graphify = "0.0.2"
