@@ -11,9 +11,9 @@ plugins {
     `java-library`
     id("org.jetbrains.kotlin.plugin.serialization") version "2.4.10"
     id("org.jetbrains.kotlinx.kover") version "0.9.8"
-    id("education.cccp.build.gradle-plugin") version "0.0.2"
+    id("education.cccp.build.gradle-plugin") version "0.0.4"
     id("com.gradle.plugin-publish") version "2.1.0"
-    id("education.cccp.build.publishing") version "0.0.2"
+    id("education.cccp.build.publishing") version "0.0.4"
     id("education.cccp.codebase") version "0.0.10"
 }
 
