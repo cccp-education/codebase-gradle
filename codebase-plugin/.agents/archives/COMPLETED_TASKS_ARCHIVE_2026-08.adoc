@@ -679,3 +679,15 @@ Cross-borough :
   testImplementation(libs.slider) Groovy 3.x conflit ProjectBuilder).
 
 EPIC MEMPHIS-BOM-FIX TERMINÉ 5/5 US. Bug bloquant capsule résolu.
+
+== Session 211 — 2026-09-07 — Synchronisation gouvernance post-S-210
+
+Gouvernance pure (zéro code) :
+* PROMPT_REPRISE rafraîchi S-208 → S-211 — mission MEMPHIS-BOM-FIX "À FAIRE"
+  périmée purgée (EPIC terminé 5/5 S-209).
+* INDEX : entrée Session 211 + header 2026-09-07.
+* SESSIONS_HISTORY : entrée Session 211.
+* État git post-S-210 consigné : version locale 0.0.11 (bump sync
+  post-Central 0.0.10), align conventions-plugin 0.0.4, fix OCR propriété
+  morte `ocrEngine` (commit `fb19b7c`).
+* Borough DORMANT confirmé — tous EPICs TERMINÉS/CADUQUES.

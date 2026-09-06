@@ -559,3 +559,31 @@ Ce fichier de base sert de historique summary, reperant les sessions importantes
    qui cassait ProjectBuilder (Groovy 4). Retrait — aucun test n'importait
    slider. Le `compileOnly` suffit pour le runtime.
 * **EPIC MEMPHIS-BOM-FIX TERMINÉ 5/5 US.** Zéro code production, zéro secret.
+
+== Session 211 — 2026-09-07
+
+* **EPICs** : Aucun (synchronisation gouvernance post-S-210 — gouvernance pure)
+* **Type** : governance (pattern S-057/S-063)
+* **Livrables** :
+** PROMPT_REPRISE réécrit S-208 → S-211 : mission MEMPHIS-BOM-FIX listant
+   US-3/4/5 "À FAIRE" purgée (EPIC terminé 5/5 S-209) — faux positif
+   d'ouverture corrigé.
+** INDEX : entrée Session 211 (table gouvernance agentique) + header
+   2026-09-07.
+** État git post-S-210 consigné : version locale 0.0.11 (bump sync
+   post-Central 0.0.10, commit `58670ad`), align conventions-plugin 0.0.4
+   (`ba2fa1c`/`0911bf7`), fix OCR propriété morte `ocrEngine
+   Provider<OcrEngine>` retirée (commit `fb19b7c` — décoration Gradle
+   impossible).
+** Rapport de session : `.agents/sessions/211-sync-gouvernance-post-210.adoc`.
+** Archive : entrée ajoutée COMPLETED_TASKS_ARCHIVE_2026-08.adoc.
+* **Fichiers** : `PROMPT_REPRISE.adoc`, `.agents/INDEX.adoc`,
+  `.agents/SESSIONS_HISTORY.adoc`, `.agents/sessions/211-*.adoc`,
+  `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-08.adoc`.
+* **Leçons** :
+** Le hook de fermeture (6 étapes) doit être exécuté à CHAQUE clôture —
+   PROMPT_REPRISE figé à S-208 pendant 3 sessions a créé un faux positif
+   de mission "À FAIRE" sur un EPIC terminé.
+** Les commits post-session sans rapport (bump sync, align conventions)
+   doivent être consignés à l'ouverture suivante, pas ignorés.
+* Zéro code production, zéro bump BOM, zéro secret.

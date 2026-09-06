@@ -1,54 +1,48 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 208
-:session: 208
+= Prompt de Reprise — Codebase (Queens N1) — Session 211
+:session: 211
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 207 — Migration .agents/ racine → codebase-plugin/.agents/ (pattern S-105 codex). 4 fichiers racine-seuls déplacés, 3 fichiers plugin écrasés par version S-206 plus récente, 24 sessions migrées, 3 archives fusionnées. Baseline préservée — GovernanceContextLoaderTest 7/7 PASSED.
-:session_pre_precedente: 206 — CB-STORE-UNIFY ✅ CADUQUE + hardening VectorStore.initSchema() non-destructeur (alias ensureSchema()), DROP CASCADE isolé en clean() test-only. Les deux stores légitimes servent des domaines sémantiquement distincts (corpus documentaire codex vs code source workspace).
-:pub: codebase-plugin 0.0.9 publié Maven Central (S-204, bundle propagé repo1 HTTP 200, POM sans codex-plugin + ocr-contracts:0.0.1 + codebase-contracts).
+:session_precedente: 210 — Maintenance état post-EPIC MEMPHIS-BOM-FIX (2026-08-27). Tous EPICs vérifiés terminés/CADUQUES, build compile, 679 tests 0 FAIL baseline préservée, zéro modification production, borough DORMANT confirmé.
+:session_pre_precedente: 209 — EPIC MEMPHIS-BOM-FIX US-4 TERMINÉ (cross-borough). codebase-plugin 0.0.9 → 0.0.10 publié Central (fix kotlin-stdlib-jdk8 version explicite, POM importe BOM 0.0.27). EPIC clôturé 5/5 US.
+:pub: codebase-plugin 0.0.10 publié Maven Central (S-209). Version locale courante : 0.0.11 (bump post-S-210, voir ci-dessous).
 
-== Mission Session 208
+== Mission Session 211
 
 [IMPORTANT]
 Borough DORMANT — tous EPICs TERMINÉS ou CADUQUES. Maintenance uniquement.
 
-=== Option A — Suivi publication 0.0.9 (FAIT)
+=== ⚠️ État git post-S-210 à consigner (à faire en ouverture)
 
-* Vérifier propagation repo1 : `codebase-plugin/0.0.9/codebase-plugin-0.0.9.pom`.
-* Statut : ✅ PROPAGÉ (HTTP 200, POM propre — zéro codex-plugin résiduel,
-  ocr-contracts:0.0.1 + codebase-contracts présents). Vérifié S-208 ouverture.
+Des commits post-S-210 ne sont consignés dans aucun rapport de session :
 
-=== Option B — Accueil migration Brooklyn (FAIT)
+* `58670ad` — bump codebase-plugin 0.0.10 → **0.0.11** (sync après publication Central)
+* `ba2fa1c`/`0911bf7` — align conventions-plugin 0.0.4
+* `fb19b7c` — fix(ocr) : propriété morte `ocrEngine Provider<OcrEngine>` retirée de `CodebaseOcrExtension` (décoration Gradle impossible)
 
-* CB-STORE-UNIFY ✅ CADUQUE (S-206) — audit révèle deux stores légitimes
-  servent des domaines sémantiquement distincts. Hardening ciblé
-  `VectorStore.initSchema()` non-destructeur appliqué côté Queens.
-* Migration .agents/ racine → plugin (S-207) terminée.
+Action d'ouverture : vérifier `git log --oneline -15`, confirmer que ces
+commits sont intentionnels, puis consigner un rapport de session si absent.
 
-=== Option C — Maintenance / cross-borough / nouvel EPIC
+=== Option A — Maintenance
 
-* Maintenance : dette technique ciblée, code review, bumps.
-* Cross-borough : EPIC MEMPHIS-BOM-FIX en cours (US-1 ✅ S-208, US-3/4/5
-  À FAIRE — voir session 208 + EPIC ci-dessous). Bug bloquant capsule
-  (Détroit) : BOM MEMPHIS référence `slider:0.0.18` (artifactId périmé
-  → 404 Central, vrai artifactId = `slider-plugin`).
-* Cadrer un nouvel EPIC si besoin identifié.
+* Dette technique ciblée, code review, bumps de version.
+* Gate ciblé : jamais `./gradlew test` global (Cucumber interminable).
 
-== EPIC MEMPHIS-BOM-FIX (cross-borough, démarré S-208)
+=== Option B — Cross-borough
 
-. *US-1 ✅ TERMINÉ S-208* — Catalogue MEMPHIS `slider` → `slider-plugin`
-  + bump BOM 0.0.27. Commit pending.
-. *US-3 À FAIRE* — Publier BOM 0.0.27 Central.
-. *US-4 À FAIRE* — Republier `codebase-plugin:0.0.10` (POM importera
-  BOM 0.0.27 au lieu de 0.0.24). Cassera la chaîne `slider:0.0.18` 404.
-. *US-5 À FAIRE* — Re-appliquer fix capsule (catalogue slider →
-  slider-plugin + BOM 0.0.27) + valider `test cucumberTestTranscript`
-  VERT. Clôture EPIC + sync BACKLOG Détroit CAP-TRANSCRIPT US-5.
+* EPIC MEM-CAT-ROLLOUT (MEMPHIS) en cours — codebase n'est pas dans les
+  boroughs restants (ROLLOUT-6 = dashboard, readme, graphify, bureau).
+* Assister un borough (codex, planner, capsule) si demandé.
+
+=== Option C — Nouvel EPIC
+
+* Cadrer si besoin identifié (ex : extension RagVectorStore pour
+  ingestion documentaire côté socle si codex délègue davantage).
 
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
-* codebase-plugin 0.0.9 = Maven Central (S-204). Dep N0 ocr-contracts:0.0.1.
-* Gate ciblé : jamais `./gradlew test` global (Cucumber interminable).
+* Version locale : 0.0.11 (Central : 0.0.10). Conventions 0.0.4.
 * 41 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
+* Inversion N1→N2 morte : codex consomme codebase via ocr-contracts N0.
 * Session concurrente possible : vérifier `git status`, mtimes récents,
   absence d'autre session active AVANT d'éditer.
 * Dossier gouvernance unique : `codebase-plugin/.agents/` (migration S-207).
@@ -58,12 +52,12 @@ Borough DORMANT — tous EPICs TERMINÉS ou CADUQUES. Maintenance uniquement.
 * Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la
   fois, séquentiel pur (interdiction @xp/subagents/parallélisation).
 * Zéro commit/push sans permission explicite du pilote.
-  (Exception session 208 : commit + push autorisés en clôture.)
 * Zéro secret, zéro token dans le code ou les logs.
+* Ne JAMAIS lancer `./gradlew test` global en fin de session sans permission.
 
 == References
 
-* `.agents/sessions/207-agents-migration-to-plugin.adoc`
-* `.agents/sessions/206-cb-store-unify-caduc-hardening.adoc`
-* `.agents/BACKLOG.adoc` § EPIC CB-STORE-UNIFY (✅ CADUQUE S-206)
-* `.agents/INDEX.adoc` (dernière mise à jour S-207)
+* `.agents/sessions/210-maintenance-etat-post-mempfix.adoc`
+* `.agents/sessions/209-memphis-bom-fix-us4.adoc`
+* `.agents/BACKLOG.adoc` (tous EPICs ✅/CADUQUE)
+* `.agents/INDEX.adoc` (dernière mise à jour session 211 — sync gouvernance)

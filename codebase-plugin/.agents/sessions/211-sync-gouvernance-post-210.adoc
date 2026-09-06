@@ -1,0 +1,73 @@
+= Session 211 — Synchronisation gouvernance post-S-210 (zéro code)
+:date: 2026-09-07
+:source: Session 211 (gouvernance pure)
+:type: governance
+:borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
+:status: TERMINÉE
+
+== Contexte hérité
+
+Session 210 (2026-08-27) — maintenance état post-EPIC MEMPHIS-BOM-FIX :
+tous EPICs vérifiés terminés/CADUQUES, build compile, 679 tests 0 FAIL
+baseline préservée, borough DORMANT confirmé.
+
+== Mission Session 211
+
+Synchroniser la gouvernance documentaire avec l'état réel du code
+(demande pilote, suite à code review écosystème foundry/public) :
+
+1. PROMPT_REPRISE figé à S-208 : mission MEMPHIS-BOM-FIX listait US-3/4/5
+   "À FAIRE" alors que l'EPIC est terminé 5/5 (S-209) — faux positif
+   d'ouverture à corriger.
+2. INDEX en retard : dernière entrée S-209, sessions 210-211 absentes.
+3. Commits post-S-210 non consignés dans un rapport de session.
+4. Hook de fermeture 6 étapes non appliqué à la clôture S-210.
+
+== Déroulement
+
+1. Lecture PROMPT_REPRISE/INDEX/rapport S-210 + git log.
+2. Vérification état réel : `build.gradle.kts` version = 0.0.11, commits
+   post-S-210 identifiés (`58670ad` bump 0.0.11 sync post-Central,
+   `ba2fa1c`/`0911bf7` align conventions-plugin 0.0.4, `fb19b7c` fix OCR
+   propriété morte `ocrEngine Provider<OcrEngine>` retirée — décoration
+   Gradle impossible).
+3. PROMPT_REPRISE réécrit S-208 → S-211 : mission périmée purgée, état git
+   post-S-210 consigné avec instruction de vérification en ouverture,
+   options maintenance/cross-borough/nouvel EPIC.
+4. INDEX : entrée Session 211 ajoutée à la table gouvernance agentique,
+   header mis à jour (dernière mise à jour 2026-09-07).
+5. SESSIONS_HISTORY : entrée Session 211 ajoutée.
+6. Archive : entrée Session 211 ajoutée à COMPLETED_TASKS_ARCHIVE_2026-08.adoc
+   (gouvernance pure, zéro code).
+
+== Résultats
+
+- ✅ PROMPT_REPRISE rafraîchi S-208 → S-211 — zéro marqueur "À FAIRE"
+  périmé (vérifié grep).
+- ✅ INDEX à jour (S-211), SESSIONS_HISTORY complétée.
+- ✅ État git post-S-210 consigné (0.0.11 + conventions 0.0.4 + fix OCR).
+- ✅ Zéro code production modifié — gouvernance pure.
+- ✅ Zéro bump BOM, zéro secret.
+
+== Prochaine session — 212
+
+Borough DORMANT — tous EPICs terminés. Maintenance uniquement.
+
+Options :
+. Maintenance : publication, code review, dette technique ciblée.
+. Cross-borough : assister un borough (ROLLOUT-6 est hors périmètre
+  codebase).
+. Cadrer un nouvel EPIC si besoin identifié (ex : extension RagVectorStore
+  ingestion documentaire si codex délègue davantage).
+
+== Méthodologie
+
+Gouvernance pure (pattern S-057/S-063) — zéro code, zéro test modifié.
+Pas de subagent, pas de parallélisation sur les fichiers.
+
+== Références
+
+- `.agents/sessions/210-maintenance-etat-post-mempfix.adoc`
+- `.agents/sessions/209-memphis-bom-fix-us4.adoc`
+- `.agents/INDEX.adoc` (mise à jour S-211)
+- `.agents/BACKLOG.adoc` (tous EPICs ✅/CADUQUE)
