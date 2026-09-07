@@ -2,7 +2,25 @@
 :sectnums:
 :date: 2026-06-16
 
-_Dernière mise à jour : 2026-09-07 (S-215 globale — cadrage EPIC CB-FPA-RAG (GBL-003.4 critical path MVP0) : ingestion RAG pgvector du corpus FPA + exposition au contexte augmenté. 4 US ~5 pts. Zéro code.)_
+_Dernière mise à jour : 2026-09-07 (S-215 globale — cadrage EPIC CB-FPA-RAG (GBL-003.4 critical path MVP0) : ingestion RAG pgvector du corpus FPA + exposition au contexte augmenté. 4 US ~5 pts. Zéro code. + Cadrage EPIC OCR-QUALITY (demande pilote : détection automatique images problématiques + transcriptions douteuses) — US-4 codebase.)_
+
+'''
+== EPIC OCR-QUALITY — Détection automatique images problématiques + transcriptions douteuses 🟡 CADRÉ (P0, transverse)
+
+_Origine : demande pilote 2026-09-07. Cadrage transverse : `.agents/CADRAGE_EPIC_OCR_QUALITY.adoc` (identique dans codex/document/codebase)._
+
+|===
+| US | Description | Pts | Statut
+| OCR-QUALITY-4 | Codebase : métadonnées de doute attachées à l'ingestion RAG (`confidence` + flag `doubtful` transportés dans les chunks ingérés) + exposition au contexte augmenté (peser/exclure les passages douteux) + BDD. Zéro re-vectorisation — métadonnées attachées à l'ingestion, pas aux embeddings | 3 | 🟡 À FAIRE (codebase)
+|===
+
+*Constat déclencheur* : l'ingestion `codebase.store` ne transporte
+aucun métadonnée de doute — un chunk dérivé d'une page `[ILLISIBLE]`
+est ingéré au même titre qu'une page propre, le RAG peut citer du texte
+douteux dans le contexte augmenté de la génération SPG/SPD sans que
+personne ne le sache. US-1/2 (codex confidence réelle) et US-3
+(document détection structurelle) cadrées dans les gouvernances
+respectives.
 
 '''
 == EPIC CB-FPA-RAG — Ingestion RAG du corpus FPA (GBL-003.4) 🟡 CADRÉ (P0)

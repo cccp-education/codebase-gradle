@@ -3,7 +3,7 @@
 :icons: font
 
 *Date de creation* : 2026-06-16
-*Derniere mise a jour* : 2026-09-07 (session 215 globale — **cadrage EPIC CB-FPA-RAG (GBL-003.4, critical path MVP0)** — ingestion RAG pgvector du corpus FPA + exposition au contexte augmenté des agents de génération SPG/SPD. Arbitrage pilote 2026-09-07 : priorité aux boroughs qui rapprochent de la génération de formation. 4 US ~5 pts, zéro code modifié — dogfooding socle `codebase.store` existant (S-199), tables pgvector inchangées. Doc `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`.)
+*Derniere mise a jour* : 2026-09-07 (session 215 globale — **cadrage EPIC CB-FPA-RAG (GBL-003.4, critical path MVP0)** — ingestion RAG pgvector du corpus FPA + exposition au contexte augmenté des agents de génération SPG/SPD. Arbitrage pilote 2026-09-07 : priorité aux boroughs qui rapprochent de la génération de formation. 4 US ~5 pts, zéro code modifié — dogfooding socle `codebase.store` existant (S-199), tables pgvector inchangées. Doc `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`. + **cadrage EPIC OCR-QUALITY** (demande pilote : détection auto images problématiques + transcriptions douteuses — US-4 codebase : métadonnées de doute à l'ingestion RAG, le contexte augmenté pèse/exclut les passages douteux. Doc `.agents/CADRAGE_EPIC_OCR_QUALITY.adoc`.)
 
 == Regles Absolues
 
@@ -103,4 +103,5 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | EPIC MEMPHIS-BOM-FIX | BOM MEMPHIS référence `slider` (artifactId périmé) au lieu de `slider-plugin` → slider:0.0.18 404 Central. Bug bloquant capsule. | N0/N1/N2 | ✅ TERMINÉ (5/5 US — US-1 catalogue MEMPHIS fixé S-208, US-2 CADUQUE fusionné US-5, US-3 BOM 0.0.27 Central S-024 MEMPHIS, US-4 codebase 0.0.10 Central S-209, US-5 capsule fix 917 unit 0 FAIL S-120 Detroit) | 208, 209
 | EPIC 1 | Init gouvernance agent | NX | ✅ TERMINÉ (items stale purgés session 169) | 001
 | EPIC CB-FPA-RAG | Ingestion RAG pgvector du corpus FPA + exposition contexte augmenté (GBL-003.4 critical path MVP0, arbitrage pilote 2026-09-07) — cadrage S-215 | N1 | 🟡 CADRÉ (4 US ~5 pts — dogfooding socle `codebase.store`, tables pgvector inchangées, run pointant vers office/, zéro donnée FPA dans le repo) | 215
+| EPIC OCR-QUALITY | Détection auto images problématiques + transcriptions douteuses (demande pilote S-215 — transverse codex/document/codebase) : US-4 codebase — métadonnées de doute à l'ingestion RAG (confidence + doubtful), zéro re-vectorisation | N1 | 🟡 CADRÉ (4 US ~11 pts, US-4 codebase — cadrage `.agents/CADRAGE_EPIC_OCR_QUALITY.adoc`) | 215
 |===
