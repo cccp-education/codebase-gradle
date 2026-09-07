@@ -1,29 +1,29 @@
 = Prompt de Reprise — Codebase (Queens N1) — Session 212
 :session: 212
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 211 — Synchronisation gouvernance post-S-210 (zéro code)
-:session_pre_precedente: 210 — Maintenance état post-EPIC MEMPHIS-BOM-FIX
+:session_precedente: 215 (globale) — 3 cadrages gouvernance pure (RENAME + CB-FPA-RAG + OCR-QUALITY), zéro code
+:session_pre_precedente: 211 — Synchronisation gouvernance post-S-210 (zéro code)
 
-== Mission Session 212 — EPIC CB-FPA-RAG (GBL-003.4, critical path MVP0)
+== Mission Session 212 — Critical path (3 EPICs cadrés, exécution session dédiée)
 
 [IMPORTANT]
 Arbitrage pilote 2026-09-07 : priorité critical path MVP0 — les boroughs
-qui rapprochent de la génération de formation. EPIC CB-FPA-RAG cadré
-S-215 (`.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`) : ingestion RAG pgvector
-du corpus FPA + exposition au contexte augmenté des agents de génération
-SPG/SPD (Newark + Manhattan, anneau A2).
+qui rapprochent de la génération de formation. Trois EPICs cadrés
+(gouvernance pure S-215, zéro code), à exécuter dans l'ordre :
 
-*Périmètre* :
-1. CB-FPA-RAG-0 — compatibilité format chunks codex ↔ IngestStatements
-   (audit sans code)
-2. CB-FPA-RAG-1 — run ingestion corpus FPA → pgvector (configuration + run)
-3. CB-FPA-RAG-2 — preuve de bout en bout : query métier FPA retourne
-   les chunks pertinents via assembleCompositeContext
-4. CB-FPA-RAG-3 — BDD Cucumber si évolution nécessaire (baby-step strict)
+*1. RENAME (3 pts, `.agents/CADRAGE_EPIC_RENAME.adoc`)* — baby-step 1 :
+`Domain.FPA/CDA` → `CODING/CONTENT` + detector keywords + CLI défaut
+CODING + 15 fichiers. Gate : check baseline exacte + grep "fpa" = 0.
 
-*Socle réutilisé* : `codebase.store` (S-199), tables pgvector inchangées,
-zéro re-vectorisation. *Frontière licence* : run pointant vers `office/`,
-aucune donnée FPA dans le repo (Apache 2.0).
+*2. CB-FPA-RAG (4 US ~5 pts, `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`)* —
+ingestion RAG pgvector du corpus (ex-FPA) + exposition contexte augmenté.
+Socle réutilisé : `codebase.store` (S-199), tables pgvector inchangées.
+
+*3. OCR-QUALITY US-4 (3 pts, `.agents/CADRAGE_EPIC_OCR_QUALITY.adoc`)* —
+métadonnées de doute à l'ingestion RAG (confidence + doubtful).
+
+*Règle transverse* : FPA/CDA sont des métiers privés (fond de commerce)
+— plus jamais dans le nommage public (content/coding les remplacent).
 
 == Contexte technique
 

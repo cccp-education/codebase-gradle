@@ -104,4 +104,5 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | EPIC 1 | Init gouvernance agent | NX | ✅ TERMINÉ (items stale purgés session 169) | 001
 | EPIC CB-FPA-RAG | Ingestion RAG pgvector du corpus FPA + exposition contexte augmenté (GBL-003.4 critical path MVP0, arbitrage pilote 2026-09-07) — cadrage S-215 | N1 | 🟡 CADRÉ (4 US ~5 pts — dogfooding socle `codebase.store`, tables pgvector inchangées, run pointant vers office/, zéro donnée FPA dans le repo) | 215
 | EPIC OCR-QUALITY | Détection auto images problématiques + transcriptions douteuses (demande pilote S-215 — transverse codex/document/codebase) : US-4 codebase — métadonnées de doute à l'ingestion RAG (confidence + doubtful), zéro re-vectorisation | N1 | 🟡 CADRÉ (4 US ~11 pts, US-4 codebase — cadrage `.agents/CADRAGE_EPIC_OCR_QUALITY.adoc`) | 215
+| EPIC RENAME | Neutralisation nommage métier privé FPA→content, CDA→coding (demande pilote S-215 — transverse 7 boroughs) : Domain enum + detector + CLI défaut CODING + 15 fichiers | N1 | 🟡 CADRÉ (3 pts, 1er baby-step — cadrage `.agents/CADRAGE_EPIC_RENAME.adoc`) | 215
 |===
