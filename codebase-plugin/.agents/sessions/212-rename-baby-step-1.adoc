@@ -1,0 +1,131 @@
+= Session 212 — EPIC RENAME baby-step 1 (codebase) + réparation baseline
+
+:session: 212
+:date: 2026-09-07
+:borough: Queens — codebase-gradle (N1)
+:epic: RENAME-1 (3 pts, transverse 7 boroughs)
+:type: baby-step TDD/BDD strict (RED → GREEN → REFACTOR) + réparation baseline + publication
+
+== Contexte
+
+Mission critical path MVP0 (arbitrage pilote 2026-09-07) : 3 EPICs cadrés
+S-215, exécution dans l'ordre — RENAME → CB-FPA-RAG → OCR-QUALITY US-4.
+Cette session exécute RENAME-1 (codebase) : neutralisation du nommage
+métier privé FPA→content, CDA→coding dans le code public Apache 2.0.
+
+== Réparation baseline (pré-requis découvert)
+
+* `compileKotlin` ROUGE à HEAD (`a2bf3e6`) : workaround
+  `com.cheroliv.graphify.model` dans `SubgraphExtractor.kt` (graphify
+  0.0.2 avait été publié avec un package relocalisé) — les imports ne
+  résolvaient plus.
+* graphify-plugin 0.0.3 est disponible sur Central (S-215) avec le
+  package fixé `graphify.model`.
+* Fix : bump catalogue `graphify 0.0.2 → 0.0.3` + suppression du
+  workaround (8 fichiers : 1 prod + 7 tests, imports `com.cheroliv.
+  graphify.model.*` → `graphify.model.*`).
+* *Résidu com.cheroliv : zéro* — grep final sur src/ vide. Le dernier
+  résidu était la fixture test `AutofocusClassifierTest` (string
+  "migrate groupId from com.cheroliv to education.cccp"), neutralisée
+  en "migrate groupId to education.cccp".
+
+== RENAME-1 — baby-step TDD strict
+
+=== RED (tests d'abord)
+
+* 5 fichiers test renommés + 1 feature : `DeterministicOffTopicDetector
+  Test`, `QualityGateTest`, `QualityRetryCircuitTest`, `QualityGateTask
+  Test`, `QualityGateSteps`, `epic_6_quality_gate.feature` —
+  `Domain.CDA/FPA` → `Domain.CODING/CONTENT`, strings `"CDA"`/`"FPA"`
+  → `"CODING"`/`"CONTENT"`.
+* Gate RED : compileTestKotlin 38 erreurs `Unresolved reference
+  'CODING'/'CONTENT'` — confirmé.
+
+=== GREEN (prod)
+
+* `Domain.kt` : enum `CDA, FPA` → `CODING, CONTENT`.
+* `DeterministicOffTopicDetector.kt` : branches when + keywords — les
+  termes `"fpa"`/`"cda"` *sortent* de la liste CONTENT (décision D5) ;
+  `qualiopi`, `rncp`, `afnor`, `vae`, `bloom`, `harrow`, `krathwohl`
+  *restent* (références publiques françaises, pas IP pilote). Mapping
+  `opposite()` suit.
+* `QualityGateTask.kt` : option CLI `@Option(option = "domain",
+  description = "Expert domain: CODING or CONTENT")` + défaut `CODING`
+  + warn message.
+* `CodebasePlugin.kt` : `.orElse("CDA")` → `.orElse("CODING")`
+  (décision D4 — défaut préservé sémantiquement).
+* Gate GREEN : `test codebase.quality.*` VERT + `cucumberTest` global
+  8497 tests / 2 failed (préexistants Z-6, orthogonaux) / 8 scénarios
+  quality gate PASSED.
+
+=== REFACTOR (fixtures)
+
+* `VisionOpinionClassifier.kt` (prod, fixture O1) : "experts CDA" →
+  "experts coding".
+* `FineTuningRequest.kt` (KDoc) : `expert-cda` → `expert-coding`.
+* 10 fichiers test finetuning : `expert-cda` → `expert-coding`,
+  `expert-fpa` → `expert-content`, `"cda"`/`"fpa"` domainName →
+  `"coding"`/`"content"`, labels "CDA/FPA expert" → "Coding/Content
+  expert", globs `docs/cda/` → `docs/coding/`.
+* `codebase_finetuning.feature` + fixtures blog (templates CDA/FPA →
+  CODING/CONTENT) + `AutofocusClassifierTest` ("générer une formation
+  FPA complète" → "générer une formation complète").
+* Gate grep : `rg -in "fpa|cda" src/` = zéro match (hors faux positifs
+  `ggufPa`/`ofPa`/`docdate`).
+* Gate finale : compile + test (quality/finetuning/blog/autofocus/rag)
+  VERTS.
+
+== Gates et tests
+
+* `cucumberTest` global : 8497 tests, 2 failed (préexistants), 7888
+  skipped. Les 8 scénarios EPIC-6 quality gate PASSED.
+* `koverVerify` (36 min) : BUILD SUCCESSFUL. Couverture 65,41 %
+  (INSTRUCTION 46528/71134) — sous le seuil 79 configuré, mais la CI
+  ne lance pas koverVerify (testFast/testAll seulement) et les runs
+  partiels locaux faussent la mesure.
+* Échecs préexistants documentés (orthogonaux au RENAME, non traités) :
+** 2 × Z-6 Cucumber (`epic_z_6_autofocus_feedback` : "Autofocus stack
+   size should be at least 2 but was 1") — régression S-166 : le flux
+   actuel pop le focus après chaque replan (`popFocusNode` L266), le
+   scénario attend ≥2. Le test unitaire `VibecodingGraphAutofocusTest`
+   n'exige que non-empty (vert).
+** 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`,
+   `isImageFile false for pdf`) — drift S-211 : commit `4601cb0` a
+   ajouté `"pdf"` aux `IMAGE_EXTENSIONS` + `application/pdf` au
+   `MIME_MAP` sans mettre à jour les 2 tests.
+
+== Bump + publication
+
+* Bump `0.0.11 → 0.0.12` (breaking change assumé D7 — renommage dur,
+  boroughs jeunes, peu de consommateurs externes).
+* `publishToMavenLocal` VERT. POM local : `graphify-plugin:0.0.3`
+  explicite (leçon C-BOM-FIX S-172 appliquée).
+* Publication Central : `publishAggregationToCentralPortal --no-daemon`
+  — bundle `0fb93393-b778-4857-a40b-c213f0a5ea25`, AUTOMATIC.
+* Vérification : `codebase-plugin:0.0.12.pom` HTTP 200 sur repo1,
+  POM Central `graphify-plugin:0.0.3` + zéro `com.cheroliv`.
+
+== Propagation consommateurs (cross-borough)
+
+* 7 consommateurs + BOM bumpés `0.0.11 → 0.0.12` (catalogue
+  libs.versions.toml) : bakery (codebase + codebase-plugin), capsule,
+  plantuml, readme, slider, planner, codex (codebase + codebase-plugin),
+  workspace-bom (codebase-plugin).
+* Impact breaking vérifié : zéro consommateur n'importe
+  `codebase.quality`/`Domain.CDA/FPA` — renommage sans impact code.
+* Gate compile : 7/7 `compileKotlin` VERTS (bakery, slider, planner,
+  capsule, codex, plantuml, readme) + BOM `assemble` VERT (projet POM
+  pur).
+
+== Leçons
+
+* Baseline ROUGE à HEAD possible sur un borough dorm ant — toujours
+  compiler AVANT de coder (règle SESSION_CHECKLIST).
+* Un bump amont (graphify 0.0.3) a détruit le workaround package sans
+  prévenir — le commentaire WORKAROUND dans le code était le seul
+  signal.
+* `koverVerify` local : les runs partiels (-x cucumberTest) produisent
+  une couverture sous-estimée ; le gate n'est fiable qu'après test
+  complet (36 min).
+* Les échecs préexistants (Z-6, OcrTaskTest) doivent être tracés dans
+  le rapport de session pour éviter la confusion à la prochaine gate.

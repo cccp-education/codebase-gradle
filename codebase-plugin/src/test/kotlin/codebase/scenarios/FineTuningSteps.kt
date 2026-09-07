@@ -118,7 +118,7 @@ class FineTuningSteps(private val world: FineTuningWorld) {
         val request = FineTuningRequest(
             baseModel = "gpt-oss:120b-cloud",
             dataset = listOf("docs/afnor/**/*.adoc"),
-            outputModelName = "expert-cda",
+            outputModelName = "expert-coding",
         )
         val initial = FineTuningState(
             request = request,
@@ -198,8 +198,8 @@ class FineTuningSteps(private val world: FineTuningWorld) {
 
     private fun fineTuningSuccessStub(): FineTuningResult =
         FineTuningResult.success(
-            outputModelName = "expert-cda",
-            ggufPath = "/tmp/finetuning-cucumber/expert-cda.gguf",
+            outputModelName = "expert-coding",
+            ggufPath = "/tmp/finetuning-cucumber/expert-coding.gguf",
             iterations = 1,
             validationScore = 1.0,
         )

@@ -20,7 +20,7 @@ class FineTuningFunctionalTest {
         assertNotNull(ext)
         ext.baseModel.set("gpt-oss:120b-cloud")
         ext.dataset.set(listOf("docs/afnor/**/*.adoc", "docs/reac/**/*.adoc"))
-        ext.outputModelName.set("expert-cda")
+        ext.outputModelName.set("expert-coding")
         ext.corpusRatio.set(0.15)
         ext.maxIterations.set(5)
         ext.epochs.set(10)
@@ -35,14 +35,14 @@ class FineTuningFunctionalTest {
 
         assertEquals("gpt-oss:120b-cloud", prepare.baseModel.get())
         assertEquals(listOf("docs/afnor/**/*.adoc", "docs/reac/**/*.adoc"), prepare.dataset.get())
-        assertEquals("expert-cda", prepare.outputModelName.get())
+        assertEquals("expert-coding", prepare.outputModelName.get())
         assertEquals(0.15, prepare.corpusRatio.get())
 
         assertEquals("gpt-oss:120b-cloud", fineTune.baseModel.get())
-        assertEquals("expert-cda", fineTune.outputModelName.get())
+        assertEquals("expert-coding", fineTune.outputModelName.get())
         assertEquals(0.15, fineTune.corpusRatio.get())
 
-        assertEquals("expert-cda", publish.outputModelName.get())
+        assertEquals("expert-coding", publish.outputModelName.get())
     }
 
     @Test
@@ -53,7 +53,7 @@ class FineTuningFunctionalTest {
         val ext = project.extensions.findByType(CodebaseFineTuningExtension::class.java)!!
         ext.baseModel.set("gpt-oss:120b-cloud")
         ext.dataset.set(listOf("docs/afnor/**/*.adoc"))
-        ext.outputModelName.set("expert-cda")
+        ext.outputModelName.set("expert-coding")
         ext.corpusRatio.set(0.20)
 
         val prepare = project.tasks.findByName("prepareFineTuningDataset") as PrepareFineTuningDatasetTask
@@ -63,7 +63,7 @@ class FineTuningFunctionalTest {
         assertTrue(outFile.exists())
         val content = outFile.readText()
         assertTrue(content.contains("FROM gpt-oss:120b-cloud"))
-        assertTrue(content.contains("expert-cda"))
+        assertTrue(content.contains("expert-coding"))
         assertTrue(content.contains("docs/afnor/**/*.adoc"))
         assertTrue(content.contains("corpus ratio: 0.2"))
     }
@@ -74,12 +74,12 @@ class FineTuningFunctionalTest {
         project.pluginManager.apply(codebase.CodebasePlugin::class.java)
 
         val ext = project.extensions.findByType(CodebaseFineTuningExtension::class.java)!!
-        ext.outputModelName.set("expert-cda")
+        ext.outputModelName.set("expert-coding")
         ext.baseModel.set("gpt-oss:120b-cloud")
 
         val publish = project.tasks.findByName("publishExpertToOllama") as PublishExpertToOllamaTask
-        publish.domainName.set("cda")
-        publish.domainLabel.set("CDA expert")
+        publish.domainName.set("coding")
+        publish.domainLabel.set("Coding expert")
         publish.anonymizeEndpoints.set(false)
         publish.manifestOutput.set(project.layout.buildDirectory.file("experts/manifest.json"))
 
@@ -88,9 +88,9 @@ class FineTuningFunctionalTest {
         publish.executePublish()
 
         assertEquals(1, registry.size())
-        val resolved = registry.resolveByName("cda")
+        val resolved = registry.resolveByName("coding")
         assertNotNull(resolved)
-        assertEquals("expert-cda", resolved?.modelName)
+        assertEquals("expert-coding", resolved?.modelName)
         assertTrue(publish.manifestOutput.get().asFile.exists())
     }
 }

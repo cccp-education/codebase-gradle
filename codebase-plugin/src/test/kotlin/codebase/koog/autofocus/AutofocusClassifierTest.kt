@@ -234,13 +234,13 @@ class AutofocusClassifierTest {
 
     @Test
     fun `classifySync detects générer formation as BIG_PICTURE`() {
-        val result = AutofocusClassifier.classifySync("générer une formation FPA complète")
+        val result = AutofocusClassifier.classifySync("générer une formation complète")
         assertEquals(AutofocusLevel.BIG_PICTURE, result)
     }
 
     @Test
     fun `classifySync detects migrate groupId as ARCHITECTURE`() {
-        val result = AutofocusClassifier.classifySync("migrate groupId from com.cheroliv to education.cccp")
+        val result = AutofocusClassifier.classifySync("migrate groupId to education.cccp")
         assertEquals(AutofocusLevel.ARCHITECTURE, result)
     }
 }

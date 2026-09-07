@@ -33,13 +33,13 @@ class PrepareFineTuningDatasetTaskTest {
 
         task.baseModel.set("gpt-oss:120b-cloud")
         task.dataset.set(listOf("docs/afnor/**/*.adoc"))
-        task.outputModelName.set("expert-cda")
+        task.outputModelName.set("expert-coding")
         task.corpusRatio.set(0.15)
         task.outputFile.set(project.layout.buildDirectory.file("finetuning/dataset.txt"))
 
         assertEquals("gpt-oss:120b-cloud", task.baseModel.get())
         assertEquals(listOf("docs/afnor/**/*.adoc"), task.dataset.get())
-        assertEquals("expert-cda", task.outputModelName.get())
+        assertEquals("expert-coding", task.outputModelName.get())
         assertEquals(0.15, task.corpusRatio.get())
     }
 
@@ -51,7 +51,7 @@ class PrepareFineTuningDatasetTaskTest {
 
         task.baseModel.set("gpt-oss:120b-cloud")
         task.dataset.set(listOf("docs/afnor/**/*.adoc", "docs/reac/**/*.adoc"))
-        task.outputModelName.set("expert-cda")
+        task.outputModelName.set("expert-coding")
         task.corpusRatio.set(0.10)
         task.outputFile.set(project.layout.buildDirectory.file("finetuning/dataset-prep.txt"))
 
@@ -61,7 +61,7 @@ class PrepareFineTuningDatasetTaskTest {
         assertTrue(out.exists(), "Output file should exist")
         val content = out.readText()
         assertTrue(content.contains("FROM gpt-oss:120b-cloud"), "Should embed base model in Modelfile section")
-        assertTrue(content.contains("expert-cda"), "Should reference output model name")
+        assertTrue(content.contains("expert-coding"), "Should reference output model name")
         assertTrue(content.contains("docs/afnor/**/*.adoc"), "Should list dataset glob 1")
         assertTrue(content.contains("docs/reac/**/*.adoc"), "Should list dataset glob 2")
         assertTrue(content.contains("corpus ratio: 0.1"), "Should include corpus ratio")
@@ -75,7 +75,7 @@ class PrepareFineTuningDatasetTaskTest {
 
         task.baseModel.set("gemma4:31b-cloud")
         task.corpusGlobs.set(listOf("corpus/**/*.adoc"))
-        task.outputModelName.set("expert-fpa")
+        task.outputModelName.set("expert-content")
         task.outputFile.set(project.layout.buildDirectory.file("finetuning/dataset-prep.txt"))
 
         task.executePrepare()
@@ -132,7 +132,7 @@ class PrepareFineTuningDatasetTaskTest {
 
         task.baseModel.set("gpt-oss:120b-cloud")
         task.dataset.set(listOf("docs/**/*.adoc"))
-        task.outputModelName.set("expert-cda")
+        task.outputModelName.set("expert-coding")
         task.outputFile.set(project.layout.buildDirectory.file("finetuning/nested/deep/dataset-prep.txt"))
 
         task.executePrepare()
@@ -148,7 +148,7 @@ class PrepareFineTuningDatasetTaskTest {
 
         task.baseModel.set("gpt-oss:120b-cloud")
         task.dataset.set(listOf("docs/**/*.adoc"))
-        task.outputModelName.set("expert-cda")
+        task.outputModelName.set("expert-coding")
         task.corpusRatio.set(0.25)
         task.outputFile.set(project.layout.buildDirectory.file("finetuning/out.txt"))
 
@@ -166,7 +166,7 @@ class PrepareFineTuningDatasetTaskTest {
 
         task.baseModel.set("gpt-oss:120b-cloud")
         task.dataset.set(listOf("docs/**/*.adoc"))
-        task.outputModelName.set("expert-cda")
+        task.outputModelName.set("expert-coding")
         task.outputFile.set(project.layout.buildDirectory.file("finetuning/out.txt"))
 
         task.executePrepare()

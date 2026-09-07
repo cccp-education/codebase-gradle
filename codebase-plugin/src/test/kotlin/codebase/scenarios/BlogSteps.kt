@@ -46,7 +46,7 @@ Projet test-borough — N2 pipeline LLM.
 
 == Realise
 === EPIC 7.1 — PromptTemplateFactory
-- 5 templates (CDA, FPA, default, system, user)
+- 5 templates (CODING, CONTENT, default, system, user)
 - 3/3 JUnit5 PASS
 
 == Tests

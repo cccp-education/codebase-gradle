@@ -14,7 +14,7 @@ class QualityRetryCircuitTest {
         val circuit = QualityRetryCircuit(
             llm = llm.toSuspend(),
             gate = createGate(),
-            domain = Domain.CDA
+            domain = Domain.CODING
         )
         val result = circuit.invoke("Write a Calculator class")
         assertNotNull(result.bestOutput)
@@ -35,7 +35,7 @@ class QualityRetryCircuitTest {
         val circuit = QualityRetryCircuit(
             llm = llm.toSuspend(),
             gate = createGate(),
-            domain = Domain.CDA,
+            domain = Domain.CODING,
             maxRetries = 2
         )
         val result = circuit.invoke("Write code")
@@ -51,7 +51,7 @@ class QualityRetryCircuitTest {
         val circuit = QualityRetryCircuit(
             llm = llm.toSuspend(),
             gate = createGate(),
-            domain = Domain.CDA,
+            domain = Domain.CODING,
             maxRetries = 2
         )
         val result = circuit.invoke("Write code")
@@ -71,7 +71,7 @@ class QualityRetryCircuitTest {
         val circuit = QualityRetryCircuit(
             llm = llm.toSuspend(),
             gate = createGate(),
-            domain = Domain.CDA,
+            domain = Domain.CODING,
             maxRetries = 2
         )
         val result = circuit.invoke("Write a baking service")
@@ -91,7 +91,7 @@ class QualityRetryCircuitTest {
         val circuit = QualityRetryCircuit(
             llm = llm.toSuspend(),
             gate = createGate(),
-            domain = Domain.CDA,
+            domain = Domain.CODING,
             maxRetries = 3
         )
         val result = circuit.invoke("Write code")
@@ -114,7 +114,7 @@ class QualityRetryCircuitTest {
         val circuit = QualityRetryCircuit(
             llm = llm.toSuspend(),
             gate = createGate(),
-            domain = Domain.CDA,
+            domain = Domain.CODING,
             maxRetries = 3
         )
         val result = circuit.invoke("Write a Kotlin function")
@@ -131,7 +131,7 @@ class QualityRetryCircuitTest {
         val circuit = QualityRetryCircuit(
             llm = llm.toSuspend(),
             gate = createGate(),
-            domain = Domain.CDA,
+            domain = Domain.CODING,
             maxRetries = 2
         )
         val result = circuit.invoke("Write code")
@@ -146,7 +146,7 @@ class QualityRetryCircuitTest {
         val circuit = QualityRetryCircuit(
             llm = llm.toSuspend(),
             gate = createGate(),
-            domain = Domain.CDA
+            domain = Domain.CODING
         )
         val result = circuit.invoke("Write code")
         assertTrue(result.summary.contains("PASS"))

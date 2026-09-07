@@ -691,3 +691,30 @@ Gouvernance pure (zéro code) :
   post-Central 0.0.10), align conventions-plugin 0.0.4, fix OCR propriété
   morte `ocrEngine` (commit `fb19b7c`).
 * Borough DORMANT confirmé — tous EPICs TERMINÉS/CADUQUES.
+
+== Session 212 — EPIC RENAME-1 TERMINÉ + réparation baseline (2026-09-07)
+
+EPIC RENAME-1 (codebase, 3 pts) livré en baby-step TDD strict
+(RED → GREEN → REFACTOR) :
+
+* Réparation baseline : graphify 0.0.2 → 0.0.3 — workaround
+  `com.cheroliv.graphify.model` purgé (`SubgraphExtractor.kt` + 7
+  fichiers test). Résidu `com.cheroliv` src/ = 0.
+* RENAME-1 : `Domain.FPA/CDA` → `CODING/CONTENT` — enum
+  (`quality/Domain.kt`), detector keywords (`DeterministicOffTopic
+  Detector.kt` — "fpa"/"cda" sortent, qualiopi/rncp/afnor/vae/bloom
+  restent, `opposite()` suit), CLI défaut CODING (`CodebasePlugin.kt`
+  orElse + `QualityGateTask` description/warn), fixtures neutralisées
+  (10 fichiers test + 2 features + VisionOpinionClassifier + Fine
+  TuningRequest KDoc). Gate grep fpa/cda src/ = 0.
+* Bump 0.0.12 (breaking change assumé D7) : publishToMavenLocal VERT +
+  Maven Central AUTOMATIC bundle `0fb93393` — repo1 HTTP 200, POM
+  `graphify-plugin:0.0.3` explicite, zéro `com.cheroliv`.
+* Propagation cross-borough : 7 consommateurs + BOM bumpés 0.0.12
+  (bakery, capsule, plantuml, readme, slider, planner, codex,
+  workspace-bom). Compile 7/7 VERTS + BOM assemble VERT. Impact
+  breaking = 0 (zéro import `codebase.quality` chez les consommateurs).
+* Échecs préexistants documentés (orthogonaux) : 2×Z-6 Cucumber
+  (stack size, régression S-166) + 2×OcrTaskTest (drift pdf S-211).
+* Impact : le nommage métier privé quitte l'API publique Apache 2.0.
+  Débloque les baby-steps RENAME des 6 autres boroughs.

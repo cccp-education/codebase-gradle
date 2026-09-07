@@ -2,20 +2,22 @@
 :sectnums:
 :date: 2026-06-16
 
-_Dernière mise à jour : 2026-09-07 (S-215 globale — cadrage EPIC CB-FPA-RAG (GBL-003.4 critical path MVP0) : ingestion RAG pgvector du corpus FPA + exposition au contexte augmenté. 4 US ~5 pts. Zéro code. + Cadrage EPIC OCR-QUALITY (demande pilote : détection automatique images problématiques + transcriptions douteuses) — US-4 codebase. + Cadrage EPIC RENAME (FPA→content, CDA→coding) — US codebase 3 pts, exécution session dédiée.)_
+_Dernière mise à jour : 2026-09-07 (S-212 — RENAME-1 codebase ✅ TERMINÉ (baby-step TDD strict, bump 0.0.12 publié Central bundle `0fb93393`, 7 consommateurs + BOM propagés, grep fpa/cda = 0) + réparation baseline graphify 0.0.3 (workaround com.cheroliv purgé). Prochaine mission S-213 : CB-FPA-RAG US-0 puis OCR-QUALITY US-4.)_
 
 '''
-== EPIC RENAME — Neutralisation nommage métier privé (FPA→content, CDA→coding) 🟡 CADRÉ (P0, transverse)
+== EPIC RENAME — Neutralisation nommage métier privé (FPA→content, CDA→coding) 🟡 EN COURS (P0, transverse — codebase ✅)
 
 _Origine : demande pilote 2026-09-07 (FPA/CDA = fond de commerce privé, pas de nommage public OSS)._
 _Cadrage transverse : `.agents/CADRAGE_EPIC_RENAME.adoc` (7 boroughs)._
 
 |===
 | US | Description | Pts | Statut
-| RENAME-1 | `Domain.FPA/CDA` → `CODING/CONTENT` + detector keywords ("fpa"/"cda" sortent, qualiopi/rncp/afnor restent) + option CLI `-Pdomain` défaut CODING + 15 fichiers + check baseline exacte | 3 | 🟡 À FAIRE (codebase, 1er baby-step)
+| RENAME-1 | `Domain.FPA/CDA` → `CODING/CONTENT` + detector keywords ("fpa"/"cda" sortent, qualiopi/rncp/afnor restent) + option CLI `-Pdomain` défaut CODING + 15 fichiers + check baseline exacte | 3 | ✅ TERMINÉ (S-212 — baby-step TDD strict, bump 0.0.12 Central bundle `0fb93393`, 7 consommateurs + BOM propagés, impact consommateur = 0, grep fpa/cda src/ = 0)
 |===
 
-*Gate* : check VERT (zéro changement sémantique) + `grep -ri "fpa" src/` = zéro match (hors faux positifs ggufPa/ofPa).
+*Gate* : ✅ check VERT + `grep -ri "fpa" src/` = zéro match (hors faux positifs ggufPa/ofPa/docdate).
+
+*Reste transverse (ordres actés, hors codebase)* : document (3 pts) → bakery (1 pt) → capsule (1 pt) → plantuml (1 pt) → graphify/codex (1 pt gouvernance).
 
 '''
 == EPIC OCR-QUALITY — Détection automatique images problématiques + transcriptions douteuses 🟡 CADRÉ (P0, transverse)

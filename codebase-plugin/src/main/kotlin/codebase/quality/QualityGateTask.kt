@@ -19,7 +19,7 @@ abstract class QualityGateTask : DefaultTask() {
 
     @get:Input
     @get:Optional
-    @get:Option(option = "domain", description = "Expert domain: CDA or FPA")
+    @get:Option(option = "domain", description = "Expert domain: CODING or CONTENT")
     abstract val domain: Property<String>
 
     @get:Input
@@ -82,8 +82,8 @@ abstract class QualityGateTask : DefaultTask() {
         return try {
             Domain.valueOf(domainStr.uppercase())
         } catch (_: IllegalArgumentException) {
-            logger.warn("Unknown domain '$domainStr', defaulting to CDA")
-            Domain.CDA
+            logger.warn("Unknown domain '$domainStr', defaulting to CODING")
+            Domain.CODING
         }
     }
 }

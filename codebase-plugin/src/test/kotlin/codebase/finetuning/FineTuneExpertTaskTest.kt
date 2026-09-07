@@ -33,13 +33,13 @@ class FineTuneExpertTaskTest {
 
         task.baseModel.set("gpt-oss:120b-cloud")
         task.dataset.set(listOf("docs/**/*.adoc"))
-        task.outputModelName.set("expert-cda")
+        task.outputModelName.set("expert-coding")
         task.corpusRatio.set(0.12)
         task.outputReport.set(project.layout.buildDirectory.file("finetuning/report.json"))
 
         assertEquals("gpt-oss:120b-cloud", task.baseModel.get())
         assertEquals(listOf("docs/**/*.adoc"), task.dataset.get())
-        assertEquals("expert-cda", task.outputModelName.get())
+        assertEquals("expert-coding", task.outputModelName.get())
         assertEquals(0.12, task.corpusRatio.get())
     }
 
@@ -51,7 +51,7 @@ class FineTuneExpertTaskTest {
 
         task.baseModel.set("gpt-oss:120b-cloud")
         task.dataset.set(listOf("docs/afnor/**/*.adoc"))
-        task.outputModelName.set("expert-cda")
+        task.outputModelName.set("expert-coding")
         task.corpusRatio.set(0.10)
         task.outputReport.set(project.layout.buildDirectory.file("finetuning/report.json"))
         task.ggufOutputDir.set(project.layout.buildDirectory.dir("finetuning/gguf"))
@@ -59,8 +59,8 @@ class FineTuneExpertTaskTest {
         val fake = FakeFineTuner()
         fake.enqueueResult(
             FineTuningResult.success(
-                outputModelName = "expert-cda",
-                ggufPath = project.layout.buildDirectory.get().asFile.resolve("finetuning/gguf/expert-cda.gguf").absolutePath,
+                outputModelName = "expert-coding",
+                ggufPath = project.layout.buildDirectory.get().asFile.resolve("finetuning/gguf/expert-coding.gguf").absolutePath,
                 iterations = 3,
                 validationScore = 0.92
             )
@@ -72,7 +72,7 @@ class FineTuneExpertTaskTest {
         val report = task.outputReport.get().asFile
         assertTrue(report.exists(), "Report file should exist")
         val content = report.readText()
-        assertTrue(content.contains("expert-cda"), "Report should reference output model name")
+        assertTrue(content.contains("expert-coding"), "Report should reference output model name")
         assertTrue(content.contains("SUCCESS"), "Report should contain SUCCESS status")
         assertTrue(content.contains("0.92"), "Report should contain validation score")
         assertEquals(1, fake.callCount)
@@ -148,12 +148,12 @@ class FineTuneExpertTaskTest {
 
         task.baseModel.set("gpt-oss:120b-cloud")
         task.corpusGlobs.set(listOf("corpus/**/*.adoc"))
-        task.outputModelName.set("expert-fpa")
+        task.outputModelName.set("expert-content")
         task.outputReport.set(project.layout.buildDirectory.file("finetuning/report.json"))
         task.ggufOutputDir.set(project.layout.buildDirectory.dir("finetuning/gguf"))
 
         val fake = FakeFineTuner()
-        fake.enqueueResult(FineTuningResult.success("expert-fpa", "/tmp/x.gguf", 1, 1.0))
+        fake.enqueueResult(FineTuningResult.success("expert-content", "/tmp/x.gguf", 1, 1.0))
         task.pipeline = fake
 
         task.executeFineTune()
@@ -169,12 +169,12 @@ class FineTuneExpertTaskTest {
 
         task.baseModel.set("gpt-oss:120b-cloud")
         task.dataset.set(listOf("docs/**/*.adoc"))
-        task.outputModelName.set("expert-cda")
+        task.outputModelName.set("expert-coding")
         task.outputReport.set(project.layout.buildDirectory.file("finetuning/nested/deep/report.json"))
         task.ggufOutputDir.set(project.layout.buildDirectory.dir("finetuning/gguf"))
 
         val fake = FakeFineTuner()
-        fake.enqueueResult(FineTuningResult.success("expert-cda", "/tmp/x.gguf", 1, 1.0))
+        fake.enqueueResult(FineTuningResult.success("expert-coding", "/tmp/x.gguf", 1, 1.0))
         task.pipeline = fake
 
         task.executeFineTune()
@@ -189,20 +189,20 @@ class FineTuneExpertTaskTest {
         val task = project.tasks.register("fineTuneExpert", FineTuneExpertTask::class.java).get()
 
         task.baseModel.set("gemma4:31b-cloud")
-        task.dataset.set(listOf("docs/cda/**/*.adoc", "docs/reac/**/*.adoc"))
-        task.outputModelName.set("expert-cda")
+        task.dataset.set(listOf("docs/coding/**/*.adoc", "docs/reac/**/*.adoc"))
+        task.outputModelName.set("expert-coding")
         task.outputReport.set(project.layout.buildDirectory.file("finetuning/report.json"))
         task.ggufOutputDir.set(project.layout.buildDirectory.dir("finetuning/gguf"))
 
         val fake = FakeFineTuner()
-        fake.enqueueResult(FineTuningResult.success("expert-cda", "/tmp/x.gguf", 2, 0.88))
+        fake.enqueueResult(FineTuningResult.success("expert-coding", "/tmp/x.gguf", 2, 0.88))
         task.pipeline = fake
 
         task.executeFineTune()
 
         val content = task.outputReport.get().asFile.readText()
         assertTrue(content.contains("gemma4:31b-cloud"), "Report should reference base model")
-        assertTrue(content.contains("docs/cda/**/*.adoc"), "Report should reference dataset glob 1")
+        assertTrue(content.contains("docs/coding/**/*.adoc"), "Report should reference dataset glob 1")
         assertTrue(content.contains("docs/reac/**/*.adoc"), "Report should reference dataset glob 2")
     }
 
@@ -214,7 +214,7 @@ class FineTuneExpertTaskTest {
 
         task.baseModel.set("gpt-oss:120b-cloud")
         task.dataset.set(listOf("docs/**/*.adoc"))
-        task.outputModelName.set("expert-cda")
+        task.outputModelName.set("expert-coding")
         task.outputReport.set(project.layout.buildDirectory.file("finetuning/report.json"))
         task.ggufOutputDir.set(project.layout.buildDirectory.dir("finetuning/gguf"))
         task.ollamaBaseUrl.set("http://localhost:11437")

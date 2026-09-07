@@ -45,7 +45,7 @@ class DeterministicOffTopicDetector {
     }
 
     private fun keywordsFor(domain: Domain): List<String> = when (domain) {
-        Domain.CDA -> listOf(
+        Domain.CODING -> listOf(
             "class ", "fun ", "val ", "var ", "interface", "object", "enum class",
             "kotlin", "gradle", "spring", "jhipster", "docker", "postgresql", "pgvector",
             "buildscript", "dependencies", "plugin", "implementation", "testimplementation",
@@ -54,21 +54,21 @@ class DeterministicOffTopicDetector {
             "langchain4j", "ollama", "onnx", "embedding", "vectorstore",
             "github actions", "ci/cd", "test", "mock", "junit", "mockk"
         )
-        Domain.FPA -> listOf(
+        Domain.CONTENT -> listOf(
             "formation", "pédagogie", "formateur", "apprenant", "stagiaire",
             "compétence", "évaluation", "objectif", "session", "module",
             "qualiopi", "rncp", "afnor", "bloom", "harrow", "krathwohl",
             "taxonomie", "référentiel", "certification", "validation",
             "remédiation", "accompagnement", "tutorat", "ingénierie",
             "scénario", "séquence", "spg", "spd", "livret",
-            "professionnel", "fpa", "cda", "référentiel métier",
+            "professionnel", "référentiel métier",
             "fiche", "épreuve", "jury", "vae", "acquis"
         )
     }
 
     private fun Domain.opposite(): Domain = when (this) {
-        Domain.CDA -> Domain.FPA
-        Domain.FPA -> Domain.CDA
+        Domain.CODING -> Domain.CONTENT
+        Domain.CONTENT -> Domain.CODING
     }
 
     companion object {

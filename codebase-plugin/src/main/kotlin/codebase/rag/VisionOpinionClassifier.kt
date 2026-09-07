@@ -63,7 +63,7 @@ object TestSections {
         ),
         ContentSection(
             "O1-preference-modele",
-            "Je pense personnellement que Qwen 3.6 est bien meilleur que DeepSeek pour le fine-tuning des experts CDA. J'ai testé les deux sur quelques prompts et Qwen me semble plus naturel en Kotlin. Franchement, DeepSeek a tendance à trop commenter le code, c'est agaçant. À mon avis, on devrait tout migrer sur Qwen et abandonner DeepSeek complètement. C'est juste mon ressenti après quelques essais.",
+            "Je pense personnellement que Qwen 3.6 est bien meilleur que DeepSeek pour le fine-tuning des experts coding. J'ai testé les deux sur quelques prompts et Qwen me semble plus naturel en Kotlin. Franchement, DeepSeek a tendance à trop commenter le code, c'est agaçant. À mon avis, on devrait tout migrer sur Qwen et abandonner DeepSeek complètement. C'est juste mon ressenti après quelques essais.",
             ContentClassification.OPINION
         ),
         ContentSection(

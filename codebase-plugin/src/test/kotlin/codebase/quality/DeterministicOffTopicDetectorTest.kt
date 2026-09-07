@@ -9,10 +9,10 @@ class DeterministicOffTopicDetectorTest {
     private val detector = DeterministicOffTopicDetector()
 
     @Test
-    fun `CDA output with Kotlin keywords is on topic`() {
+    fun `CODING output with Kotlin keywords is on topic`() {
         val result = detector.check(
             "class MainActivity : AppCompatActivity() { val list = mutableListOf<String>() }",
-            Domain.CDA,
+            Domain.CODING,
             QualityGateConfig()
         )
         assertEquals(QualityVerdict.PASS, result.verdict)
@@ -20,10 +20,10 @@ class DeterministicOffTopicDetectorTest {
     }
 
     @Test
-    fun `CDA output with Gradle keywords is on topic`() {
+    fun `CODING output with Gradle keywords is on topic`() {
         val result = detector.check(
             "plugins { kotlin(\"jvm\") } dependencies { implementation(\"lib\") }",
-            Domain.CDA,
+            Domain.CODING,
             QualityGateConfig()
         )
         assertEquals(QualityVerdict.PASS, result.verdict)
@@ -31,10 +31,10 @@ class DeterministicOffTopicDetectorTest {
     }
 
     @Test
-    fun `FPA output with pedagogical keywords is on topic`() {
+    fun `CONTENT output with pedagogical keywords is on topic`() {
         val result = detector.check(
             "Objectif pédagogique : évaluer les compétences selon la taxonomie de Bloom.",
-            Domain.FPA,
+            Domain.CONTENT,
             QualityGateConfig()
         )
         assertEquals(QualityVerdict.PASS, result.verdict)
@@ -42,10 +42,10 @@ class DeterministicOffTopicDetectorTest {
     }
 
     @Test
-    fun `CDA output about cuisine is off topic`() {
+    fun `CODING output about cuisine is off topic`() {
         val result = detector.check(
             "La recette du gâteau au chocolat nécessite 200g de farine.",
-            Domain.CDA,
+            Domain.CODING,
             QualityGateConfig()
         )
         assertTrue(result.verdict.severity >= QualityVerdict.NEEDS_FIX.severity)
@@ -53,10 +53,10 @@ class DeterministicOffTopicDetectorTest {
     }
 
     @Test
-    fun `FPA output about sports is off topic`() {
+    fun `CONTENT output about sports is off topic`() {
         val result = detector.check(
             "Le match de football a été gagné par l'équipe locale.",
-            Domain.FPA,
+            Domain.CONTENT,
             QualityGateConfig()
         )
         assertTrue(result.verdict.severity >= QualityVerdict.NEEDS_FIX.severity)
@@ -64,20 +64,20 @@ class DeterministicOffTopicDetectorTest {
     }
 
     @Test
-    fun `CDA output about pedagogy is off topic for CDA domain`() {
+    fun `CODING output about pedagogy is off topic for CODING domain`() {
         val result = detector.check(
             "La formation professionnelle nécessite une évaluation formative continue.",
-            Domain.CDA,
+            Domain.CODING,
             QualityGateConfig()
         )
         assertTrue(result.verdict.severity >= QualityVerdict.NEEDS_FIX.severity)
     }
 
     @Test
-    fun `FPA output about Spring Boot is off topic for FPA domain`() {
+    fun `CONTENT output about Spring Boot is off topic for CONTENT domain`() {
         val result = detector.check(
             "@SpringBootApplication class App { fun main() = runApplication<App>(*args) }",
-            Domain.FPA,
+            Domain.CONTENT,
             QualityGateConfig()
         )
         assertTrue(result.verdict.severity >= QualityVerdict.NEEDS_FIX.severity)
@@ -85,36 +85,36 @@ class DeterministicOffTopicDetectorTest {
 
     @Test
     fun `empty text passes for any domain`() {
-        val result = detector.check("", Domain.CDA, QualityGateConfig())
+        val result = detector.check("", Domain.CODING, QualityGateConfig())
         assertEquals(QualityVerdict.PASS, result.verdict)
         assertEquals(1.0, result.score)
     }
 
     @Test
-    fun `generic programming text is on topic for CDA`() {
+    fun `generic programming text is on topic for CODING`() {
         val result = detector.check(
             "fun calculateSum(a: Int, b: Int): Int = a + b",
-            Domain.CDA,
+            Domain.CODING,
             QualityGateConfig()
         )
         assertEquals(QualityVerdict.PASS, result.verdict)
     }
 
     @Test
-    fun `generic pedagogical text is on topic for FPA`() {
+    fun `generic pedagogical text is on topic for CONTENT`() {
         val result = detector.check(
             "L'apprenant doit acquérir les compétences nécessaires.",
-            Domain.FPA,
+            Domain.CONTENT,
             QualityGateConfig()
         )
         assertEquals(QualityVerdict.PASS, result.verdict)
     }
 
     @Test
-    fun `FPA text with Qualliopi reference is strongly on topic`() {
+    fun `CONTENT text with Qualliopi reference is strongly on topic`() {
         val result = detector.check(
             "Conforme aux exigences Qualiopi, RNCP niveau 6, AFNOR.",
-            Domain.FPA,
+            Domain.CONTENT,
             QualityGateConfig()
         )
         assertEquals(QualityVerdict.PASS, result.verdict)
@@ -123,17 +123,17 @@ class DeterministicOffTopicDetectorTest {
 
     @Test
     fun `details mention expected domain`() {
-        val result = detector.check("Kotlin is great", Domain.CDA, QualityGateConfig())
-        assertTrue(result.details.lowercase().contains("cda"))
+        val result = detector.check("Kotlin is great", Domain.CODING, QualityGateConfig())
+        assertTrue(result.details.lowercase().contains("coding"))
     }
 
     @Test
     fun `score is always between 0 and 1`() {
         val texts = listOf(
-            "Spring Boot Gradle Kotlin PostgreSQL Docker" to Domain.CDA,
-            "Qualliopi Bloom AFNOR formation évaluation pédagogie" to Domain.FPA,
-            "recette cuisine jardinage météo" to Domain.CDA,
-            "football tennis natation" to Domain.FPA
+            "Spring Boot Gradle Kotlin PostgreSQL Docker" to Domain.CODING,
+            "Qualliopi Bloom AFNOR formation évaluation pédagogie" to Domain.CONTENT,
+            "recette cuisine jardinage météo" to Domain.CODING,
+            "football tennis natation" to Domain.CONTENT
         )
         for ((text, domain) in texts) {
             val result = detector.check(text, domain, QualityGateConfig())

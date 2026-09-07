@@ -1,9 +1,9 @@
 package codebase.graph
 
-import com.cheroliv.graphify.model.GraphCommunity
-import com.cheroliv.graphify.model.GraphEdge
-import com.cheroliv.graphify.model.GraphModel
-import com.cheroliv.graphify.model.GraphNode
+import graphify.model.GraphCommunity
+import graphify.model.GraphEdge
+import graphify.model.GraphModel
+import graphify.model.GraphNode
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName

@@ -14,7 +14,7 @@ class QualityGateSteps {
     private var lastAssessment: QualityAssessment? = null
     private var lastFeedback: String = ""
     private var lastOutput: String = ""
-    private var lastDomain: Domain = Domain.CDA
+    private var lastDomain: Domain = Domain.CODING
 
     @Given("a QualityGate is instantiated with default deterministic checkers")
     fun `instantiate quality gate`() {
@@ -26,19 +26,19 @@ class QualityGateSteps {
         )
     }
 
-    @When("I evaluate CDA output {string}")
-    fun `evaluate CDA output`(output: String) {
+    @When("I evaluate CODING output {string}")
+    fun `evaluate CODING output`(output: String) {
         lastOutput = output
-        lastDomain = Domain.CDA
-        lastAssessment = gate.evaluate(output, Domain.CDA)
+        lastDomain = Domain.CODING
+        lastAssessment = gate.evaluate(output, Domain.CODING)
         lastFeedback = gate.buildFeedback(lastAssessment!!)
     }
 
-    @When("I evaluate FPA output {string}")
-    fun `evaluate FPA output`(output: String) {
+    @When("I evaluate CONTENT output {string}")
+    fun `evaluate CONTENT output`(output: String) {
         lastOutput = output
-        lastDomain = Domain.FPA
-        lastAssessment = gate.evaluate(output, Domain.FPA)
+        lastDomain = Domain.CONTENT
+        lastAssessment = gate.evaluate(output, Domain.CONTENT)
         lastFeedback = gate.buildFeedback(lastAssessment!!)
     }
 

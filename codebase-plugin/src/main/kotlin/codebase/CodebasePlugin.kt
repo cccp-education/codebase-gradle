@@ -144,7 +144,7 @@ class CodebasePlugin : Plugin<Project> {
             it.group = "validate"
             it.description = "Quality gate — validates expert LLM outputs (sentiment + off-topic + PII residual checks)"
             it.output.set(project.providers.gradleProperty("output").orElse(""))
-            it.domain.set(project.providers.gradleProperty("domain").orElse("CDA"))
+            it.domain.set(project.providers.gradleProperty("domain").orElse("CODING"))
             it.minAcceptableScore.set(project.providers.gradleProperty("minScore").map { it.toDouble() }.orElse(0.60))
             it.enableSentimentCheck.set(project.providers.gradleProperty("enableSentiment").map { it.toBoolean() }.orElse(true))
             it.enableOffTopicCheck.set(project.providers.gradleProperty("enableOffTopic").map { it.toBoolean() }.orElse(true))

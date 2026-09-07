@@ -1,39 +1,52 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 212
-:session: 212
+= Prompt de Reprise — Codebase (Queens N1) — Session 213
+:session: 213
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 215 (globale) — 3 cadrages gouvernance pure (RENAME + CB-FPA-RAG + OCR-QUALITY), zéro code
-:session_pre_precedente: 211 — Synchronisation gouvernance post-S-210 (zéro code)
+:session_precedente: 212 — EPIC RENAME-1 TERMINÉ (baby-step TDD, bump 0.0.12 publié Central, 7 consommateurs propagés) + réparation baseline graphify 0.0.3
+:session_pre_precedente: 215 (globale) — 3 cadrages gouvernance pure (RENAME + CB-FPA-RAG + OCR-QUALITY), zéro code
 
-== Mission Session 212 — Critical path (3 EPICs cadrés, exécution session dédiée)
+== Mission Session 213 — Critical path (suite ordre acté)
 
 [IMPORTANT]
-Arbitrage pilote 2026-09-07 : priorité critical path MVP0 — les boroughs
-qui rapprochent de la génération de formation. Trois EPICs cadrés
-(gouvernance pure S-215, zéro code), à exécuter dans l'ordre :
-
-*1. RENAME (3 pts, `.agents/CADRAGE_EPIC_RENAME.adoc`)* — baby-step 1 :
-`Domain.FPA/CDA` → `CODING/CONTENT` + detector keywords + CLI défaut
-CODING + 15 fichiers. Gate : check baseline exacte + grep "fpa" = 0.
+Arbitrage pilote 2026-09-07 : priorité critical path MVP0. RENAME-1
+est terminé (S-212). Deux EPICs restent, dans l'ordre :
 
 *2. CB-FPA-RAG (4 US ~5 pts, `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`)* —
 ingestion RAG pgvector du corpus (ex-FPA) + exposition contexte augmenté.
 Socle réutilisé : `codebase.store` (S-199), tables pgvector inchangées.
+US-0 d'abord : audit compatibilité format chunks codex ↔ IngestStatements
+(sans code). US-1 run ingestion pointant vers office/ (zéro donnée
+métier committée). US-2 proof of work : query métier retourne les bons
+chunks. US-3 Cucumber si évolution pipeline.
 
 *3. OCR-QUALITY US-4 (3 pts, `.agents/CADRAGE_EPIC_OCR_QUALITY.adoc`)* —
-métadonnées de doute à l'ingestion RAG (confidence + doubtful).
+métadonnées de doute à l'ingestion RAG (confidence + doubtful). Baby-step
+TDD/BDD strict.
 
 *Règle transverse* : FPA/CDA sont des métiers privés (fond de commerce)
 — plus jamais dans le nommage public (content/coding les remplacent).
+Les boroughs document/bakery/capsule/plantuml/graphify/codex attendent
+leurs baby-steps RENAME (ordre acté S-215 : codebase ✅ → document →
+bakery → capsule → plantuml → graphify/codex).
 
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
-* Version locale : 0.0.11 (Central : 0.0.10). Conventions 0.0.4.
+* Version locale : 0.0.12 (Central : 0.0.12, bundle `0fb93393`). Conventions 0.0.4.
+* Baseline réparée : graphify 0.0.3 (workaround `com.cheroliv.graphify.model` purgé).
 * 41 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
 * Inversion N1→N2 morte : codex consomme codebase via ocr-contracts N0.
 * Session concurrente possible : vérifier `git status`, mtimes récents,
   absence d'autre session active AVANT d'éditer.
 * Dossier gouvernance unique : `codebase-plugin/.agents/` (migration S-207).
+
+== Échecs préexistants à documenter (orthogonaux, ne pas confondre)
+
+* 2 × Z-6 Cucumber `epic_z_6_autofocus_feedback` ("Autofocus stack size
+  should be at least 2 but was 1") — régression S-166 (`popFocusNode`
+  après replan). Test unitaire ne couvre que non-empty.
+* 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`,
+  `isImageFile false for pdf`) — drift S-211 (`4601cb0` a ajouté pdf
+  aux IMAGE_EXTENSIONS sans maj tests).
 
 == Règles absolues
 
@@ -46,4 +59,5 @@ métadonnées de doute à l'ingestion RAG (confidence + doubtful).
 == References
 
 * `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc` (cadrage S-215)
-* `.agents/sessions/210-maintenance-etat-post-mempfix.adoc`
+* `.agents/CADRAGE_EPIC_OCR_QUALITY.adoc` (cadrage S-215)
+* `.agents/sessions/212-rename-baby-step-1.adoc` (rapport S-212)

@@ -35,15 +35,15 @@ class PublishExpertToOllamaTaskTest {
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("publishExpertToOllama", PublishExpertToOllamaTask::class.java).get()
 
-        task.outputModelName.set("expert-cda")
-        task.domainName.set("cda")
-        task.domainLabel.set("CDA expert — AFNOR/REAC")
+        task.outputModelName.set("expert-coding")
+        task.domainName.set("coding")
+        task.domainLabel.set("Coding expert — AFNOR/REAC")
         task.baseUrl.set("http://localhost:11437")
         task.manifestOutput.set(project.layout.buildDirectory.file("experts/exposure-manifest.json"))
 
-        assertEquals("expert-cda", task.outputModelName.get())
-        assertEquals("cda", task.domainName.get())
-        assertEquals("CDA expert — AFNOR/REAC", task.domainLabel.get())
+        assertEquals("expert-coding", task.outputModelName.get())
+        assertEquals("coding", task.domainName.get())
+        assertEquals("Coding expert — AFNOR/REAC", task.domainLabel.get())
         assertEquals("http://localhost:11437", task.baseUrl.get())
     }
 
@@ -53,9 +53,9 @@ class PublishExpertToOllamaTaskTest {
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("publishExpertToOllama", PublishExpertToOllamaTask::class.java).get()
 
-        task.outputModelName.set("expert-cda")
-        task.domainName.set("cda")
-        task.domainLabel.set("CDA expert — AFNOR/REAC")
+        task.outputModelName.set("expert-coding")
+        task.domainName.set("coding")
+        task.domainLabel.set("Coding expert — AFNOR/REAC")
         task.baseUrl.set("http://localhost:11440")
         task.anonymizeEndpoints.set(false)
         task.manifestOutput.set(project.layout.buildDirectory.file("experts/exposure-manifest.json"))
@@ -65,16 +65,16 @@ class PublishExpertToOllamaTaskTest {
 
         task.executePublish()
 
-        val resolved = registry.resolve(ExpertDomain("cda", "CDA expert — AFNOR/REAC"))
+        val resolved = registry.resolve(ExpertDomain("coding", "Coding expert — AFNOR/REAC"))
         assertNotNull(resolved, "Expert should be registered in the registry")
-        assertEquals("expert-cda", resolved?.modelName)
+        assertEquals("expert-coding", resolved?.modelName)
         assertEquals("http://localhost:11440", resolved?.baseUrl)
 
         val manifestFile = task.manifestOutput.get().asFile
         assertTrue(manifestFile.exists(), "Manifest file should exist")
         val content = manifestFile.readText()
-        assertTrue(content.contains("expert-cda"), "Manifest should reference the model name")
-        assertTrue(content.contains("cda"), "Manifest should reference the domain")
+        assertTrue(content.contains("expert-coding"), "Manifest should reference the model name")
+        assertTrue(content.contains("coding"), "Manifest should reference the domain")
         assertTrue(content.contains("http://localhost:11440"), "Manifest should reference the baseUrl (not anonymized)")
     }
 
@@ -84,9 +84,9 @@ class PublishExpertToOllamaTaskTest {
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("publishExpertToOllama", PublishExpertToOllamaTask::class.java).get()
 
-        task.outputModelName.set("expert-fpa")
-        task.domainName.set("fpa")
-        task.domainLabel.set("FPA expert")
+        task.outputModelName.set("expert-content")
+        task.domainName.set("content")
+        task.domainLabel.set("Content expert")
         task.baseUrl.set("http://localhost:11442")
         task.anonymizeEndpoints.set(true)
         task.manifestOutput.set(project.layout.buildDirectory.file("experts/manifest.json"))
@@ -96,7 +96,7 @@ class PublishExpertToOllamaTaskTest {
 
         val content = task.manifestOutput.get().asFile.readText()
         assertTrue(content.contains("***anonymized***"), "Manifest should anonymize the endpoint")
-        assertTrue(content.contains("expert-fpa"))
+        assertTrue(content.contains("expert-content"))
     }
 
     @Test
@@ -105,7 +105,7 @@ class PublishExpertToOllamaTaskTest {
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("publishExpertToOllama", PublishExpertToOllamaTask::class.java).get()
 
-        task.domainName.set("cda")
+        task.domainName.set("coding")
         task.manifestOutput.set(project.layout.buildDirectory.file("experts/manifest.json"))
 
         task.expertRegistry = ExpertRegistry()
@@ -118,7 +118,7 @@ class PublishExpertToOllamaTaskTest {
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("publishExpertToOllama", PublishExpertToOllamaTask::class.java).get()
 
-        task.outputModelName.set("expert-cda")
+        task.outputModelName.set("expert-coding")
         task.manifestOutput.set(project.layout.buildDirectory.file("experts/manifest.json"))
 
         task.expertRegistry = ExpertRegistry()
@@ -131,8 +131,8 @@ class PublishExpertToOllamaTaskTest {
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("publishExpertToOllama", PublishExpertToOllamaTask::class.java).get()
 
-        task.outputModelName.set("expert-cda")
-        task.domainName.set("cda")
+        task.outputModelName.set("expert-coding")
+        task.domainName.set("coding")
         task.manifestOutput.set(project.layout.buildDirectory.file("experts/nested/deep/manifest.json"))
 
         task.expertRegistry = ExpertRegistry()
@@ -147,14 +147,14 @@ class PublishExpertToOllamaTaskTest {
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("publishExpertToOllama", PublishExpertToOllamaTask::class.java).get()
 
-        task.outputModelName.set("expert-cda")
-        task.domainName.set("cda")
+        task.outputModelName.set("expert-coding")
+        task.domainName.set("coding")
         task.manifestOutput.set(project.layout.buildDirectory.file("experts/manifest.json"))
 
         task.executePublish()
 
         val content = task.manifestOutput.get().asFile.readText()
-        assertTrue(content.contains("expert-cda"), "Default registry should still produce manifest")
+        assertTrue(content.contains("expert-coding"), "Default registry should still produce manifest")
     }
 
     @Test
@@ -193,15 +193,15 @@ class PublishExpertToOllamaTaskTest {
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("publishExpertToOllama", PublishExpertToOllamaTask::class.java).get()
 
-        task.outputModelName.set("expert-cda")
-        task.domainName.set("cda")
+        task.outputModelName.set("expert-coding")
+        task.domainName.set("coding")
         task.manifestOutput.set(project.layout.buildDirectory.file("experts/manifest.json"))
 
         val registry = ExpertRegistry()
         task.expertRegistry = registry
         task.executePublish()
 
-        val resolved = registry.resolve(ExpertDomain("cda", "cda"))
+        val resolved = registry.resolve(ExpertDomain("coding", "coding"))
         assertNotNull(resolved)
         assertEquals(120L, resolved?.timeoutSeconds)
     }

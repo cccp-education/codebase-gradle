@@ -44,7 +44,7 @@ class CodebaseFineTuningExtensionTest {
 
         ext.baseModel.set("gpt-oss:120b-cloud")
         ext.dataset.set(listOf("docs/afnor/**/*.adoc", "docs/reac/**/*.adoc"))
-        ext.outputModelName.set("expert-cda")
+        ext.outputModelName.set("expert-coding")
         ext.corpusRatio.set(0.15)
         ext.maxIterations.set(5)
         ext.epochs.set(10)
@@ -55,7 +55,7 @@ class CodebaseFineTuningExtensionTest {
 
         assertEquals("gpt-oss:120b-cloud", ext.baseModel.get())
         assertEquals(listOf("docs/afnor/**/*.adoc", "docs/reac/**/*.adoc"), ext.dataset.get())
-        assertEquals("expert-cda", ext.outputModelName.get())
+        assertEquals("expert-coding", ext.outputModelName.get())
         assertEquals(0.15, ext.corpusRatio.get())
         assertEquals(5, ext.maxIterations.get())
         assertEquals(10, ext.epochs.get())
@@ -99,14 +99,14 @@ class CodebaseFineTuningExtensionTest {
         val ext = project.extensions.create("fineTuning", CodebaseFineTuningExtension::class.java)
 
         ext.baseModel.set("gemma4:31b-cloud")
-        ext.dataset.set(listOf("docs/cda/**/*.adoc"))
-        ext.outputModelName.set("expert-cda")
+        ext.dataset.set(listOf("docs/coding/**/*.adoc"))
+        ext.outputModelName.set("expert-coding")
         ext.corpusRatio.set(0.12)
 
         val request = ext.toRequest()
         assertEquals("gemma4:31b-cloud", request.baseModel)
-        assertEquals(listOf("docs/cda/**/*.adoc"), request.dataset)
-        assertEquals("expert-cda", request.outputModelName)
+        assertEquals(listOf("docs/coding/**/*.adoc"), request.dataset)
+        assertEquals("expert-coding", request.outputModelName)
         assertEquals(0.12, request.corpusRatio)
     }
 
@@ -117,7 +117,7 @@ class CodebaseFineTuningExtensionTest {
 
         ext.baseModel.set("gpt-oss:120b-cloud")
         ext.corpusGlobs.set(listOf("corpus/**/*.adoc", "data/**/*.adoc"))
-        ext.outputModelName.set("expert-fpa")
+        ext.outputModelName.set("expert-content")
 
         val request = ext.toRequest()
         assertEquals(listOf("corpus/**/*.adoc", "data/**/*.adoc"), request.dataset)

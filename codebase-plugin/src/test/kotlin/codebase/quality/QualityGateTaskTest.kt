@@ -36,23 +36,23 @@ class QualityGateTaskTest {
         val project = ProjectBuilder.builder().build()
         val task = project.tasks.register("qualityGate", QualityGateTask::class.java) {
             it.output.set("val x = 42")
-            it.domain.set("CDA")
+            it.domain.set("CODING")
             it.minAcceptableScore.set(0.80)
             it.enableSentimentCheck.set(false)
         }.get()
 
         assertEquals("val x = 42", task.output.get())
-        assertEquals("CDA", task.domain.get())
+        assertEquals("CODING", task.domain.get())
         assertEquals(0.80, task.minAcceptableScore.get())
         assertEquals(false, task.enableSentimentCheck.get())
     }
 
     @Test
-    fun `execute with clean CDA output should pass`() {
+    fun `execute with clean CODING output should pass`() {
         val project = ProjectBuilder.builder().build()
         val task = project.tasks.register("qualityGate", QualityGateTask::class.java) {
             it.output.set("class Calculator { fun add(a: Int, b: Int) = a + b }")
-            it.domain.set("CDA")
+            it.domain.set("CODING")
         }.get()
 
         task.executeQualityGate()
@@ -63,7 +63,7 @@ class QualityGateTaskTest {
         val project = ProjectBuilder.builder().build()
         val task = project.tasks.register("qualityGate", QualityGateTask::class.java) {
             it.output.set("token=ghp_test1234 password=secret")
-            it.domain.set("CDA")
+            it.domain.set("CODING")
         }.get()
 
         var failed = false
@@ -76,11 +76,11 @@ class QualityGateTaskTest {
     }
 
     @Test
-    fun `execute with off-topic FPA output should fail`() {
+    fun `execute with off-topic CONTENT output should fail`() {
         val project = ProjectBuilder.builder().build()
         val task = project.tasks.register("qualityGate", QualityGateTask::class.java) {
             it.output.set("@SpringBootApplication class App")
-            it.domain.set("FPA")
+            it.domain.set("CONTENT")
         }.get()
 
         var failed = false
@@ -89,7 +89,7 @@ class QualityGateTaskTest {
         } catch (_: RuntimeException) {
             failed = true
         }
-        assertTrue(failed, "Task should fail on off-topic FPA output")
+        assertTrue(failed, "Task should fail on off-topic CONTENT output")
     }
 
     @Test
@@ -97,7 +97,7 @@ class QualityGateTaskTest {
         val project = ProjectBuilder.builder().build()
         val task = project.tasks.register("qualityGate", QualityGateTask::class.java) {
             it.output.set("fun sum(a: Int, b: Int) = a + b")
-            it.domain.set("CDA")
+            it.domain.set("CODING")
         }.get()
 
         task.executeQualityGate()
@@ -111,7 +111,7 @@ class QualityGateTaskTest {
         val project = ProjectBuilder.builder().build()
         val task = project.tasks.register("qualityGate", QualityGateTask::class.java) {
             it.output.set("clean")
-            it.domain.set("CDA")
+            it.domain.set("CODING")
         }.get()
 
         assertEquals(null, task.lastResult)

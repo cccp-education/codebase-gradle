@@ -27,7 +27,7 @@ class OllamaFineTunerAdapterTest {
     private val request = FineTuningRequest(
         baseModel = "gpt-oss:120b-cloud",
         dataset = listOf("docs/afnor/**/*.adoc"),
-        outputModelName = "expert-cda",
+        outputModelName = "expert-coding",
         corpusRatio = 0.10
     )
 
@@ -46,8 +46,8 @@ class OllamaFineTunerAdapterTest {
 
         assertTrue(result is FineTuningResult.Success)
         val success = result as FineTuningResult.Success
-        assertTrue(success.outputModelName == "expert-cda")
-        assertTrue(success.ggufPath.endsWith("expert-cda.gguf"))
+        assertTrue(success.outputModelName == "expert-coding")
+        assertTrue(success.ggufPath.endsWith("expert-coding.gguf"))
         assertTrue(success.validationScore in 0.0..1.0)
         assertTrue(client.createCalled)
         assertTrue(client.pushCalled)

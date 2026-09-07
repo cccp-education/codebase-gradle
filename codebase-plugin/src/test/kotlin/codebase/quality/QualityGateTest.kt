@@ -15,10 +15,10 @@ class QualityGateTest {
     )
 
     @Test
-    fun `clean CDA output passes all checks`() {
+    fun `clean CODING output passes all checks`() {
         val result = sentinel.evaluate(
             "class UserRepository { fun findByName(name: String): User = em.createQuery(...).singleResult }",
-            Domain.CDA
+            Domain.CODING
         )
         assertEquals(QualityVerdict.PASS, result.overallVerdict)
         assertEquals(3, result.results.size)
@@ -27,10 +27,10 @@ class QualityGateTest {
     }
 
     @Test
-    fun `clean FPA output passes all checks`() {
+    fun `clean CONTENT output passes all checks`() {
         val result = sentinel.evaluate(
             "Objectif pédagogique : acquérir les compétences Qualiopi via une évaluation formative.",
-            Domain.FPA
+            Domain.CONTENT
         )
         assertEquals(QualityVerdict.PASS, result.overallVerdict)
         assertTrue(result.passed)
@@ -40,7 +40,7 @@ class QualityGateTest {
     fun `output with PII fails overall`() {
         val result = sentinel.evaluate(
             "Contact admin@example.com, token=ghp_1234567890abcdefghijkl",
-            Domain.CDA
+            Domain.CODING
         )
         assertEquals(QualityVerdict.FAIL, result.overallVerdict)
         assertFalse(result.passed)
@@ -51,7 +51,7 @@ class QualityGateTest {
     fun `output with negative sentiment combined with off-topic fails`() {
         val result = sentinel.evaluate(
             "C'est nul, horrible, un désastre. La recette du gâteau est ratée.",
-            Domain.CDA
+            Domain.CODING
         )
         assertTrue(result.overallVerdict.severity >= QualityVerdict.NEEDS_FIX.severity)
     }
@@ -60,7 +60,7 @@ class QualityGateTest {
     fun `failingChecks only contains non-PASS results`() {
         val result = sentinel.evaluate(
             "token=ghp_test1234 val x = 42 password=secret",
-            Domain.CDA
+            Domain.CODING
         )
         assertTrue(result.failingChecks.all { it.verdict != QualityVerdict.PASS })
         assertTrue(result.failingChecks.any { it.checkerName == "pii-residual" })
@@ -68,7 +68,7 @@ class QualityGateTest {
 
     @Test
     fun `empty output passes all checks`() {
-        val result = sentinel.evaluate("", Domain.CDA)
+        val result = sentinel.evaluate("", Domain.CODING)
         assertEquals(QualityVerdict.PASS, result.overallVerdict)
         assertTrue(result.passed)
     }
@@ -82,7 +82,7 @@ class QualityGateTest {
             piiDetector = DeterministicPiiResidualDetector(),
             config = config
         )
-        val result = gate.evaluate("C'est nul et horrible", Domain.CDA)
+        val result = gate.evaluate("C'est nul et horrible", Domain.CODING)
         assertEquals(2, result.results.size)
         assertTrue(result.results.none { it.checkerName == "sentiment" })
     }
@@ -91,7 +91,7 @@ class QualityGateTest {
     fun `feedback message includes failing check details`() {
         val result = sentinel.evaluate(
             "admin@talaria.school password=secret123!",
-            Domain.CDA
+            Domain.CODING
         )
         val feedback = sentinel.buildFeedback(result)
         assertTrue(feedback.contains("QUALITY_GATE"))
@@ -100,7 +100,7 @@ class QualityGateTest {
 
     @Test
     fun `feedback is empty when all checks pass`() {
-        val result = sentinel.evaluate("fun sum(a: Int, b: Int) = a + b", Domain.CDA)
+        val result = sentinel.evaluate("fun sum(a: Int, b: Int) = a + b", Domain.CODING)
         val feedback = sentinel.buildFeedback(result)
         assertEquals("", feedback)
     }

@@ -9,9 +9,9 @@ Feature: FT-PIPELINE — Fine-tuning N1 pipeline (dataset → GGUF → manifest,
 
   Scenario: Pipeline complet — dataset préparé, modèle créé, GGUF produit, expert enregistré
     Given a finetuning pipeline wired to an Ollama registry returning success
-    When the finetuning pipeline fine-tunes a request with base model "gpt-oss:120b-cloud", dataset "docs/afnor/**/*.adoc" and output model "expert-cda"
+    When the finetuning pipeline fine-tunes a request with base model "gpt-oss:120b-cloud", dataset "docs/afnor/**/*.adoc" and output model "expert-coding"
     Then the finetuning pipeline returns a success result
-    And the finetuning pipeline success result references output model "expert-cda"
+    And the finetuning pipeline success result references output model "expert-coding"
     And the finetuning pipeline success result references a non-blank GGUF path
     And the finetuning pipeline success result reports 1 iteration and a validation score of 1.0
 
@@ -24,7 +24,7 @@ Feature: FT-PIPELINE — Fine-tuning N1 pipeline (dataset → GGUF → manifest,
 
   Scenario: Fallback degraded quand Ollama registry est indisponible
     Given a finetuning pipeline wired to an Ollama registry returning a 503 failure
-    When the finetuning pipeline fine-tunes a request with base model "gemma4:31b-cloud", dataset "docs/reac/**/*.adoc" and output model "expert-fpa"
+    When the finetuning pipeline fine-tunes a request with base model "gemma4:31b-cloud", dataset "docs/reac/**/*.adoc" and output model "expert-content"
     Then the finetuning pipeline returns a failure result
     And the finetuning pipeline failure reason mentions the registry failure
     And the finetuning pipeline failure preserves the original dataset "docs/reac/**/*.adoc"

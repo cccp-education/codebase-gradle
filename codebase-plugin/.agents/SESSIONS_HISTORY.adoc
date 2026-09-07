@@ -2,6 +2,35 @@
 :toc: left
 :icons: font
 
+== Session 212 — 2026-09-07
+
+* **EPICs** : RENAME-1 (codebase, 3 pts) + réparation baseline
+* **Type** : baby-step TDD/BDD strict (RED → GREEN → REFACTOR) + publication cross-borough
+* **Livrables** :
+** Réparation baseline : graphify 0.0.2 → 0.0.3 (workaround
+   `com.cheroliv.graphify.model` purgé — `SubgraphExtractor.kt` + 7
+   fichiers test). Résidu `com.cheroliv` src/ = 0.
+** RENAME-1 : `Domain.FPA/CDA` → `CODING/CONTENT` (enum, detector
+   keywords — "fpa"/"cda" sortent, qualiopi/rncp/afnor/vae restent,
+   `opposite()` suit), CLI défaut `CODING` (`CodebasePlugin` orElse +
+   `QualityGateTask` description/warn), fixtures neutralisées
+   (VisionOpinionClassifier O1, FineTuningRequest KDoc, 10 fichiers
+   test finetuning, feature quality gate + finetuning, blog, autofocus).
+   Gate grep fpa/cda src/ = 0.
+** Bump 0.0.12 (breaking change assumé D7) : publishToMavenLocal VERT
+   + Central AUTOMATIC bundle `0fb93393` — repo1 HTTP 200, POM
+   `graphify-plugin:0.0.3` explicite, zéro `com.cheroliv`.
+** Propagation : 7 consommateurs + BOM bumpés 0.0.12 (bakery, capsule,
+   plantuml, readme, slider, planner, codex, workspace-bom) — compile
+   7/7 VERTS + BOM assemble VERT. Impact breaking = 0 (zéro import
+   `codebase.quality` chez les consommateurs).
+** Échecs préexistants documentés : 2×Z-6 Cucumber (stack size 1≠2,
+   régression S-166 popFocusNode) + 2×OcrTaskTest (drift pdf S-211
+   `4601cb0` sans maj tests) — orthogonaux au RENAME.
+* **Impact** : le nommage métier privé quitte l'API publique Apache 2.0.
+  Débloque les baby-steps RENAME des 6 autres boroughs (ordre acté :
+  document → bakery → capsule → plantuml → graphify/codex).
+
 == Session 215 (globale) — 2026-09-07
 
 * **EPICs** : CB-FPA-RAG-0 (cadrage) + OCR-QUALITY (cadrage)

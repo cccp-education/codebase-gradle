@@ -23,12 +23,12 @@ class FineTuningStateTest {
     private val request = FineTuningRequest(
         baseModel = "gpt-oss:120b-cloud",
         dataset = listOf("docs/afnor/**/*.adoc"),
-        outputModelName = "expert-cda",
+        outputModelName = "expert-coding",
     )
 
     private val success = FineTuningResult.Success(
-        outputModelName = "expert-cda",
-        ggufPath = "/tmp/expert-cda.gguf",
+        outputModelName = "expert-coding",
+        ggufPath = "/tmp/expert-coding.gguf",
         iterations = 1,
         validationScore = 0.82,
     )

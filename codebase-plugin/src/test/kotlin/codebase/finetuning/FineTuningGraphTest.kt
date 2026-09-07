@@ -22,13 +22,13 @@ class FineTuningGraphTest {
     private val request = FineTuningRequest(
         baseModel = "gpt-oss:120b-cloud",
         dataset = listOf("docs/afnor/**/*.adoc"),
-        outputModelName = "expert-cda",
+        outputModelName = "expert-coding",
         corpusRatio = 0.10,
     )
 
     private val success = FineTuningResult.Success(
-        outputModelName = "expert-cda",
-        ggufPath = "/tmp/expert-cda.gguf",
+        outputModelName = "expert-coding",
+        ggufPath = "/tmp/expert-coding.gguf",
         iterations = 1,
         validationScore = 0.82,
     )
@@ -235,7 +235,7 @@ class FineTuningGraphTest {
         graph.execute(initialState())
 
         assertThat(llm.proposePrompts).hasSize(1)
-        assertThat(llm.proposePrompts[0]).contains("expert-cda")
+        assertThat(llm.proposePrompts[0]).contains("expert-coding")
     }
 
     @Test

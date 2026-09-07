@@ -3,10 +3,10 @@ package codebase.scenarios
 import codebase.koog.MultiChannelContextGraph
 import codebase.koog.MultiChannelState
 import codebase.koog.governance.GovernanceContextLoader
-import com.cheroliv.graphify.model.GraphCommunity
-import com.cheroliv.graphify.model.GraphEdge
-import com.cheroliv.graphify.model.GraphModel
-import com.cheroliv.graphify.model.GraphNode
+import graphify.model.GraphCommunity
+import graphify.model.GraphEdge
+import graphify.model.GraphModel
+import graphify.model.GraphNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import contracts.context.ChannelBudget

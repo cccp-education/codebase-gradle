@@ -13,7 +13,7 @@ package codebase.finetuning
  * @param dataset         globs ou chemins du corpus de fine-tuning
  *        (non-empty). Ex: `["docs/afnor/**/*.adoc"]`.
  * @param outputModelName nom du modèle fine-tuné à enregistrer dans
- *        Ollama (non-blank). Ex: `expert-cda`.
+ *        Ollama (non-blank). Ex: `expert-coding`.
  * @param corpusRatio     ratio du corpus cible réinjecté en continual
  *        pre-training (0.0..1.0, défaut `0.10` — méthode ACL 2024
  *        arXiv 2311.08545, référencée `BenchmarkRunner.kt:195`).
