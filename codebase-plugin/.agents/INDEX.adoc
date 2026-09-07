@@ -3,7 +3,7 @@
 :icons: font
 
 *Date de creation* : 2026-06-16
-*Derniere mise a jour* : 2026-09-07 (session 211 — **Synchronisation gouvernance post-S-210**. PROMPT_REPRISE rafraîchi S-208 → S-211 : mission MEMPHIS-BOM-FIX "À FAIRE" périmée corrigée (EPIC terminé 5/5 S-209). État git post-S-210 consigné : version locale 0.0.11 (bump sync post-Central 0.0.10), align conventions-plugin 0.0.4, fix OCR propriété morte `ocrEngine` retirée (commit `fb19b7c`). Borough DORMANT confirmé — tous EPICs TERMINÉS/CADUQUES. Baseline S-210 : build VERT, 679 tests 0 FAIL.)
+*Derniere mise a jour* : 2026-09-07 (session 215 globale — **cadrage EPIC CB-FPA-RAG (GBL-003.4, critical path MVP0)** — ingestion RAG pgvector du corpus FPA + exposition au contexte augmenté des agents de génération SPG/SPD. Arbitrage pilote 2026-09-07 : priorité aux boroughs qui rapprochent de la génération de formation. 4 US ~5 pts, zéro code modifié — dogfooding socle `codebase.store` existant (S-199), tables pgvector inchangées. Doc `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`.)
 
 == Regles Absolues
 
@@ -102,4 +102,5 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 | EPIC CB-STORE-UNIFY | Consolidation `codebase.rag.VectorStore` JDBC legacy après migration RAG-SOCLE | N1 | ✅ CADUQUE (S-206 — audit révèle deux stores légitimes servent des domaines sémantiquement distincts : corpus documentaire codex vs code source workspace. Cadrage initial trop simpliste. Hardening ciblé `initSchema()` non-destructeur + `clean()` test-only) | 206
 | EPIC MEMPHIS-BOM-FIX | BOM MEMPHIS référence `slider` (artifactId périmé) au lieu de `slider-plugin` → slider:0.0.18 404 Central. Bug bloquant capsule. | N0/N1/N2 | ✅ TERMINÉ (5/5 US — US-1 catalogue MEMPHIS fixé S-208, US-2 CADUQUE fusionné US-5, US-3 BOM 0.0.27 Central S-024 MEMPHIS, US-4 codebase 0.0.10 Central S-209, US-5 capsule fix 917 unit 0 FAIL S-120 Detroit) | 208, 209
 | EPIC 1 | Init gouvernance agent | NX | ✅ TERMINÉ (items stale purgés session 169) | 001
+| EPIC CB-FPA-RAG | Ingestion RAG pgvector du corpus FPA + exposition contexte augmenté (GBL-003.4 critical path MVP0, arbitrage pilote 2026-09-07) — cadrage S-215 | N1 | 🟡 CADRÉ (4 US ~5 pts — dogfooding socle `codebase.store`, tables pgvector inchangées, run pointant vers office/, zéro donnée FPA dans le repo) | 215
 |===

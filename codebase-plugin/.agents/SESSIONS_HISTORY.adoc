@@ -2,6 +2,16 @@
 :toc: left
 :icons: font
 
+== Session 215 (globale) — 2026-09-07
+
+* **EPICs** : CB-FPA-RAG-0 (cadrage)
+* **Type** : cadrage (gouvernance pure, zéro code — pattern S-057)
+* **Livrables** :
+** Cadrage EPIC CB-FPA-RAG (`.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`) — ingestion RAG pgvector du corpus FPA + exposition au contexte augmenté (GBL-003.4 critical path MVP0, arbitrage pilote : priorité génération de formation)
+** 4 US ~5 pts : CB-FPA-RAG-0 audit compatibilité chunks codex ↔ IngestStatements, CB-FPA-RAG-1 run ingestion, CB-FPA-RAG-2 preuve composite, CB-FPA-RAG-3 BDD si évolution
+** Socle réutilisé : `codebase.store` (S-199), tables pgvector inchangées, zéro re-vectorisation, run pointant vers office/ (frontière licence S-070)
+* **Impact** : débloque A2 du critical path (génération SPG/SPD RAG-assistée)
+
 == Session 207 — 2026-08-25
 
 * **EPICs** : Aucun (migration gouvernance — refactor structure borough)

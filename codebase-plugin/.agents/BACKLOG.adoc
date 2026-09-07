@@ -2,6 +2,27 @@
 :sectnums:
 :date: 2026-06-16
 
+_Dernière mise à jour : 2026-09-07 (S-215 globale — cadrage EPIC CB-FPA-RAG (GBL-003.4 critical path MVP0) : ingestion RAG pgvector du corpus FPA + exposition au contexte augmenté. 4 US ~5 pts. Zéro code.)_
+
+'''
+== EPIC CB-FPA-RAG — Ingestion RAG du corpus FPA (GBL-003.4) 🟡 CADRÉ (P0)
+
+_Origine : BACKLOG.adoc racine § GBL-003 (critical path MVP0, arbitrage pilote 2026-09-07)._
+_Cadrage : `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`._
+
+|===
+| US | Description | Pts | Statut
+| CB-FPA-RAG-0 | Cadrage ingestion : compatibilité format chunks codex ↔ IngestStatements (audit sans code) | 1 | 🟡 À FAIRE
+| CB-FPA-RAG-1 | Run ingestion corpus FPA → pgvector (configuration + run) | 2 | 🟡 À FAIRE
+| CB-FPA-RAG-2 | Exposition composite : FPA requêtable via assembleCompositeContext (proof of work query métier) | 1 | 🟡 À FAIRE
+| CB-FPA-RAG-3 | BDD Cucumber si évolution pipeline ingestion (baby-step strict) | 1 | 🟡 À FAIRE
+|===
+
+*Frontière licence* : run de configuration pointant vers `office/` —
+aucune donnée FPA committée dans ce repo (Apache 2.0). *Socle réutilisé* :
+`codebase.store` (S-199), tables pgvector inchangées, zéro re-vectorisation.
+
+'''
 == EPIC V-9 — Vibecoding Gouvernance Agentique
 
 **Statut** : CADRÉ — Prêt à démarrer (7 ateliers, 35 items, ~70 pts)

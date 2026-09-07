@@ -1,41 +1,29 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 211
-:session: 211
+= Prompt de Reprise — Codebase (Queens N1) — Session 212
+:session: 212
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 210 — Maintenance état post-EPIC MEMPHIS-BOM-FIX (2026-08-27). Tous EPICs vérifiés terminés/CADUQUES, build compile, 679 tests 0 FAIL baseline préservée, zéro modification production, borough DORMANT confirmé.
-:session_pre_precedente: 209 — EPIC MEMPHIS-BOM-FIX US-4 TERMINÉ (cross-borough). codebase-plugin 0.0.9 → 0.0.10 publié Central (fix kotlin-stdlib-jdk8 version explicite, POM importe BOM 0.0.27). EPIC clôturé 5/5 US.
-:pub: codebase-plugin 0.0.10 publié Maven Central (S-209). Version locale courante : 0.0.11 (bump post-S-210, voir ci-dessous).
+:session_precedente: 211 — Synchronisation gouvernance post-S-210 (zéro code)
+:session_pre_precedente: 210 — Maintenance état post-EPIC MEMPHIS-BOM-FIX
 
-== Mission Session 211
+== Mission Session 212 — EPIC CB-FPA-RAG (GBL-003.4, critical path MVP0)
 
 [IMPORTANT]
-Borough DORMANT — tous EPICs TERMINÉS ou CADUQUES. Maintenance uniquement.
+Arbitrage pilote 2026-09-07 : priorité critical path MVP0 — les boroughs
+qui rapprochent de la génération de formation. EPIC CB-FPA-RAG cadré
+S-215 (`.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`) : ingestion RAG pgvector
+du corpus FPA + exposition au contexte augmenté des agents de génération
+SPG/SPD (Newark + Manhattan, anneau A2).
 
-=== ⚠️ État git post-S-210 à consigner (à faire en ouverture)
+*Périmètre* :
+1. CB-FPA-RAG-0 — compatibilité format chunks codex ↔ IngestStatements
+   (audit sans code)
+2. CB-FPA-RAG-1 — run ingestion corpus FPA → pgvector (configuration + run)
+3. CB-FPA-RAG-2 — preuve de bout en bout : query métier FPA retourne
+   les chunks pertinents via assembleCompositeContext
+4. CB-FPA-RAG-3 — BDD Cucumber si évolution nécessaire (baby-step strict)
 
-Des commits post-S-210 ne sont consignés dans aucun rapport de session :
-
-* `58670ad` — bump codebase-plugin 0.0.10 → **0.0.11** (sync après publication Central)
-* `ba2fa1c`/`0911bf7` — align conventions-plugin 0.0.4
-* `fb19b7c` — fix(ocr) : propriété morte `ocrEngine Provider<OcrEngine>` retirée de `CodebaseOcrExtension` (décoration Gradle impossible)
-
-Action d'ouverture : vérifier `git log --oneline -15`, confirmer que ces
-commits sont intentionnels, puis consigner un rapport de session si absent.
-
-=== Option A — Maintenance
-
-* Dette technique ciblée, code review, bumps de version.
-* Gate ciblé : jamais `./gradlew test` global (Cucumber interminable).
-
-=== Option B — Cross-borough
-
-* EPIC MEM-CAT-ROLLOUT (MEMPHIS) en cours — codebase n'est pas dans les
-  boroughs restants (ROLLOUT-6 = dashboard, readme, graphify, bureau).
-* Assister un borough (codex, planner, capsule) si demandé.
-
-=== Option C — Nouvel EPIC
-
-* Cadrer si besoin identifié (ex : extension RagVectorStore pour
-  ingestion documentaire côté socle si codex délègue davantage).
+*Socle réutilisé* : `codebase.store` (S-199), tables pgvector inchangées,
+zéro re-vectorisation. *Frontière licence* : run pointant vers `office/`,
+aucune donnée FPA dans le repo (Apache 2.0).
 
 == Contexte technique
 
@@ -57,7 +45,5 @@ commits sont intentionnels, puis consigner un rapport de session si absent.
 
 == References
 
+* `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc` (cadrage S-215)
 * `.agents/sessions/210-maintenance-etat-post-mempfix.adoc`
-* `.agents/sessions/209-memphis-bom-fix-us4.adoc`
-* `.agents/BACKLOG.adoc` (tous EPICs ✅/CADUQUE)
-* `.agents/INDEX.adoc` (dernière mise à jour session 211 — sync gouvernance)

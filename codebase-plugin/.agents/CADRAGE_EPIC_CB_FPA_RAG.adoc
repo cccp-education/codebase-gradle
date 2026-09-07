@@ -1,0 +1,62 @@
+= Cadrage EPIC CB-FPA-RAG — Ingestion RAG du corpus FPA (GBL-003.4)
+:date: 2026-09-07
+:epic: CB-FPA-RAG
+:origine: BACKLOG.adoc racine § GBL-003 + AGENTS.adoc § MVP0 Critical Path
+:methode: Cadrage (gouvernance pure, zéro code) — pattern S-057/S-063
+
+== Contexte
+
+Arbitrage pilote (2026-09-07) : priorité critical path MVP0. Le corpus
+FPA doit devenir du contexte augmenté exploitable par les agents de
+génération SPG/SPD (Newark + Manhattan, anneau A2). Codebase est le
+maillon central (GBL-003.4) : ingestion RAG pgvector du corpus + chunks
+produits par codex (GBL-003.3), et exposition au contexte augmenté.
+
+== Constats
+
+1. Le socle RAG est complet côté codebase : domaine `codebase.store`
+   (RagVectorStore migré S-199/RAG-2/3/5), `codebase.rag.VectorStore`
+   JDBC legacy, ingestion `IngestStatements`, exposition via
+   `assembleCompositeContext` (runner N3). EPIC CDX-RAG-SOCLE TERMINÉ
+   6/6 (S-201), inversion N1→N2 morte.
+2. Les tables pgvector existantes (codex_documents/codex_chunks,
+   vector(384) ONNX AllMiniLmL6V2) sont réutilisables telles quelles —
+   zéro re-vectorisation nécessaire si les chunks codex respectent le
+   format d'ingestion existant.
+3. La génération SPG/SPD (planner Manhattan, training Newark) consomme
+   le RAG via `LlmBuildService` (N1, pattern PLN-LLM-HUB S-072) et le
+   composite context (runner N3, S-011). Le canal RAG du budget
+   (`RelevanceBudget` EAGER/RAG/GRAPHIFY/DOCS) est prêt.
+4. Frontière licence (S-070) : l'ingestion est un run de configuration
+   pointant vers office/ — aucune donnée FPA n'est committée dans
+   codebase-gradle (Apache 2.0). Les embeddings dérivés restent une
+   œuvre dérivée, stockés dans la base pgvector locale/dev.
+5. Économie d'encre : si le format d'ingestion codex (chunks markdown/
+   jsonl) ne nécessite aucun code nouveau, l'EPIC est un run dogfooding
+   + un test d'exposition (query métier FPA retourne les bons chunks).
+
+== Décisions
+
+- D1 : EPIC codebase-only — ingestion/exposition, pas de production de
+  chunks (codex N2 fait le READ).
+- D2 : réutiliser `codebase.store` + IngestStatements tels quels —
+  zéro migration de schéma si le format chunk est compatible.
+- D3 : la preuve de bout en bout = un query RAG métier FPA (« qu'est-ce
+  qu'un référentiel compétences ? ») retourne les chunks pertinents.
+- D4 : zéro bump BOM, zéro publication — dogfooding only.
+- D5 : baby-step TDD/BDD si évolution nécessaire (priorité à l'existant).
+
+== User Stories (~5 pts)
+
+|===
+| US | Description | Pts
+| CB-FPA-RAG-0 | Cadrage ingestion : compatibilité format chunks codex ↔ IngestStatements (audit sans code) | 1
+| CB-FPA-RAG-1 | Run ingestion corpus FPA → pgvector (configuration + run) | 2
+| CB-FPA-RAG-2 | Exposition composite : FPA requêtable via assembleCompositeContext (proof of work query métier) | 1
+| CB-FPA-RAG-3 | BDD Cucumber si évolution du pipeline ingestion (baby-step strict) | 1
+|===
+
+== Débloque
+
+A2 du critical path : génération SPG/SPD RAG-assistée (Newark TRN-1→6 +
+Manhattan planner batch consomment le socle LLM/RAG N1).
