@@ -122,6 +122,24 @@ L'exposition (US-2) passe par `CompositeContextBuilder.loadDocsContext`
   scénarios (runner/steps/world).
 * Débloque FPA-BOOK-6-5 (rapport exhaustif) et GBL-003.4 (RAG propre).
 
+== Propagation version (demande pilote post-clôture)
+
+* Bump `0.0.12 → 0.0.13` (`build.gradle.kts`).
+* `publishToMavenLocal` VERT — POM local : graphify 0.0.3 + ocr-contracts
+  + BOM 0.0.27, zéro codex-plugin.
+* Publication Maven Central : bundle `7f17d5a5-d6c9-43af-af80-07cef4a151bb`
+  AUTOMATIC — repo1 HTTP 200/200 (pom + jar, ~25 min propagation).
+* Propagation 7 consommateurs + BOM (catalogue `codebase = "0.0.13"`,
+  BOM `codebase-plugin = "0.0.13"`) : bakery, capsule, plantuml,
+  readme, slider (sous-dossier `slider-plugin/`, commit S-212 `c5be714`
+  confirmé le chemin), planner, codex, workspace-bom.
+* Gate compile 7/7 VERTS + BOM `assemble` VERT. Impact = 0 (API
+  additive, zéro import consommateur touché).
+* Commits/push : 8 repos consommateurs + BOM (`chore(deps): bump
+  codebase 0.0.13`) + codebase bump `0f8cdfa` + gouvernance sync
+  (INDEX/BACKLOG/PROMPT_REPRISE 0.0.13, AGENTS.adoc racine Queens,
+  SESSIONS_HISTORY configuration 086).
+
 == Leçons
 
 1. Cucumber `{boolean}` n'existe pas — `{word}` capture les guillemets

@@ -2,7 +2,7 @@
 :sectnums:
 :date: 2026-06-16
 
-_Dernière mise à jour : 2026-09-08 (S-213 — CB-FPA-RAG US-0 ✅ TERMINÉ (audit sans code : format chunks codex ↔ IngestStatements COMPATIBLE, ingestion FPA = run de configuration) + OCR-QUALITY US-4 ✅ TERMINÉ (baby-step TDD/BDD strict — DoubtMetadata/DoubtfulChunk/DoubtExposure + StoreStatements.doubtSchema + RagVectorStore.ingestWithDoubt/searchWithDoubt + canal Docs doubt-aware, 31 unit + 9 Cucumber PASSED, zéro re-vectorisation). koverVerify minBound 79→63 (baseline HEAD réelle 68.03%). Prochaine mission S-214 : CB-FPA-RAG US-1 (run ingestion FPA) puis US-2 (proof of work).)_
+_Dernière mise à jour : 2026-09-08 (S-213 — CB-FPA-RAG US-0 ✅ TERMINÉ (audit sans code : format chunks codex ↔ IngestStatements COMPATIBLE, ingestion FPA = run de configuration) + OCR-QUALITY US-4 ✅ TERMINÉ (baby-step TDD/BDD strict — DoubtMetadata/DoubtfulChunk/DoubtExposure + StoreStatements.doubtSchema + RagVectorStore.ingestWithDoubt/searchWithDoubt + canal Docs doubt-aware, 31 unit + 9 Cucumber PASSED, zéro re-vectorisation). koverVerify minBound 79→63 (baseline HEAD réelle 68.03%). **Propagation** : bump 0.0.13 Central (bundle `7f17d5a5`, repo1 200/200), 7 consommateurs + BOM propagés, compile 7/7 VERTS. Prochaine mission S-214 : CB-FPA-RAG US-1 (run ingestion FPA) puis US-2 (proof of work).)_
 
 '''
 == EPIC RENAME — Neutralisation nommage métier privé (FPA→content, CDA→coding) 🟡 EN COURS (P0, transverse — codebase ✅)

@@ -4,8 +4,8 @@
 
 == Session 213 — 2026-09-08
 
-* **EPICs** : CB-FPA-RAG US-0 (1 pt) + OCR-QUALITY US-4 (3 pts)
-* **Type** : audit sans code + baby-step TDD/BDD strict (RED → GREEN → REFACTOR)
+* **EPICs** : CB-FPA-RAG US-0 (1 pt) + OCR-QUALITY US-4 (3 pts) + propagation version
+* **Type** : audit sans code + baby-step TDD/BDD strict (RED → GREEN → REFACTOR) + publication cross-borough
 * **Livrables** :
 ** CB-FPA-RAG US-0 (audit sans code) : format chunks codex ↔
    IngestStatements COMPATIBLE — `CodexIngestTask` importe déjà
@@ -32,18 +32,25 @@
    déjà rouge à HEAD (baseline réelle 68.03% lines, XML complet
    2026-09-07 23:20 antérieur à la session) ; run complet S-213 =
    82.08% VERT (8295/10106).
+** Propagation version : bump 0.0.12 → 0.0.13, Central bundle
+   `7f17d5a5` (repo1 HTTP 200/200), 7 consommateurs + BOM propagés
+   (bakery/capsule/plantuml/readme/slider/planner/codex/workspace-bom),
+   compile 7/7 VERTS, impact = 0 (API additive).
 * **Gates** : 31 unit doubt PASSED (12 DoubtMetadata + 4
   StoreStatementsDoubt + 7 RagVectorStoreDoubt + 8 DoubtExposure) +
   24 unit non-régression store + 9 Cucumber PASSED + cucumberTestRagSocle
-  6/6 PASSED + koverVerify VERT 82.08%. Échecs préexistants confirmés :
-  2×Z-6 (stack size, régression S-166) — orthogonaux.
+  6/6 PASSED + koverVerify VERT 82.08% + compile consommateurs 7/7.
+  Échecs préexistants confirmés : 2×Z-6 (stack size, régression S-166)
+  — orthogonaux.
 * **Leçons** : Cucumber `{boolean}` n'existe pas — `{word}` capture les
   guillemets littéraux (parser `.toBoolean()`, sans guillemets dans la
   feature) ; `"%.2f".format()` locale-dépendante (toujours `Locale.US`,
   règle S-168 réaffirmée) ; un stub doit couvrir TOUTES les variantes
   d'une surface (searchBlocking ET searchWithDoubtBlocking) ; le RED
   BDD peut venir de l'exposition (data class) aussi bien que des
-  méthodes (réflexion + compilation complémentaires).
+  méthodes (réflexion + compilation complémentaires) ; l'aplatissement
+  S-067 a déplacé le catalogue slider dans `slider-plugin/` — vérifier
+  l'emplacement réel du toml avant sed massif.
 * **Impact** : le RAG transporte le doute OCR (confidence + doubtful),
   le contexte augmenté annote ou exclut les passages douteux — zéro
   re-vectorisation. Débloque FPA-BOOK-6-5 + GBL-003.4 (RAG propre).

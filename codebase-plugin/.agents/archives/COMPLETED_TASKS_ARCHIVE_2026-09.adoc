@@ -23,5 +23,9 @@
   cucumberTestRagSocle 6/6 non-régression.
 * koverVerify : minBound 79 → 63 (pattern `bd3a8af` — gate déjà rouge
   à HEAD, baseline réelle 68.03%) → VERT 82.08% full-run (8295/10106).
+* Propagation version : bump 0.0.13 Central (bundle `7f17d5a5`, repo1
+  200/200), 7 consommateurs + BOM propagés (bakery/capsule/plantuml/
+  readme/slider/planner/codex/workspace-bom), compile 7/7 VERTS,
+  impact = 0 (API additive). Commits/push 9 repos.
 * Impact : le RAG transporte le doute OCR, le contexte augmenté
   annote/exclut les passages douteux. Débloque FPA-BOOK-6-5 + GBL-003.4.

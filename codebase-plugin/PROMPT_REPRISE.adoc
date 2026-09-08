@@ -35,7 +35,7 @@ bakery → capsule → plantuml → graphify/codex).
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
-* Version locale : 0.0.12 (Central : 0.0.12, bundle `0fb93393`). Conventions 0.0.4.
+* Version locale : 0.0.13 (Central : 0.0.13, bundle `7f17d5a5`, repo1 200/200). Conventions 0.0.4. 7 consommateurs + BOM propagés 0.0.13 (S-213).
 * koverVerify : minBound 63 (baseline réelle 68.03% à HEAD S-212, 82.08% full-run S-213).
 * 43 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
 * Inversion N1→N2 morte : codex consomme codebase via ocr-contracts N0.
