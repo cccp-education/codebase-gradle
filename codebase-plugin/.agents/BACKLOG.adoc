@@ -13,6 +13,7 @@ _Cadrage transverse : `.agents/CADRAGE_EPIC_RENAME.adoc` (7 boroughs)._
 |===
 | US | Description | Pts | Statut
 | RENAME-1 | `Domain.FPA/CDA` → `CODING/CONTENT` + detector keywords ("fpa"/"cda" sortent, qualiopi/rncp/afnor restent) + option CLI `-Pdomain` défaut CODING + 15 fichiers + check baseline exacte | 3 | ✅ TERMINÉ (S-212 — baby-step TDD strict, bump 0.0.12 Central bundle `0fb93393`, 7 consommateurs + BOM propagés, impact consommateur = 0, grep fpa/cda src/ = 0)
+| RENAME-10 | `CodebasePlugin.kt:176` — description tâche "training-gradle (AFNOR/REAC)" → "training-gradle (referential)" + check | 0.5 | 🟡 À FAIRE (Vague 3, cadrage `.agents/CADRAGE_EPIC_RENAME_V3.adoc`)
 |===
 
 *Gate* : ✅ check VERT + `grep -ri "fpa" src/` = zéro match (hors faux positifs ggufPa/ofPa/docdate).
