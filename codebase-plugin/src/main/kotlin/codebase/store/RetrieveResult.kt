@@ -9,6 +9,10 @@ import kotlinx.serialization.Serializable
  * (EPIC CDX-RAG-1, Brooklyn → Queens, N2 → N1). The store now owns its
  * retrieval result type — codebase no longer imports it from codex.
  *
+ * EPIC OCR-QUALITY US-4 : the doubt metadata travels with the chunk —
+ * backward compatible defaults (confident chunk) keep existing call
+ * sites and JSON payloads intact.
+ *
  * @property chunkId primary key of the matching chunk
  * @property chunkIndex position of this chunk within its source document
  * @property chunkText the chunk's full text content
@@ -16,6 +20,8 @@ import kotlinx.serialization.Serializable
  * @property headingLevel heading depth (1-6)
  * @property sourceDocument name of the source document file
  * @property similarity cosine similarity score (0.0 to 1.0)
+ * @property confidence OCR confidence of the chunk (0.0-1.0, default 1.0)
+ * @property doubtful explicit doubt flag (default false)
  */
 @Serializable
 data class RetrieveResult(
@@ -25,5 +31,7 @@ data class RetrieveResult(
     val sectionPath: String,
     val headingLevel: Int,
     val sourceDocument: String,
-    val similarity: Double
+    val similarity: Double,
+    val confidence: Double = DoubtMetadata.MAX_CONFIDENCE,
+    val doubtful: Boolean = false
 )

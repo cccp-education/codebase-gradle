@@ -1,5 +1,18 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-08-25
+:date: 2026-09-08
+
+== Session 213 — CB-FPA-RAG US-0 + OCR-QUALITY US-4 (TDD/BDD doubt metadata)
+
+* *Tests créés* :
+  - `DoubtMetadataTest` (12 unit — invariants confidence [0,1], threshold 0.5, factory `fromConfidence`, explicit flag > heuristique, Locale.US)
+  - `StoreStatementsDoubtTest` (4 unit — DDL additive IF NOT EXISTS + insertChunkWithDoubt 7 binds + pas d'interpolation)
+  - `RagVectorStoreDoubtTest` (7 unit — méthodes ingestWithDoubt/searchWithDoubtBlocking réflexion + exposition RetrieveResult confidence/doubtful backward compat)
+  - `DoubtExposureTest` (8 unit — annotate/exclude/order/empty/all-excluded)
+  - `codebase_doubt_quality.feature` 9 scénarios `@doubt-quality` + `DoubtQualityWorld`/`DoubtStubRagStore` + `DoubtQualitySteps` (préfixés "doubt", S-088) + `DoubtQualityCucumberRunner` (43e, S-082) + `CucumberTaskSpec("cucumberTestDoubtQuality")`
+* *Tests modifiés* : `StubRagStore` (RagSocleWorld) — override `searchWithDoubtBlocking` ajouté (le canal Docs bascule sur la variante doubt-aware, non-régression RagSocle 6/6 rétablie)
+* *Tests supprimés* : aucun
+* *Gate exécuté* : 31 unit doubt PASSED + 24 non-régression store (`codebase.store.*`) + 9/9 Cucumber PASSED + `cucumberTestRagSocle` 6/6 + `codebase.rag.*` VERT + koverVerify full-run VERT 82.08% (8295/10106 lines) après minBound 79 → 63 (pattern `bd3a8af` — gate était déjà rouge à HEAD : baseline réelle 68.03% lines XML complet 2026-09-07 23:20, antérieur à la session)
+* *Note prod* : `ingestWithDoubt`/`searchSimilarWithDoubt` (chemin pgvector réel) non couverts unitairement (DB-only, exercés end-to-end en BDD via stubs) — l'ingestion réelle FPA (US-1) validera le chemin live.
 
 == Session 204 — PUB-0.9 (TDD caractérisation POM publié)
 

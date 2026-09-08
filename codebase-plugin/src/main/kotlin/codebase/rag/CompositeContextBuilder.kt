@@ -4,6 +4,7 @@ import contracts.context.CompositeContext
 import contracts.context.CompositeContextConfig
 import codebase.graph.GraphifyContextProvider
 import codebase.walker.WorkspaceWalker
+import codebase.store.DoubtExposure
 import codebase.store.RagVectorStore
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -20,6 +21,9 @@ class CompositeContextBuilder(
     private val log = LoggerFactory.getLogger(CompositeContextBuilder::class.java)
     private val queryService = VectorQueryService(vectorStore, embeddingPipeline)
     private val graphifyProvider = GraphifyContextProvider(graphFile ?: workspaceRoot.resolve("office/graph.json"))
+
+    /** Excludes doubtful chunks from the Docs channel (EPIC OCR-QUALITY US-4). */
+    var excludeDoubtfulDocs: Boolean = false
 
     fun build(ragQuestion: String): CompositeContext {
         val eagerContent = collectEagerFiles()
@@ -62,12 +66,18 @@ class CompositeContextBuilder(
     private fun loadDocsContext(query: String): String {
         if (codexStore == null) return "[Doc] RagVectorStore non configure — corpus documentaire indisponible"
         return try {
-            val results = codexStore.searchBlocking(query, topK = 5)
+            val results = codexStore.searchWithDoubtBlocking(query, topK = 5)
             if (results.isEmpty()) return "[Doc] Aucun resultat dans le corpus codex"
-            results.joinToString("\n\n") { r ->
+            val lines = DoubtExposure.expose(results, excludeDoubtful = excludeDoubtfulDocs)
+            if (lines.isEmpty()) return "[Doc] Tous les resultats douteux ont ete exclus"
+            lines.joinToString("\n\n") { line ->
+                val source = results.firstOrNull { line.endsWith(it.chunkText.take(500)) }
                 buildString {
-                    appendLine("[Doc] source=${r.sourceDocument} section=${r.sectionPath} sim=${"%.3f".format(Locale.US, r.similarity)}")
-                    appendLine(r.chunkText.take(500))
+                    val meta = source?.let { r ->
+                        "[Doc] source=${r.sourceDocument} section=${r.sectionPath} sim=${"%.3f".format(Locale.US, r.similarity)}"
+                    } ?: "[Doc]"
+                    appendLine(meta)
+                    appendLine(line)
                 }
             }
         } catch (e: Exception) {

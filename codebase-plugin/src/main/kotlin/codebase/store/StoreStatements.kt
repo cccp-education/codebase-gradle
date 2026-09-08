@@ -24,6 +24,20 @@ object StoreStatements {
     )
 
     /**
+     * DDL additif des métadonnées de doute (EPIC OCR-QUALITY US-4).
+     *
+     * `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` — idempotent, ne touche
+     * ni l'embedding ni les lignes existantes (zéro re-vectorisation).
+     * Les defaults garantissent que les chunks déjà ingérés (sans doute
+     * connu) restent lus comme "confiants" : avg_confidence=1.0,
+     * confidence=1.0, doubtful=FALSE.
+     */
+    fun doubtSchema(): List<String> = listOf(
+        "ALTER TABLE codex_documents ADD COLUMN IF NOT EXISTS avg_confidence DOUBLE PRECISION NOT NULL DEFAULT 1.0",
+        "ALTER TABLE codex_chunks ADD COLUMN IF NOT EXISTS confidence DOUBLE PRECISION NOT NULL DEFAULT 1.0, ADD COLUMN IF NOT EXISTS doubtful BOOLEAN NOT NULL DEFAULT FALSE"
+    )
+
+    /**
      * INSERT du document source avec RETURNING id.
      * Binds : (1=source_document, 2=chunk_count, 3=license).
      */
@@ -36,6 +50,14 @@ object StoreStatements {
      */
     fun insertChunk(): String =
         "INSERT INTO codex_chunks (document_id, chunk_index, chunk_text, section_path, heading_level) VALUES ($1, $2, $3, $4, $5) RETURNING id"
+
+    /**
+     * INSERT d'un chunk avec métadonnées de doute (EPIC OCR-QUALITY US-4).
+     * Binds : (1=document_id, 2=chunk_index, 3=chunk_text, 4=section_path,
+     * 5=heading_level, 6=confidence, 7=doubtful).
+     */
+    fun insertChunkWithDoubt(): String =
+        "INSERT INTO codex_chunks (document_id, chunk_index, chunk_text, section_path, heading_level, confidence, doubtful) VALUES (\$1, \$2, \$3, \$4, \$5, \$6, \$7) RETURNING id"
 
     /**
      * Construit le SQL d'UPDATE de l'embedding pour un chunk.
@@ -61,6 +83,9 @@ object StoreStatements {
 
     /** Nombre de binds attendus pour [insertChunk]. */
     fun insertChunkBindCount(): Int = 5
+
+    /** Nombre de binds attendus pour [insertChunkWithDoubt]. */
+    fun insertChunkWithDoubtBindCount(): Int = 7
 
     /** Nombre de binds attendus pour [updateEmbedding] (aucun — littéraux safe). */
     fun updateEmbeddingBindCount(): Int = 0

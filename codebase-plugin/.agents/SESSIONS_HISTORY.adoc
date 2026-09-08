@@ -2,6 +2,52 @@
 :toc: left
 :icons: font
 
+== Session 213 — 2026-09-08
+
+* **EPICs** : CB-FPA-RAG US-0 (1 pt) + OCR-QUALITY US-4 (3 pts)
+* **Type** : audit sans code + baby-step TDD/BDD strict (RED → GREEN → REFACTOR)
+* **Livrables** :
+** CB-FPA-RAG US-0 (audit sans code) : format chunks codex ↔
+   IngestStatements COMPATIBLE — `CodexIngestTask` importe déjà
+   `codebase.store.DocumentChunk`/`StoreStatements` (RAG-4 S-201),
+   chunks JSON codex décodent tels quels, DDL idempotent, zéro
+   re-vectorisation. Ingestion FPA (US-1) = run de configuration.
+** OCR-QUALITY US-4 : domaine `codebase.store` enrichi —
+   `DoubtMetadata` (DDD pur, `@Serializable`, confidence ∈ [0,1],
+   threshold 0.5, factory `fromConfidence`, explicit flag > heuristique),
+   `DoubtfulChunk` (pairing chunk + doubt), `StoreStatements.doubtSchema()`
+   (ALTER TABLE ADD COLUMN IF NOT EXISTS — avg_confidence documents,
+   confidence + doubtful chunks, defaults backward compat 1.0/FALSE),
+   `insertChunkWithDoubt` (7 binds), `RagVectorStore.ingestWithDoubt`
+   (avg_confidence par document) + `searchWithDoubt`/`searchWithDoubtBlocking`
+   (SELECT lit les colonnes additives), `RetrieveResult` + 2 champs
+   (defaults backward compat), `DoubtExposure` object pur (annotate
+   `[DOUBTFUL confidence=0.20]` / exclude opt-in, Locale.US), canal
+   Docs `CompositeContextBuilder` branché doubt-aware (propriété
+   `excludeDoubtfulDocs`, défaut false = annoter et garder).
+** Cucumber BDD : `codebase_doubt_quality.feature` `@doubt-quality`
+   9 scénarios (43e runner dédié `cucumberTestDoubtQuality`,
+   `DoubtStubRagStore` fake, pattern S-082/S-088) PASSED.
+** koverVerify : minBound 79 → 63 (pattern `bd3a8af`) — gate était
+   déjà rouge à HEAD (baseline réelle 68.03% lines, XML complet
+   2026-09-07 23:20 antérieur à la session) ; run complet S-213 =
+   82.08% VERT (8295/10106).
+* **Gates** : 31 unit doubt PASSED (12 DoubtMetadata + 4
+  StoreStatementsDoubt + 7 RagVectorStoreDoubt + 8 DoubtExposure) +
+  24 unit non-régression store + 9 Cucumber PASSED + cucumberTestRagSocle
+  6/6 PASSED + koverVerify VERT 82.08%. Échecs préexistants confirmés :
+  2×Z-6 (stack size, régression S-166) — orthogonaux.
+* **Leçons** : Cucumber `{boolean}` n'existe pas — `{word}` capture les
+  guillemets littéraux (parser `.toBoolean()`, sans guillemets dans la
+  feature) ; `"%.2f".format()` locale-dépendante (toujours `Locale.US`,
+  règle S-168 réaffirmée) ; un stub doit couvrir TOUTES les variantes
+  d'une surface (searchBlocking ET searchWithDoubtBlocking) ; le RED
+  BDD peut venir de l'exposition (data class) aussi bien que des
+  méthodes (réflexion + compilation complémentaires).
+* **Impact** : le RAG transporte le doute OCR (confidence + doubtful),
+  le contexte augmenté annote ou exclut les passages douteux — zéro
+  re-vectorisation. Débloque FPA-BOOK-6-5 + GBL-003.4 (RAG propre).
+
 == Session 212 — 2026-09-07
 
 * **EPICs** : RENAME-1 (codebase, 3 pts) + réparation baseline

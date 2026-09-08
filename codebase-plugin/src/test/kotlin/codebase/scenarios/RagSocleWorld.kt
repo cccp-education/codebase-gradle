@@ -41,4 +41,8 @@ class StubRagStore(
         failure?.let { throw it }
         return results
     }
+
+    override fun searchWithDoubtBlocking(query: String, topK: Int): List<RetrieveResult> {
+        return searchBlocking(query, topK)
+    }
 }

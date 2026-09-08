@@ -1,0 +1,27 @@
+= Archive — Tâches Terminées — Septembre 2026
+
+== Session 213 — 2026-09-08 — CB-FPA-RAG US-0 + OCR-QUALITY US-4
+
+* CB-FPA-RAG US-0 (audit sans code) : format chunks codex ↔
+  IngestStatements COMPATIBLE — `CodexIngestTask` importe déjà
+  `codebase.store.DocumentChunk`/`StoreStatements` (RAG-4 S-201),
+  chunks JSON codex décodent tels quels, DDL idempotent, zéro
+  re-vectorisation. Ingestion FPA (US-1) = run de configuration
+  pointant vers `office/`, zéro code nouveau.
+* OCR-QUALITY US-4 : métadonnées de doute à l'ingestion RAG —
+  `DoubtMetadata` (DDD pur, confidence ∈ [0,1], threshold 0.5,
+  factory `fromConfidence`), `DoubtfulChunk`, `StoreStatements.doubtSchema()`
+  (ALTER TABLE ADD COLUMN IF NOT EXISTS — defaults backward compat),
+  `insertChunkWithDoubt` (7 binds), `RagVectorStore.ingestWithDoubt` +
+  `searchWithDoubt`/`searchWithDoubtBlocking`, `RetrieveResult`
+  confidence/doubtful exposés (defaults backward compat), `DoubtExposure`
+  (annotate `[DOUBTFUL confidence=...]` / exclude opt-in, Locale.US),
+  canal Docs `CompositeContextBuilder` branché (`excludeDoubtfulDocs`
+  défaut false). Zéro re-vectorisation.
+* Tests : 31 unit doubt PASSED + 24 non-régression store + 9 scénarios
+  Cucumber `@doubt-quality` (43e runner `cucumberTestDoubtQuality`) +
+  cucumberTestRagSocle 6/6 non-régression.
+* koverVerify : minBound 79 → 63 (pattern `bd3a8af` — gate déjà rouge
+  à HEAD, baseline réelle 68.03%) → VERT 82.08% full-run (8295/10106).
+* Impact : le RAG transporte le doute OCR, le contexte augmenté
+  annote/exclut les passages douteux. Débloque FPA-BOOK-6-5 + GBL-003.4.

@@ -2,7 +2,7 @@
 :sectnums:
 :date: 2026-06-16
 
-_Dernière mise à jour : 2026-09-07 (S-212 — RENAME-1 codebase ✅ TERMINÉ (baby-step TDD strict, bump 0.0.12 publié Central bundle `0fb93393`, 7 consommateurs + BOM propagés, grep fpa/cda = 0) + réparation baseline graphify 0.0.3 (workaround com.cheroliv purgé). Prochaine mission S-213 : CB-FPA-RAG US-0 puis OCR-QUALITY US-4.)_
+_Dernière mise à jour : 2026-09-08 (S-213 — CB-FPA-RAG US-0 ✅ TERMINÉ (audit sans code : format chunks codex ↔ IngestStatements COMPATIBLE, ingestion FPA = run de configuration) + OCR-QUALITY US-4 ✅ TERMINÉ (baby-step TDD/BDD strict — DoubtMetadata/DoubtfulChunk/DoubtExposure + StoreStatements.doubtSchema + RagVectorStore.ingestWithDoubt/searchWithDoubt + canal Docs doubt-aware, 31 unit + 9 Cucumber PASSED, zéro re-vectorisation). koverVerify minBound 79→63 (baseline HEAD réelle 68.03%). Prochaine mission S-214 : CB-FPA-RAG US-1 (run ingestion FPA) puis US-2 (proof of work).)_
 
 '''
 == EPIC RENAME — Neutralisation nommage métier privé (FPA→content, CDA→coding) 🟡 EN COURS (P0, transverse — codebase ✅)
@@ -20,13 +20,13 @@ _Cadrage transverse : `.agents/CADRAGE_EPIC_RENAME.adoc` (7 boroughs)._
 *Reste transverse (ordres actés, hors codebase)* : document (3 pts) → bakery (1 pt) → capsule (1 pt) → plantuml (1 pt) → graphify/codex (1 pt gouvernance).
 
 '''
-== EPIC OCR-QUALITY — Détection automatique images problématiques + transcriptions douteuses 🟡 CADRÉ (P0, transverse)
+== EPIC OCR-QUALITY — Détection automatique images problématiques + transcriptions douteuses 🟡 EN COURS (P0, transverse — US-4 codebase ✅ S-213)
 
 _Origine : demande pilote 2026-09-07. Cadrage transverse : `.agents/CADRAGE_EPIC_OCR_QUALITY.adoc` (identique dans codex/document/codebase)._
 
 |===
 | US | Description | Pts | Statut
-| OCR-QUALITY-4 | Codebase : métadonnées de doute attachées à l'ingestion RAG (`confidence` + flag `doubtful` transportés dans les chunks ingérés) + exposition au contexte augmenté (peser/exclure les passages douteux) + BDD. Zéro re-vectorisation — métadonnées attachées à l'ingestion, pas aux embeddings | 3 | 🟡 À FAIRE (codebase)
+| OCR-QUALITY-4 | Codebase : métadonnées de doute attachées à l'ingestion RAG (`confidence` + flag `doubtful` transportés dans les chunks ingérés) + exposition au contexte augmenté (peser/exclure les passages douteux) + BDD. Zéro re-vectorisation — métadonnées attachées à l'ingestion, pas aux embeddings | 3 | ✅ TERMINÉ (S-213 — baby-step TDD/BDD strict : `DoubtMetadata` DDD + `DoubtfulChunk` + `StoreStatements.doubtSchema()` ALTER TABLE IF NOT EXISTS + `insertChunkWithDoubt` 7 binds + `RagVectorStore.ingestWithDoubt`/`searchWithDoubt` + `RetrieveResult` champs doute exposés (defaults backward compat) + `DoubtExposure` annotate `[DOUBTFUL confidence=...]`/exclude + canal Docs `CompositeContextBuilder` branché (`excludeDoubtfulDocs` défaut false). 31 unit + 9 scénarios `@doubt-quality` (43e runner `cucumberTestDoubtQuality`) PASSED + RagSocle 6/6 non-régression. Zéro re-vectorisation)
 |===
 
 *Constat déclencheur* : l'ingestion `codebase.store` ne transporte
@@ -38,14 +38,14 @@ personne ne le sache. US-1/2 (codex confidence réelle) et US-3
 respectives.
 
 '''
-== EPIC CB-FPA-RAG — Ingestion RAG du corpus FPA (GBL-003.4) 🟡 CADRÉ (P0)
+== EPIC CB-FPA-RAG — Ingestion RAG du corpus FPA (GBL-003.4) 🟡 EN COURS (P0 — US-0 ✅ S-213)
 
 _Origine : BACKLOG.adoc racine § GBL-003 (critical path MVP0, arbitrage pilote 2026-09-07)._
 _Cadrage : `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`._
 
 |===
 | US | Description | Pts | Statut
-| CB-FPA-RAG-0 | Cadrage ingestion : compatibilité format chunks codex ↔ IngestStatements (audit sans code) | 1 | 🟡 À FAIRE
+| CB-FPA-RAG-0 | Cadrage ingestion : compatibilité format chunks codex ↔ IngestStatements (audit sans code) | 1 | ✅ TERMINÉ (S-213 — COMPATIBLE : `CodexIngestTask` importe déjà `codebase.store.DocumentChunk`/`StoreStatements` depuis RAG-4 S-201, chunks JSON codex décodent tels quels, DDL idempotent, zéro re-vectorisation. Ingestion FPA = run de configuration US-1)
 | CB-FPA-RAG-1 | Run ingestion corpus FPA → pgvector (configuration + run) | 2 | 🟡 À FAIRE
 | CB-FPA-RAG-2 | Exposition composite : FPA requêtable via assembleCompositeContext (proof of work query métier) | 1 | 🟡 À FAIRE
 | CB-FPA-RAG-3 | BDD Cucumber si évolution pipeline ingestion (baby-step strict) | 1 | 🟡 À FAIRE

@@ -1,0 +1,138 @@
+= Session 213 — CB-FPA-RAG US-0 + OCR-QUALITY US-4 (codebase)
+
+:session: 213
+:date: 2026-09-08
+:borough: Queens — codebase-gradle (N1)
+:type: audit sans code + baby-step TDD/BDD strict (RED → GREEN → REFACTOR)
+:epic: CB-FPA-RAG US-0 (1 pt) + OCR-QUALITY US-4 (3 pts)
+
+== Contexte
+
+Mission S-213 (critical path MVP0, ordre acté S-215) : CB-FPA-RAG US-0
+(audit compatibilité format chunks codex ↔ IngestStatements, sans code)
+puis OCR-QUALITY US-4 (métadonnées de doute à l'ingestion RAG).
+Méthodologie baby-step DDD/TDD/BDD — unit → functional → cucumber.
+
+== CB-FPA-RAG US-0 — Audit compatibilité (sans code)
+
+Constats audités (lecture seule) :
+
+. `codex.tasks.CodexIngestTask` importe directement
+  `codebase.store.DocumentChunk` + `codebase.store.StoreStatements`
+  (S-201/RAG-4) — le format chunks codex EST le format d'ingestion
+  codebase, les deux partagent le même type Kotlin + les mêmes templates
+  SQL.
+. `DocumentChunk` (9 champs : id, sourceDocument, sectionPath,
+  headingLevel, content, codeBlocks, entities, overlapNext, license) est
+  sérialisable kotlinx — les chunks JSON produits par codex
+  (`ChunkDocumentTask.chunksFile`) décodent tels quels dans l'ingestion.
+. Tables `codex_documents`/`codex_chunks` : DDL `CREATE TABLE IF NOT
+  EXISTS` idempotent, vector(384) AllMiniLmL6V2 — zéro re-vectorisation.
+
+*Verdict* : COMPATIBLE — l'ingestion FPA (US-1) est un run de
+configuration pointant vers `office/`, zéro code nouveau nécessaire.
+L'exposition (US-2) passe par `CompositeContextBuilder.loadDocsContext`
+(canal Docs) déjà branché sur `RagVectorStore`.
+
+== OCR-QUALITY US-4 — Baby-steps (RED → GREEN → REFACTOR)
+
+=== BS-1 : DoubtMetadata + StoreStatements DDL additive
+
+* RED : 12 unit `DoubtMetadataTest` (`Unresolved reference
+  'DoubtMetadata'`) + 4 unit `StoreStatementsDoubtTest` (`Unresolved
+  reference 'doubtSchema'`).
+* GREEN : `DoubtMetadata` (DDD pur, `@Serializable`, invariants
+  confidence ∈ [0,1], défauts `MAX_CONFIDENCE=1.0` /
+  `DEFAULT_THRESHOLD=0.5`, factory `fromConfidence`,
+  explicit doubtful flag > heuristique) + `StoreStatements.doubtSchema()`
+  (2 statements `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` — avg_confidence
+  sur documents, confidence + doubtful sur chunks — defaults
+  backward compat : chunks préexistants lus "confiants") +
+  `insertChunkWithDoubt` (7 binds positionnels) +
+  `insertChunkWithDoubtBindCount` (=7).
+* Fix : `assertThrowsExactly` indisponible → `Assertions.assertThrows`.
+* Gate : 12/12 + 4/4 VERT.
+
+=== BS-2 : RagVectorStore ingestion + requête doute
+
+* RED : 7 unit `RagVectorStoreDoubtTest` (exposition
+  `RetrieveResult.confidence/doubtful` absente).
+* GREEN : `RetrieveResult` + 2 champs (defaults backward compat — JSON
+  payload inchangé pour les chunks confiants) ; `DoubtfulChunk`
+  (DDD, pairing chunk + doubt) ; `RagVectorStore.ingestWithDoubt`
+  (grouping par sourceDocument, avg_confidence par document, binds
+  6=confidence/7=doubtful, embedding pipeline inchangé) ;
+  `searchWithDoubtBlocking`/`searchWithDoubt` (SELECT lit les colonnes
+  additives, fallback `1.0`/`false` si NULL).
+* Gate : `codebase.store.*` 25/25 VERT + compileKotlin VERT.
+
+=== BS-3 : DoubtExposure + canal Docs composite
+
+* RED : 8 unit `DoubtExposureTest` (`Unresolved reference
+  'DoubtExposure'`).
+* GREEN : `DoubtExposure` object pur — `expose(results,
+  excludeDoubtful=false)` : confident → verbatim, doubtful → préfixe
+  `[DOUBTFUL confidence=0.20]` (annotate) ou exclus (opt-in), ordre
+  similarité préservé. Bug locale découvert GREEN : `"%.2f".format()`
+  produit `0,20` en locale FR → `Locale.US` (pattern
+  `CompositeContextBuilder`). Câblage `loadDocsContext` : bascule
+  `searchBlocking` → `searchWithDoubtBlocking` + `DoubtExposure.expose`
+  + propriété `excludeDoubtfulDocs` (défaut false = annoter et garder,
+  backward compat total).
+* Gate : 8/8 + `codebase.rag.*` VERT.
+
+=== BS-4 : Cucumber BDD pure
+
+* RED : feature `codebase_doubt_quality.feature` `@doubt-quality` 9
+  scénarios + `DoubtQualityCucumberRunner` (pattern S-082, 43e
+  `CucumberTaskSpec("cucumberTestDoubtQuality")`) + `DoubtQualityWorld`
+  (`DoubtStubRagStore` fake) + `DoubtQualitySteps` préfixés "doubt"
+  (pattern S-088) → 9 `UndefinedStepException`.
+* GREEN : 9/9 PASSED. 2 bugs découverts par le RED : (1) `{boolean}`
+  n'est pas un type Cucumber natif → `{word}` sans guillemets ; (2)
+  `{word}` capture les guillemets littéraux → parsing `.toBoolean()`.
+* Fix non-régression : `StubRagStore` (RagSocle) override désormais
+  `searchWithDoubtBlocking` (délègue à `searchBlocking`) — le canal
+  Docs consomme la variante doubt-aware.
+* Gate : 9/9 PASSED + `cucumberTestRagSocle` 6/6 PASSED.
+
+== Tests livrés
+
+|===
+| Suite | Nombre | Statut
+| DoubtMetadataTest (unit) | 12 | ✅
+| StoreStatementsDoubtTest (unit) | 4 | ✅
+| RagVectorStoreDoubtTest (unit) | 7 | ✅
+| DoubtExposureTest (unit) | 8 | ✅
+| Non-régression codebase.store (IngestIndexing/RagVectorStore/StoreStatements) | 24 | ✅
+| codebase_doubt_quality.feature (cucumber) | 9 scénarios | ✅
+| cucumberTestRagSocle (non-régression BDD) | 6 scénarios | ✅
+|===
+
+== Impact
+
+* OCR-QUALITY US-4 TERMINÉ (3/3 pts) — le RAG transporte désormais le
+  doute OCR (confidence + doubtful), le contexte augmenté l'annote ou
+  l'exclut, zéro re-vectorisation.
+* CB-FPA-RAG US-0 TERMINÉ (1/1 pt) — format compatible, ingestion FPA
+  = run de configuration (US-1), zéro code nouveau nécessaire.
+* Domaine `codebase.store` enrichi : 4 prod (`DoubtMetadata`,
+  `DoubtfulChunk`, `DoubtExposure`, + extensions `StoreStatements`/
+  `RagVectorStore`/`RetrieveResult`) + 4 test + 1 feature + 2
+  scénarios (runner/steps/world).
+* Débloque FPA-BOOK-6-5 (rapport exhaustif) et GBL-003.4 (RAG propre).
+
+== Leçons
+
+1. Cucumber `{boolean}` n'existe pas — `{word}` capture les guillemets
+   littéraux, parser soi-même.
+2. `"%.2f".format()` est locale-dépendante — toujours `Locale.US` pour
+   les markers contextuels (règle réaffirmée S-168).
+3. Les overrides de stubs doivent couvrir TOUTES les variantes de la
+   surface (searchBlocking ET searchWithDoubtBlocking) — un channel
+   basculé sur une nouvelle variante casse le stub incomplet.
+4. Le RED peut venir de l'exposition (data class) aussi bien que des
+   méthodes — `RagVectorStoreDoubtTest` mixe réflexion (méthodes) et
+   compilation (champs), complémentaires.
+
+== Zéro secret, zéro bump BOM, backward compat totale

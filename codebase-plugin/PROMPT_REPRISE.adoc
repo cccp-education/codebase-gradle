@@ -1,26 +1,30 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 213
-:session: 213
+= Prompt de Reprise — Codebase (Queens N1) — Session 214
+:session: 214
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 212 — EPIC RENAME-1 TERMINÉ (baby-step TDD, bump 0.0.12 publié Central, 7 consommateurs propagés) + réparation baseline graphify 0.0.3
-:session_pre_precedente: 215 (globale) — 3 cadrages gouvernance pure (RENAME + CB-FPA-RAG + OCR-QUALITY), zéro code
+:session_precedente: 213 — CB-FPA-RAG US-0 TERMINÉ (audit : format chunks codex COMPATIBLE, ingestion FPA = run) + OCR-QUALITY US-4 TERMINÉ (baby-step TDD/BDD — DoubtMetadata/DoubtExposure/ingestWithDoubt/searchWithDoubt, 31 unit + 9 Cucumber PASSED, zéro re-vectorisation, koverVerify minBound 79→63 VERT 82.08%)
+:session_pre_precedente: 212 — EPIC RENAME-1 TERMINÉ (bump 0.0.12 Central `0fb93393`, 7 consommateurs propagés) + réparation baseline graphify 0.0.3
 
-== Mission Session 213 — Critical path (suite ordre acté)
+== Mission Session 214 — Critical path (suite ordre acté)
 
 [IMPORTANT]
-Arbitrage pilote 2026-09-07 : priorité critical path MVP0. RENAME-1
-est terminé (S-212). Deux EPICs restent, dans l'ordre :
+Arbitrage pilote 2026-09-07 : priorité critical path MVP0. OCR-QUALITY
+US-4 est terminé (S-213). CB-FPA-RAG reste, dans l'ordre :
 
-*2. CB-FPA-RAG (4 US ~5 pts, `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`)* —
-ingestion RAG pgvector du corpus (ex-FPA) + exposition contexte augmenté.
-Socle réutilisé : `codebase.store` (S-199), tables pgvector inchangées.
-US-0 d'abord : audit compatibilité format chunks codex ↔ IngestStatements
-(sans code). US-1 run ingestion pointant vers office/ (zéro donnée
-métier committée). US-2 proof of work : query métier retourne les bons
-chunks. US-3 Cucumber si évolution pipeline.
+*1. CB-FPA-RAG US-1 (2 pts, `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`)* —
+Run ingestion corpus FPA → pgvector : configuration pointant vers
+`office/` (zéro donnée métier committée). Format chunks COMPATIBLE
+confirmé US-0 S-213. Utiliser le pipeline existant : chunks codex
+(`ChunkDocumentTask`) → `CodexIngestTask` (qui importe
+`codebase.store.*`). Si chunks douteux : `RagVectorStore.ingestWithDoubt`
+nouveau S-213.
 
-*3. OCR-QUALITY US-4 (3 pts, `.agents/CADRAGE_EPIC_OCR_QUALITY.adoc`)* —
-métadonnées de doute à l'ingestion RAG (confidence + doubtful). Baby-step
-TDD/BDD strict.
+*2. CB-FPA-RAG US-2 (1 pt)* — Proof of work : query métier («
+qu'est-ce qu'un référentiel compétences ? ») retourne les bons chunks
+via `CompositeContextBuilder.loadDocsContext` (canal Docs, déjà branché
+doubt-aware S-213).
+
+*3. CB-FPA-RAG US-3 (1 pt)* — Cucumber si évolution pipeline ingestion
+(baby-step strict, sinon CADUQUE — économie d'encre).
 
 *Règle transverse* : FPA/CDA sont des métiers privés (fond de commerce)
 — plus jamais dans le nommage public (content/coding les remplacent).
@@ -32,8 +36,8 @@ bakery → capsule → plantuml → graphify/codex).
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
 * Version locale : 0.0.12 (Central : 0.0.12, bundle `0fb93393`). Conventions 0.0.4.
-* Baseline réparée : graphify 0.0.3 (workaround `com.cheroliv.graphify.model` purgé).
-* 41 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
+* koverVerify : minBound 63 (baseline réelle 68.03% à HEAD S-212, 82.08% full-run S-213).
+* 43 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
 * Inversion N1→N2 morte : codex consomme codebase via ocr-contracts N0.
 * Session concurrente possible : vérifier `git status`, mtimes récents,
   absence d'autre session active AVANT d'éditer.
@@ -43,7 +47,8 @@ bakery → capsule → plantuml → graphify/codex).
 
 * 2 × Z-6 Cucumber `epic_z_6_autofocus_feedback` ("Autofocus stack size
   should be at least 2 but was 1") — régression S-166 (`popFocusNode`
-  après replan). Test unitaire ne couvre que non-empty.
+  après replan). Test unitaire ne couvre que non-empty. Confirmés
+  présents S-213.
 * 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`,
   `isImageFile false for pdf`) — drift S-211 (`4601cb0` a ajouté pdf
   aux IMAGE_EXTENSIONS sans maj tests).
@@ -59,5 +64,5 @@ bakery → capsule → plantuml → graphify/codex).
 == References
 
 * `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc` (cadrage S-215)
-* `.agents/CADRAGE_EPIC_OCR_QUALITY.adoc` (cadrage S-215)
-* `.agents/sessions/212-rename-baby-step-1.adoc` (rapport S-212)
+* `.agents/CADRAGE_EPIC_OCR_QUALITY.adoc` (cadrage S-215 — US-4 ✅ S-213)
+* `.agents/sessions/213-cb-fpa-rag-us0-ocr-quality-us4.adoc` (rapport S-213)
