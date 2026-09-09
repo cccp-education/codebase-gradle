@@ -1,5 +1,29 @@
 = Archive — Tâches Terminées — Septembre 2026
 
+== Session 214 — 2026-09-09 — CB-FPA-RAG US-1/2/3 TERMINÉ (EPIC CLOS 4/4)
+
+* CB-FPA-RAG US-1 : run ingestion corpus FPA → pgvector —
+  `DoubtPolicy` (dérivation doubt marqueurs `[ILLISIBLE]`, 6 unit) +
+  `CorpusChunksLoader` (chunks.json → DocumentChunk, 2 unit) +
+  `CorpusIngestMain` (load → mark → ingestWithDoubt existant). Run
+  réel : 387 chunks ingérés, 387 embeddings ONNX, 18 doubtful,
+  avg_confidence 0.953 (docker angry_curran 32772/db codex,
+  consommateur transitoire /tmp pattern Règle 2).
+* Bug P0 `updateEmbedding` corrigé : double bracket `[[...]]` →
+  UPDATE silencieusement perdu (R2DBC avale l'erreur SQL). Fix
+  `trim('[',']')` + 1 test. Découvert par le run réel — aucun test
+  stub ne pouvait le voir.
+* CB-FPA-RAG US-2 : proof of work — query « référentiel
+  compétences » → 5 chunks pertinents (sim 0.55-0.64), doute
+  circulant (`doubtful=true confidence=0.00` visible).
+* CB-FPA-RAG US-3 : BDD `@corpus-ingest` 4/4 (44e runner
+  `cucumberTestCorpusIngest`).
+* Propagation : bump 0.0.14 Central (bundle `3e82490d`), BOM 0.0.37
+  Central (bundle `43c8a1ca`), 7 consommateurs + BOM propagés,
+  compile 7/7 VERTS.
+* GBL-003.4 DÉBLOQUÉ : le corpus FPA est requêtable pour la
+  génération SPG (Newark A2).
+
 == Session 213 — 2026-09-08 — CB-FPA-RAG US-0 + OCR-QUALITY US-4
 
 * CB-FPA-RAG US-0 (audit sans code) : format chunks codex ↔

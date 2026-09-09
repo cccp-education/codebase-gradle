@@ -71,6 +71,16 @@ class StoreStatementsTest {
     }
 
     @Test
+    fun `updateEmbedding strips brackets from bracketed vector literals (CB-FPA-RAG US-1 bug)`() {
+        val sql = StoreStatements.updateEmbedding("[0.1,0.2,0.3]", 42L)
+        assertTrue(
+            sql.contains("'[0.1,0.2,0.3]'::vector"),
+            "updateEmbedding must produce a single bracket pair, was: $sql"
+        )
+        assertFalse(sql.contains("[["), "Double bracket breaks the pgvector cast: $sql")
+    }
+
+    @Test
     fun `insertDocument bind count is 3`() {
         assertEquals(3, StoreStatements.insertDocumentBindCount())
     }

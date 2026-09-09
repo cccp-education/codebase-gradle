@@ -1,5 +1,18 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-09-08
+:date: 2026-09-09
+
+== Session 214 — CB-FPA-RAG US-1/2/3 (TDD ingestion + BDD corpus + bug updateEmbedding)
+
+* *Tests créés* :
+  - `DoubtPolicyTest` (6 unit — ILLISIBLE content/sectionPath/overlapNext → doubtful 0.0, clean → defaults, `mark` mapping complet, constante marqueur stable)
+  - `CorpusChunksLoaderTest` (2 unit — chunks.json → DocumentChunk typé + end-to-end DoubtPolicy.mark)
+  - `StoreStatementsTest` +1 test — `updateEmbedding strips brackets from bracketed vector literals` (bug P0 S-214 : double bracket `[[...]]` → UPDATE silencieusement perdu, fix `trim('[',']')`)
+  - `codebase_corpus_ingest.feature` 4 scénarios `@corpus-ingest` (loader typed, DoubtPolicy flags, contrat ingestion fake store 1 doc/4 chunks/2 doubtful, Docs channel metadata doute) + `CorpusIngestWorld`/`CorpusFileBuilder`/`CorpusFakeRagStore`/`CorpusStubRagStore` + `CorpusIngestSteps` (préfixés "corpus", S-088) + `CorpusIngestCucumberRunner` (44e, S-082) + `CucumberTaskSpec("cucumberTestCorpusIngest")`
+* *Tests modifiés* : `codebase_corpus_ingest.feature` scénario ingestion — attente corrigée 2 documents → 1 document (les 4 chunks du builder partagent `sourceDocument="book"`, l'ingestion groupe par document — bug de la feature, pas du domaine)
+* *Tests supprimés* : aucun
+* *Gate exécuté* : store 63 unit 0 FAIL (CorpusChunksLoader 2 + DoubtPolicy 6 + DoubtExposure 8 + DoubtMetadata 12 + StoreStatementsDoubt 4 + StoreStatements 9 + RagVectorStoreDoubt 6 + RagVectorStore 10 + IngestIndexing 6) + 3 cucumber dédiés VERTS (corpus-ingest 4/4 44 steps + doubt-quality 9/9 98 steps + rag-socle 6/6 64 steps, 0 failed JSON) + `test` global VERT 23m35s + compile 7/7 consommateurs VERTS
+* *Gate NON validée* : koverVerify (dépend `cucumberTest` global — bloqué par les 2 échecs Z-6 préexistants, régression S-166, orthogonal)
+* *Note prod* : chemin ingestion réel (pgvector live) exercé end-to-end par le run réel S-214 (387 embeddings persistés après fix) — la promesse S-213 « l'ingestion réelle US-1 validera le chemin live » est tenue : le run a découvert le bug updateEmbedding qu'aucun test stub ne pouvait voir.
 
 == Session 213 — CB-FPA-RAG US-0 + OCR-QUALITY US-4 (TDD/BDD doubt metadata)
 

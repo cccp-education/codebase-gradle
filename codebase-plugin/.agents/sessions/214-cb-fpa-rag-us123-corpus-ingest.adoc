@@ -1,0 +1,128 @@
+= Session 214 — CB-FPA-RAG US-1/2/3 TERMINÉ + bug updateEmbedding + propagation 0.0.14
+
+== Contexte
+
+Session critical path MVP0 (GBL-003.4) : ingestion du corpus FPA
+(chunks codex S-216) dans le RAG pgvector codebase N1 + proof of work
+query métier + BDD Cucumber. Prérequis US-0 validé S-213 (format
+chunks codex ↔ IngestStatements COMPATIBLE). 19 mentions `[ILLISIBLE]`
+dans le corpus (2 en overlap/contexte par chunk → 17-18 chunks
+douteux détectés au policy scan).
+
+== Actions (baby-step DDD/TDD/BDD strict, 1 fichier à la fois)
+
+=== US-1 — Run ingestion corpus FPA (2 pts) ✅
+
+. *DoubtPolicy* (domaine `codebase.store`, object pur) — dérivation
+  doubt depuis marqueurs OCR `[ILLISIBLE]` (content/sectionPath/
+  overlapNext) : chunk douteux → confidence 0.0 + doubtful=true,
+  chunk propre → defaults (1.0/false). TDD strict RED (6 Unresolved
+  reference) → GREEN 6/6 PASSED.
+. *CorpusChunksLoader* (object pur) — chargement chunks.json codex →
+  `List<DocumentChunk>` (kotlinx.serialization, ignoreUnknownKeys).
+  TDD RED → GREEN 2/2 PASSED (loader + end-to-end DoubtPolicy.mark).
+. *CorpusIngestMain* (orchestration run) — load → DoubtPolicy.mark →
+  `RagVectorStore.ingestWithDoubt` (existant S-213, zéro code
+  d'ingestion nouveau — économie d'encre). Env vars
+  `CORPUS_CHUNKS_FILE` + `PGVECTOR_*` (pattern env vars du projet).
+. *Run réel* : consommateur transitoire /tmp/opencode/fpa-rag-build +
+  init-script gradle classpath mavenLocal 0.0.13 (pattern codex
+  fpa-corpus S-216). Base pgvector `codex` créée (docker angry_curran
+  port 32772, extension vector). **387 chunks ingérés, 387 embeddings
+  ONNX AllMiniLmL6V2 persistés, 1 document `book` (licence
+  PROPRIETARY), 18 doubtful flagués, avg_confidence 0.953.**
+
+=== Bug updateEmbedding découvert et corrigé (P0)
+
+Le 1er run a persisté 387 chunks mais **0 embedding** silencieusement.
+Root cause : `computeEmbedding` retourne le vecteur **avec brackets**
+(`joinToString(",", "[", "]")`) et `StoreStatements.updateEmbedding`
+re-encapsule `'[$vec]'` → littéral `'[[-0.016...]]'` → cast pgvector
+échoue, erreur avalée silencieusement par R2DBC (Result jamais
+inspecting). Fix baby-step TDD : `updateEmbedding` strip les brackets
+(`trim('[', ']')`) — contract documenté KDoc, +1 test RED → GREEN
+(9/9 StoreStatementsTest). La migration verbatim S-199 a hérité du
+bug (codex computeEmbedding retournait les nombres sans brackets ;
+search binding `$1` exige les brackets, update inline ne doit en
+porter qu'une paire).
+
+=== US-2 — Proof of work query métier (1 pt) ✅
+
+Tâche `corpusQuery` (init-script, pattern même build) :
+`searchWithDoubtBlocking("qu'est-ce qu'un référentiel compétences ?",
+topK=5)` retourne 5 chunks pertinents du corpus FPA (sim 0.55-0.64) :
+synthèse échelles d'évaluations RC, référentiels des métiers de la
+formation, évolution des REAC. Query « formation professionnelle
+adulte » : sim 0.683 en tête, chunks douteux visibles avec
+`doubtful=true confidence=0.00` (ex : courbe d'Ebbinghaus dérivée
+d'une page `[ILLISIBLE]`) — le doute circule de bout en bout vers le
+canal Docs (DoubtExposure annotate/exclude S-213).
+
+=== US-3 — BDD Cucumber (1 pt) ✅
+
+`codebase_corpus_ingest.feature` `@corpus-ingest` 4 scénarios (loader
+typed chunks, DoubtPolicy flags clean/doubtful, contrat ingestion
+fake store 1 document/4 chunks/2 doubtful, Docs channel expose
+metadata doute) + `CorpusIngestWorld`/`CorpusFileBuilder`/`CorpusFakeRagStore`
+/`CorpusStubRagStore` + `CorpusIngestSteps` (préfixés S-088) +
+`CorpusIngestCucumberRunner` (44e `CucumberTaskSpec("cucumberTestCorpusIngest")`,
+pattern S-082). BDD GREEN 4/4 PASSED (44 steps).
+
+=== Bump + publications + propagation
+
+. Bump 0.0.13 → 0.0.14 (`build.gradle.kts`).
+. `publishToMavenLocal` VERT ×3 (DoubtPolicy fix, 0.0.14).
+. Central : bundle `3e82490d-46ee-4875-9509-8488e274877f` — 1er upload
+  en conflit avec déploiement concurrent (`cea5aa33`), second upload
+  validé après résolution. repo1 HTTP 200.
+. POM Central vérifié : importe BOM 0.0.27, kotlin-stdlib-jdk8 2.4.10.
+. Propagation : 7 consommateurs + BOM `codebase = "0.0.14"`
+  (bakery/capsule/plantuml/readme/slider/planner/codex + workspace-bom).
+. BOM bump 0.0.36 → 0.0.37, Central bundle `43c8a1ca` (repo1 200),
+  contrainte `codebase-plugin:0.0.14` vérifiée dans le POM Central.
+. 4 consommateurs BOM propagés (bakery/codex hardcode 0.0.37,
+  capsule/plantuml via catalogue).
+. compile 7/7 VERTS (bakery 21s, capsule 15s, plantuml 18s,
+  readme 16s, slider 14s, planner 13s, codex 14s) + re-compile 4/7
+  après bump BOM VERTS.
+
+== Gates
+
+* Domaine `codebase.store` : 63 unit 0 FAIL (CorpusChunksLoader 2 +
+  DoubtPolicy 6 + DoubtExposure 8 + DoubtMetadata 12 +
+  StoreStatementsDoubt 4 + StoreStatements 9 + RagVectorStoreDoubt 6 +
+  RagVectorStore 10 + IngestIndexing 6).
+* Cucumber dédiés VERTS : corpus-ingest 4/4 + doubt-quality 9/9 +
+  rag-socle 6/6 (0 failed dans les reports JSON).
+* `test` global VERT (23m35s, échecs préexistants Z-6 Cucumber
+  exclus du task `test` via excludeTags S-168).
+* `publishToMavenLocal` VERT ×3. `compileKotlin` VERT.
+* koverVerify : bloqué par cucumberTest global — échec Z-6
+  préexistant documenté (orthogonal, régression S-166). Gate non
+  validée cette session (dépendance cucumberTest global).
+
+== Leçons
+
+1. *Bug migration verbatim* : RAG-1 S-199 a copié `computeEmbedding`
+   (brackets) + `updateEmbedding` (re-encapsulation) — le test
+   characterization `computeEmbedding` valide le format `[...]` mais
+   aucun test ne valait la jointure compute→update (l'UPDATE échouait
+   silencieusement en R2DBC). Lien : toujours tester le SQL généré
+   par la chaîne complète, pas chaque maillon isolé.
+2. R2DBC avale les erreurs SQL d'UPDATE sans résultat consommé
+   explicitement — silencieux mais réel. Les embeddings 0/387 en
+   base étaient le seul signal.
+3. Un deployment Central en cours bloque le même coordinate
+   (`currently being published in another deployment`) — attendre la
+   validation avant re-upload.
+
+== Prochaine session (215)
+
+* CB-FPA-RAG EPIC TERMINÉ 4/4 US (US-0 S-213 + US-1/2/3 S-214) —
+  GBL-003.4 débloqué : le corpus FPA est requêtable.
+* Suite critical path : Newark (training TRN-1→2) peut consommer le
+  RAG FPA (composite context canal Docs) pour la génération SPG.
+* Z-6 Cucumber (2 échecs préexistants) : fix candidat prochaine
+  session Queens ou Detroit (régression S-166, `popFocusNode`).
+* POM Central 0.0.14 : la contrainte doubt (`avg_confidence`,
+  `confidence`, `doubtful`) reste additive — impact consommateurs 0.

@@ -2,6 +2,45 @@
 :toc: left
 :icons: font
 
+== Session 214 — 2026-09-09
+
+* **EPICs** : CB-FPA-RAG US-1 (2 pts) + US-2 (1 pt) + US-3 (1 pt) — EPIC TERMINÉ 4/4
+* **Type** : baby-step TDD/BDD strict + run réel ingestion + bug P0 + propagation version
+* **Livrables** :
+** `DoubtPolicy` (domaine `codebase.store`, object pur) : dérivation
+   doubt depuis marqueurs OCR `[ILLISIBLE]` (content/sectionPath/
+   overlapNext) — douteux → confidence 0.0, propre → defaults. 6 unit.
+** `CorpusChunksLoader` : chunks.json codex → `List<DocumentChunk>`
+   (kotlinx.serialization). 2 unit (loader + end-to-end mark).
+** `CorpusIngestMain` : orchestration run load → mark →
+   `RagVectorStore.ingestWithDoubt` (existant S-213, zéro code
+   d'ingestion nouveau).
+** Run réel : 387 chunks FPA ingérés pgvector (docker angry_curran
+   port 32772, db `codex`), 387 embeddings ONNX, 18 doubtful,
+   avg_confidence 0.953, 1 document `book` PROPRIETARY.
+** Bug P0 `updateEmbedding` corrigé : double bracket `[[...]]`
+   (computeEmbedding retourne `[...]` + re-encapsulation) → UPDATE
+   silencieusement perdu (R2DBC avale l'erreur). Fix `trim('[',']')`
+   + 1 test (9/9 StoreStatementsTest).
+** US-2 proof of work : query « qu'est-ce qu'un référentiel
+   compétences ? » → 5 chunks pertinents (sim 0.55-0.64) ; chunks
+   douteux visibles `doubtful=true confidence=0.00`.
+** US-3 BDD : `codebase_corpus_ingest.feature` `@corpus-ingest` 4/4
+   (44e runner `cucumberTestCorpusIngest`, CorpusIngestWorld/
+   CorpusFileBuilder/CorpusFakeRagStore/CorpusStubRagStore, pattern
+   S-082/S-088).
+** Propagation : bump 0.0.14 Central (bundle `3e82490d`), BOM 0.0.37
+   Central (bundle `43c8a1ca`), 7 consommateurs + BOM propagés,
+   compile 7/7 VERTS.
+* **Gates** : store 63 unit 0 FAIL + 3 cucumber dédiés VERTS
+  (corpus-ingest 4/4 + doubt-quality 9/9 + rag-socle 6/6) + `test`
+  global VERT 23m35s. koverVerify bloqué Z-6 préexistant (2 échecs
+  régression S-166 — orthogonal).
+* **Leçons** : migration verbatim RAG-1 S-199 a copié le bug
+  compute/update (aucun test ne valait la jointure) — tester le SQL
+  de la chaîne complète, pas chaque maillon isolé.
+* **Prochaine** : fix Z-6 + RENAME vague document (ordre acté).
+
 == Session 213 — 2026-09-08
 
 * **EPICs** : CB-FPA-RAG US-0 (1 pt) + OCR-QUALITY US-4 (3 pts) + propagation version

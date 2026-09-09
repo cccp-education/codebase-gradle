@@ -71,12 +71,15 @@ object StoreStatements {
      * par `AllMiniLmL6V2EmbeddingModel` (ONNX, nombres sûrs), le chunkId
      * est un Long généré par PostgreSQL (`RETURNING id`).
      *
-     * @param vectorLiteral le littéral vectoriel safe (nombres joinus par `,`)
+     * @param vectorLiteral le littéral vectoriel safe — nombres joinus par
+     *        `,` avec ou sans brackets `[...]` (les brackets sont retirés :
+     *        `computeEmbedding` les inclut pour le binding `$1` du SELECT,
+     *        le SQL inline ne doit en porter qu'une seule paire)
      * @param chunkId l'id du chunk (Long généré par PostgreSQL, safe)
      * @return le SQL d'UPDATE de l'embedding
      */
     fun updateEmbedding(vectorLiteral: String, chunkId: Long): String =
-        "UPDATE codex_chunks SET embedding = '[$vectorLiteral]'::vector WHERE id = $chunkId"
+        "UPDATE codex_chunks SET embedding = '[${vectorLiteral.trim('[', ']')}]'::vector WHERE id = $chunkId"
 
     /** Nombre de binds attendus pour [insertDocument]. */
     fun insertDocumentBindCount(): Int = 3

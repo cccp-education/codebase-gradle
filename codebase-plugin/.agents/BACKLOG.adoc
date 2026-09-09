@@ -2,7 +2,7 @@
 :sectnums:
 :date: 2026-06-16
 
-_Dernière mise à jour : 2026-09-08 (S-213 — CB-FPA-RAG US-0 ✅ TERMINÉ (audit sans code : format chunks codex ↔ IngestStatements COMPATIBLE, ingestion FPA = run de configuration) + OCR-QUALITY US-4 ✅ TERMINÉ (baby-step TDD/BDD strict — DoubtMetadata/DoubtfulChunk/DoubtExposure + StoreStatements.doubtSchema + RagVectorStore.ingestWithDoubt/searchWithDoubt + canal Docs doubt-aware, 31 unit + 9 Cucumber PASSED, zéro re-vectorisation). koverVerify minBound 79→63 (baseline HEAD réelle 68.03%). **Propagation** : bump 0.0.13 Central (bundle `7f17d5a5`, repo1 200/200), 7 consommateurs + BOM propagés, compile 7/7 VERTS. Prochaine mission S-214 : CB-FPA-RAG US-1 (run ingestion FPA) puis US-2 (proof of work).)_
+_Dernière mise à jour : 2026-09-09 (S-214 — **EPIC CB-FPA-RAG TERMINÉ 4/4 US** : US-1 run ingestion corpus FPA → pgvector (DoubtPolicy + CorpusChunksLoader + CorpusIngestMain, 8 unit TDD) + run réel 387 chunks / 387 embeddings / 18 doubtful / avg 0.953 + **bug P0 updateEmbedding corrigé** (double bracket `[[...]]` → UPDATE perdu silencieusement R2DBC, fix trim + 1 test) + US-2 proof of work (query « référentiel compétences » → 5 chunks pertinents sim 0.55-0.64, doute circulant) + US-3 BDD `@corpus-ingest` 4/4 (44e runner). **Propagation** : bump 0.0.14 Central (bundle `3e82490d`), BOM 0.0.37 (bundle `43c8a1ca`), 7 consommateurs compile 7/7 VERTS. **GBL-003.4 DÉBLOQUÉ** — le corpus FPA est requêtable. Prochaine S-215 : fix Z-6 (2 échecs préexistants, régression S-166) + RENAME vague document.)_
 
 '''
 == EPIC RENAME — Neutralisation nommage métier privé (FPA→content, CDA→coding) 🟡 EN COURS (P0, transverse — codebase ✅)
@@ -39,7 +39,7 @@ personne ne le sache. US-1/2 (codex confidence réelle) et US-3
 respectives.
 
 '''
-== EPIC CB-FPA-RAG — Ingestion RAG du corpus FPA (GBL-003.4) 🟡 EN COURS (P0 — US-0 ✅ S-213)
+== EPIC CB-FPA-RAG — Ingestion RAG du corpus FPA (GBL-003.4) ✅ TERMINÉ (4/4 US — S-213 + S-214)
 
 _Origine : BACKLOG.adoc racine § GBL-003 (critical path MVP0, arbitrage pilote 2026-09-07)._
 _Cadrage : `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`._
@@ -47,9 +47,9 @@ _Cadrage : `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`._
 |===
 | US | Description | Pts | Statut
 | CB-FPA-RAG-0 | Cadrage ingestion : compatibilité format chunks codex ↔ IngestStatements (audit sans code) | 1 | ✅ TERMINÉ (S-213 — COMPATIBLE : `CodexIngestTask` importe déjà `codebase.store.DocumentChunk`/`StoreStatements` depuis RAG-4 S-201, chunks JSON codex décodent tels quels, DDL idempotent, zéro re-vectorisation. Ingestion FPA = run de configuration US-1)
-| CB-FPA-RAG-1 | Run ingestion corpus FPA → pgvector (configuration + run) | 2 | 🟡 À FAIRE
-| CB-FPA-RAG-2 | Exposition composite : FPA requêtable via assembleCompositeContext (proof of work query métier) | 1 | 🟡 À FAIRE
-| CB-FPA-RAG-3 | BDD Cucumber si évolution pipeline ingestion (baby-step strict) | 1 | 🟡 À FAIRE
+| CB-FPA-RAG-1 | Run ingestion corpus FPA → pgvector (configuration + run) | 2 | ✅ TERMINÉ (S-214 — `DoubtPolicy` (dérivation doubt `[ILLISIBLE]`, 6 unit) + `CorpusChunksLoader` (2 unit) + `CorpusIngestMain` + **run réel 387 chunks / 387 embeddings / 18 doubtful / avg 0.953** + bug P0 `updateEmbedding` corrigé (double bracket, fix + 1 test))
+| CB-FPA-RAG-2 | Exposition composite : FPA requêtable via assembleCompositeContext (proof of work query métier) | 1 | ✅ TERMINÉ (S-214 — `searchWithDoubtBlocking` « référentiel compétences » → 5 chunks pertinents sim 0.55-0.64, doute circulant `doubtful=true confidence=0.00` ; canal Docs `CompositeContextBuilder` doubt-aware S-213)
+| CB-FPA-RAG-3 | BDD Cucumber si évolution pipeline ingestion (baby-step strict) | 1 | ✅ TERMINÉ (S-214 — évolution réelle (DoubtPolicy + loader) → BDD `codebase_corpus_ingest.feature` 4/4 scénarios PASSED (44 steps, 44e runner `cucumberTestCorpusIngest`, fakes in-memory))
 |===
 
 *Frontière licence* : run de configuration pointant vers `office/` —

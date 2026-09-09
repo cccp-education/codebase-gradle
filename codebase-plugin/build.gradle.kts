@@ -5,7 +5,7 @@ import java.time.Duration
 fun isCI() = System.getenv("CI") == "true"
 
 group = "education.cccp"
-version = "0.0.13"
+version = "0.0.14"
 
 plugins {
     `java-library`
@@ -191,6 +191,7 @@ val cucumberTaskSpecs = listOf(
     CucumberTaskSpec("cucumberTestRagSocle", "Runs Cucumber BDD tests — EPIC CDX-RAG-SOCLE US-5 (RagVectorStore socle + composite context Docs channel, fake in-memory) only", "codebase.scenarios.RagSocleCucumberRunner"),
     CucumberTaskSpec("cucumberTestOcrContracts", "Runs Cucumber BDD tests — EPIC CDX-OCR-CONTRACTS US-4 (N0 ocr-contracts port boundary — fake AI engine, degraded Tesseract rejection) only", "codebase.scenarios.OcrContractsCucumberRunner"),
     CucumberTaskSpec("cucumberTestDoubtQuality", "Runs Cucumber BDD tests — EPIC OCR-QUALITY US-4 (doubt metadata RAG ingestion + exposure — fake store, annotation/exclusion policy) only", "codebase.scenarios.DoubtQualityCucumberRunner"),
+    CucumberTaskSpec("cucumberTestCorpusIngest", "Runs Cucumber BDD tests — EPIC CB-FPA-RAG US-3 (corpus chunks loading + doubt policy + ingestion contract + Docs exposure — in-memory fake store) only", "codebase.scenarios.CorpusIngestCucumberRunner"),
 )
 
 val cucumberTasks = cucumberTaskSpecs.map { registerCucumberTask(it) }

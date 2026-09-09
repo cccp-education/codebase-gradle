@@ -1,54 +1,57 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 214
-:session: 214
+= Prompt de Reprise — Codebase (Queens N1) — Session 215
+:session: 215
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 213 — CB-FPA-RAG US-0 TERMINÉ (audit : format chunks codex COMPATIBLE, ingestion FPA = run) + OCR-QUALITY US-4 TERMINÉ (baby-step TDD/BDD — DoubtMetadata/DoubtExposure/ingestWithDoubt/searchWithDoubt, 31 unit + 9 Cucumber PASSED, zéro re-vectorisation, koverVerify minBound 79→63 VERT 82.08%)
-:session_pre_precedente: 212 — EPIC RENAME-1 TERMINÉ (bump 0.0.12 Central `0fb93393`, 7 consommateurs propagés) + réparation baseline graphify 0.0.3
+:session_precedente: 214 — CB-FPA-RAG US-1/2/3 TERMINÉ (ingestion corpus FPA 387 chunks + 387 embeddings pgvector, 18 doubtful, proof of work query métier OK, BDD 4/4) + bug updateEmbedding corrigé (double bracket, P0) + propagation 0.0.14 Central (bundle `3e82490d`) + BOM 0.0.37 (bundle `43c8a1ca`), compile 7/7 VERTS
+:session_pre_precedente: 213 — CB-FPA-RAG US-0 TERMINÉ (audit : format chunks codex COMPATIBLE) + OCR-QUALITY US-4 TERMINÉ (DoubtMetadata/DoubtExposure/ingestWithDoubt/searchWithDoubt, 31 unit + 9 Cucumber, zéro re-vectorisation)
 
-== Mission Session 214 — Critical path (suite ordre acté)
+== Mission Session 215 — Critical path (suite ordre acté)
 
 [IMPORTANT]
-Arbitrage pilote 2026-09-07 : priorité critical path MVP0. OCR-QUALITY
-US-4 est terminé (S-213). CB-FPA-RAG reste, dans l'ordre :
+Arbitrage pilote 2026-09-07 : priorité critical path MVP0.
+CB-FPA-RAG est TERMINÉ 4/4 US (S-213 + S-214) — GBL-003.4 débloqué,
+le corpus FPA (387 chunks) est requêtable via `codebase.store`.
 
-*1. CB-FPA-RAG US-1 (2 pts, `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`)* —
-Run ingestion corpus FPA → pgvector : configuration pointant vers
-`office/` (zéro donnée métier committée). Format chunks COMPATIBLE
-confirmé US-0 S-213. Utiliser le pipeline existant : chunks codex
-(`ChunkDocumentTask`) → `CodexIngestTask` (qui importe
-`codebase.store.*`). Si chunks douteux : `RagVectorStore.ingestWithDoubt`
-nouveau S-213.
+*1. Fix Z-6 Cucumber (2 échecs préexistants, ~2 pts)* — « Autofocus
+stack size should be at least 2 but was 1 » (régression S-166,
+`popFocusNode` après replan). Test unitaire ne couvre que non-empty.
+Baby-step TDD strict. 2 scénarios `epic_z_6_autofocus_feedback`
+rouges — orthogonal à tout le reste, gate `check` bloquée.
 
-*2. CB-FPA-RAG US-2 (1 pt)* — Proof of work : query métier («
-qu'est-ce qu'un référentiel compétences ? ») retourne les bons chunks
-via `CompositeContextBuilder.loadDocsContext` (canal Docs, déjà branché
-doubt-aware S-213).
+*2. RENAME Vague suivante (ordre acté S-215)* — document → bakery →
+capsule → plantuml → graphify/codex (codebase ✅ S-212). Gouvernance
+pure cross-borough — voir BACKLOG racine RENAME.
 
-*3. CB-FPA-RAG US-3 (1 pt)* — Cucumber si évolution pipeline ingestion
-(baby-step strict, sinon CADUQUE — économie d'encre).
-
-*Règle transverse* : FPA/CDA sont des métiers privés (fond de commerce)
-— plus jamais dans le nommage public (content/coding les remplacent).
-Les boroughs document/bakery/capsule/plantuml/graphify/codex attendent
-leurs baby-steps RENAME (ordre acté S-215 : codebase ✅ → document →
-bakery → capsule → plantuml → graphify/codex).
+*3. Support Newark A2 (sur demande pilote)* — le RAG FPA est prêt
+pour la génération SPG (canal Docs doubt-aware). Dogfooding training
+TRN-1→2 si le pilote arbitre.
 
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
-* Version locale : 0.0.13 (Central : 0.0.13, bundle `7f17d5a5`, repo1 200/200). Conventions 0.0.4. 7 consommateurs + BOM propagés 0.0.13 (S-213).
-* koverVerify : minBound 63 (baseline réelle 68.03% à HEAD S-212, 82.08% full-run S-213).
-* 43 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
-* Inversion N1→N2 morte : codex consomme codebase via ocr-contracts N0.
-* Session concurrente possible : vérifier `git status`, mtimes récents,
-  absence d'autre session active AVANT d'éditer.
-* Dossier gouvernance unique : `codebase-plugin/.agents/` (migration S-207).
+* Version locale : 0.0.14 (Central : 0.0.14, bundle `3e82490d`,
+  repo1 200). Conventions 0.0.4. BOM 0.0.37 (Central, contrainte
+  codebase 0.0.14). 7 consommateurs propagés, compile 7/7 VERTS.
+* koverVerify : minBound 63 (baseline 68.03% à HEAD S-212). Gate
+  NON validée S-214 (dépend cucumberTest global, bloqué Z-6).
+* 44 cucumber runners dédiés dans `build.gradle.kts` (dernier :
+  `cucumberTestCorpusIngest` S-214).
+* Run ingestion FPA : consommateur transitoire
+  `/tmp/opencode/fpa-rag-build` + init-script
+  `/tmp/opencode/fpa-rag-init.gradle.kts` (tâches `corpusIngest` +
+  `corpusQuery`, pattern Règle 2 — workspace wipe). Base pgvector :
+  docker `angry_curran` port 32772, db `codex` (387 chunks, 387
+  embeddings, 18 doubtful). Corpus : `office/metiers/FPA/.../codex-out/chunks.json`
+  (PROPRIETARY, zéro donnée métier dans le repo).
+* `StoreStatements.updateEmbedding` strip les brackets — contract
+  documenté KDoc + test `updateEmbedding strips brackets` (S-214).
+* Dossier gouvernance unique : `codebase-plugin/.agents/` (S-207).
 
 == Échecs préexistants à documenter (orthogonaux, ne pas confondre)
 
-* 2 × Z-6 Cucumber `epic_z_6_autofocus_feedback` ("Autofocus stack size
-  should be at least 2 but was 1") — régression S-166 (`popFocusNode`
-  après replan). Test unitaire ne couvre que non-empty. Confirmés
-  présents S-213.
+* 2 × Z-6 Cucumber `epic_z_6_autofocus_feedback` ("Autofocus stack
+  size should be at least 2 but was 1") — régression S-166
+  (`popFocusNode` après replan). Confirmés présents S-214 (bloquent
+  `cucumberTest` global → `koverVerify`/`check` rouge).
 * 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`,
   `isImageFile false for pdf`) — drift S-211 (`4601cb0` a ajouté pdf
   aux IMAGE_EXTENSIONS sans maj tests).
@@ -63,6 +66,6 @@ bakery → capsule → plantuml → graphify/codex).
 
 == References
 
-* `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc` (cadrage S-215)
-* `.agents/CADRAGE_EPIC_OCR_QUALITY.adoc` (cadrage S-215 — US-4 ✅ S-213)
-* `.agents/sessions/213-cb-fpa-rag-us0-ocr-quality-us4.adoc` (rapport S-213)
+* `.agents/sessions/214-cb-fpa-rag-us123-corpus-ingest.adoc` (rapport S-214)
+* `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc` (cadrage S-215 — EPIC terminé)
+* `.agents/CADRAGE_EPIC_OCR_QUALITY.adoc` (US-4 ✅ S-213)
