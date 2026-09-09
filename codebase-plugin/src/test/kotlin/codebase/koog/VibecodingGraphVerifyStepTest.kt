@@ -33,20 +33,20 @@ class VibecodingGraphVerifyStepTest {
     fun `extractCurrentStep should forward task expectedOutput when custom`() {
         val plan = planWith(
             GradleTask(
-                description = "generate SPG",
-                gradleTask = "generateSPG",
-                expectedOutput = "SPG generated"
+                description = "generate content plan",
+                gradleTask = "generateContentPlan",
+                expectedOutput = "Content plan generated"
             )
         )
         val state = VibecodingState(
-            intention = "Generate SPG",
+            intention = "Generate content plan",
             workspaceRoot = "/tmp",
             plan = plan
         )
 
         val step = graph.extractCurrentStep(state)!!
 
-        assertThat(step.expectedOutput).isEqualTo("SPG generated")
+        assertThat(step.expectedOutput).isEqualTo("Content plan generated")
     }
 
     @Test

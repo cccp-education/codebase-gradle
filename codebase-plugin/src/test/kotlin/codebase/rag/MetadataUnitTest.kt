@@ -57,13 +57,13 @@ class MetadataUnitTest {
     }
 
     @Test
-    fun `fromJson should parse SPG type as UnknownMetadata in codebase`() {
-        val json = """{"type":"SPG","source":"newark","version":"1.0","generatedAt":"2026-05-18T19:00:00Z","model":"pro","dependencies":[],"sessions":24}"""
+    fun `fromJson should parse unknown content-plan type as UnknownMetadata in codebase`() {
+        val json = """{"type":"CONTENT_PLAN","source":"newark","version":"1.0","generatedAt":"2026-05-18T19:00:00Z","model":"pro","dependencies":[],"sessions":24}"""
 
         val meta = Metadata.fromJson(json)
 
         assertIs<UnknownMetadata>(meta)
-        assertEquals("SPG", meta.type)
+        assertEquals("CONTENT_PLAN", meta.type)
     }
 
     @Test

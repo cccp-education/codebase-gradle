@@ -127,31 +127,31 @@ class TaskResultVerifierTest {
 
     @Test
     fun `custom expectedOutput matching stdout should return SUCCESS`() {
-        val result = verifier.verify("SPG generated successfully at /tmp/spg.adoc", "", "SPG generated")
+        val result = verifier.verify("Content plan generated successfully at /tmp/plan.adoc", "", "Content plan generated")
         assertEquals(TaskVerdict.SUCCESS, result.verdict)
     }
 
     @Test
     fun `custom expectedOutput not matching stdout should return FAILED`() {
-        val result = verifier.verify("Some random output", "", "SPG generated")
+        val result = verifier.verify("Some random output", "", "Content plan generated")
         assertEquals(TaskVerdict.FAILED, result.verdict)
     }
 
     @Test
     fun `custom expectedOutput with BUILD FAILED should return FAILED`() {
-        val result = verifier.verify("SPG generated", "BUILD FAILED in 2s", "SPG generated")
+        val result = verifier.verify("Content plan generated", "BUILD FAILED in 2s", "Content plan generated")
         assertEquals(TaskVerdict.FAILED, result.verdict)
     }
 
     @Test
     fun `custom expectedOutput matching with zero failed tests should return SUCCESS`() {
-        val result = verifier.verify("SPG generated\n0 failed tests", "", "SPG generated")
+        val result = verifier.verify("Content plan generated\n0 failed tests", "", "Content plan generated")
         assertEquals(TaskVerdict.SUCCESS, result.verdict)
     }
 
     @Test
     fun `custom expectedOutput case insensitive matching should return SUCCESS`() {
-        val result = verifier.verify("SPG GENERATED Successfully", "", "spg generated")
+        val result = verifier.verify("CONTENT PLAN GENERATED Successfully", "", "content plan generated")
         assertEquals(TaskVerdict.SUCCESS, result.verdict)
     }
 
@@ -163,7 +163,7 @@ class TaskResultVerifierTest {
 
     @Test
     fun `custom expectedOutput absent with zero failed tests returns FAILED`() {
-        val result = verifier.verify("0 failed tests\n5 passed", "", "SPG generated")
+        val result = verifier.verify("0 failed tests\n5 passed", "", "Content plan generated")
         assertEquals(TaskVerdict.FAILED, result.verdict)
     }
 }

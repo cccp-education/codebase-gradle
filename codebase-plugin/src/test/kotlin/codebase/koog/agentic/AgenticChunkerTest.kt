@@ -232,7 +232,7 @@ class AgenticChunkerTest {
     fun `should extract verb COLLECTER from collection patterns`() {
         val content = """
             == Acquisition
-            La tache `collectFromCorpus` importe les donnees AFNOR/REAC.
+            La tache `collectFromCorpus` importe les donnees du referentiel.
         """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "BACKLOG.adoc")

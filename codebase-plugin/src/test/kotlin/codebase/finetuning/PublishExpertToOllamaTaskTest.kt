@@ -37,13 +37,13 @@ class PublishExpertToOllamaTaskTest {
 
         task.outputModelName.set("expert-coding")
         task.domainName.set("coding")
-        task.domainLabel.set("Coding expert — AFNOR/REAC")
+        task.domainLabel.set("Coding expert — Referentiel")
         task.baseUrl.set("http://localhost:11437")
         task.manifestOutput.set(project.layout.buildDirectory.file("experts/exposure-manifest.json"))
 
         assertEquals("expert-coding", task.outputModelName.get())
         assertEquals("coding", task.domainName.get())
-        assertEquals("Coding expert — AFNOR/REAC", task.domainLabel.get())
+        assertEquals("Coding expert — Referentiel", task.domainLabel.get())
         assertEquals("http://localhost:11437", task.baseUrl.get())
     }
 
@@ -55,7 +55,7 @@ class PublishExpertToOllamaTaskTest {
 
         task.outputModelName.set("expert-coding")
         task.domainName.set("coding")
-        task.domainLabel.set("Coding expert — AFNOR/REAC")
+        task.domainLabel.set("Coding expert — Referentiel")
         task.baseUrl.set("http://localhost:11440")
         task.anonymizeEndpoints.set(false)
         task.manifestOutput.set(project.layout.buildDirectory.file("experts/exposure-manifest.json"))
@@ -65,7 +65,7 @@ class PublishExpertToOllamaTaskTest {
 
         task.executePublish()
 
-        val resolved = registry.resolve(ExpertDomain("coding", "Coding expert — AFNOR/REAC"))
+        val resolved = registry.resolve(ExpertDomain("coding", "Coding expert — Referentiel"))
         assertNotNull(resolved, "Expert should be registered in the registry")
         assertEquals("expert-coding", resolved?.modelName)
         assertEquals("http://localhost:11440", resolved?.baseUrl)

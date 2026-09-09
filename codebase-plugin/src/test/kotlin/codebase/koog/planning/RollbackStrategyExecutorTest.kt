@@ -132,7 +132,7 @@ class RollbackStrategyExecutorTest {
         val executor = RollbackStrategyExecutor(registry, workspaceRoot)
         val state = vibecodingState(retryCount = 3, maxRetries = 3)
         val plan = VibecodingPlan(
-            listOf(VibecodingStep("generate SPG", "generateSPG", "SPG generated")),
+            listOf(VibecodingStep("generate content plan", "generateContentPlan", "Content plan generated")),
             rollbackStrategy = RollbackStrategy.STOP_ON_ERROR
         )
         val failedStep = plan.steps[0]
@@ -140,7 +140,7 @@ class RollbackStrategyExecutorTest {
         val result = executor.execute(state, plan, failedStep)
 
         assertNotNull(result.error)
-        assertTrue(result.error!!.contains("generate SPG"))
+        assertTrue(result.error!!.contains("generate content plan"))
     }
 
     @Test

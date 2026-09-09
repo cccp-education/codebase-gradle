@@ -104,13 +104,13 @@ class AgenticCompilerTest {
         val chunk = buildChunk(
             chunkType = ChunkType.PROCEDURE,
             verb = TaxonomyVerb.GENERER,
-            content = ". Generer le scenario pedagogique global\n. Produit le SPG"
+            content = ". Generer le scenario pedagogique global\n. Produit le plan de contenu"
         )
 
         val artifact = compiler.compile(chunk)
         assertNotNull(artifact)
         assertEquals(ArtifactType.GRADLE_TASK, artifact!!.artifactType)
-        assertTrue(artifact.description.contains("Generer") || artifact.description.contains("SPG"))
+        assertTrue(artifact.description.contains("Generer") || artifact.description.contains("contenu"))
     }
 
     @Test
@@ -264,7 +264,7 @@ class AgenticCompilerTest {
         val chunk = buildChunk(
             chunkType = ChunkType.PROCEDURE,
             verb = TaxonomyVerb.COLLECTER,
-            content = ". Importer les donnees AFNOR/REAC\n. Collecter depuis le corpus"
+            content = ". Importer les donnees du referentiel\n. Collecter depuis le corpus"
         )
 
         val artifact = compiler.compile(chunk)

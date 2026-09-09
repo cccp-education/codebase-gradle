@@ -49,8 +49,8 @@ class StepVerifierTest {
 
     @Test
     fun `BLOCKED verdict should set blocked error`() {
-        val state = vibecodingState(lastToolResult = "Task 'generateSPD' not found in project", retryCount = 0)
-        val step = VibecodingStep("generateSPD", "generateSPD", TaskResultVerifier.DEFAULT_EXPECTED_OUTPUT)
+        val state = vibecodingState(lastToolResult = "Task 'generateUnknownTask' not found in project", retryCount = 0)
+        val step = VibecodingStep("generateUnknownTask", "generateUnknownTask", TaskResultVerifier.DEFAULT_EXPECTED_OUTPUT)
         val result = verifier.verifyAndAdapt(state, step)
         assertNotNull(result.error)
         assertTrue(result.error!!.contains("BLOCKED"))
@@ -67,8 +67,8 @@ class StepVerifierTest {
 
     @Test
     fun `custom expectedOutput matching should clear error`() {
-        val state = vibecodingState(lastToolResult = "SPD generated at /tmp/spg.adoc")
-        val step = VibecodingStep("generateSPD", "generateSPD", "SPD generated")
+        val state = vibecodingState(lastToolResult = "Content plan generated at /tmp/plan.adoc")
+        val step = VibecodingStep("generateContentPlan", "generateContentPlan", "Content plan generated")
         val result = verifier.verifyAndAdapt(state, step)
         assertNull(result.error)
     }
@@ -80,7 +80,7 @@ class StepVerifierTest {
             retryCount = 0,
             maxRetries = 3
         )
-        val step = VibecodingStep("generateSPD", "generateSPD", "SPD generated", maxRetries = 3)
+        val step = VibecodingStep("generateContentPlan", "generateContentPlan", "Content plan generated", maxRetries = 3)
         val result = verifier.verifyAndAdapt(state, step)
         assertEquals(1, result.retryCount)
         assertNull(result.error)

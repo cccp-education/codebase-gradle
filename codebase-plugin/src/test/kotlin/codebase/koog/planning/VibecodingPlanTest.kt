@@ -112,7 +112,7 @@ class VibecodingPlanTest {
     fun `plan with multiple steps and custom strategy should be valid`() {
         val steps = listOf(
             VibecodingStep("collect corpus", "collectFromCorpus", "Corpus collected", maxRetries = 2),
-            VibecodingStep("generate SPG", "generateSPG", "SPG generated", verifyHook = "grep ERROR"),
+            VibecodingStep("generate content plan", "generateContentPlan", "Content plan generated", verifyHook = "grep ERROR"),
             VibecodingStep("verify output", "verifyOutput", "Output valid", maxRetries = 1)
         )
         val plan = VibecodingPlan(steps, rollbackStrategy = RollbackStrategy.REVERT_AND_CONTINUE)
