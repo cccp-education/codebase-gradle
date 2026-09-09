@@ -22,7 +22,7 @@ capsule → plantuml → graphify/codex (codebase ✅ S-212). Gouvernance
 pure cross-borough — voir BACKLOG racine RENAME.
 
 *3. Support Newark A2 (sur demande pilote)* — le RAG FPA est prêt
-pour la génération SPG (canal Docs doubt-aware). Dogfooding training
+pour la génération des plans de formation (canal Docs doubt-aware). Dogfooding training
 TRN-1→2 si le pilote arbitre.
 
 == Contexte technique

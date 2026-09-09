@@ -285,7 +285,7 @@ Le `CompositeContextBuilder` (déjà fait via EPIC 9) agrège ces canaux.
 |===
 | Canal | Technologie | Type d'information | Rôle
 | **EAGER/LAZY** | Fichiers AsciiDoc + `.agents/` | Règles, procédures, backlog, historique | Gouvernance déterministe
-| **RAG pgvector** | LangChain4j + ONNX + PostgreSQL | Documents, code source, SPG, articles | Similarité vectorielle
+| **RAG pgvector** | LangChain4j + ONNX + PostgreSQL | Documents, code source, plans de formation, articles | Similarité vectorielle
 | **Graphify** | `graph.json` + plantuml-gradle | Nœuds, arêtes, communautés, dépendances | Relations exactes
 | **Ressources** | Dossiers encyclopédies, archives, datasets | Données brutes nettoyées, corpus, historique long | Mémoire froide
 |===
@@ -438,7 +438,7 @@ le catalogue des tâches disponibles. Chaque plugin Gradle expose des tâches av
 
 Le pipeline d'auto-découverte :
 ```
-Plugin Gradle (ex: GenerateSPGTask)
+Plugin Gradle (ex: GenerateContentPlanTask)
   ↓ @Input, @Option, @TaskAction ← déjà présents dans le code
   ↓
 Scanner de plugin descriptors → liste des tâches avec leurs paramètres
@@ -452,7 +452,7 @@ LLM découvre et appelle n'importe quelle tâche Gradle sans code supplémentair
 
 === Sous-tâches envisagées
 
-* [x] W-0 : Analyse — Inventaire des schémas de tâches Gradle existants (VibecodingTask, GenerateSPGTask, etc.) et mapping avec le format ToolRegistry (session 098)
+* [x] W-0 : Analyse — Inventaire des schémas de tâches Gradle existants (VibecodingTask, GenerateContentPlanTask, etc.) et mapping avec le format ToolRegistry (session 098)
 * [x] W-1 : Implémenter `TaskSchemaScanner` — inspecte le task graph Gradle, extrait les métadonnées des tâches (inputs, options, description, groupe) (session 098)
 * [x] W-2 : Générer un schema structuré (JSON/OpenAPI) depuis les plugin descriptors Gradle (session 099)
 * [x] W-3 : Auto-registrer les tâches découvertes dans ToolRegistry au démarrage de VibecodingGraph (session 099)
@@ -474,7 +474,7 @@ C'est le chaînon manquant entre "agent qui lit du code" et "agent qui utilise l
 
 Discussion originale dans Code Review V16 (configuration/GLOBAL_CODE_REVIEW.adoc §23) :
 "Tu pourrais générer un OpenAPI spec depuis le plugin descriptor. Le mapping est quasi direct :
-`--intention="Générer SPG" → ToolRegistry.exec_gradle("generateSPG", args)`"
+`--intention="Générer un plan de formation" → ToolRegistry.exec_gradle("generateContentPlan", args)`"
 
 == EPIC X — Décision Multi-Step : Plan → Execute → Verify → Adapt
 
