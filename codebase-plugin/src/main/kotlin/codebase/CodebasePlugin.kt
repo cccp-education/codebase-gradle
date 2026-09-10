@@ -103,6 +103,22 @@ class CodebasePlugin : Plugin<Project> {
         }
 
         project.tasks.register(
+            "autonomousSession",
+            codebase.koog.svo.AutonomousSessionTask::class.java
+        ) { task ->
+            task.group = "generate"
+            task.description = "Autonomous vibecoding session — chains augmented-context sessions until the borough backlog is complete (bounded by maxChainedSessions)"
+            task.workspaceRoot.set(project.rootDir)
+            task.prompt.set(project.providers.gradleProperty("prompt").orElse(""))
+            task.borough.set(project.providers.gradleProperty("borough").orElse(""))
+            task.maxChainedSessions.set(
+                project.providers.gradleProperty("maxChainedSessions").map { it.toInt() }.orElse(3)
+            )
+            task.maxActions.set(project.providers.gradleProperty("maxActions").map { it.toInt() }.orElse(10))
+            task.model.set(project.providers.gradleProperty("model").orElse(""))
+        }
+
+        project.tasks.register(
             "ingestGovernance",
             IngestGovernanceTask::class.java
         ) {

@@ -2,6 +2,48 @@
 :toc: left
 :icons: font
 
+== Session 259 — 2026-09-10
+
+* **EPICs** : SVO-4 tâche `autonomousSession` (~3 pts) + SVO-5 chaînage brainstorming + BDD (~3 pts) — **EPIC SVO TERMINÉ 6/6 US**
+* **Type** : baby-step TDD/BDD/DDD strict (6 baby-steps RED → GREEN) + BDD Cucumber
+* **Livrables** (domaine `codebase.koog.svo` enrichi — 4 prod + 5 test + 1 feature) :
+** `SessionPromptResolver` — object pur : prompt CLI transféré > défaut
+   borough (PROMPT_REPRISE tronqué 2000 chars + backlog items via
+   `GovernanceContextLoader`). 6 unit.
+** `PlannerPortResolver` — object pur : résolution duck-typed `port()`
+   sur les `BuildServiceRegistration` par nom canonique
+   `plannerPortService` (contrat Manhattan S-258) → fallback
+   `PlannerPort.NoOp`. Test fake proxy JDK (bounds génériques
+   `BuildServiceRegistration`). 5 unit.
+** `AutonomousSessionOrchestrator` — object pur D6/D7/D8/D9 : boucle de
+   sessions chaînées (mission prompt tentative 1 puis borough default),
+   audit JSONL par session, chaînage tant que backlog non fini, borné D9
+   (maxChainedSessions=3), brainstorming D8 exécuté dans la boucle,
+   resumption prompt SVO-2 écrit `build/vibecoding/resumption-prompt.adoc`.
+   6 unit + 4 functional (ProjectBuilder).
+** `AutonomousSessionTask` — adaptateur Gradle mince : options CLI
+   `--prompt/--borough/--maxChainedSessions/--maxActions/--model`, boucle
+   construite comme `VibecodingTask` (scanner+registrar+argsMapper+list_tasks
+   +GovernanceEnforcementWirer), `runSession` → `VibecodingGraph.execute`.
+** Wiring `CodebasePlugin` — tâche 12e `autonomousSession` (gradleProperty).
+   Baselines : `CodebasePluginTest` 11→12, `TaskSchemaScannerTest` 7→8 generate.
+** BDD Cucumber `autonomous_session.feature` 4/4 PASSED — `AutonomousSessionWorld`
+   + `AutonomousSessionSteps` (préfixés, pattern S-088) +
+   `AutonomousSessionCucumberRunner` (pattern S-082) + 45e
+   `CucumberTaskSpec("cucumberTestAutonomousSession")`.
+* **Gates** : `codebase.koog.svo.*` 45 unit 0 FAIL ; functional 4/4 ;
+  `cucumberTestAutonomousSession` 4/4 PASSED ; non-régression
+  `CodebasePluginTest`/`TaskSchemaScannerTest`/`VibecodingGraph*`/`autofocus.*`
+  0 FAIL ; `publishToMavenLocal` VERT (0.0.14 mavenLocal).
+* **Découvertes** : chaînage D8 = brainstorming réellement exécuté (contract
+  arbitré par les tests RED) ; `PlannerPortResolver` duck-typed pour zéro
+  import `planning.*` côté N1 ; piéges Cucumber Expression (`/` = alternative,
+  nombre en tête = paramètre) ; bug fake BDD (Given never-ending BACKLOG
+  n'écrivait pas le fichier initial) ; bug réel TDD (borough convention vide
+  → fallback `root.name`).
+* **Zéro** : bump BOM, secret, modification du graphe vibecoding (consommé tel quel).
+* Rapport : `.agents/sessions/259-svo4-svo5-autonomous-session-chainup-bdd.adoc`
+
 == Session 258 — 2026-09-10
 
 * **EPICs** : SVO-3 adapter planner (~2 pts, cross-borough Manhattan pilot)

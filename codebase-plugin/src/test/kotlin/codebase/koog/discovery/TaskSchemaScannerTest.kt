@@ -82,7 +82,7 @@ class TaskSchemaScannerTest {
         val generateTasks = scanner.scanByGroup("generate")
 
         assertEquals(4, collectTasks.size)
-        assertEquals(7, generateTasks.size)
+        assertEquals(8, generateTasks.size)
         assertTrue(collectTasks.all { it.group == "collect" })
         assertTrue(generateTasks.all { it.group == "generate" })
     }

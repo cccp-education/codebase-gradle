@@ -2,10 +2,10 @@
 :sectnums:
 :date: 2026-06-16
 
-_Dernière mise à jour : 2026-09-10 (S-258 — **SVO-3 TERMINÉ** cross-borough : côté Manhattan, domaine `planning.adapter` — `KoogIntentionPlannerAdapter` implémente `PlannerPort` + `PlannerPortBuildService`/`PlannerPortRegistry` nom canonique `plannerPortService` + `registerPlannerPort` wiring PlanningPlugin (mirror registerLlmBuildService). 9 unit, 153 tests 0 FAIL, publishToMavenLocal planner VERT. Antérieur S-257 — SVO-2 TERMINÉ : domaine `codebase.koog.svo` — `BacklogDetector` + `SessionResumptionPlanner` 24 unit. Prochaine : SVO-4 (tâche autonomousSession — résolution port par nom canonique `plannerPortService` + fallback NoOp).)_
+_Dernière mise à jour : 2026-09-10 (S-259 — **SVO-4 + SVO-5 TERMINÉ**, EPIC SVO ✅ 6/6 US : domaine `codebase.koog.svo` — SessionPromptResolver + PlannerPortResolver + AutonomousSessionOrchestrator + AutonomousSessionTask + wiring tâche 12e + BDD 4/4 `cucumberTestAutonomousSession`. 45 unit + 4 functional 0 FAIL. Prochaines : dogfood Newark A2 (critical path MVP0) / RENAME vague document / publication 0.0.15.)_
 
 '''
-== EPIC SVO — Session Vibecoding Orchestrée 🟡 EN COURS (P0, codebase N1 pilotage + planner N2 sous-agent)
+== EPIC SVO — Session Vibecoding Orchestrée ✅ TERMINÉ (P0, 6/6 US — S-255→S-259)
 
 _Origine : demande pilote 2026-09-10 (S-255)._
 _Cadrage : `.agents/CADRAGE_EPIC_SVO_SESSION_ORCHESTREE.adoc` (10 décisions D1-D10)._
@@ -15,14 +15,14 @@ _Pattern : LlmBuildService transposé au planning — codebase N1 pilotage + `Pl
 | US | Description | Pts | Statut
 | SVO-0 | Cadrage EPIC (audit boucle/lifecycle/backlog/pont planner + 10 décisions D1-D10) | 1 | ✅ TERMINÉ (S-255)
 | SVO-1 | Inversion port : `PlannerPort` fun interface (domaine `codebase.koog.plannerport`) + fallback interne + retrait `libs.planner.plugin` (build.gradle.kts:55) + suppression `PlannerIntegration.kt` + gate non-régression | 3 | ✅ TERMINÉ (S-256)
-| SVO-2 | `SessionResumptionPlanner` + `BacklogDetector` (objects purs ~12 unit TDD) : backlog → resumption prompt orienté ; detection backlog fini | 2 | ✅ TERMINÉ (S-257 — domaine `codebase.koog.svo` : parse checkboxes + tables AsciiDoc, stale marker + héritage heading neutre, statut row primant, prompt déterministe BRAINSTORM si vide. 24/24 unit. Dogfooding réel 2 formats + drift V-9 fixé)
-| SVO-3 | Adapter planner : `KoogIntentionPlannerAdapter` implémente PlannerPort + wiring `registerPlannerPort` (mirror registerLlmBuildService) — session Manhattan (cross-borough) | 2 | ✅ TERMINÉ (S-079 Manhattan — domaine `planning.adapter` : adapter + `PlannerPortBuildService`/`PlannerPortRegistry` nom canonique `plannerPortService` + wiring PlanningPlugin. 9 unit, 153 tests 0 FAIL, publishToMavenLocal VERT)
-| SVO-4 | Tâche `autonomousSession` : resolve prompt (--prompt > défaut borough) → port → boucle VibecodingGraph → état → resumption prompt | 3 | 🟡 À FAIRE
-| SVO-5 | Chaînage brainstorming si backlog fini + Cucumber BDD `autonomous_session.feature` 4 scénarios (fakes S-082/S-088) | 3 | 🟡 À FAIRE
+| SVO-2 | `SessionResumptionPlanner` + `BacklogDetector` (objects purs ~12 unit TDD) : backlog → resumption prompt orienté ; detection backlog fini | 2 | ✅ TERMINÉ (S-257 — domaine `codebase.koog.svo` : parse checkboxes + tables AsciiDoc, stale marker + héritage heading neutre, prompt déterministe BRAINSTORM si vide. 24/24 unit. Dogfooding réel 2 formats + drift V-9 fixé)
+| SVO-3 | Adapter planner : `KoogIntentionPlannerAdapter` implémente PlannerPort + wiring `registerPlannerPort` (mirror registerLlmBuildService) — session Manhattan (cross-borough) | 2 | ✅ TERMINÉ (S-258 Manhattan — domaine `planning.adapter` : adapter + `PlannerPortBuildService`/`PlannerPortRegistry` nom canonique `plannerPortService` + wiring PlanningPlugin. 9 unit, 153 tests 0 FAIL, publishToMavenLocal VERT)
+| SVO-4 | Tâche `autonomousSession` : resolve prompt (--prompt > défaut borough) → port → boucle VibecodingGraph → état → resumption prompt | 3 | ✅ TERMINÉ (S-259 — `codebase.koog.svo` : `SessionPromptResolver` (CLI > défaut borough, 6 unit) + `PlannerPortResolver` (duck-typed nom canonique, 5 unit) + `AutonomousSessionOrchestrator` (boucle chaînée pure, audit JSONL, D9 borné, resumption prompt `build/vibecoding/`, 6 unit + 4 functional) + `AutonomousSessionTask` (adaptateur mince) + tâche 12e wiring CodebasePlugin)
+| SVO-5 | Chaînage brainstorming si backlog fini + Cucumber BDD `autonomous_session.feature` 4 scénarios (fakes S-082/S-088) | 3 | ✅ TERMINÉ (S-259 — D8 brainstorming exécuté dans la boucle + `autonomous_session.feature` 4/4 PASSED (45e runner `cucumberTestAutonomousSession`, fakes in-memory))
 |===
 
 *Prérequis* : ~~fix Z-6 (2 échecs cucumber préexistants)~~ ✅ TERMINÉ (S-256 — popFocusNode supprimé, gate globale fiable).
-*Garde anti-boucle* : `maxChainedSessions` défaut 3 (D9).
+*Garde anti-boucle* : ✅ `maxChainedSessions` défaut 3 (D9) implémenté S-259.
 
 '''
 == EPIC RENAME — Neutralisation nommage métier privé 🟡 EN COURS (P0, transverse — codebase ✅)

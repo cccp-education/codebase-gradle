@@ -17,6 +17,7 @@ class CodebasePluginTest {
         "collectCompositeContext",
         "generatePlan",
         "vibecode",
+        "autonomousSession",
         "vibecodingDashboard",
         "qualityGate",
         "generateCompositeContext",
@@ -27,7 +28,7 @@ class CodebasePluginTest {
     )
 
     @Test
-    fun `apply plugin registers all 11 tasks`() {
+    fun `apply plugin registers all 12 tasks`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply(CodebasePlugin::class.java)
 
@@ -37,12 +38,12 @@ class CodebasePluginTest {
     }
 
     @Test
-    fun `task count equals 11 after applying plugin`() {
+    fun `task count equals 12 after applying plugin`() {
         val project = ProjectBuilder.builder().withName("codebase").build()
         project.pluginManager.apply(CodebasePlugin::class.java)
 
         val registeredTasks = expectedTasks.mapNotNull { project.tasks.findByName(it) }
-        assertEquals(11, registeredTasks.size)
+        assertEquals(12, registeredTasks.size)
     }
 
     @Test

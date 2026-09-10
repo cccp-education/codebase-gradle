@@ -1,5 +1,22 @@
 = Archive — Tâches Terminées — Septembre 2026
 
+== Session 259 — 2026-09-10 — SVO-4 + SVO-5 TERMINÉ (EPIC SVO 6/6 clos)
+
+* SVO-4 : domaine `codebase.koog.svo` — `SessionPromptResolver` (CLI >
+  défaut borough PROMPT_REPRISE+backlog, 6 unit), `PlannerPortResolver`
+  (duck-typed `port()` nom canonique `plannerPortService` → NoOp fallback,
+  5 unit), `AutonomousSessionOrchestrator` (boucle chaînée pure : audit
+  JSONL, D8 brainstorming exécuté, D9 borné 3, resumption prompt
+  `build/vibecoding/`, 6 unit + 4 functional), `AutonomousSessionTask`
+  (adaptateur Gradle mince, options CLI), tâche 12e wiring CodebasePlugin.
+* SVO-5 : `autonomous_session.feature` 4/4 PASSED (45e runner
+  `cucumberTestAutonomousSession`, fakes in-memory pattern S-082/S-088).
+* Gates : 45 unit SVO 0 FAIL, cucumber dédié 4/4, non-régression
+  (CodebasePluginTest 12 tâches / TaskSchemaScanner 8 generate /
+  VibecodingGraph / autofocus), publishToMavenLocal VERT 0.0.14.
+* Piéges Cucumber Expression documentés : `/` = alternative, nombre en
+  tête = paramètre.
+
 == Session 258 — 2026-09-10 — SVO-3 TERMINÉ (cross-borough Manhattan pilot)
 
 * Côté Manhattan (domaine `planning.adapter`, 8ème domaine planner) :

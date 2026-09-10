@@ -1,46 +1,43 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 259
-:session: 259
+= Prompt de Reprise — Codebase (Queens N1) — Session 260
+:session: 260
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 258 — SVO-3 TERMINÉ (cross-borough Manhattan : adapter PlannerPort + BuildService `plannerPortService`)
+:session_precedente: 259 — SVO-4 + SVO-5 TERMINÉ (tâche `autonomousSession` + chaînage brainstorming + BDD 4/4 — EPIC SVO TERMINÉ 6/6)
 
-== Mission Session 259
+== Mission Session 260
 
-EPIC SVO 🟡 EN COURS — US restantes :
+EPIC SVO ✅ TERMINÉ 6/6 US (S-255→S-259). Missions candidates (ordre
+critical path) :
 
-. **SVO-4** (3 pts, Queens) : tâche `autonomousSession` — resolve prompt
-   (`--prompt` > défaut borough via CompositeContextBuilder.buildScoped +
-   GovernanceContextLoader) → `PlannerPort` (résolution par nom canonique
-   `plannerPortService` via gradle.sharedServices + fallback NoOp —
-   `PlannerPortResolver` object pur testable) → boucle `VibecodingGraph` →
-   état d'avancement (SessionRepository + audit JSONL) → resumption prompt
-   (SVO-2 SessionResumptionPlanner) écrit dans `build/vibecoding/`.
-   Options `--prompt`, `--borough`, `--maxChainedSessions` (défaut 3, D9).
-. **SVO-5** (3 pts) : chaînage brainstorming si backlog fini
-   (BacklogDetector.isComplete) + Cucumber BDD `autonomous_session.feature`
-   4 scénarios (prompt transféré, défaut borough, backlog restant →
-   resumption, backlog fini → brainstorming) — fakes in-memory pattern
-   S-082/S-088.
-
-=== Alternatives (sur demande pilote)
-
-. **RENAME vague document** (transfusion d'abord, 3 pts + OCR-QUALITY US-3).
-. **Maintenance** : publication, code review, dette technique.
+. **Dogfood Newark A2 (sur demande pilote)** — la première mission réelle
+   d'`autonomousSession` consomme le contexte augmenté : résoudre le port
+   planner (wiring `education.cccp.planner` + `plannerPortService`) et
+   lancer la tâche sur un borough réel. Critical path MVP0.
+. **RENAME vague document** (sur demande pilote) — transfusion d'abord
+   (`TRANSFER_LEXIQUE_FORMATION.adoc` table § 2), puis neutralisation
+   document-gradle (3 pts + OCR-QUALITY US-3).
+. **Maintenance** : publication 0.0.15 Central (le HEAD contient
+   SVO-1/2/3/4/5), support boroughs consommateurs.
 
 == Contexte technique
 
-* SVO-1 ✅ S-256 : `PlannerPort` fun interface (`codebase.koog.plannerport`,
-  fallback NoOp) branché KoogAugmentedContextGraph/KoogPlanningOrchestrator,
-  `PlannerIntegration.kt` supprimé, `libs.planner.plugin` retiré — cycle
-  N1↔N2 mort.
-* SVO-2 ✅ S-257 : domaine `codebase.koog.svo` — `BacklogDetector` (parse
-  checkboxes + tables AsciiDoc, stale marker, héritage heading neutre,
-  isComplete) + `SessionResumptionPlanner` (prompt déterministe sans LLM,
-  BRAINSTORM si vide). 24 unit.
-* SVO-3 ✅ S-258 : côté Manhattan — `planning.adapter` :
-  `KoogIntentionPlannerAdapter` implémente le port,
-  `PlannerPortBuildService`/`PlannerPortRegistry` exposé sous le nom
-  canonique **`plannerPortService`**, wiring `registerPlannerPort`.
-  planner-plugin 0.0.2 republicié mavenLocal.
+* SVO-1/2/3 ✅ (S-256/257/258) : `PlannerPort` + `BacklogDetector` +
+  `SessionResumptionPlanner` + adapter Manhattan (`plannerPortService`).
+* SVO-4 ✅ S-259 : domaine `codebase.koog.svo` — `SessionPromptResolver`
+  (CLI > défaut borough PROMPT_REPRISE+backlog), `PlannerPortResolver`
+  (duck-typed `port()` sur registrations, nom canonique
+  `plannerPortService`, fallback NoOp), `AutonomousSessionOrchestrator`
+  (boucle chaînée pure : audit JSONL, D8 brainstorming exécuté, D9 borné 3,
+  resumption prompt `build/vibecoding/resumption-prompt.adoc`),
+  `AutonomousSessionTask` (adaptateur mince, options CLI
+  `--prompt/--borough/--maxChainedSessions/--maxActions/--model`), tâche
+  12e wiring `CodebasePlugin`. 45 unit SVO 0 FAIL + 4 functional.
+* SVO-5 ✅ S-259 : chaînage brainstorming D8 dans l'orchestrateur +
+  `autonomous_session.feature` 4/4 PASSED (45e runner
+  `cucumberTestAutonomousSession`, fakes in-memory pattern S-082/S-088).
+* Pièges Cucumber Expression documentés (S-259) : `/` dans un step =
+  alternative (→ reformuler), nombre en tête = paramètre.
+* Version : 0.0.14 mavenLocal (Central 0.0.14 — publication 0.0.15 à
+  l'accord pilote). BOM 0.0.37. Conventions 0.0.4.
 * Gate ciblé : jamais `./gradlew test` global sans permission (2 fails
   préexistants OcrTaskTest drift pdf S-211). Suites ciblées :
   `--tests "codebase.koog.svo.*"` etc.
@@ -52,3 +49,10 @@ EPIC SVO 🟡 EN COURS — US restantes :
   fois, séquentiel pur (interdiction @xp/subagents/parallélisation).
 * Zéro commit/push sans permission explicite du pilote.
 * Zéro secret, zéro token dans le code ou les logs.
+* RENAME : transfuser la logique métier dans training AVANT toute purge.
+
+== References
+
+* `.agents/sessions/259-svo4-svo5-autonomous-session-chainup-bdd.adoc` (rapport S-259)
+* `.agents/CADRAGE_EPIC_SVO_SESSION_ORCHESTREE.adoc` (cadrage S-255 — 10 décisions)
+* `training-gradle/training-plugin/.agents/TRANSFER_LEXIQUE_FORMATION.adoc` (transfusion)

@@ -1,0 +1,106 @@
+= Session 259 — SVO-4 + SVO-5 : tâche autonomousSession + chaînage brainstorming + BDD
+
+:Borough: Queens — codebase-gradle (N1)
+:EPIC: SVO (Session Vibecoding Orchestrée — US-4 + US-5, EPIC TERMINÉ 6/6)
+:Methode: Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois
+:Date: 2026-09-10
+
+== Mission
+
+SVO-4 (3 pts, cadrage D6) : tâche Gradle `autonomousSession` — résolution
+prompt (`--prompt` > défaut borough via PROMPT_REPRISE + backlog) →
+PlannerPort (résolution par nom canonique `plannerPortService`) → boucle
+VibecodingGraph → état d'avancement (audit JSONL) → resumption prompt
+(SVO-2) écrit dans `build/vibecoding/`. Options `--prompt`, `--borough`,
+`--maxChainedSessions` (défaut 3, D9).
+
+SVO-5 (3 pts) : chaînage brainstorming si backlog fini (D8) + Cucumber BDD
+`autonomous_session.feature` 4 scénarios (fakes in-memory pattern S-082/S-088).
+
+== Baby-steps exécutés (TDD strict RED → GREEN)
+
+. RED `SessionPromptResolverTest` (6 unit) → GREEN `SessionPromptResolver`
+  (domaine `codebase.koog.svo`, object pur) : prompt CLI transféré > défaut
+  borough (PROMPT_REPRISE tronqué 2000 chars + backlog items via
+  `GovernanceContextLoader`, budget miroir `buildScoped`). 1 bug TDD
+  découvert : le défaut doit embarquer PROMPT_REPRISE directement (contrat
+  test `borough default embeds PROMPT_REPRISE`) — fixé GREEN.
+. RED `PlannerPortResolverTest` (5 unit) → GREEN `PlannerPortResolver`
+  (object pur) : résolution duck-typed `port()` sur les
+  `BuildServiceRegistration` par nom canonique `plannerPortService`
+  (contrat Manhattan S-258 `PlannerPortBuildService.SERVICE_NAME`) →
+  fallback `PlannerPort.NoOp` (dégradé, jamais crash). Test fake proxy
+  JDK sur `BuildServiceRegistration` (l'interface a des bounds génériques
+  qui interdisent l'implémentation directe `BuildService<*>`).
+. RED `AutonomousSessionOrchestratorTest` (6 unit) → GREEN
+  `AutonomousSessionOrchestrator` (object pur, D6/D7/D8/D9) : boucle de
+  sessions chaînées — mission prompt (tentative 1) puis re-résolution
+  borough default, audit JSONL par session, chaînage tant que
+  `BacklogDetector.isComplete` est false, borné par `maxChainedSessions`
+  (D9), chaîne-up BRAINSTORMING exécuté quand le backlog est fini (D8),
+  resumption prompt écrit `build/vibecoding/resumption-prompt.adoc`.
+  2 itérations REFACTOR TDD : l'ancre `lastIntention` = mission initiale
+  (pas le prompt re-résolu), le brainstorming est exécuté dans la boucle
+  (2 sessions quand backlog fini après tentative 1).
+. GREEN `AutonomousSessionTask` (adaptateur Gradle mince) : options CLI
+  `--prompt`/`--borough`/`--maxChainedSessions`/`--maxActions`/`--model`,
+  boucle construite comme `VibecodingTask` (TaskSchemaScanner +
+  TaskDiscoveryRegistrar + GradleTaskArgsMapper + list_tasks +
+  GovernanceEnforcementWirer), `runSession` → `VibecodingGraph.execute`
+  (erreur → RuntimeException), audit JSONL appendé.
+. GREEN `AutonomousSessionFunctionalTest` (4 functional, ProjectBuilder) :
+  tâche enregistrée groupe generate, defaults D9 (3), exécution E2E
+  backlog-less dir → resumption prompt BRAINSTORM + audit JSONL, chaîne
+  D9 bornée sur BACKLOG réel. 1 bug réel découvert TDD : `borough`
+  convention vide → fallback `root.name` (défense en profondeur).
+. Wiring `CodebasePlugin` : tâche 12e `autonomousSession` (gradleProperty
+  `prompt`/`borough`/`maxChainedSessions`/`maxActions`/`model`).
+  Baselines mises à jour : `CodebasePluginTest` 11 → 12 tâches,
+  `TaskSchemaScannerTest` generate 7 → 8.
+. BDD Cucumber `autonomous_session.feature` 4 scénarios `@autonomous-session`
+  + `AutonomousSessionWorld` + `AutonomousSessionSteps` (préfixés "autonomous
+  session", pattern S-088) + `AutonomousSessionCucumberRunner` (pattern
+  S-082) + `CucumberTaskSpec("cucumberTestAutonomousSession")` 45e.
+  2 pièges Cucumber Expression corrigés en cours de route : `/` dans
+  `build/vibecoding/` interprété comme alternative (→ "the vibecoding
+  build dir"), nombre en tête de step (`1 session` → "one session").
+  1 bug fake découvert BDD : le Given "never-ending BACKLOG" n'écrivait
+  pas le fichier initial (dir vide → isComplete → 2 sessions au lieu de 3).
+
+== Gates
+
+* Domaine `codebase.koog.svo.*` : 45 unit 0 FAIL (24 SVO-2 + 6
+  SessionPromptResolver + 5 PlannerPortResolver + 6 orchestrator +
+  4 functional).
+* Cucumber dédié `cucumberTestAutonomousSession` 4/4 PASSED.
+* Non-régression : `CodebasePluginTest` 0 FAIL (12 tâches),
+  `TaskSchemaScannerTest` 0 FAIL (8 generate), `VibecodingGraph*` +
+  `autofocus.*` 0 FAIL.
+* `publishToMavenLocal` VERT (codebase-plugin 0.0.14 republicié mavenLocal).
+* Zéro secret, zéro bump BOM, zéro modification du graphe vibecoding
+  (consommé tel quel).
+
+== Découvertes / décisions
+
+* Le chaînage D8 exécute réellement la session BRAINSTORMING dans la
+  boucle (pas seulement un signalement) — contract arbitré par les tests
+  RED (`complete backlog` → 2 sessions : mission + brainstorming).
+* `PlannerPortResolver` est duck-typed (`port()` par réflexion) pour
+  garder zéro import `planning.*` côté N1 — le contrat cross-borough est
+  le nom canonique du service, pas le type.
+* La tâche Gradle est un adaptateur mince : toute la logique est dans
+  l'orchestrateur pur testable sans Gradle.
+
+== Fichiers
+
+* Prod : `codebase.koog.svo.{SessionPromptResolver,PlannerPortResolver,AutonomousSessionOrchestrator,AutonomousSessionTask}.kt`
+  + `CodebasePlugin.kt` (+16 — tâche 12e).
+* Test : 4 unit + 1 functional nouveaux + 3 fichiers Cucumber (world/steps/runner)
+  + feature + baselines `CodebasePluginTest`/`TaskSchemaScannerTest` +
+  `build.gradle.kts` (45e CucumberTaskSpec).
+
+== EPIC SVO — TERMINÉ 6/6 US (S-255 cadrage → S-259 SVO-4/5)
+
+Reste (optionnel, gouvernance) : dogfood réel Newark A2 — la première
+mission réelle d'`autonomousSession` consomme le RAG référentiel
+(critical path MVP0).
