@@ -2,6 +2,38 @@
 :toc: left
 :icons: font
 
+== Session 258 — 2026-09-10
+
+* **EPICs** : SVO-3 adapter planner (~2 pts, cross-borough Manhattan pilot)
+* **Type** : baby-step TDD strict (Manhattan) + sync gouvernance (Queens)
+* **Livrables** (côté Manhattan — domaine `planning.adapter`, 8ème domaine
+  planner) :
+** `KoogIntentionPlannerAdapter` — implémente le port N1
+   `codebase.koog.plannerport.PlannerPort` (transposition 1:1 de l'ex-
+   `PlannerIntegration.plan` supprimé S-256 : `IntentionPlanner.plan`
+   5-canaux, classification simple/complexe seuil 80, catch →
+   `PlanState(error=...)`).
+** `PlannerPortBuildService` + `PlannerPortRegistry` — BuildService Gradle
+   exposant le port (params sérialisables ne portent pas d'objet arbitraire
+   → registry JVM-wide `@Volatile` + forwarding), nom canonique
+   `plannerPortService` (`SERVICE_NAME` — contrat de résolution SVO-4).
+** `PlanningLlmService.registerPlannerPort()` + wiring `PlanningPlugin`
+   (mirror `registerLlmBuildService` PLN-LLM-HUB).
+* **Gates** : `planning.adapter.*` 9/9 ; `test` global Manhattan 153 tests
+  0 FAIL (baseline 144 → +9) ; `publishToMavenLocal` VERT (planner-plugin
+  0.0.2 republicié) ; codebase compileKotlin VERT (port N1 inchangé).
+* **Design** : le BuildService Gradle ne peut pas transporter un objet
+  Kotlin arbitraire via ses params sérialisables — le port vit dans le
+  registry, le service forwards. Cycle N1↔N2 mort préservé (flèche unique
+  planner → codebase).
+* **Fichiers** (planner-plugin) : 2 prod nouveaux (adapter 78 + service 62
+  lignes) + `PlanningLlmService.kt` +27 + `PlanningPlugin.kt` +5 ; 2 test
+  (9 unit).
+* **Rapports** : `.agents/sessions/079-svo3-adapter-planner-port.adoc`
+  (Manhattan).
+* **Reste EPIC SVO** : SVO-4 tâche `autonomousSession` (résolution par nom
+  canonique + fallback NoOp), SVO-5 chaînage + Cucumber BDD.
+
 == Session 257 — 2026-09-10
 
 * **EPICs** : SVO-2 objects purs (~2 pts)

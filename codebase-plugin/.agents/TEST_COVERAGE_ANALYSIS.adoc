@@ -1,6 +1,20 @@
 = Test Coverage Analysis — Codebase Gradle
 :date: 2026-09-10
 
+== Session 258 — SVO-3 (cross-borough Manhattan — zéro test codebase)
+
+* *Tests créés* : aucun côté codebase (le port N1 `PlannerPort` est inchangé
+  — SVO-3 vit côté Manhattan). Côté planner : 9 unit (`KoogIntentionPlannerAdapterTest`
+  6 + `PlannerPortBuildServiceTest` 3), test global 153 0 FAIL (baseline 144 → +9).
+* *Tests modifiés/supprimés* : aucun.
+* *Gate exécuté* : codebase `compileKotlin` VERT (port inchangé) ;
+  publishToMavenLocal planner VERT ; planner-plugin 0.0.2 republicié mavenLocal
+  (le consommateur cross-borough SVO-4 résoudra par nom canonique
+  `plannerPortService` au runtime Gradle, pas au classpath).
+* *Note prod* : le branchement réel du port dans une tâche codebase arrive
+  en SVO-4 — la résolution par shared-services name sera testée unitairement
+  (PlannerPortResolver object pur) + BDD SVO-5 (fakes in-memory).
+
 == Session 257 — SVO-2 (TDD objects purs resumption + backlog)
 
 * *Tests créés* :

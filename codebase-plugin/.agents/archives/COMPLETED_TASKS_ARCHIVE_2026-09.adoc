@@ -1,5 +1,17 @@
 = Archive — Tâches Terminées — Septembre 2026
 
+== Session 258 — 2026-09-10 — SVO-3 TERMINÉ (cross-borough Manhattan pilot)
+
+* Côté Manhattan (domaine `planning.adapter`, 8ème domaine planner) :
+  `KoogIntentionPlannerAdapter` implémente le port N1 `PlannerPort` +
+  `PlannerPortBuildService`/`PlannerPortRegistry` (BuildService, nom
+  canonique `plannerPortService`) + `registerPlannerPort` wiring
+  `PlanningPlugin` (mirror `registerLlmBuildService`).
+* 9 unit TDD strict RED → GREEN. `test` global 153 0 FAIL (baseline 144
+  → +9). `publishToMavenLocal` planner VERT (0.0.2 republicié).
+* Cycle N1↔N2 mort préservé — flèche unique planner → codebase.
+* Reste EPIC SVO : SVO-4 + SVO-5 (côté Queens).
+
 == Session 257 — 2026-09-10 — SVO-2 TERMINÉ (objects purs resumption + backlog)
 
 * Domaine `codebase.koog.svo` créé : `BacklogDetector` (parse checkboxes +

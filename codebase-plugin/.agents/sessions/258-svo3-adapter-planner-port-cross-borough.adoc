@@ -1,0 +1,62 @@
+= Session 258 — SVO-3 : adapter PlannerPort cross-borough (Manhattan pilot, sync Queens)
+
+:Borough: Queens — codebase-gradle (N1) + Manhattan — planner-gradle (N2)
+:EPIC: SVO (Session Vibecoding Orchestrée — US-3/5)
+:Methode: Baby-step TDD strict (Manhattan) + sync gouvernance (Queens)
+:Date: 2026-09-10
+
+== Mission
+
+SVO-3 (2 pts, cadrage D3/D5) : côté planner (Manhattan), fournir l'adapter
+qui implémente le port N1 `PlannerPort` (créé SVO-1 S-256) + le wiring
+Gradle qui expose le port au build (`registerPlannerPort`, mirror
+`registerLlmBuildService` PLN-LLM-HUB).
+
+== Baby-steps exécutés (Manhattan)
+
+. RED `KoogIntentionPlannerAdapterTest` (6 unit, domaine `planning.adapter`)
+   → compile fail confirmé.
+. GREEN `KoogIntentionPlannerAdapter` : transposition 1:1 de l'ex-
+   `codebase.rag.PlannerIntegration.plan` (pattern historique récupéré via
+   `git show d4c1825^`) — `IntentionPlanner.plan` 5-canaux, classification
+   simple/complexe (seuil 80), catch → `PlanState(error=...)`. 6/6 PASSED.
+. RED `PlannerPortBuildServiceTest` (3 unit) → GREEN après 3 itérations
+   TDD design Gradle DI : `Property<PlannerPort>` rejeté (params
+   sérialisables), `BuildServiceParameters.None` final, `getParameters()`
+   bytecode-injecté → solution `PlannerPortRegistry` (object pur JVM-wide,
+   `@Volatile`) + service abstract forwarding + concrete subclass test-only.
+. Wiring : `PlanningLlmService.registerPlannerPort()` (nom canonique
+   `plannerPortService` — contrat de résolution codebase SVO-4) +
+   `PlanningPlugin` branché.
+. REFACTOR : typealias + factory superflus retirés (économie d'encre).
+
+== Gates
+
+* Manhattan : `planning.adapter.*` 9/9 ; `test` global 153 0 FAIL
+  (baseline 144 → +9) ; `publishToMavenLocal` VERT (planner-plugin 0.0.2
+  republicié).
+* Queens : `compileKotlin` VERT (port N1 inchangé, zéro régression).
+* Zéro secret, zéro bump BOM.
+
+== Design cross-borough
+
+* Le BuildService Gradle ne transporte pas d'objet Kotlin arbitraire via
+  ses params sérialisables → port dans `PlannerPortRegistry` (JVM-wide),
+  service forwarding.
+* Résolution codebase (SVO-4) par nom canonique `plannerPortService` +
+  fallback `PlannerPort.NoOp` (le service `port()` fait déjà ce fallback).
+* Cycle N1↔N2 reste mort : flèche unique planner → codebase.
+
+== Fichiers (planner-plugin)
+
+* Prod : `planning/adapter/KoogIntentionPlannerAdapter.kt` (78 lignes),
+  `planning/adapter/PlannerPortBuildService.kt` (62 lignes),
+  `planning/llm/PlanningLlmService.kt` (+27), `planning/PlanningPlugin.kt`
+  (+5).
+* Test : `planning/adapter/KoogIntentionPlannerAdapterTest.kt` (6),
+  `planning/adapter/PlannerPortBuildServiceTest.kt` (3).
+
+== Reste EPIC SVO
+
+* SVO-4 tâche `autonomousSession` (Queens, 3 pts).
+* SVO-5 chaînage + Cucumber BDD (Queens, 3 pts).

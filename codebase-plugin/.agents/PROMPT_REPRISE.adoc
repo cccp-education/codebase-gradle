@@ -1,19 +1,20 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 258
-:session: 258
+= Prompt de Reprise — Codebase (Queens N1) — Session 259
+:session: 259
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 257 — SVO-2 TERMINÉ (SessionResumptionPlanner + BacklogDetector, 24 unit)
+:session_precedente: 258 — SVO-3 TERMINÉ (cross-borough Manhattan : adapter PlannerPort + BuildService `plannerPortService`)
 
-== Mission Session 258
+== Mission Session 259
 
-EPIC SVO 🟡 EN COURS — US restantes dans l'ordre :
+EPIC SVO 🟡 EN COURS — US restantes :
 
 . **SVO-4** (3 pts, Queens) : tâche `autonomousSession` — resolve prompt
    (`--prompt` > défaut borough via CompositeContextBuilder.buildScoped +
-   GovernanceContextLoader) → `PlannerPort` (sous-agent) → boucle
-   `VibecodingGraph` → état d'avancement (SessionRepository + audit JSONL)
-   → resumption prompt (SVO-2 SessionResumptionPlanner) écrit dans
-   `build/vibecoding/`. Option `--prompt`, `--borough`, `--maxChainedSessions`
-   (défaut 3, D9).
+   GovernanceContextLoader) → `PlannerPort` (résolution par nom canonique
+   `plannerPortService` via gradle.sharedServices + fallback NoOp —
+   `PlannerPortResolver` object pur testable) → boucle `VibecodingGraph` →
+   état d'avancement (SessionRepository + audit JSONL) → resumption prompt
+   (SVO-2 SessionResumptionPlanner) écrit dans `build/vibecoding/`.
+   Options `--prompt`, `--borough`, `--maxChainedSessions` (défaut 3, D9).
 . **SVO-5** (3 pts) : chaînage brainstorming si backlog fini
    (BacklogDetector.isComplete) + Cucumber BDD `autonomous_session.feature`
    4 scénarios (prompt transféré, défaut borough, backlog restant →
@@ -22,8 +23,6 @@ EPIC SVO 🟡 EN COURS — US restantes dans l'ordre :
 
 === Alternatives (sur demande pilote)
 
-. **SVO-3** adapter planner — session Manhattan cross-borough (2 pts,
-   `KoogIntentionPlannerAdapter` + wiring `registerPlannerPort`).
 . **RENAME vague document** (transfusion d'abord, 3 pts + OCR-QUALITY US-3).
 . **Maintenance** : publication, code review, dette technique.
 
@@ -36,7 +35,12 @@ EPIC SVO 🟡 EN COURS — US restantes dans l'ordre :
 * SVO-2 ✅ S-257 : domaine `codebase.koog.svo` — `BacklogDetector` (parse
   checkboxes + tables AsciiDoc, stale marker, héritage heading neutre,
   isComplete) + `SessionResumptionPlanner` (prompt déterministe sans LLM,
-  BRAINSTORM si vide). 24 unit. Version build 0.0.14.
+  BRAINSTORM si vide). 24 unit.
+* SVO-3 ✅ S-258 : côté Manhattan — `planning.adapter` :
+  `KoogIntentionPlannerAdapter` implémente le port,
+  `PlannerPortBuildService`/`PlannerPortRegistry` exposé sous le nom
+  canonique **`plannerPortService`**, wiring `registerPlannerPort`.
+  planner-plugin 0.0.2 republicié mavenLocal.
 * Gate ciblé : jamais `./gradlew test` global sans permission (2 fails
   préexistants OcrTaskTest drift pdf S-211). Suites ciblées :
   `--tests "codebase.koog.svo.*"` etc.
