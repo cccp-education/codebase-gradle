@@ -1,5 +1,15 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-09-09
+:date: 2026-09-10
+
+== Session 257 — SVO-2 (TDD objects purs resumption + backlog)
+
+* *Tests créés* :
+  - `BacklogDetectorTest` (16 unit — parse checkboxes `[ ]/[x]/[X]`, non-checklist ignorées, stale par heading marqué + par statut **Statut** ✅, marker actif primant (🟡 EN COURS avec ✅ partiel), heading neutre hérite, reset par heading actif, openItems/isComplete, summary strip, 3 tests tables AsciiDoc (row ouverte/done/header skippée, pipe final optionnel) + statut row primant sur section stale)
+  - `SessionResumptionPlannerTest` (8 unit — borough + premier item d'abord, ordre backlog préservé, intention ancrée, done count, backlog vide → BRAINSTORM, déterminisme, pas de fuite done items, invariant borough blank)
+* *Tests modifiés* : aucun (1 dogfood test transitoire créé puis retiré — lisait le BACKLOG réel → flaky dès la prochaine sync ; a rempli son rôle RED→GREEN en découvrant les 2 formats réels + le drift statut V-9)
+* *Tests supprimés* : aucun prod
+* *Gate exécuté* : `codebase.koog.svo.*` 24/24 PASSED + `test` global `--rerun-tasks` 10631 tests 2 failed préexistants (OcrTaskTest drift pdf S-211, hors périmètre) + non-régression plannerport 4/4 + governance 8/8 + `publishToMavenLocal` VERT
+* *Note prod* : Cucumber BDD reporté à SVO-5 (scénarios autonomous_session.feature — la tâche SVO-4 n'existe pas encore, les objects purs n'ont pas de surface BDD autonome légitime)
 
 == Session 214 — CB-FPA-RAG US-1/2/3 (TDD ingestion + BDD corpus + bug updateEmbedding)
 

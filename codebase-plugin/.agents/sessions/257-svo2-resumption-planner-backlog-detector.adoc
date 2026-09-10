@@ -1,0 +1,81 @@
+= Session 257 — SVO-2 : SessionResumptionPlanner + BacklogDetector (objects purs)
+
+:Borough: Queens — codebase-gradle (N1)
+:EPIC: SVO (Session Vibecoding Orchestrée — US-2/5)
+:Methode: Baby-step TDD strict RED → GREEN → REFACTOR (séquentiel pur)
+:Date: 2026-09-10
+
+== Mission
+
+SVO-2 (2 pts, cadrage `.agents/CADRAGE_EPIC_SVO_SESSION_ORCHESTREE.adoc`
+D7/D8) : objects purs
+`BacklogDetector` (heuristic backlog fini) +
+`SessionResumptionPlanner` (resumption prompt déterministe généré depuis le
+backlog, remplace l'écriture manuelle du PROMPT_REPRISE).
+
+== Baby-steps exécutés
+
+. *RED BacklogDetectorTest* (10 tests) → compile fail `Unresolved reference
+  'BacklogDetector'` confirmé.
+. *GREEN BacklogDetector* (domaine `codebase.koog.svo` créé) :
+  `BacklogItem` (line/done/stale + `summary()` strip marker) + object pur
+  `BacklogDetector` (parse/openItems/isComplete). 10/10 PASSED.
+. *Dogfooding sur le BACKLOG réel du borough* (test transitoire, retiré
+  après usage) → **2 formats découverts** : checkboxes `* [ ]` (sections
+  historiques) ET tables AsciiDoc `| US | desc | pts | Statut |` (US
+  récentes, pas de pipe final). Sans support des tables le détecteur
+  n'aurait jamais vu SVO-2 — extension justifiée D8.
+. *RED 3 tests tables* → GREEN après 3 itérations TDD :
+  regex TABLE_ROW tolère pipe final absent (format réel S-256) ;
+  délimiteur `|===` ouvre/ferme → skip header row (flag
+  `skipNextTableRow`) ; statut de la row prime sur la section (row owns
+  its own status).
+. *Dogfood bug réel* : la 1re section `== EPIC V-9` du BACKLOG portait le
+  statut périmé `CADRÉ — Prêt à démarrer` (drift S-157 — la section
+  détaillée plus bas portait le ✅ réel). Le heading neutre `=== Prerequis`
+  **hérite** du statut de la section englobante (seuls les marqueurs
+  explicites flip). Fix BACKLOG (sync statut V-9 → ✅ TERMINE) + ajustement
+  du test unitaire pour refléter le contrat réel (2 tests renommés/ajoutés).
+. *RED SessionResumptionPlannerTest* (8 tests) → GREEN :
+  `SessionResumptionState` (borough/openItems/doneItems/lastIntention,
+  invariant borough non-blank) + object pur `SessionResumptionPlanner.plan`
+  (prompt déterministe : open items ordonnés backlog, intention dernière
+  session, done count, backlog vide → BRAINSTORM, pas de LLM).
+
+== Gates
+
+* `codebase.koog.svo.*` : 24/24 PASSED (16 BacklogDetector + 8
+  SessionResumptionPlanner).
+* `test` global `--rerun-tasks` : 10631 tests, 2 failed préexistants
+  (OcrTaskTest drift pdf S-211, documenté SESSIONS_HISTORY S-256 — hors
+  périmètre). Zéro régression.
+* `publishToMavenLocal` VERT (Règle 0) — jar 0.0.14 rafraîchi.
+
+== Fichiers
+
+* Prod : `src/main/kotlin/codebase/koog/svo/BacklogDetector.kt` (98 lignes,
+  3 types purs), `src/main/kotlin/codebase/koog/svo/SessionResumptionPlanner.kt`
+  (43 lignes, 2 types).
+* Test : `src/test/kotlin/codebase/koog/svo/BacklogDetectorTest.kt` (16),
+  `src/test/kotlin/codebase/koog/svo/SessionResumptionPlannerTest.kt` (8).
+* Gouvernance : `.agents/BACKLOG.adoc` (statut V-9 drifté fixé + SVO-2 ✅).
+
+== Décisions
+
+. Domaine DDD `codebase.koog.svo` (2e domaine SVO après `plannerport`).
+. `BacklogItem.stale` : items sous sections marquées ✅/TERMINÉ/CADUQUE/
+  stale/ABANDONNÉ/clôturé/historique — le drift de sync BACKLOG (checklist
+  étape 7) est le piège central, traité par heuristique + héritage heading
+  neutre.
+. Marker actif (`🟡/⏳/EN COURS/À FAIRE/EN PAUSE`) prime sur `✅` dans une
+  même ligne (cas OCR-QUALITY "EN COURS (US-4 ✅ TERMINÉ)").
+. Tables AsciiDoc supportées (dogfood réel) : statut row primant,
+  header row skippée, pipe final optionnel (format réel sans pipe).
+. Dogfood test retiré après usage (il lisait le BACKLOG réel → flaky dès
+  la prochaine sync).
+
+== Reste EPIC SVO
+
+* SVO-3 adapter planner (Manhattan, cross-borough — 2 pts).
+* SVO-4 tâche `autonomousSession` (3 pts, dépend SVO-2 ✅).
+* SVO-5 chaînage + Cucumber BDD (3 pts).

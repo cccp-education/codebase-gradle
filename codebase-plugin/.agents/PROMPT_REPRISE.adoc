@@ -1,32 +1,46 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 210
-:session: 210
+= Prompt de Reprise — Codebase (Queens N1) — Session 258
+:session: 258
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 209 — EPIC MEMPHIS-BOM-FIX US-4 TERMINÉ (codebase 0.0.10 Central)
+:session_precedente: 257 — SVO-2 TERMINÉ (SessionResumptionPlanner + BacklogDetector, 24 unit)
 
-== Mission Session 210
+== Mission Session 258
 
-Borough DORMANT — tous EPICs terminés (V-9, OCR, CR, VIBE-HARDENING,
-VIBE-HARDENING-2, FT-PIPELINE, CDX-RAG-SOCLE, CDX-OCR-CONTRACTS,
-CB-STORE-UNIFY CADUQUE, MEMPHIS-BOM-FIX TERMINÉ). Maintenance uniquement.
+EPIC SVO 🟡 EN COURS — US restantes dans l'ordre :
 
-=== Options
+. **SVO-4** (3 pts, Queens) : tâche `autonomousSession` — resolve prompt
+   (`--prompt` > défaut borough via CompositeContextBuilder.buildScoped +
+   GovernanceContextLoader) → `PlannerPort` (sous-agent) → boucle
+   `VibecodingGraph` → état d'avancement (SessionRepository + audit JSONL)
+   → resumption prompt (SVO-2 SessionResumptionPlanner) écrit dans
+   `build/vibecoding/`. Option `--prompt`, `--borough`, `--maxChainedSessions`
+   (défaut 3, D9).
+. **SVO-5** (3 pts) : chaînage brainstorming si backlog fini
+   (BacklogDetector.isComplete) + Cucumber BDD `autonomous_session.feature`
+   4 scénarios (prompt transféré, défaut borough, backlog restant →
+   resumption, backlog fini → brainstorming) — fakes in-memory pattern
+   S-082/S-088.
 
-. **Maintenance** : publication, code review, dette technique ciblée.
-. **Cadrer un nouvel EPIC** si besoin identifié (ex: extension RagVectorStore
-  pour ingestion documentaire côté socle, si codex délègue plus).
-. **Cross-borough** : assister un autre borough (Brooklyn codex,
-  Manhattan planner, etc.) si demandé.
+=== Alternatives (sur demande pilote)
+
+. **SVO-3** adapter planner — session Manhattan cross-borough (2 pts,
+   `KoogIntentionPlannerAdapter` + wiring `registerPlannerPort`).
+. **RENAME vague document** (transfusion d'abord, 3 pts + OCR-QUALITY US-3).
+. **Maintenance** : publication, code review, dette technique.
 
 == Contexte technique
 
-* Build autonome : `cd codebase-plugin && ./gradlew ...`.
-* codebase-plugin 0.0.10 = Maven Central (S-209). Dep N0 `ocr-contracts:0.0.1`.
-* Gate ciblé : jamais `./gradlew test` global (Cucumber interminable).
-* 41 cucumber runners dédiés dans `build.gradle.kts` (pattern S-082).
-* `VectorStore.initSchema()` = non-destructeur (S-206). Tests use `clean()`.
+* SVO-1 ✅ S-256 : `PlannerPort` fun interface (`codebase.koog.plannerport`,
+  fallback NoOp) branché KoogAugmentedContextGraph/KoogPlanningOrchestrator,
+  `PlannerIntegration.kt` supprimé, `libs.planner.plugin` retiré — cycle
+  N1↔N2 mort.
+* SVO-2 ✅ S-257 : domaine `codebase.koog.svo` — `BacklogDetector` (parse
+  checkboxes + tables AsciiDoc, stale marker, héritage heading neutre,
+  isComplete) + `SessionResumptionPlanner` (prompt déterministe sans LLM,
+  BRAINSTORM si vide). 24 unit. Version build 0.0.14.
+* Gate ciblé : jamais `./gradlew test` global sans permission (2 fails
+  préexistants OcrTaskTest drift pdf S-211). Suites ciblées :
+  `--tests "codebase.koog.svo.*"` etc.
 * Gouvernance unifiée dans `codebase-plugin/.agents/` (S-207).
-* Catalogue : `kotlin-stdlib-jdk8` version explicite (fix S-209 C-BOM-FIX).
-* BOM 0.0.27 (fix `slider-plugin` artifactId, S-024 MEMPHIS).
 
 == Règles absolues
 

@@ -1,5 +1,20 @@
 = Archive — Tâches Terminées — Septembre 2026
 
+== Session 257 — 2026-09-10 — SVO-2 TERMINÉ (objects purs resumption + backlog)
+
+* Domaine `codebase.koog.svo` créé : `BacklogDetector` (parse checkboxes +
+  tables AsciiDoc, stale marker + héritage heading neutre, statut row
+  primant, isComplete) + `SessionResumptionPlanner` + `SessionResumptionState`
+  (resumption prompt déterministe sans LLM, BRAINSTORM si backlog vide).
+* 24/24 unit TDD strict RED→GREEN (16 + 8). Dogfooding BACKLOG réel :
+  2 formats découverts (checkboxes historiques + tables US récentes sans
+  pipe final), drift statut V-9 fixé (`CADRÉ` → `✅ TERMINE`).
+* Gates : test global 10631 tests (2 fails préexistants OcrTaskTest drift
+  pdf S-211), non-régression plannerport/governance VERT,
+  publishToMavenLocal VERT.
+* Reste EPIC SVO : SVO-3 (Manhattan cross-borough), SVO-4 (tâche
+  autonomousSession), SVO-5 (chaînage + Cucumber BDD).
+
 == Session 214 — 2026-09-09 — CB-FPA-RAG US-1/2/3 TERMINÉ (EPIC CLOS 4/4)
 
 * CB-FPA-RAG US-1 : run ingestion corpus FPA → pgvector —

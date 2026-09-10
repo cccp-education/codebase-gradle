@@ -2,6 +2,39 @@
 :toc: left
 :icons: font
 
+== Session 257 — 2026-09-10
+
+* **EPICs** : SVO-2 objects purs (~2 pts)
+* **Type** : baby-step TDD strict (RED → GREEN → REFACTOR) + dogfooding
+* **Livrables** :
+** Domaine `codebase.koog.svo` créé (2e domaine SVO après `plannerport`).
+** `BacklogDetector` : parse checkboxes `* [ ]` ET tables AsciiDoc
+   `| US | desc | pts | Statut |` (pipe final optionnel — format réel
+   BACKLOG), statut row primant sur la section, header row skippée via
+   délimiteur `|===` (flag skipNextTableRow), stale marker
+   (✅/TERMINÉ/CADUQUE/stale/ABANDONNÉ/clôturé/historique) avec marker
+   actif (🟡/EN COURS/À FAIRE/EN PAUSE) primant, heading neutre hérite du
+   statut englobant, `summary()` strip marker.
+** `SessionResumptionPlanner` + `SessionResumptionState` : resumption
+   prompt déterministe sans LLM (D7) — open items ordonnés backlog
+   (premier = objectif), intention dernière session ancrée, done count,
+   backlog vide → BRAINSTORM (chaînage SVO-5).
+** 24/24 unit TDD strict RED→GREEN (16 BacklogDetectorTest + 8
+   SessionResumptionPlannerTest).
+** Dogfooding BACKLOG réel du borough : 2 formats découverts (checkboxes
+   sections historiques + tables US récentes) ; drift statut V-9 fixé
+   (`CADRÉ — Prêt à démarrer` → `✅ TERMINE` — sync checklist étape 7,
+   la section détaillée du bas portait le ✅ réel).
+** Dogfood test transitoire retiré (lisait le BACKLOG réel → flaky).
+* **Gates** : `codebase.koog.svo.*` 24/24 PASSED ; `test` global
+  `--rerun-tasks` 10631 tests, 2 failed préexistants (OcrTaskTest drift
+  pdf S-211, hors périmètre) ; non-régression plannerport (4/4) +
+  governance (8/8) ; `publishToMavenLocal` VERT (Règle 0).
+* **Fichiers** : 2 prod (~141 lignes) + 2 test (24 unit) +
+  `.agents/BACKLOG.adoc` fixé.
+* **Reste EPIC SVO** : SVO-3 adapter Manhattan (cross-borough), SVO-4
+  tâche `autonomousSession`, SVO-5 chaînage + Cucumber BDD.
+
 == Session 256 — 2026-09-10
 
 * **EPICs** : FIX-BASELINE Z-6 (~2 pts) + SVO-1 inversion port (~3 pts)

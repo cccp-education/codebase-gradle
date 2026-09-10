@@ -2,7 +2,7 @@
 :sectnums:
 :date: 2026-06-16
 
-_Dernière mise à jour : 2026-09-10 (S-256 — **fix Z-6 + SVO-1 inversion port** : `popFocusNode` supprimé (régression S-166, zoom persiste pendant les retries — Z-7 déjà garanti par drainAutofocusStack), koverVerify débloqué, check VERT ; `PlannerPort` fun interface créé (domaine `codebase.koog.plannerport`, fallback NoOp) + branché dans KoogAugmentedContextGraph/KoogPlanningOrchestrator, `PlannerIntegration.kt` supprimé, `libs.planner.plugin` retiré — **cycle N1↔N2 mort** (pattern S-096/S-199). 0.0.15-SNAPSHOT mavenLocal VERT. Propagation antérieure : bump 0.0.14 Central (bundle `3e82490d`), BOM 0.0.37 (bundle `43c8a1ca`), 7 consommateurs compile 7/7 VERTS, GBL-003.4 débloqué. Prochaine : SVO-2 (SessionResumptionPlanner + BacklogDetector) + RENAME vague document (transfusion d'abord).)_
+_Dernière mise à jour : 2026-09-10 (S-257 — **SVO-2 TERMINÉ** : domaine `codebase.koog.svo` créé — `BacklogDetector` (checkboxes + tables AsciiDoc, stale marker, héritage heading neutre, statut row primant, isComplete) + `SessionResumptionPlanner` + `SessionResumptionState` (resumption prompt déterministe sans LLM, BRAINSTORM si vide). 24/24 unit TDD strict RED→GREEN. Dogfooding BACKLOG réel : 2 formats découverts + drift statut V-9 fixé (CADRÉ → ✅ TERMINE). test global 10631 tests (2 fails préexistants OcrTaskTest S-211), publishToMavenLocal VERT. Propagation antérieure : bump 0.0.14 Central (bundle `3e82490d`), BOM 0.0.37 (bundle `43c8a1ca`), 7 consommateurs compile 7/7 VERTS, GBL-003.4 débloqué. Prochaine : SVO-4 (tâche autonomousSession) ou SVO-3 (adapter Manhattan, cross-borough) + RENAME vague document (transfusion d'abord).)_
 
 '''
 == EPIC SVO — Session Vibecoding Orchestrée 🟡 EN COURS (P0, codebase N1 pilotage + planner N2 sous-agent)
@@ -15,7 +15,7 @@ _Pattern : LlmBuildService transposé au planning — codebase N1 pilotage + `Pl
 | US | Description | Pts | Statut
 | SVO-0 | Cadrage EPIC (audit boucle/lifecycle/backlog/pont planner + 10 décisions D1-D10) | 1 | ✅ TERMINÉ (S-255)
 | SVO-1 | Inversion port : `PlannerPort` fun interface (domaine `codebase.koog.plannerport`) + fallback interne + retrait `libs.planner.plugin` (build.gradle.kts:55) + suppression `PlannerIntegration.kt` + gate non-régression | 3 | ✅ TERMINÉ (S-256)
-| SVO-2 | `SessionResumptionPlanner` + `BacklogDetector` (objects purs ~12 unit TDD) : backlog → resumption prompt orienté ; detection backlog fini | 2 | 🟡 À FAIRE
+| SVO-2 | `SessionResumptionPlanner` + `BacklogDetector` (objects purs ~12 unit TDD) : backlog → resumption prompt orienté ; detection backlog fini | 2 | ✅ TERMINÉ (S-257 — domaine `codebase.koog.svo` : parse checkboxes + tables AsciiDoc, stale marker + héritage heading neutre, statut row primant, prompt déterministe BRAINSTORM si vide. 24/24 unit. Dogfooding réel 2 formats + drift V-9 fixé)
 | SVO-3 | Adapter planner : `KoogIntentionPlannerAdapter` implémente PlannerPort + wiring `registerPlannerPort` (mirror registerLlmBuildService) — session Manhattan (cross-borough) | 2 | 🟡 À FAIRE
 | SVO-4 | Tâche `autonomousSession` : resolve prompt (--prompt > défaut borough) → port → boucle VibecodingGraph → état → resumption prompt | 3 | 🟡 À FAIRE
 | SVO-5 | Chaînage brainstorming si backlog fini + Cucumber BDD `autonomous_session.feature` 4 scénarios (fakes S-082/S-088) | 3 | 🟡 À FAIRE
@@ -81,7 +81,7 @@ aucune donnée FPA committée dans ce repo (Apache 2.0). *Socle réutilisé* :
 '''
 == EPIC V-9 — Vibecoding Gouvernance Agentique
 
-**Statut** : CADRÉ — Prêt à démarrer (7 ateliers, 35 items, ~70 pts)
+**Statut** : ✅ TERMINE (20/20 items V-9.1→V-9.20, clôturé session 157 — voir section détaillée plus bas)
 **Priorite** : P0
 **Origine** : Session 000 (2026-06-16) — diagnostic du gap vibecoding incomplet
 
