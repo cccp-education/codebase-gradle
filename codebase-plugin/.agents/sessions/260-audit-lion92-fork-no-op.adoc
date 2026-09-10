@@ -1,0 +1,51 @@
+= Session 260 — Audit lion92/codebase-gradle fork (no-op)
+:session: 260
+:date: 2026-09-10
+:type: audit (governance only, zéro code)
+
+== Objectif
+
+Audit du fork `https://github.com/lion92/codebase-gradle` pour identifier
+des features ou idées récupérables dans le codebase actuel, en excluant
+OCR (décision pilote).
+
+== Méthode
+
+. Cloner le repo lion92 dans `/tmp/lion92-codebase-gradle`
+. Lister tous les fichiers `.kt` source (main + test) des deux repos
+. Diff structurel (fichiers manquants/ajoutés/supprimés)
+. Comparaison package par package
+
+== Résultat
+
+**lion92 est un fork stéré — nous sommes strictement en avance.**
+
+=== Fichiers nous ajoutés (lion92 n'a pas)
+
+* `koog/plannerport/PlannerPort.kt` — SVO-1 (S-256)
+* `koog/svo/` (6 fichiers) — SVO-2→5 (S-257/S-259)
+* `store/CorpusChunksLoader.kt`, `store/CorpusIngestMain.kt` — CB-FPA-RAG (S-214)
+* `store/DoubtExposure.kt`, `DoubtfulChunk.kt`, `DoubtMetadata.kt`, `DoubtPolicy.kt` — OCR-QUALITY (S-213)
+
+=== Fichiers lion92 que nous avons supprimés
+
+* `rag/PlannerIntegration.kt` — supprimé S-256 SVO-1 (code mort cassé, cycle N1↔N2)
+
+=== Packages identiques (zéro delta)
+
+agentic, autofocus, discovery, expert, governance, llm, planning,
+session, state, tracking, benchmark, blog, finetuning, graph, i18n,
+quality, rag, store, walker, ocr
+
+== Conclusion
+
+Zéro feature récupérable. Le cadrage document n'a pas lieu d'être.
+Le fork lion92 date probablement de S-253 (avant SVO + corpus chunks).
+
+== Fichiers modifiés
+
+Aucun — session lecture seule (audit sans code).
+
+== Gate
+
+`git status` = working tree clean (rien à committer côté code).

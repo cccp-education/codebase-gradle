@@ -1,5 +1,15 @@
 = Archive — Tâches Terminées — Septembre 2026
 
+== Session 260 — 2026-09-10 — Audit lion92 fork (no-op, zéro code)
+
+* Audit du fork `lion92/codebase-gradle` — conclusion : fork stéré,
+  nous sommes strictement en avance. Zéro feature récupérable.
+* 12 fichiers nous ajoutés (SVO-1/2/3/4/5 + corpus chunks + doubt
+  policy) absents de lion92. 1 fichier supprimé de lion92
+  (`PlannerIntegration.kt`, supprimé S-256).
+* 0 fichier lion92 non présent dans notre codebase.
+* Zéro fichier modifié — session lecture seule.
+
 == Session 259 — 2026-09-10 — SVO-4 + SVO-5 TERMINÉ (EPIC SVO 6/6 clos)
 
 * SVO-4 : domaine `codebase.koog.svo` — `SessionPromptResolver` (CLI >

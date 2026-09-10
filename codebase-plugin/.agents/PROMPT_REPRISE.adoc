@@ -1,9 +1,13 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 260
-:session: 260
+= Prompt de Reprise — Codebase (Queens N1) — Session 261
+:session: 261
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 259 — SVO-4 + SVO-5 TERMINÉ (tâche `autonomousSession` + chaînage brainstorming + BDD 4/4 — EPIC SVO TERMINÉ 6/6)
+:session_precedente: 260 — Audit lion92/codebase-gradle fork (no-op, zéro code, fork stéré)
 
-== Mission Session 260
+== Mission Session 261
+
+Borough DORMANT (tous EPICs terminés). Maintenance uniquement — RAG,
+contexte augmenté, bout en bout. La prochaine session sera déterminée
+par le pilote.
 
 EPIC SVO ✅ TERMINÉ 6/6 US (S-255→S-259). Missions candidates (ordre
 critical path) :

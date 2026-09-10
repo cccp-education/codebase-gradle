@@ -2,6 +2,19 @@
 :toc: left
 :icons: font
 
+== Session 260 — 2026-09-10
+
+* **EPICs** : Aucun (audit lecture seule — fork lion92/codebase-gradle)
+* **Type** : audit (governance only, zéro code)
+* **Livrables** :
+** Clonage `lion92/codebase-gradle` dans `/tmp/lion92-codebase-gradle`
+** Diff structurel : lion92 = fork stéré, nous sommes strictement en avance
+** 12 fichiers nous ajoutés (SVO-1/2/3/4/5 + corpus chunks + doubt policy)
+** 1 fichier supprimé de lion92 (`PlannerIntegration.kt`, supprimé S-256)
+** 0 fichier lion92 non présent dans notre codebase
+* **Conclusion** : zéro feature récupérable, cadrage document annulé
+* **Rapport** : `.agents/sessions/260-audit-lion92-fork-no-op.adoc`
+
 == Session 259 — 2026-09-10
 
 * **EPICs** : SVO-4 tâche `autonomousSession` (~3 pts) + SVO-5 chaînage brainstorming + BDD (~3 pts) — **EPIC SVO TERMINÉ 6/6 US**
