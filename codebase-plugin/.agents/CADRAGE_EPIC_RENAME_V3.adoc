@@ -1,9 +1,20 @@
-= Cadrage EPIC RENAME — Vague 3 : confiner REAC/AFNOR/SPG/SPD (extension S-215)
-:date: 2026-09-07 (extension) / session d'exécution : dédiée
+= Cadrage EPIC RENAME — Vague 3 : confiner referential sigles + artefacts plans (extension S-215)
+:date: 2026-09-07 (extension) / session d'exécution : dédiée / RÉVISÉE 2026-09-10 (Vague 4 — D5/D11 abrogées, voir bas)
 :epic: RENAME (transverse — 5 boroughs résiduels)
-:origine: Demande pilote — « REAC/AFNOR/SPD/SPG à virer/renommer des boroughs publics, nommage code ou doc publique ; confinés uniquement dans repos privés ou office/ »
-:decision: Même grille que Vague 1/2 — FPA→content, CDA→coding, et désormais REAC/AFNOR/SPG/SPD→termes génériques. EXÉCUTION EN SESSION DÉDIÉE (baby-step TDD par borough).
-:etat: Sessions concurrentes S-135 (capsule) / S-216 (plantuml RENAME-5) / S-213 (codebase bump) / S-250+ (document 0.0.17) ont DÉJÀ purgé FPA/CDA du code prod. Cette vague 3 traite les résidus REAC/AFNOR/SPG/SPD.
+:origine: Demande pilote — « les sigles du référentiel métier et les artefacts du pipeline métier à virer/renommer des boroughs publics, nommage code ou doc publique ; confinés uniquement dans repos privés ou office/ »
+:decision: Même grille que Vague 1/2 — content/coding, et désormais les sigles du référentiel métier + les artefacts du pipeline métier → termes génériques. EXÉCUTION EN SESSION DÉDIÉE (baby-step TDD par borough).
+:etat: Sessions concurrentes S-135 (capsule) / S-216 (plantuml RENAME-5) / S-213 (codebase bump) / S-250+ (document 0.0.17) ont DÉJÀ purgé les marques métier du code prod. Cette vague 3 traite les résidus sigles référentiel + artefacts pipeline.
+
+[NOTE]
+*Révision 2026-09-10 (Vague 4, arbitrage pilote)* : les décisions D5/D11
+(« qualiopi/rncp/afnor/bloom restent en keywords de détection car
+références publiques ») sont ABROGÉES. Le champ lexical métier complet
+sort des repos publics (détecteurs, prompts, fixtures, docs). La logique
+métier extraite est transfusée dans
+`training-gradle/training-plugin/.agents/TRANSFER_LEXIQUE_FORMATION.adoc`
+(rien n'est perdu). Ce document garde les sigles dans les tableaux
+d'audit ci-dessous car ils décrivent *ce qui a été neutralisé* — lecture
+historique, pas usage métier.
 
 == Constats (audit word-boundary 2026-09-07, post sessions concurrentes)
 
@@ -30,14 +41,14 @@
 - bakery : AGENT/BACKLOG/BAKERY_AUDIT/PROMPT_REPRISE (~17)
 - hyperframes : BACKLOG/doc/ (~13)
 - capsule : TODO/BACKLOG (~8) — le reste est archives .agents historiques
-- graphify : BACKLOG (références corpus ex-FPA déjà neutralisées en GF-CORPUS)
+- graphify : BACKLOG (références corpus ex-métier déjà neutralisées en GF-CORPUS)
 
 == Grille de décision (alignée Vague 1/2 + nuance métier)
 
 - D10 : *REAC* — acronyme du référentiel métier du pilote (titre V) : **terme privé** → `referential` (générique). Sort du nommage public.
-- D11 : *AFNOR* — organisme de normalisation PUBLIC français. Nuance : l'acronyme reste mentionnable dans les **keywords de détection** (codebase off-topic, plantuml registry) car c'est une référence publique, PAS l'IP du pilote. Mais il sort des **prompts, listes de vocabulaire emprunté, fixtures et docs** où il désigne le corpus du pilote (usage privatif) → `referential`/générique.
-- D12 : *SPG/SPD* — artefacts du pipeline de formation du pilote (Scénario Pédagogique Global/Détaillé) : **termes privés** → `content plan`/`content plan item` (ou `plan`/`plan-item` selon contexte). Sortent intégralement.
-- D13 : *RNCP/DC/TS/CP/ECF* (document borrowedVocabulary) : RNCP = registre public (comme AFNOR, conservable en détection) ; DC/TS/CP/ECF = sigles du référentiel privé du pilote → sortent avec REAC.
+- D11 : *(ABROGÉE Vague 4 2026-09-10)* — la nuance « sigles publics conservables en détection » est annulée : le champ lexical métier complet sort des repos publics (detector, prompts, fixtures, docs). Voir note de révision en tête.
+- D12 : *artefacts du pipeline métier* (ex-Scénario Pédagogique Global/Détaillé) : **termes privés** → `content plan`/`content plan item` (ou `plan`/`plan-item` selon contexte). Sortent intégralement. *Vague 4 : les mots génériques « scénario »/« détaillé » RESTENT* (vocabulaire commun de production de contenu).
+- D13 : *(RÉVISÉE Vague 4)* sigles métier du document borrowedVocabulary : tous sortent des repos publics (la nuance « registre public conservable en détection » est abrogée avec D11). Sigles et leur logique transfusés dans training-gradle.
 - D14 : mécanique générique recommandée — remplacer les listes hardcodées par une **configuration fournie par l'appelant** (DSL/property) quand c'est possible sans breaking : le plugin public ne connaît plus aucun vocabulaire métier, chaque consommateur fournit le sien (pattern déjà acté pour la Vague 1 côté codebase). Si le config-injection est trop lourd pour la vague, substitution littérale (`referential`) acceptée.
 - D15 : archives `.agents/sessions|archives` = historique immuable, intouchées. Seuls le code prod, les fixtures actives, les prompts et la doc COURANTE (AGENT/BACKLOG/INDEX/PROMPT_REPRISE/TODO) sont purgés.
 - D16 : gate inchangée — check baseline exacte + `grep -rwn "REAC\|AFNOR\|SPG\|SPD" src/ docs-courants` = zéro match hors faux positifs (SPDX, asparagus).
@@ -50,8 +61,8 @@
 | RENAME-8 | document | borrowedVocabulary 2 fichiers (→ config injectée D14 ou `referential`) + 12 fixtures tests + check | 2
 | RENAME-9 | bakery | I18nMigrationService "SPG" → générique + fixtures/features (53/55/56 + vocabulaire-metier.adoc) + docs courantes + check | 2
 | RENAME-10 | codebase | CodebasePlugin.kt:176 description → générique + check | 0.5
-| RENAME-11 | plantuml | KDoc loader exemple YAML → QUALIOPI (déjà registre) + check | 0.5
-| RENAME-12 | capsule/hyperframes | capsule : docs courantes OK (mentions descriptives du RENAME légitimes). hyperframes : BACKLOG (3 : :23 :118 :263 "AFNOR/REAC") + doc/HYPERFRAMES_ARCHITECTURE.adoc (:369) → génériques | 1
+| RENAME-11 | plantuml | KDoc loader exemple YAML → terme générique (Vague 4 : ex-sigle registre → générique) + check | 0.5
+| RENAME-12 | capsule/hyperframes | capsule : docs courantes OK (mentions descriptives du RENAME légitimes). hyperframes : BACKLOG (3 : :23 :118 :263 sigles métier) + doc/HYPERFRAMES_ARCHITECTURE.adoc (:369) → génériques | 1
 |===
 
 ~8.5 pts, 1 session. Ordre : RENAME-7 (planner, prompts LLM = le plus exposé) → 8 → 9 → 10/11/12.
@@ -62,5 +73,5 @@ pipeline A2 (dormant) produit l'enveloppe K-2 `type == "content"` (ex-"SPD")
 
 == Après exécution
 
-- Gate globale transverse : `grep -rwn "FPA\|REAC\|AFNOR\|SPG\|SPD" foundry/public/*/{*/src,docs-courants}` = zéro match métier (hors archives + faux positifs).
-- Le vocabulaire métier complet (FPA, CDA, REAC, AFNOR, SPG, SPD, RNCP, DC, TS, CP, ECF) vit exclusivement dans `office/` + `training-gradle` (privés).
+- Gate globale transverse : les sigles métier (ex-liste : les 2 métiers vendus + sigles référentiel + artefacts pipeline) sortent de `foundry/public/*/{*/src,docs-courants}` = zéro match métier (hors archives + faux positifs).
+- Le vocabulaire métier complet vit exclusivement dans `office/` + `training-gradle` (privés) — inventaire transfusé : `training-gradle/.agents/TRANSFER_LEXIQUE_FORMATION.adoc`.

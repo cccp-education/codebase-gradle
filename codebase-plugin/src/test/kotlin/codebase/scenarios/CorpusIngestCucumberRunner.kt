@@ -8,7 +8,7 @@ import org.junit.platform.suite.api.Suite
 
 /**
  * Cucumber runner dedicated to `@corpus-ingest` scenarios
- * (EPIC CB-FPA-RAG US-3 — corpus loading, doubt policy, ingestion
+ * (EPIC corpus-ingest US-3, CB-FPA-RAG historic id — corpus loading, doubt policy, ingestion
  * contract, Docs exposure BDD).
  *
  * Targets `codebase_corpus_ingest.feature` and filters `@corpus-ingest`

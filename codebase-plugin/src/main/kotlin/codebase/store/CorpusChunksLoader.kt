@@ -5,7 +5,7 @@ import java.io.File
 
 /**
  * Loads a codex chunks.json corpus file into typed [DocumentChunk]s
- * (EPIC CB-FPA-RAG US-1).
+ * (EPIC CB-FPA-RAG US-1 — historic EPIC id).
  *
  * The codex corpus format is the [DocumentChunk] serialization —
  * compatibility confirmed by the US-0 audit (S-213). Pure loader: no

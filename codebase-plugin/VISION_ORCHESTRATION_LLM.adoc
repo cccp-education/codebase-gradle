@@ -28,17 +28,18 @@ besoin → les plugins Gradle transforment des données structurées en artefact
 publiables :
 
 * `plantuml-gradle` : diagrammes PlantUML via RAG + LLM
-* `slider-gradle` : slides Reveal.js pédagogiques
+* `slider-gradle` : slides Reveal.js
 * `bakery-gradle` : sites statiques JBake
 * `readme-gradle` : README formatés multilangues
-* `training-gradle` : extraction de référentiels AFNOR/REAC
+* `training-gradle` : extraction de référentiels métier (privé)
 * `newpipe-gradle` : extraction audio/vidéo
 * `school-backoffice/forms` : quiz Google Forms
 * `jhipster-gradle-plugins` : génération JHipster + assistant RAG
 
-La cible : générer des formations professionnelles complètes (slides, quiz,
-capsules vidéo, livrets PDF) pour deux métiers RNCP (FPA et CDA), distribuées
-via YouTube/TikTok et provisionnées via le SaaS Edster.
+La cible : générer des productions documentaires complètes (slides, quiz,
+capsules vidéo, livrets PDF) pour des catégories de contenu (content,
+coding — les recettes métier vivent en privé dans training-gradle),
+distribuées via YouTube/TikTok et provisionnées via le SaaS Edster.
 
 == Pourquoi un seul LLM ne suffit pas
 
@@ -46,7 +47,7 @@ Les plugins Gradle actuels utilisent des LLM généralistes (Claude, Gemini, etc
 via LangChain4j. Mais un modèle généraliste :
 
 * Ne connaît pas les spécificités de Kotlin/Gradle avancé
-* N'a pas le contexte pédagogique Qualiopi/Bloom
+* N'a pas le contexte des corpus métier (les recettes métier vivent en privé dans training-gradle)
 * Ne maîtrise pas les JSON Schemas du workspace
 * Produit du code non idiomatique pour l'écosystème
 
@@ -67,8 +68,8 @@ DISPATCHER (gpt-oss:120b-cloud)
 └── Synthèse finale
     ↓
 EXPERTS MÉTIERS (modèles 70B fine-tunés)
-├── CDA : Kotlin, Gradle, JHipster, Spring Boot
-└── FPA  : pédagogie, Qualiopi, taxonomies Bloom/Harrow/Krathwohl
+├── coding : Kotlin, Gradle, JHipster, Spring Boot
+└── content : corpus documentaire (recettes métier en privé training)
     ↓
 VALIDATION (ONNX)
 ├── Analyse de sentiment
@@ -81,24 +82,23 @@ PERSISTANCE (LangChain4j + PostgreSQL)
 └── Suivi d'avancement
 ----
 
-=== Les deux experts
+=== Les deux catégories d'experts
 
 [cols="1,2,3"]
 |===
 | Expert | Domaine | Matériel de fine-tuning
-| **CDA** (Concepteur Développeur d'Applications)
+| **coding** (ex-CDA, recette en privé training)
 | Kotlin, Gradle, JHipster, Spring Boot, LangChain4j, PostgreSQL + pgvector,
 Docker, CI/CD GitHub Actions
 | Cours EduTools Kotlin (UTBM/CNAM), Algorithmic Toolbox,
 doc Gradle/Kotlin (`office/books-collection/`), JSON Schemas (`office/data-engineering/`),
 codebase-gradle lui-même (auto-référencement)
 
-| **FPA** (Formateur Professionnel pour Adultes)
-| Ingénierie pédagogique, scénarisation, évaluation, remédiation, Qualiopi,
-RNCP, AFNOR, taxonomies Bloom/Harrow/Krathwohl
-| 38 répertoires `cours/` dans `office/metiers/FPA/`,
-SPG/SPD AsciiDoc (419 lignes), évaluations, grilles Qualiopi,
-normes AFNOR, datasets `data-engineering/llm/datasets.json`
+| **content** (ex-FPA, recette en privé training)
+| Ingénierie documentaire, scénarisation, évaluation, remédiation
+(corpus métier détaillé : voir `training-gradle/.agents/TRANSFER_LEXIQUE_FORMATION.adoc`)
+| répertoires `cours/` dans `office/metiers/*` (privé),
+plans de contenu AsciiDoc, datasets `data-engineering/llm/datasets.json`
 |===
 
 == Le Rôle de codebase-gradle
@@ -124,10 +124,10 @@ cours du workspace en modèles LLM spécialisés.
 === Ce que codebase-gradle doit construire
 
 . *Pipeline de préparation de dataset*
-  * Charger `office/books-collection/` (PDF/EPUB Kotlin, Gradle, pédagogie)
+  * Charger `office/books-collection/` (PDF/EPUB Kotlin, Gradle, corpus documentaire)
   * Charger `office/data-engineering/json-schemas/` (6 schémas JSON draft-07)
-  * Charger les cours métiers (`office/metiers/FPA/cours/`, `office/metiers/CDA/`)
-  * Structurer en datasets d'entraînement par domaine (CDA vs FPA)
+  * Charger les corpus métiers (`office/metiers/*` — recettes en privé training)
+  * Structurer en datasets d'entraînement par domaine (coding vs content)
   * Format : prompt/réponse, contexte, métadonnées (domaine, difficulté)
 
 . *Fine-tuning des experts*
@@ -171,12 +171,12 @@ strict pour éviter le hors-sujet :
 ----
 {
   "task_id": "uuid",
-  "domain": "CDA | FPA",
+  "domain": "coding | content",
   "subtask_type": "code_generation | slide_generation | quiz_generation | ...",
   "context": {
     "max_tokens": 2000,
-    "relevant_schemas": ["formation.json"],
-    "relevant_files": ["SPG_A2SP.adoc"]
+    "relevant_schemas": ["content.json"],
+    "relevant_files": ["CONTENT_PLAN_A2.adoc"]
   },
   "prompt": "question précise et contrainte",
   "expected_output_format": "kotlin | asciidoc | json | ...",
@@ -223,7 +223,7 @@ Confirme : le fine-tuning du 70B est viable avec le matériel existant.
 ----
 MAGIC STICK (bootable Linux + Ollama + modèles pré-chargés)
     ↓
-CODEBASE-GRADLE (fine-tuning experts CDA/FPA + exposition Ollama)
+CODEBASE-GRADLE (fine-tuning experts coding/content + exposition Ollama)
     ↓
 PLUGINS GRADLE (appels LLM ciblés vers l'expert approprié)
     ↓
@@ -242,13 +242,13 @@ le plus pertinent.
 
 == Feuille de Route (ordre d'attaque)
 
-. *Phase 1* — Préparation du dataset CDA
+. *Phase 1* — Préparation du dataset coding
   * Extraction des cours EduTools Kotlin + Algorithmic Toolbox
   * Conversion en paires prompt/réponse structurées
   * Indexation dans pgvector pour recherche sémantique
 
 . *Phase 2* — Premier fine-tuning
-  * Fine-tuning d'un 70B (Qwen3.6) sur le dataset CDA
+  * Fine-tuning d'un 70B (Qwen3.6) sur le dataset coding
   * Évaluation sur des tâches de génération de code Kotlin/Gradle
   * Export ONNX → chargement dans Ollama
 
@@ -256,9 +256,9 @@ le plus pertinent.
   * Boucle de validation des outputs
   * Métriques : qualité du code, pertinence, absence d'hallucination
 
-. *Phase 4* — Dataset FPA + fine-tuning
-  * Même processus pour le domaine FPA
-  * 38 répertoires de cours → dataset structuré → fine-tuning
+. *Phase 4* — Dataset content + fine-tuning
+  * Même processus pour le domaine content (recettes en privé training)
+  * répertoires de cours métier → dataset structuré → fine-tuning
 
 . *Phase 5* — Wiring LangChain4j
   * Persistance PostgreSQL partagée

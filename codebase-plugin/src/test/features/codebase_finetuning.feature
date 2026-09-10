@@ -9,7 +9,7 @@ Feature: FT-PIPELINE — Fine-tuning N1 pipeline (dataset → GGUF → manifest,
 
   Scenario: Pipeline complet — dataset préparé, modèle créé, GGUF produit, expert enregistré
     Given a finetuning pipeline wired to an Ollama registry returning success
-    When the finetuning pipeline fine-tunes a request with base model "gpt-oss:120b-cloud", dataset "docs/afnor/**/*.adoc" and output model "expert-coding"
+    When the finetuning pipeline fine-tunes a request with base model "gpt-oss:120b-cloud", dataset "docs/referential/**/*.adoc" and output model "expert-coding"
     Then the finetuning pipeline returns a success result
     And the finetuning pipeline success result references output model "expert-coding"
     And the finetuning pipeline success result references a non-blank GGUF path
@@ -24,10 +24,10 @@ Feature: FT-PIPELINE — Fine-tuning N1 pipeline (dataset → GGUF → manifest,
 
   Scenario: Fallback degraded quand Ollama registry est indisponible
     Given a finetuning pipeline wired to an Ollama registry returning a 503 failure
-    When the finetuning pipeline fine-tunes a request with base model "gemma4:31b-cloud", dataset "docs/reac/**/*.adoc" and output model "expert-content"
+    When the finetuning pipeline fine-tunes a request with base model "gemma4:31b-cloud", dataset "docs/framework/**/*.adoc" and output model "expert-content"
     Then the finetuning pipeline returns a failure result
     And the finetuning pipeline failure reason mentions the registry failure
-    And the finetuning pipeline failure preserves the original dataset "docs/reac/**/*.adoc"
+    And the finetuning pipeline failure preserves the original dataset "docs/framework/**/*.adoc"
 
   Scenario: Validation seuil atteint dès la première itération
     Given a finetuning graph with a fake LLM proposing ratio 0.10, validating 0.9, and a fake pipeline always succeeding

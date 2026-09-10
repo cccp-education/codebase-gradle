@@ -11,7 +11,7 @@ Feature: EPIC V-9.18 Compile governance chunks to Gradle tasks
       = Agent
 
       == Generate Step
-      . GENERER le rapport pedagogique
+      . GENERER le rapport de contenu
       """
     When I run the ingestGovernance task on the project
     Then the ingestion report has artifacts compiled greater than 0

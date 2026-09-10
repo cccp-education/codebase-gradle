@@ -7,7 +7,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 /**
- * EPIC CB-FPA-RAG US-1 — corpus chunks file loading (pure DDD, no
+ * EPIC corpus-ingest US-1 (CB-FPA-RAG historic id) — corpus chunks file loading (pure DDD, no
  * Gradle, no pgvector). The codex chunks.json format matches the
  * [DocumentChunk] type (compatibility confirmed US-0 S-213); the loader
  * maps the JSON array into typed chunks for the ingestion run.
@@ -26,9 +26,9 @@ class CorpusChunksLoaderTest {
               {
                 "id": "chk-24d4da70bf379994",
                 "sourceDocument": "book",
-                "sectionPath": "Devenir Formateur > FPA II",
+                "sectionPath": "Devenir Auteur > Content II",
                 "headingLevel": 1,
-                "content": "# Devenir Formateur",
+                "content": "# Devenir Auteur",
                 "license": "PROPRIETARY"
               },
               {
@@ -48,7 +48,7 @@ class CorpusChunksLoaderTest {
 
         assertEquals(2, chunks.size)
         assertEquals("book", chunks[0].sourceDocument)
-        assertEquals("# Devenir Formateur", chunks[0].content)
+        assertEquals("# Devenir Auteur", chunks[0].content)
         assertEquals("PROPRIETARY", chunks[0].license)
         assertEquals("continuite", chunks[1].overlapNext)
     }

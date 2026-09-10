@@ -76,7 +76,7 @@ class AgenticCompilerSteps(private val world: AgenticCompilerWorld) {
 
             == Mapping — Boroughs Existants
 
-            Manhattan plannerGenerateSPG → generateSPG.
+            Manhattan plannerGenerateContentPlan → generateContentPlan.
 
             == Roadmap d'Implementation
 

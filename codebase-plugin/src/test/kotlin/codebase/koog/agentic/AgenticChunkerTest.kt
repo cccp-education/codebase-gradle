@@ -40,7 +40,7 @@ class AgenticChunkerTest {
 
             == Principes Fondateurs
 
-            . *Le verbe dit pourquoi, le complement dit quoi* — `generateSPG` vs `collectFromCorpus`.
+            . *Le verbe dit pourquoi, le complement dit quoi* — `generateContentPlan` vs `collectFromCorpus`.
                La taxonomie encode l'intention. Zero ambiguite.
         """.trimIndent()
 
@@ -219,7 +219,7 @@ class AgenticChunkerTest {
     fun `should extract verb GENERER from generation patterns`() {
         val content = """
             == Pipeline
-            La tache `generateSPG` produit le scenario pedagogique global.
+            La tache `generateContentPlan` produit le scenario global de contenu.
         """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "BACKLOG.adoc")

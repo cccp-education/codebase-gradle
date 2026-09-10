@@ -1,60 +1,65 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 215
-:session: 215
+= Prompt de Reprise — Codebase (Queens N1) — Session 257
+:session: 257
 :borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 214 — CB-FPA-RAG US-1/2/3 TERMINÉ (ingestion corpus FPA 387 chunks + 387 embeddings pgvector, 18 doubtful, proof of work query métier OK, BDD 4/4) + bug updateEmbedding corrigé (double bracket, P0) + propagation 0.0.14 Central (bundle `3e82490d`) + BOM 0.0.37 (bundle `43c8a1ca`), compile 7/7 VERTS
-:session_pre_precedente: 213 — CB-FPA-RAG US-0 TERMINÉ (audit : format chunks codex COMPATIBLE) + OCR-QUALITY US-4 TERMINÉ (DoubtMetadata/DoubtExposure/ingestWithDoubt/searchWithDoubt, 31 unit + 9 Cucumber, zéro re-vectorisation)
+:session_precedente: 256 — fix Z-6 TERMINÉ (popFocusNode supprimé — zoom persiste pendant les retries, drain en fin de session ; koverVerify débloqué, check VERT) + SVO-1 TERMINÉ (PlannerPort fun interface domaine codebase.koog.plannerport + fallback NoOp + branché KoogAugmentedContextGraph/KoogPlanningOrchestrator + PlannerIntegration.kt supprimé + libs.planner.plugin retiré — cycle N1↔N2 mort, pattern S-096/S-199)
+:session_pre_precedente: 255 — RENAME Vague 4 TERMINÉ (champ lexical métier formation → content + transfusion training TRANSFER_LEXIQUE_FORMATION.adoc) + cadrage EPIC SVO (7 US ~14 pts)
 
-== Mission Session 215 — Critical path (suite ordre acté)
+== Mission Session 257 — Critical path (suite ordre acté)
 
-[IMPORTANT]
-Arbitrage pilote 2026-09-07 : priorité critical path MVP0.
-CB-FPA-RAG est TERMINÉ 4/4 US (S-213 + S-214) — GBL-003.4 débloqué,
-le corpus FPA (387 chunks) est requêtable via `codebase.store`.
+*1. EPIC SVO-2 — objects purs (~2 pts)* — `SessionResumptionPlanner` +
+`BacklogDetector` (domaine `codebase.koog.session`) : backlog items →
+resumption prompt orienté backlog (priorise `[ ]` ouverts, référence
+les artefacts produits, consigne l'objectif suivant) ; heuristic
+backlog fini (aucune ligne `[ ]` non coché hors sections historiques).
+~12 unit TDD strict. Décisions D7/D8 du cadrage.
 
-*1. Fix Z-6 Cucumber (2 échecs préexistants, ~2 pts)* — « Autofocus
-stack size should be at least 2 but was 1 » (régression S-166,
-`popFocusNode` après replan). Test unitaire ne couvre que non-empty.
-Baby-step TDD strict. 2 scénarios `epic_z_6_autofocus_feedback`
-rouges — orthogonal à tout le reste, gate `check` bloquée.
+*2. EPIC SVO-4 — tâche `autonomousSession` (~3 pts)* — résolution
+prompt (`--prompt` > défaut borough : PROMPT_REPRISE + backlog via
+buildScoped/GovernanceContextLoader) → PlannerPort → boucle
+VibecodingGraph → état d'avancement (SessionRepository + audit JSONL)
+→ resumption prompt écrit dans `build/vibecoding/`. Options `--prompt`,
+`--borough`, `--maxChainedSessions` (défaut 3, D9).
 
-*2. RENAME Vague suivante (ordre acté S-215)* — document → bakery →
-capsule → plantuml → graphify/codex (codebase ✅ S-212). Gouvernance
-pure cross-borough — voir BACKLOG racine RENAME.
+*3. EPIC SVO-5 — chaînage + BDD (~3 pts)* — si backlog fini →
+`brainstormingSession` (cadrage global augmenté, autofocus
+BIG_PICTURE, intention "BRAINSTORM: <vision du borough>") ;
+Cucumber `autonomous_session.feature` 4 scénarios (fakes in-memory
+pattern S-082/S-088).
 
-*3. Support Newark A2 (sur demande pilote)* — le RAG FPA est prêt
-pour la génération des plans de formation (canal Docs doubt-aware). Dogfooding training
-TRN-1→2 si le pilote arbitre.
+*4. RENAME vague document (sur demande pilote)* — transfusion d'abord
+(`TRANSFER_LEXIQUE_FORMATION.adoc` table § 2), puis neutralisation
+document-gradle.
+
+*5. Support Newark A2 (sur demande pilote)* — le RAG référentiel est
+prêt pour la génération des plans de formation (canal Docs doubt-aware).
+*Dogfood cible de SVO* : la première mission réelle d'`autonomousSession`
+consomme le contexte augmenté (critical path MVP0).
 
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...`.
-* Version locale : 0.0.14 (Central : 0.0.14, bundle `3e82490d`,
-  repo1 200). Conventions 0.0.4. BOM 0.0.37 (Central, contrainte
-  codebase 0.0.14). 7 consommateurs propagés, compile 7/7 VERTS.
-* koverVerify : minBound 63 (baseline 68.03% à HEAD S-212). Gate
-  NON validée S-214 (dépend cucumberTest global, bloqué Z-6).
-* 44 cucumber runners dédiés dans `build.gradle.kts` (dernier :
-  `cucumberTestCorpusIngest` S-214).
-* Run ingestion FPA : consommateur transitoire
-  `/tmp/opencode/fpa-rag-build` + init-script
-  `/tmp/opencode/fpa-rag-init.gradle.kts` (tâches `corpusIngest` +
-  `corpusQuery`, pattern Règle 2 — workspace wipe). Base pgvector :
-  docker `angry_curran` port 32772, db `codex` (387 chunks, 387
-  embeddings, 18 doubtful). Corpus : `office/metiers/FPA/.../codex-out/chunks.json`
-  (PROPRIETARY, zéro donnée métier dans le repo).
-* `StoreStatements.updateEmbedding` strip les brackets — contract
-  documenté KDoc + test `updateEmbedding strips brackets` (S-214).
-* Dossier gouvernance unique : `codebase-plugin/.agents/` (S-207).
+* Version locale : 0.0.15-SNAPSHOT (Central : 0.0.14, bundle
+  `3e82490d`). Conventions 0.0.4. BOM 0.0.37. `publishToMavenLocal`
+  VERT S-256.
+* SVO-1 posé : `PlannerPort` (fun interface, companion `NoOp`) dans
+  domaine `codebase.koog.plannerport` ; `KoogAugmentedContextGraph`
+  et `KoogPlanningOrchestrator` prennent `plannerPort` en paramètre
+  constructeur (défaut NoOp) ; `planNode` consomme le port (try/catch →
+  `PlannerPortFailed`). `libs.planner.plugin` retiré — entrée catalogue
+  `planner-plugin` (toml:46) conservée pour SVO-3.
+* Z-6 corrigé : contrat = zoom persiste pendant les retries
+  (`drainAutofocusStack` en fin de session garantit Z-7). NE PAS
+  réintroduire de pop sur replan.
+* Gate D16 étendue : `grep -ni "formation|pédagog|pedagog|qualiopi|afnor|bloom|harrow|krathwohl|apprenant|stagiaire|formateur|livret|reac\b" src/` = zéro match.
+* 44 cucumber runners dédiés (pas de `cucumberTestEpicZ6` — Z-6 tourne
+  dans cucumberTest global).
+* koverVerify : minBound 63 — VERT S-256 (check complet 26m29s).
 
 == Échecs préexistants à documenter (orthogonaux, ne pas confondre)
 
-* 2 × Z-6 Cucumber `epic_z_6_autofocus_feedback` ("Autofocus stack
-  size should be at least 2 but was 1") — régression S-166
-  (`popFocusNode` après replan). Confirmés présents S-214 (bloquent
-  `cucumberTest` global → `koverVerify`/`check` rouge).
 * 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`,
-  `isImageFile false for pdf`) — drift S-211 (`4601cb0` a ajouté pdf
-  aux IMAGE_EXTENSIONS sans maj tests).
+  `isImageFile false for pdf`) — drift S-211 (non re-testés S-256,
+  échecs non observés dans check — à vérifier).
 
 == Règles absolues
 
@@ -63,9 +68,11 @@ TRN-1→2 si le pilote arbitre.
 * Zéro commit/push sans permission explicite du pilote.
 * Zéro secret, zéro token dans le code ou les logs.
 * Ne JAMAIS lancer `./gradlew test` global en fin de session sans permission.
+* RENAME : transfuser la logique métier dans training AVANT toute purge.
 
 == References
 
-* `.agents/sessions/214-cb-fpa-rag-us123-corpus-ingest.adoc` (rapport S-214)
-* `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc` (cadrage S-215 — EPIC terminé)
-* `.agents/CADRAGE_EPIC_OCR_QUALITY.adoc` (US-4 ✅ S-213)
+* `.agents/sessions/256-fix-z6-svo1-inversion-port.adoc` (rapport S-256)
+* `.agents/CADRAGE_EPIC_SVO_SESSION_ORCHESTREE.adoc` (cadrage S-255 — 10 décisions)
+* `.agents/CADRAGE_EPIC_RENAME_V3.adoc` (révisé Vague 4 — D5/D11 abrogées)
+* `training-gradle/training-plugin/.agents/TRANSFER_LEXIQUE_FORMATION.adoc` (transfusion)

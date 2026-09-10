@@ -89,7 +89,7 @@ class FineTuningConfigTest {
 
     @Test
     fun `corpusGlobs accepts a non-empty list`() {
-        val config = FineTuningConfig(corpusGlobs = listOf("docs/afnor/**/*.adoc"))
-        assertEquals(listOf("docs/afnor/**/*.adoc"), config.corpusGlobs)
+        val config = FineTuningConfig(corpusGlobs = listOf("docs/referential/**/*.adoc"))
+        assertEquals(listOf("docs/referential/**/*.adoc"), config.corpusGlobs)
     }
 }

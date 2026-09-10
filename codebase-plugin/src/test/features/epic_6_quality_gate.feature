@@ -14,7 +14,7 @@ Feature: EPIC 6 Quality Gate — Validation boucle qualité ONNX (checks déterm
     And all 3 checkers return PASS verdicts
 
   Scenario: Clean CONTENT output passes all quality checks
-    When I evaluate CONTENT output "Objectif pédagogique : évaluer les compétences Qualiopi selon la taxonomie de Bloom."
+    When I evaluate CONTENT output "Objectif : structurer le guide de publication selon le plan éditorial."
     Then the quality gate passes
 
   Scenario: PII residual in output triggers FAIL verdict

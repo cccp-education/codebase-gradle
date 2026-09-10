@@ -74,7 +74,7 @@ class AgenticSchemaSteps(private val world: AgenticSchemaWorld) {
 
             == Mapping — Boroughs Existants
 
-            Manhattan plannerGenerateSPG → generateSPG.
+            Manhattan plannerGenerateContentPlan → generateContentPlan.
 
             == Roadmap d'Implementation
 

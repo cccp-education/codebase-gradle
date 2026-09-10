@@ -413,7 +413,7 @@ class IngestGovernanceTaskTest {
             = Agent
 
             == Generation Procedure
-            . GENERER le scenario pedagogique global
+            . GENERER le scenario de contenu global
             . Produire le document AsciiDoc
             """.trimIndent()
         )

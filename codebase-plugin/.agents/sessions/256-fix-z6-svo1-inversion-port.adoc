@@ -1,0 +1,126 @@
+= Session 256 — Fix Z-6 + SVO-1 inversion port (PlannerPort)
+
+:date: 2026-09-10
+:borough: Queens (codebase-gradle)
+:epic: FIX-BASELINE (Z-6) + SVO-1 (EPIC SVO)
+:statut: TERMINÉ
+
+== 1. Mission
+
+PROMPT_REPRISE session 256 : (1) fix Z-6 — 2 échecs Cucumber autofocus
+préexistants (régression S-166 `popFocusNode`) qui bloquent `check`
+global + koverVerify ; (2) SVO-1 — inversion du port planner : création
+`PlannerPort` (domaine `codebase.koog.plannerport`), retrait
+`libs.planner.plugin`, suppression `PlannerIntegration.kt` (cycle N1↔N2
+tué, D4 du cadrage SVO).
+
+== 2. Fix Z-6 (~2 pts)
+
+=== Diagnostic
+
+Scénarios `@epic_z_6` « Autofocus stack is populated after error
+zoom-in » (stack ≥ 2) et l'unit miroir `Z-6 error recovery sets
+focusLevel to IMPLEMENTATION` échouaient depuis S-166 : le commit
+`becfaf3` (« fix(ci): 6 scénarios Cucumber full-tests rouges corrigés »)
+a ajouté `popFocusNode` après chaque replan réussi — la stack
+redescendait à 1 immédiatement alors que le contrat Z-6 (écrit avant)
+exige que le zoom IMPLEMENTATION *persiste pendant les retries*.
+
+=== Contrat arbitré
+
+- *Z-6* : zoom persiste pendant les retries (stack ≥ 2 pendant le
+  cycle erreur→replan) — le contexte chirurgical est toujours dispo
+  pour le retry.
+- *Z-7* : stack vide *après succès final* — déjà garanti par
+  `drainAutofocusStack()` dans `checkProgressNode` (toutes tâches
+  exécutées → drain → finish).
+- Le `popFocusNode` sur replan violait Z-6 sans être nécessaire à Z-7.
+
+=== Fix (baby-step)
+
+. RED reproduit : `cucumber-epic-z6.json` (rapport S-099) — assertion
+  `stack size should be at least 2 but was 1`.
+. Suppression du call site `popFocusNode(state)` après replan réussi
+  (`VibecodingGraph.kt:266`) + commentaire Z-6 (persiste pendant
+  retries, drain en fin de session).
+. Suppression de la fonction morte `popFocusNode` (zéro autre call
+  site, grep vérifié).
+. Gate : `cucumberTest` global BUILD SUCCESSFUL 13m59s (2 échecs
+  Z-6 corrigés, Z-7 4/4 non-régression) + `check` BUILD SUCCESSFUL
+  27m56s (koverVerify débloqué).
+
+== 3. SVO-1 — Inversion port (~3 pts)
+
+=== RED
+
+`PlannerPortTest` 4 unit créés → `Unresolved reference 'PlannerPort'`
+× 4.
+
+=== GREEN
+
+. *Port* : `codebase.koog.plannerport.PlannerPort` — fun interface
+  `plan(intention, CompositeContext): PlanState` + companion `NoOp`
+  (fallback dégradé : `PlanState(error = "Planner unavailable — no
+  adapter registered on PlannerPort")`, jamais de plan, jamais de
+  crash).
+. *Branchement* : `KoogAugmentedContextGraph(plannerPort)` et
+  `KoogPlanningOrchestrator(plannerPort)` — paramètre constructeur
+  défaut `PlannerPort.NoOp` ; `planNode` consomme le port (try/catch →
+  `PlannerPortFailed`, miroir du fallback interne historique).
+. *Suppression* : `PlannerIntegration.kt` (90 lignes) supprimé — les
+  extensions `toPlanMetadata` migrées vers `PlanIntentionTask.kt`
+  (seul consommateur, KDoc SVO-1).
+. *Retrait dépendance* : `implementation(libs.planner.plugin)` retiré
+  de `build.gradle.kts` (commentaire SVO-1 mirror CDX-RAG-4) +
+  entrée catalogue `planner-plugin` conservée volontairement
+  (purge définitive en SVO-3, diff minimal).
+. *Gate grep* : `import planning.` = zéro match dans src/main.
+. *Gate* : `check` BUILD SUCCESSFUL 26m29s (unit + cucumber 0 failed
+  sur tous les rapports JSON + koverVerify) + `publishToMavenLocal`
+  BUILD SUCCESSFUL 8s (0.0.15-SNAPSHOT).
+
+== 4. Non-régression vérifiée
+
+- `KoogAugmentedContextGraphTest` 5 unit VERT (défaut NoOp — sans
+  pgvector, dégradé propre, classification préservée).
+- `KoogPlanningOrchestratorTest` 9 unit VERT (idem, planFeature/
+  planArchitecture/planRefactor/planDocumentation inchangés).
+- Cucumber `epic_l_3_augmented_planning` 7/7 VERT (sans adapter →
+  NoOp, dégradé, pas de crash).
+- Cucumber vibecoding (V-6 feedback, Z-6 autofocus, Z-7 cross-borough)
+  VERTS — 0 failed sur tous les rapports JSON.
+
+== 5. Reste EPIC SVO
+
+|===
+| US | Statut
+| SVO-0 cadrage | ✅ S-255
+| SVO-1 inversion port | ✅ S-256
+| SVO-2 SessionResumptionPlanner + BacklogDetector (~2 pts) | 🟡 À FAIRE
+| SVO-3 adapter planner KoogIntentionPlannerAdapter (~2 pts, Manhattan) | 🟡 À FAIRE
+| SVO-4 tâche autonomousSession (~3 pts) | 🟡 À FAIRE
+| SVO-5 chaînage + BDD (~3 pts) | 🟡 À FAIRE
+|===
+
+== 6. Découvertes
+
+- `cucumberTestEpicZ6` n'existe pas comme tâche dédiée (runner
+  `EpicZ6CucumberRunner` jamais câblé dans `CucumberTaskSpec`) — les
+  scénarios Z-6 tournent dans `cucumberTest` global. Candidat futur
+  (Économie d'Encre : pas créé, gate globale suffit).
+- `planner-plugin` reste dans le catalogue (`libs.versions.toml:46`)
+  pour SVO-3 (l'adapter planner importera ce catalogue).
+
+== 7. Fichiers modifiés
+
+|===
+| Fichier | Action
+| src/main/kotlin/codebase/koog/plannerport/PlannerPort.kt | créé (fun interface + NoOp)
+| src/test/kotlin/codebase/koog/plannerport/PlannerPortTest.kt | créé (4 unit)
+| src/main/kotlin/codebase/koog/VibecodingGraph.kt | fix Z-6 (popFocusNode supprimé)
+| src/main/kotlin/codebase/koog/KoogAugmentedContextGraph.kt | port branché (plannerPort, planNode)
+| src/main/kotlin/codebase/koog/KoogPlanningOrchestrator.kt | port branché (miroir)
+| src/main/kotlin/codebase/rag/PlannerIntegration.kt | supprimé (90 lignes)
+| src/main/kotlin/codebase/rag/PlanIntentionTask.kt | toPlanMetadata migrées + import Instant
+| build.gradle.kts | libs.planner.plugin retiré (commentaire SVO-1)
+|===

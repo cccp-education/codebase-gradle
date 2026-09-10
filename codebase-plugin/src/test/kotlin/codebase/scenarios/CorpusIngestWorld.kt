@@ -6,7 +6,7 @@ import codebase.store.RagVectorStore
 import codebase.store.RetrieveResult
 
 /**
- * Shared world for `@corpus-ingest` scenarios (EPIC CB-FPA-RAG US-3).
+ * Shared world for `@corpus-ingest` scenarios (EPIC corpus-ingest US-3, CB-FPA-RAG historic id).
  *
  * Holds the mutable state flowing between Given/When/Then steps: the
  * in-memory corpus file, the loaded chunks, the marked chunks, the

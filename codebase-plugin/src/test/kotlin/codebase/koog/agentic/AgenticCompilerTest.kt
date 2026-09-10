@@ -104,7 +104,7 @@ class AgenticCompilerTest {
         val chunk = buildChunk(
             chunkType = ChunkType.PROCEDURE,
             verb = TaxonomyVerb.GENERER,
-            content = ". Generer le scenario pedagogique global\n. Produit le plan de contenu"
+            content = ". Generer le scenario de contenu global\n. Produit le plan de contenu"
         )
 
         val artifact = compiler.compile(chunk)

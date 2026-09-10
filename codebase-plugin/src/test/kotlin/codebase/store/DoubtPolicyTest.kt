@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * EPIC CB-FPA-RAG US-1 — doubt derivation from corpus text markers.
+ * EPIC corpus-ingest US-1 (CB-FPA-RAG historic id) — doubt derivation from corpus text markers.
  *
  * The codex chunk corpus (chunks.json) carries no confidence column —
  * the doubt is derived heuristically from the visible OCR markers

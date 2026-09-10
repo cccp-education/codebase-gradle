@@ -26,7 +26,7 @@ class OllamaFineTunerAdapterTest {
 
     private val request = FineTuningRequest(
         baseModel = "gpt-oss:120b-cloud",
-        dataset = listOf("docs/afnor/**/*.adoc"),
+        dataset = listOf("docs/referential/**/*.adoc"),
         outputModelName = "expert-coding",
         corpusRatio = 0.10
     )
@@ -69,7 +69,7 @@ class OllamaFineTunerAdapterTest {
         assertTrue(result is FineTuningResult.Failure)
         val failure = result as FineTuningResult.Failure
         assertTrue(failure.reason.contains("create"))
-        assertTrue(failure.originalDataset == listOf("docs/afnor/**/*.adoc"))
+        assertTrue(failure.originalDataset == listOf("docs/referential/**/*.adoc"))
         assertTrue(!client.pushCalled)
     }
 
@@ -89,7 +89,7 @@ class OllamaFineTunerAdapterTest {
         assertTrue(result is FineTuningResult.Failure)
         val failure = result as FineTuningResult.Failure
         assertTrue(failure.reason.contains("push"))
-        assertTrue(failure.originalDataset == listOf("docs/afnor/**/*.adoc"))
+        assertTrue(failure.originalDataset == listOf("docs/referential/**/*.adoc"))
         assertTrue(client.createCalled)
     }
 
@@ -105,7 +105,7 @@ class OllamaFineTunerAdapterTest {
 
         assertTrue(result is FineTuningResult.Failure)
         val failure = result as FineTuningResult.Failure
-        assertTrue(failure.originalDataset == listOf("docs/afnor/**/*.adoc"))
+        assertTrue(failure.originalDataset == listOf("docs/referential/**/*.adoc"))
     }
 
     @Test

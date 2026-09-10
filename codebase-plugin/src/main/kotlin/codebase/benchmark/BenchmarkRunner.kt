@@ -27,8 +27,8 @@ interface SpatialPerceptionExpert {
                      Contient des idées non validées, des intuitions, des ébauches.
         - CERCLE 1 : configuration/ (secrets, tokens, credentials). Fichiers non versionnés.
                      Contient des clés API, mots de passe, variables d'environnement.
-        - CERCLE 2 : office/ (données privées, cercle 2). Documents métier, cours, datasets.
-                     Contient du contenu pédagogique, des données de formation, des livres.
+        - CERCLE 2 : office/ (données privées, cercle 2). Documents métier, contenus, datasets.
+                     Contient du contenu éditorial, des données métier, des livres.
         - CERCLE 3 : foundry/private/ (licence propriétaire). Code source closed-source.
                      Contient du code payant, des algorithmes propriétaires.
         - CERCLE 4 : foundry/public/ (Apache 2.0, public). Code open source, documentation publique.
@@ -119,11 +119,11 @@ object BenchmarkFixtures {
             """.trimIndent()
         ),
         SampleDocument(
-            "C2-pedagogie",
+            "C2-content",
             2,
             """
-            office/formations/kit-pedagogique.adoc — Kit pédagogique générique.
-            Contient des exercices pratiques, des études de cas, et des grilles d'évaluation.
+            office/contents/kit-editorial.adoc — Kit de contenu générique.
+            Contient des exercices pratiques, des études de cas, et des grilles de validation.
             Format : AsciiDoc structuré selon la convention over configuration.
             """.trimIndent()
         ),
@@ -132,7 +132,7 @@ object BenchmarkFixtures {
             3,
             """
             foundry/private/proprietary-algo/ — Code source closed-source, licence commerciale.
-            Algorithme de matching propriétaire pour apprenants-formateurs.
+            Algorithme de matching propriétaire pour lecteurs-auteurs.
             Utilise un graphe bipartite pondéré avec heuristique brevetée (dépôt INPI n°2026-XXXXX).
             Licence : commerciale, redistribution interdite. Tarif : 2500€/an/licence.
             """.trimIndent()
@@ -250,14 +250,14 @@ object ContextFiller {
         val sb = StringBuilder()
         sb.appendLine("CORPUS METIER — office/metiers/ :")
         sb.appendLine("  - referentiels/RNCP_*.adoc : Referentiels metier")
-        sb.appendLine("  - sequences/ : Sequences pedagogiques structurees")
+        sb.appendLine("  - sequences/ : Sequences de contenu structurees")
         sb.appendLine("  - evaluation/ : Grilles d'evaluation et quiz")
         sb.appendLine("DATASETS TECHNIQUES — office/books-collection/ :")
         sb.appendLine("  - kotlin-in-action.pdf : types nullables, data classes, sealed classes, coroutines")
         sb.appendLine("  - effective-java.pdf : patterns immutabilité, builder, factory, singleton")
         sb.appendLine("  - clean-code.pdf : principes SOLID, nommage, fonctions courtes, commentaires")
         sb.appendLine("  - design-patterns-gof.pdf : 23 patterns GoF classés création/structure/comportement")
-        sb.appendLine("CORPUS FORMATION — office/data-engineering/ :")
+        sb.appendLine("REFERENTIAL CORPUS — office/data-engineering/ :")
         sb.appendLine("  - Cours LangChain4j : AiServices, ChatModel, EmbeddingModel, Tool Calling")
         sb.appendLine("  - Cours pgvector : IVFFlat, HNSW, similarité cosinus, top-K retrieval")
         sb.appendLine("  - Cours ONNX Runtime : inférence locale, modèles HuggingFace, export ONNX")
@@ -265,7 +265,7 @@ object ContextFiller {
         sb.appendLine()
         var remaining = targetTokens - (sb.length / 4)
         while (remaining > 0) {
-            sb.appendLine("DOCUMENT TYPE : Module de formation, 12 apprenants, blended learning 70% distanciel 30% présentiel.")
+            sb.appendLine("DOCUMENT TYPE : Content module, 12 chapters, blended publishing 70% editorial 30% reference.")
             remaining -= 30
         }
         return sb.toString()

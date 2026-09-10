@@ -29,7 +29,7 @@ Feature: AgenticCompiler — Executable artifacts from governance chunks
   Scenario: PROCEDURE GENERER compiles into a Gradle task payload
     Given a governance chunk of type "PROCEDURE" with verb "GENERER" and content
       """
-      . Generer le scenario pedagogique global
+      . Generer le scenario de contenu global
       """
     When I compile it into an executable artifact
     Then the executable artifact type is "GRADLE_TASK"

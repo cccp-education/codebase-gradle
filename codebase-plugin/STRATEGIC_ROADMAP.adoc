@@ -12,7 +12,7 @@
 
 == Executive Summary
 
-Codebase-gradle is a **production-grade Assistant Protocol** for autonomous code generation and pedagogy.
+Codebase-gradle is a **production-grade Assistant Protocol** for autonomous code and content generation.
 Published on Maven Central as `education.cccp:codebase-plugin:0.0.4`.
 
 **Core Vision:** A stable, versionable assistant protocol that enables:
@@ -57,13 +57,13 @@ Codebase-gradle is **dormant** — no active backlog. Future work is driven by c
 | **codebase-gradle** | Core assistant protocol + vibecoding | Main orchestrator
 | **codebase-contracts** | Shared input/output contracts | Protocol definition
 | **codex-gradle** | Document indexing (PDF/EPUB → pgvector) | RAG infrastructure
-| **capsule-gradle** | Pedagogical video generation (reveal.js + Playwright + TTS) | Formation output
+| **capsule-gradle** | Content video generation (reveal.js + Playwright + TTS) | Content output
 | **api-key-pool-gradle** | LLM quota management & rotation | Infrastructure
 | **bakery-gradle** | Static site generation (JBake → GitHub Pages) | Publishing
 | **jhipster-gradle-plugins** | JHipster project regeneration with __codebase__/ sync | Sandbox for exercises
 |===
 
-**Key Insight:** This is not 6 random plugins. This is a **production pipeline** for autonomous code generation, pedagogical content, and training.
+**Key Insight:** This is not 6 random plugins. This is a **production pipeline** for autonomous code and content generation.
 
 [plantuml]
 ----
@@ -179,7 +179,7 @@ data class AssistantIntent(
     
     // REQUIRED
     val description: String,               // "Créer 5 tests de validation"
-    val domain: String,                    // "cda" | "vibecoding" | "rag"
+    val domain: String,                    // "coding" | "vibecoding" | "rag"
     
     // AUGMENTATION
     val compositeContext: CompositeContext, // RAG + Graphify + code index
@@ -486,7 +486,7 @@ require(
 data class QualityGateRules(
     val protocolVersion: String = "1.0.0",
     
-    // Sentiment check: Is the output motivating? (pedagogical)
+    // Sentiment check: Is the output motivating? (content quality)
     val sentimentMinScore: Double = 0.60,
     
     // Off-topic check: Is the output relevant?

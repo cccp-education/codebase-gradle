@@ -32,7 +32,7 @@ class BenchmarkFixturesTest {
         val ids = BenchmarkFixtures.samples.map { it.id }.toSet()
         assertTrue(ids.contains("C0-strategie"))
         assertTrue(ids.contains("C1-tokens"))
-        assertTrue(ids.contains("C2-pedagogie"))
+        assertTrue(ids.contains("C2-content"))
         assertTrue(ids.contains("C2-livre"))
         assertTrue(ids.contains("C3-closed"))
         assertTrue(ids.contains("C4-plugin"))
@@ -66,7 +66,7 @@ class BenchmarkFixturesTest {
         val result = ContextFiller.ressourcesContext(500)
         assertTrue(result.contains("CORPUS METIER", ignoreCase = true), "Expected result to contain 'CORPUS METIER'")
         assertTrue(result.contains("DATASETS TECHNIQUES"), "Expected result to contain 'DATASETS TECHNIQUES'")
-        assertTrue(result.contains("CORPUS FORMATION", ignoreCase = true), "Expected result to contain 'CORPUS FORMATION'")
+        assertTrue(result.contains("REFERENTIAL CORPUS", ignoreCase = true), "Expected result to contain 'REFERENTIAL CORPUS'")
     }
 
     @Test

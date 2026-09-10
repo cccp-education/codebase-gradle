@@ -11,7 +11,7 @@ package codebase.finetuning
  * @param baseModel       nom du modèle de base dans le registre Ollama
  *        (non-blank). Ex: `gpt-oss:120b-cloud`, `gemma4:31b-cloud`.
  * @param dataset         globs ou chemins du corpus de fine-tuning
- *        (non-empty). Ex: `["docs/afnor/**/*.adoc"]`.
+ *        (non-empty). Ex: `["docs/referential/**/*.adoc"]`.
  * @param outputModelName nom du modèle fine-tuné à enregistrer dans
  *        Ollama (non-blank). Ex: `expert-coding`.
  * @param corpusRatio     ratio du corpus cible réinjecté en continual

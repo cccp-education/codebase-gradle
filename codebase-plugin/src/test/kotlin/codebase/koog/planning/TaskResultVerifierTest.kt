@@ -33,7 +33,7 @@ class TaskResultVerifierTest {
 
     @Test
     fun `missing dependency should return BLOCKED`() {
-        val result = verifier.verify("", "Task 'generateSPD' not found in project")
+        val result = verifier.verify("", "Task 'generateContentPlanItem' not found in project")
         assertEquals(TaskVerdict.BLOCKED, result.verdict)
     }
 

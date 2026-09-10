@@ -50,7 +50,7 @@ class FineTuneExpertTaskTest {
         val task = project.tasks.register("fineTuneExpert", FineTuneExpertTask::class.java).get()
 
         task.baseModel.set("gpt-oss:120b-cloud")
-        task.dataset.set(listOf("docs/afnor/**/*.adoc"))
+        task.dataset.set(listOf("docs/referential/**/*.adoc"))
         task.outputModelName.set("expert-coding")
         task.corpusRatio.set(0.10)
         task.outputReport.set(project.layout.buildDirectory.file("finetuning/report.json"))
@@ -189,7 +189,7 @@ class FineTuneExpertTaskTest {
         val task = project.tasks.register("fineTuneExpert", FineTuneExpertTask::class.java).get()
 
         task.baseModel.set("gemma4:31b-cloud")
-        task.dataset.set(listOf("docs/coding/**/*.adoc", "docs/reac/**/*.adoc"))
+        task.dataset.set(listOf("docs/coding/**/*.adoc", "docs/framework/**/*.adoc"))
         task.outputModelName.set("expert-coding")
         task.outputReport.set(project.layout.buildDirectory.file("finetuning/report.json"))
         task.ggufOutputDir.set(project.layout.buildDirectory.dir("finetuning/gguf"))
@@ -203,7 +203,7 @@ class FineTuneExpertTaskTest {
         val content = task.outputReport.get().asFile.readText()
         assertTrue(content.contains("gemma4:31b-cloud"), "Report should reference base model")
         assertTrue(content.contains("docs/coding/**/*.adoc"), "Report should reference dataset glob 1")
-        assertTrue(content.contains("docs/reac/**/*.adoc"), "Report should reference dataset glob 2")
+        assertTrue(content.contains("docs/framework/**/*.adoc"), "Report should reference dataset glob 2")
     }
 
     @Test

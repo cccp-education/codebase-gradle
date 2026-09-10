@@ -14,7 +14,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
- * Cucumber steps for `@corpus-ingest` scenarios (EPIC CB-FPA-RAG US-3).
+ * Cucumber steps for `@corpus-ingest` scenarios (EPIC corpus-ingest US-3, CB-FPA-RAG historic id).
  *
  * Steps are prefixed "corpus" / "docs section" to avoid glue collisions
  * with other feature step classes sharing the `codebase.scenarios`

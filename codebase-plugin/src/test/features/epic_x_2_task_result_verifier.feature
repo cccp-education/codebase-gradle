@@ -21,7 +21,7 @@ Feature: TaskResultVerifier — Parse Gradle output into verdicts
   @verdict_blocked
   Scenario: Missing task returns BLOCKED
     Given a TaskResultVerifier
-    When I verify stdout "" and stderr "Task 'generateSPD' not found in project"
+    When I verify stdout "" and stderr "Task 'generateContentPlanItem' not found in project"
     Then the verdict is BLOCKED
     And the error message contains "not found"
 

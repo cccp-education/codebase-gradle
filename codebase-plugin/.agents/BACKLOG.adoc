@@ -2,23 +2,45 @@
 :sectnums:
 :date: 2026-06-16
 
-_Dernière mise à jour : 2026-09-09 (S-214 — **EPIC CB-FPA-RAG TERMINÉ 4/4 US** : US-1 run ingestion corpus FPA → pgvector (DoubtPolicy + CorpusChunksLoader + CorpusIngestMain, 8 unit TDD) + run réel 387 chunks / 387 embeddings / 18 doubtful / avg 0.953 + **bug P0 updateEmbedding corrigé** (double bracket `[[...]]` → UPDATE perdu silencieusement R2DBC, fix trim + 1 test) + US-2 proof of work (query « référentiel compétences » → 5 chunks pertinents sim 0.55-0.64, doute circulant) + US-3 BDD `@corpus-ingest` 4/4 (44e runner). **Propagation** : bump 0.0.14 Central (bundle `3e82490d`), BOM 0.0.37 (bundle `43c8a1ca`), 7 consommateurs compile 7/7 VERTS. **GBL-003.4 DÉBLOQUÉ** — le corpus FPA est requêtable. Prochaine S-215 : fix Z-6 (2 échecs préexistants, régression S-166) + RENAME vague document.)_
+_Dernière mise à jour : 2026-09-10 (S-256 — **fix Z-6 + SVO-1 inversion port** : `popFocusNode` supprimé (régression S-166, zoom persiste pendant les retries — Z-7 déjà garanti par drainAutofocusStack), koverVerify débloqué, check VERT ; `PlannerPort` fun interface créé (domaine `codebase.koog.plannerport`, fallback NoOp) + branché dans KoogAugmentedContextGraph/KoogPlanningOrchestrator, `PlannerIntegration.kt` supprimé, `libs.planner.plugin` retiré — **cycle N1↔N2 mort** (pattern S-096/S-199). 0.0.15-SNAPSHOT mavenLocal VERT. Propagation antérieure : bump 0.0.14 Central (bundle `3e82490d`), BOM 0.0.37 (bundle `43c8a1ca`), 7 consommateurs compile 7/7 VERTS, GBL-003.4 débloqué. Prochaine : SVO-2 (SessionResumptionPlanner + BacklogDetector) + RENAME vague document (transfusion d'abord).)_
 
 '''
-== EPIC RENAME — Neutralisation nommage métier privé (FPA→content, CDA→coding) 🟡 EN COURS (P0, transverse — codebase ✅)
+== EPIC SVO — Session Vibecoding Orchestrée 🟡 EN COURS (P0, codebase N1 pilotage + planner N2 sous-agent)
 
-_Origine : demande pilote 2026-09-07 (FPA/CDA = fond de commerce privé, pas de nommage public OSS)._
-_Cadrage transverse : `.agents/CADRAGE_EPIC_RENAME.adoc` (7 boroughs)._
+_Origine : demande pilote 2026-09-10 (S-255)._
+_Cadrage : `.agents/CADRAGE_EPIC_SVO_SESSION_ORCHESTREE.adoc` (10 décisions D1-D10)._
+_Pattern : LlmBuildService transposé au planning — codebase N1 pilotage + `PlannerPort` ; planner N2 fournit l'adapter (wiring Gradle, zéro import planning.* côté codebase)._
 
 |===
 | US | Description | Pts | Statut
-| RENAME-1 | `Domain.FPA/CDA` → `CODING/CONTENT` + detector keywords ("fpa"/"cda" sortent, qualiopi/rncp/afnor restent) + option CLI `-Pdomain` défaut CODING + 15 fichiers + check baseline exacte | 3 | ✅ TERMINÉ (S-212 — baby-step TDD strict, bump 0.0.12 Central bundle `0fb93393`, 7 consommateurs + BOM propagés, impact consommateur = 0, grep fpa/cda src/ = 0)
-| RENAME-10 | `CodebasePlugin.kt:176` — description tâche "training-gradle (AFNOR/REAC)" → "training-gradle (referential)" + check | 0.5 | 🟡 À FAIRE (Vague 3, cadrage `.agents/CADRAGE_EPIC_RENAME_V3.adoc`)
+| SVO-0 | Cadrage EPIC (audit boucle/lifecycle/backlog/pont planner + 10 décisions D1-D10) | 1 | ✅ TERMINÉ (S-255)
+| SVO-1 | Inversion port : `PlannerPort` fun interface (domaine `codebase.koog.plannerport`) + fallback interne + retrait `libs.planner.plugin` (build.gradle.kts:55) + suppression `PlannerIntegration.kt` + gate non-régression | 3 | ✅ TERMINÉ (S-256)
+| SVO-2 | `SessionResumptionPlanner` + `BacklogDetector` (objects purs ~12 unit TDD) : backlog → resumption prompt orienté ; detection backlog fini | 2 | 🟡 À FAIRE
+| SVO-3 | Adapter planner : `KoogIntentionPlannerAdapter` implémente PlannerPort + wiring `registerPlannerPort` (mirror registerLlmBuildService) — session Manhattan (cross-borough) | 2 | 🟡 À FAIRE
+| SVO-4 | Tâche `autonomousSession` : resolve prompt (--prompt > défaut borough) → port → boucle VibecodingGraph → état → resumption prompt | 3 | 🟡 À FAIRE
+| SVO-5 | Chaînage brainstorming si backlog fini + Cucumber BDD `autonomous_session.feature` 4 scénarios (fakes S-082/S-088) | 3 | 🟡 À FAIRE
 |===
 
-*Gate* : ✅ check VERT + `grep -ri "fpa" src/` = zéro match (hors faux positifs ggufPa/ofPa/docdate).
+*Prérequis* : ~~fix Z-6 (2 échecs cucumber préexistants)~~ ✅ TERMINÉ (S-256 — popFocusNode supprimé, gate globale fiable).
+*Garde anti-boucle* : `maxChainedSessions` défaut 3 (D9).
 
-*Reste transverse (ordres actés, hors codebase)* : document (3 pts) → bakery (1 pt) → capsule (1 pt) → plantuml (1 pt) → graphify/codex (1 pt gouvernance).
+'''
+== EPIC RENAME — Neutralisation nommage métier privé 🟡 EN COURS (P0, transverse — codebase ✅)
+
+_Origine : demande pilote 2026-09-07 (métiers vendus = fond de commerce privé, pas de nommage public OSS)._
+_Cadrage transverse : `.agents/CADRAGE_EPIC_RENAME.adoc` (7 boroughs)._
+_RÉVISION Vague 4 (2026-09-10, arbitrage pilote) : tout le champ lexical métier (pas seulement les acronymes) sort des repos publics — D5/D11 abrogées. La logique métier extraite est TRANSFUSÉE dans `training-gradle/training-plugin/.agents/TRANSFER_LEXIQUE_FORMATION.adoc` (rien n'est perdu). Vague 4 codebase exécutée S-255._
+
+|===
+| US | Description | Pts | Statut
+| RENAME-1 | `Domain` enum (ex-FPA/CDA) → `CODING/CONTENT` + detector keywords marques métier sortent + option CLI `-Pdomain` défaut CODING + 15 fichiers + check baseline exacte | 3 | ✅ TERMINÉ (S-212 — baby-step TDD strict, bump 0.0.12 Central bundle `0fb93393`, 7 consommateurs + BOM propagés, impact consommateur = 0, grep fpa/cda src/ = 0)
+| RENAME-10 | `CodebasePlugin.kt:176` — description tâche "training-gradle (sigles référentiel)" → "referential" + check | 0.5 | ✅ TERMINÉ (S-254 — commit `9cf9441`, D11 keyword AFNOR préservé à l'époque)
+| RENAME-2-V4 | *Vague 4* — champ lexical métier complet sort du repo : detector lexique CONTENT → content générique (TDD strict 13/13), AutofocusClassifier regex `générer.*formation` → `générer.*conten[ut]/generate.*content`, BenchmarkRunner ×5 + exporter (C2-pedagogie→C2-content, kit-pedagogique→kit-editorial, CORPUS FORMATION→REFERENTIAL CORPUS), FineTuningRequest/CorpusIngestMain/ChunksLoader/DoubtPolicy KDoc, fixtures `docs/afnor|reac` → `docs/referential|framework`, features quality gate + epic_x_2 (SPG/SPD → content plan/item), corpus_ingest.feature. Logique transfusée training. | 3 | ✅ TERMINÉ (S-255 — 413 tests verts, transfusion US-0 training)
+|===
+
+*Gate* : ✅ check VERT + gate D16 étendue Vague 4 (`grep -riE "formation|pédagog|qualiopi|afnor|bloom|apprenant|stagiaire|formateur" src/` = zéro match hors faux positifs : "informations", "transformation", "transformation", SPDX).
+
+*Reste transverse (ordres actés, hors codebase, ordre Vague 4 étendu)* : document (3 pts + OCR-QUALITY US-3) → bakery (1 pt) → capsule (1 pt) → plantuml (1 pt + RENAME-11 KDoc ex-QUALIOPI → générique) → graphify/codex (1 pt gouvernance). Chaque borough transfuse sa logique métier dans `training-gradle/.agents/TRANSFER_LEXIQUE_FORMATION.adoc` avant neutralisation.
 
 '''
 == EPIC OCR-QUALITY — Détection automatique images problématiques + transcriptions douteuses 🟡 EN COURS (P0, transverse — US-4 codebase ✅ S-213)
@@ -39,16 +61,16 @@ personne ne le sache. US-1/2 (codex confidence réelle) et US-3
 respectives.
 
 '''
-== EPIC CB-FPA-RAG — Ingestion RAG du corpus FPA (GBL-003.4) ✅ TERMINÉ (4/4 US — S-213 + S-214)
+== EPIC CB-FPA-RAG — Ingestion RAG du corpus référentiel (GBL-003.4) ✅ TERMINÉ (4/4 US — S-213 + S-214, ID EPIC historique conservé)
 
 _Origine : BACKLOG.adoc racine § GBL-003 (critical path MVP0, arbitrage pilote 2026-09-07)._
-_Cadrage : `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc`._
+_Cadrage : `.agents/CADRAGE_EPIC_CB_FPA_RAG.adoc` (ID EPIC historique — le corpus métier vit en privé office/ + training)._
 
 |===
 | US | Description | Pts | Statut
-| CB-FPA-RAG-0 | Cadrage ingestion : compatibilité format chunks codex ↔ IngestStatements (audit sans code) | 1 | ✅ TERMINÉ (S-213 — COMPATIBLE : `CodexIngestTask` importe déjà `codebase.store.DocumentChunk`/`StoreStatements` depuis RAG-4 S-201, chunks JSON codex décodent tels quels, DDL idempotent, zéro re-vectorisation. Ingestion FPA = run de configuration US-1)
-| CB-FPA-RAG-1 | Run ingestion corpus FPA → pgvector (configuration + run) | 2 | ✅ TERMINÉ (S-214 — `DoubtPolicy` (dérivation doubt `[ILLISIBLE]`, 6 unit) + `CorpusChunksLoader` (2 unit) + `CorpusIngestMain` + **run réel 387 chunks / 387 embeddings / 18 doubtful / avg 0.953** + bug P0 `updateEmbedding` corrigé (double bracket, fix + 1 test))
-| CB-FPA-RAG-2 | Exposition composite : FPA requêtable via assembleCompositeContext (proof of work query métier) | 1 | ✅ TERMINÉ (S-214 — `searchWithDoubtBlocking` « référentiel compétences » → 5 chunks pertinents sim 0.55-0.64, doute circulant `doubtful=true confidence=0.00` ; canal Docs `CompositeContextBuilder` doubt-aware S-213)
+| CB-FPA-RAG-0 | Cadrage ingestion : compatibilité format chunks codex ↔ IngestStatements (audit sans code) | 1 | ✅ TERMINÉ (S-213 — COMPATIBLE : `CodexIngestTask` importe déjà `codebase.store.DocumentChunk`/`StoreStatements` depuis RAG-4 S-201, chunks JSON codex décodent tels quels, DDL idempotent, zéro re-vectorisation. Ingestion référentiel = run de configuration US-1)
+| CB-FPA-RAG-1 | Run ingestion corpus référentiel → pgvector (configuration + run) | 2 | ✅ TERMINÉ (S-214 — `DoubtPolicy` (dérivation doubt `[ILLISIBLE]`, 6 unit) + `CorpusChunksLoader` (2 unit) + `CorpusIngestMain` + **run réel 387 chunks / 387 embeddings / 18 doubtful / avg 0.953** + bug P0 `updateEmbedding` corrigé (double bracket, fix + 1 test))
+| CB-FPA-RAG-2 | Exposition composite : corpus référentiel requêtable via assembleCompositeContext (proof of work query métier) | 1 | ✅ TERMINÉ (S-214 — `searchWithDoubtBlocking` « référentiel compétences » → 5 chunks pertinents sim 0.55-0.64, doute circulant `doubtful=true confidence=0.00` ; canal Docs `CompositeContextBuilder` doubt-aware S-213)
 | CB-FPA-RAG-3 | BDD Cucumber si évolution pipeline ingestion (baby-step strict) | 1 | ✅ TERMINÉ (S-214 — évolution réelle (DoubtPolicy + loader) → BDD `codebase_corpus_ingest.feature` 4/4 scénarios PASSED (44 steps, 44e runner `cucumberTestCorpusIngest`, fakes in-memory))
 |===
 

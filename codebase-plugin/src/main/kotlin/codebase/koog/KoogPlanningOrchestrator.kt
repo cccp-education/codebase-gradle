@@ -2,6 +2,8 @@ package codebase.koog
 
 import contracts.context.CompositeContext
 import contracts.context.CompositeContextConfig
+import codebase.koog.plannerport.PlannerPort
+import codebase.koog.planning.PlanState
 import codebase.koog.state.AugmentedState
 import ai.koog.agents.core.agent.asMermaidDiagram
 import ai.koog.agents.core.agent.entity.AIAgentGraphStrategy
@@ -16,7 +18,9 @@ import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import java.io.File
 
-class KoogPlanningOrchestrator {
+class KoogPlanningOrchestrator(
+    val plannerPort: PlannerPort = PlannerPort.NoOp
+) {
 
     private val log = LoggerFactory.getLogger(KoogPlanningOrchestrator::class.java)
 
@@ -127,7 +131,18 @@ class KoogPlanningOrchestrator {
                 error = "ContextBuildFailed"
             )
         } else {
-            val planState = codebase.rag.PlannerIntegration.plan(state.intention, ctx)
+            // SVO-1 : plan via le port N1 (planner N2 = adapter branché par wiring Gradle).
+            // Aucun adapter → NoOp : dégradé propre (planError), jamais de crash.
+            val planState = try {
+                plannerPort.plan(state.intention, ctx)
+            } catch (e: Exception) {
+                log.error("[KoogPlanningOrchestrator] plannerPort failed: {}", e.message)
+                PlanState(
+                    intention = state.intention,
+                    compositeContext = ctx,
+                    error = "PlannerPortFailed: ${e.message}"
+                )
+            }
             state.copy(
                 planJson = planState.planJson,
                 plan = planState.plan,

@@ -44,7 +44,7 @@ class AgenticOntologizerTest {
 
     @Test
     fun `should map MAPPING section from borough mapping keywords`() {
-        val chunk = buildChunk("== Mapping\nBoroughs Existants : Manhattan plannerGenerateSPG → generateSPG.")
+        val chunk = buildChunk("== Mapping\nBoroughs Existants : Manhattan plannerGenerateContentPlan → generateContentPlan.")
         val result = ontologizer.ontologize(listOf(chunk))
         assertEquals(TaxonomySection.MAPPING, result.first().taxonomySection)
     }
@@ -239,7 +239,7 @@ class AgenticOntologizerTest {
 
             == Mapping — Boroughs Existants
 
-            Manhattan plannerGenerateSPG → generateSPG.
+            Manhattan plannerGenerateContentPlan → generateContentPlan.
 
             == Roadmap d'Implementation
 

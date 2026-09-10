@@ -32,13 +32,13 @@ class PrepareFineTuningDatasetTaskTest {
         val task = project.tasks.register("prepareFineTuningDataset", PrepareFineTuningDatasetTask::class.java).get()
 
         task.baseModel.set("gpt-oss:120b-cloud")
-        task.dataset.set(listOf("docs/afnor/**/*.adoc"))
+        task.dataset.set(listOf("docs/referential/**/*.adoc"))
         task.outputModelName.set("expert-coding")
         task.corpusRatio.set(0.15)
         task.outputFile.set(project.layout.buildDirectory.file("finetuning/dataset.txt"))
 
         assertEquals("gpt-oss:120b-cloud", task.baseModel.get())
-        assertEquals(listOf("docs/afnor/**/*.adoc"), task.dataset.get())
+        assertEquals(listOf("docs/referential/**/*.adoc"), task.dataset.get())
         assertEquals("expert-coding", task.outputModelName.get())
         assertEquals(0.15, task.corpusRatio.get())
     }
@@ -50,7 +50,7 @@ class PrepareFineTuningDatasetTaskTest {
         val task = project.tasks.register("prepare", PrepareFineTuningDatasetTask::class.java).get()
 
         task.baseModel.set("gpt-oss:120b-cloud")
-        task.dataset.set(listOf("docs/afnor/**/*.adoc", "docs/reac/**/*.adoc"))
+        task.dataset.set(listOf("docs/referential/**/*.adoc", "docs/framework/**/*.adoc"))
         task.outputModelName.set("expert-coding")
         task.corpusRatio.set(0.10)
         task.outputFile.set(project.layout.buildDirectory.file("finetuning/dataset-prep.txt"))
@@ -62,8 +62,8 @@ class PrepareFineTuningDatasetTaskTest {
         val content = out.readText()
         assertTrue(content.contains("FROM gpt-oss:120b-cloud"), "Should embed base model in Modelfile section")
         assertTrue(content.contains("expert-coding"), "Should reference output model name")
-        assertTrue(content.contains("docs/afnor/**/*.adoc"), "Should list dataset glob 1")
-        assertTrue(content.contains("docs/reac/**/*.adoc"), "Should list dataset glob 2")
+        assertTrue(content.contains("docs/referential/**/*.adoc"), "Should list dataset glob 1")
+        assertTrue(content.contains("docs/framework/**/*.adoc"), "Should list dataset glob 2")
         assertTrue(content.contains("corpus ratio: 0.1"), "Should include corpus ratio")
     }
 

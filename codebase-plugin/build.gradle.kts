@@ -52,7 +52,12 @@ dependencies {
     // now consumes the N0 `ocr-contracts` artifact (EPIC CDX-OCR-CONTRACTS
     // US-3): both codex (N2) and codebase (N1) depend on N0, no cycle.
     implementation(libs.ocr.contracts)
-    implementation(libs.planner.plugin)
+    // EPIC SVO-1 (S-256): `libs.planner.plugin` REMOVED — the N1->N2
+    // inversion is fully dead (same pattern as codex above). Intention
+    // decomposition now flows through the N1 `PlannerPort` (fun interface,
+    // codebase.koog.plannerport); the planner borough wires an adapter at
+    // Gradle level (registerPlannerPort, mirror of registerLlmBuildService).
+    // Single arrow: planner (N2) -> codebase (N1).
     implementation(libs.graphify.plugin)
 
     // N0 codebase contracts — source unique de vérité (ContextChannel, ChannelBudget, CompositeContext, CompositeContextConfig)

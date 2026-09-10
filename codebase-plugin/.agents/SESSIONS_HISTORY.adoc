@@ -2,6 +2,74 @@
 :toc: left
 :icons: font
 
+== Session 256 — 2026-09-10
+
+* **EPICs** : FIX-BASELINE Z-6 (~2 pts) + SVO-1 inversion port (~3 pts)
+* **Type** : baby-step TDD strict + refactor inversion dépendance
+* **Livrables** :
+** Fix Z-6 : `popFocusNode` supprimé du call site replan
+   (`VibecodingGraph.kt:266`, régression S-166 commit `becfaf3`) +
+   fonction morte supprimée. Contrat arbitré : le zoom IMPLEMENTATION
+   persiste pendant les retries (Z-6) ; Z-7 (stack vide après succès)
+   déjà garanti par `drainAutofocusStack` dans `checkProgressNode`.
+   Gates : cucumberTest global VERT 13m59s, check VERT 27m56s
+   (koverVerify débloqué).
+** SVO-1 : `PlannerPort` fun interface créé (domaine
+   `codebase.koog.plannerport`, companion `NoOp` fallback dégradé
+   "Planner unavailable", 4 unit TDD strict RED→GREEN).
+** Branchement : `KoogAugmentedContextGraph(plannerPort)` +
+   `KoogPlanningOrchestrator(plannerPort)` — paramètre constructeur
+   défaut NoOp, `planNode` consomme le port (try/catch →
+   `PlannerPortFailed`).
+** Suppression : `PlannerIntegration.kt` (90 lignes) — extensions
+   `toPlanMetadata` migrées vers `PlanIntentionTask.kt` (seul
+   consommateur).
+** Retrait : `implementation(libs.planner.plugin)` (build.gradle.kts)
+   — **cycle N1↔N2 mort** (pattern S-096/S-199). Entrée catalogue
+   conservée pour SVO-3.
+** Gates : check VERT 26m29s (unit + cucumber 0 failed + koverVerify),
+   grep `import planning.` = zéro match src/main,
+   publishToMavenLocal VERT (0.0.15-SNAPSHOT). Non-régression : Z-7
+   4/4, L-3 7/7, vibecoding V-6 VERT.
+** Rapport de session : `.agents/sessions/256-fix-z6-svo1-inversion-port.adoc`.
+* **Fichiers** : `PlannerPort.kt`, `PlannerPortTest.kt`,
+  `VibecodingGraph.kt`, `KoogAugmentedContextGraph.kt`,
+  `KoogPlanningOrchestrator.kt`, `PlannerIntegration.kt` (supprimé),
+  `PlanIntentionTask.kt`, `build.gradle.kts`.
+* **Leçons** :
+** Le `popFocusNode` sur replan (S-166) violait le contrat Z-6 écrit
+   avant lui — toujours arbitrer un fix CI contre le contrat BDD
+   original avant de patcher.
+** Le pattern port/adapter (`LlmBuildService`, `ocr-contracts`,
+   maintenant `PlannerPort`) est la réponse standard aux inversions
+   N1→N2 — trois cas traités, zéro régression.
+* Zéro bump BOM, zéro secret.
+
+== Session 255 — 2026-09-10
+
+* **EPICs** : RENAME Vague 4 (RENAME-2-V4, 3 pts) + RENAME-10 sync (✅ S-254) + transfusion training (US-0)
+* **Type** : baby-step TDD strict + gouvernance cross-borough (transfusion)
+* **Livrables** :
+** Detector `DeterministicOffTopicDetector` : lexique CONTENT ex-métier
+   (formation/pédagogie/qualiopi/afnor/bloom/...) → content générique
+   (TDD strict RED 2 FAIL → GREEN 13/13).
+** `AutofocusClassifier` : regex `générer.*formation` →
+   `générer.*conten[ut]|generate.*content` (+1 test EN).
+** Benchmark : C2-pedagogie → C2-content, kit-editorial, REFERENTIAL CORPUS.
+** KDocs finetuning/store : docs/referential, "referential corpus",
+   "historic EPIC id".
+** Fixtures : generateContentPlan/Item (SPG/SPD), docs/referential|framework,
+   corpus_ingest.feature "referential corpus", quality gate fixtures.
+** TRANSFUSION training : `TRANSFER_LEXIQUE_FORMATION.adoc` (logique
+   métier reversée — lexique, autofocus, benchmark, classification TRN).
+** Docs : AGENT/STRATEGIC_ROADMAP/VISION_ORCHESTRATION neutralisés ;
+   cadrages RENAME révisés (D5/D11 ABROGÉES) ; BACKLOG sync.
+* **Gate D16 étendue** : zéro match sur src/ (formation|pédagog|qualiopi|afnor|bloom|...).
+* **Gates** : 413 tests verts + cucumber dédiés (corpus_ingest 4/4,
+  finetuning 4/4, epic_x_2, epic_y_4) + compileTestKotlin + publishToMavenLocal VERT.
+* **Leçon** : transfuser avant de neutraliser (pattern acté, répliquer).
+* Rapport : `.agents/sessions/255-rename-v4-lexique-formation-transfusion.adoc`
+
 == Session 214 — 2026-09-09
 
 * **EPICs** : CB-FPA-RAG US-1 (2 pts) + US-2 (1 pt) + US-3 (1 pt) — EPIC TERMINÉ 4/4

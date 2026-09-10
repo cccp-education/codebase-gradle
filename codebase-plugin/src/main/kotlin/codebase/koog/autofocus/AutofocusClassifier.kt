@@ -26,7 +26,7 @@ object AutofocusClassifier {
         Regex("""MVP0|MVP\d""", RegexOption.IGNORE_CASE) to AutofocusLevel.BIG_PICTURE,
         Regex("""roadmap""", RegexOption.IGNORE_CASE) to AutofocusLevel.BIG_PICTURE,
         Regex("""EPIC\s+[A-Z]""") to AutofocusLevel.BIG_PICTURE,
-        Regex("""g.n.rer.*formation""", RegexOption.IGNORE_CASE) to AutofocusLevel.BIG_PICTURE,
+        Regex("""g.n.rer.*conten[ut]|generate.*content""", RegexOption.IGNORE_CASE) to AutofocusLevel.BIG_PICTURE,
         Regex("""code\s+review""", RegexOption.IGNORE_CASE) to AutofocusLevel.BIG_PICTURE,
         Regex("""session\s+\d+""", RegexOption.IGNORE_CASE) to AutofocusLevel.BIG_PICTURE
     )

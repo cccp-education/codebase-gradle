@@ -21,7 +21,7 @@ class FineTuningGraphTest {
 
     private val request = FineTuningRequest(
         baseModel = "gpt-oss:120b-cloud",
-        dataset = listOf("docs/afnor/**/*.adoc"),
+        dataset = listOf("docs/referential/**/*.adoc"),
         outputModelName = "expert-coding",
         corpusRatio = 0.10,
     )

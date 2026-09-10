@@ -263,7 +263,8 @@ class VibecodingGraph(
                                 state = state.clearError().nextIteration().copy(
                                     lastToolResult = "Replan: $replanResponse"
                                 )
-                                state = popFocusNode(state)
+                                // Z-6 : le zoom IMPLEMENTATION persiste pendant les retries —
+                                // la stack est vidée en fin de session (drainAutofocusStack)
                             } catch (e: TimeoutCancellationException) {
                                 log.warn("[VibecodingGraph] Replan LLM call timed out after {}ms", llmTimeoutMs)
                                 eventStream?.error(state.iteration, "Replan LLM timeout: ${llmTimeoutMs}ms")
@@ -656,19 +657,6 @@ class VibecodingGraph(
         } else null
         log.info("[VibecodingGraph] Autofocus zoom-in on error to IMPLEMENTATION (stack size={}, zoomed={})", autofocusStack.size(), zoomed != null)
         return state.copy(focusLevel = AutofocusLevel.IMPLEMENTATION.name, zoomedContext = zoomed)
-    }
-
-    private fun popFocusNode(state: VibecodingState): VibecodingState {
-        if (autofocusStack.isEmpty()) return state
-        return try {
-            autofocusStack.pop()
-            val newTop = autofocusStack.currentLevel()
-            log.info("[VibecodingGraph] Autofocus popped, new top={} (stack size={})", newTop?.name ?: "null", autofocusStack.size())
-            state.copy(focusLevel = newTop?.name)
-        } catch (e: IllegalStateException) {
-            log.warn("[VibecodingGraph] Autofocus pop underflow: {}", e.message)
-            state
-        }
     }
 
     // ── X-3 verify→adapt helpers ──

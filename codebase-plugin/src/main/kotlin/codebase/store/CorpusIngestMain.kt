@@ -4,7 +4,8 @@ import codebase.rag.StdoutFormatter
 import java.io.File
 
 /**
- * Entry point for the corpus FPA ingestion run (EPIC CB-FPA-RAG US-1).
+ * Entry point for the referential corpus ingestion run (EPIC CB-FPA-RAG
+ * US-1 — historic EPIC id, business corpus lives in office/ + training).
  *
  * Loads the codex chunks.json corpus file, derives the doubt metadata
  * via [DoubtPolicy.mark] (OCR `[ILLISIBLE]` markers), then ingests into
@@ -44,7 +45,7 @@ object CorpusIngestMain {
         val doubtfulCount = chunks.count {
             it.content.contains(DoubtPolicy.ILLISIBLE_MARKER)
         }
-        StdoutFormatter.banner("Corpus Ingest — CB-FPA-RAG US-1")
+        StdoutFormatter.banner("Corpus Ingest — referential corpus (CB-FPA-RAG US-1)")
         StdoutFormatter.ctx("${chunks.size} chunks loaded from ${chunksFile.name}")
         StdoutFormatter.plan("$doubtfulCount doubtful chunks (OCR marker) — ingestWithDoubt")
 

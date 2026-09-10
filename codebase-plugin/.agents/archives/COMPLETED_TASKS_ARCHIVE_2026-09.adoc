@@ -53,3 +53,16 @@
   impact = 0 (API additive). Commits/push 9 repos.
 * Impact : le RAG transporte le doute OCR, le contexte augmenté
   annote/exclut les passages douteux. Débloque FPA-BOOK-6-5 + GBL-003.4.
+== S-256 (2026-09-10) — FIX Z-6 + SVO-1 inversion port (Queens)
+
+* Z-6 : `popFocusNode` supprimé du call site replan (`VibecodingGraph`,
+  régression S-166) + fonction morte supprimée. Contrat : zoom
+  IMPLEMENTATION persiste pendant les retries, drain en fin de session.
+  koverVerify débloqué.
+* SVO-1 : `PlannerPort` fun interface (domaine `codebase.koog.plannerport`,
+  companion `NoOp`) + 4 unit TDD strict. Branché dans
+  `KoogAugmentedContextGraph`/`KoogPlanningOrchestrator`.
+  `PlannerIntegration.kt` supprimé (90 lignes, `toPlanMetadata`
+  migrées PlanIntentionTask). `libs.planner.plugin` retiré — cycle
+  N1↔N2 mort (pattern S-096/S-199).
+* Gates : check VERT 26m29s, publishToMavenLocal VERT 0.0.15-SNAPSHOT.

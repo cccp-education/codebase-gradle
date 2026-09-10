@@ -1,0 +1,136 @@
+= S-255 — RENAME Vague 4 : lexique métier formation → content + transfusion training
+
+== Contexte
+
+Extension de l'EPIC RENAME (arbitrage pilote 2026-09-10, session code
+review Queens) : *tout le champ lexical métier formation* (pas seulement
+les acronymes actés Vagues 1-3) sort des repos publics. Constat de
+revue : le detector `DeterministicOffTopicDetector` (lexique CONTENT),
+l'`AutofocusClassifier` (regex `générer.*formation`), le benchmark C2
+(`C2-pedagogie`, kit-pedagogique), les KDoc finetuning/store
+(`docs/afnor`, "corpus FPA"), les fixtures tests et les features
+évoquaient toujours le métier.
+
+Décision clé : **transfusion** — la logique métier extraite n'est pas
+perdue, elle est reversée dans la gouvernance training-gradle
+(`TRANSFER_LEXIQUE_FORMATION.adoc`, document vivant, enrichi à chaque
+vague). Nuance actée : `scénario`/`détaillé`/`session`/`évaluation`
+restent (vocabulaire commun de production de contenu) ; seules les
+marques et les listes de détection métier sortent.
+
+== Actions
+
+=== US-0 — Transfusion training (zéro perte)
+- Créé `training-gradle/training-plugin/.agents/TRANSFER_LEXIQUE_FORMATION.adoc`
+  : lexique detector CONTENT (5 familles), signal autofocus big-picture,
+  échantillon benchmark C2, mapping referential↔corpus métier, table des
+  transfusions à venir (document/bakery/capsule/plantuml/planner),
+  vocabulaire de classification privée TRN.
+- INDEX training mis à jour (transfusion ✅ TERMINÉ).
+
+=== US-1 — Detector + autofocus (TDD strict RED → GREEN)
+
+- RED : 3 fixtures `DeterministicOffTopicDetectorTest` migrées vers
+  lexique content (editorial/publishing/outline...) → 2 FAIL attendus.
+- GREEN : liste `Domain.CONTENT` remplacée — ex-lexique métier
+  (formation, pédagogie, formateur, apprenant, stagiaire, qualiopi,
+  rncp, afnor, bloom, harrow, krathwohl, remédiation, tutorat, livret,
+  vae, épreuve, jury, acquis, fiche, spg, spd) → lexique content
+  générique (content, article, publication, editorial, guide, audience,
+  reader, publishing, outline, draft, rédaction, documentation,
+  taxonomie, référentiel, scénario, séquence, module, section, chapitre,
+  rubrique, manuscrit). 13/13 PASSED.
+- `AutofocusClassifier` : regex `g.n.rer.*formation` →
+  `g.n.rer.*conten[ut]|generate.*content`. 2 tests (FR + EN) PASSED.
+- `QualityGateTest` + `epic_6_quality_gate.feature` : fixture
+  Qualiopi/Bloom → lexique content.
+
+=== US-2 — Prod mécanique
+
+- `CodebasePlugin.kt:176` : "corpus de formation" → "referential content
+  corpus".
+- `BenchmarkRunner.kt` ×5 : cercle 2 prompt, `C2-pedagogie` →
+  `C2-content` (`office/contents/kit-editorial.adoc`), matching
+  lecteurs-auteurs, `CORPUS FORMATION` → `REFERENTIAL CORPUS`, filler
+  "Module de formation, 12 apprenants" → "Content module, 12 chapters".
+- `BenchmarkReportExporter.kt` : ligne tableau C2 alignée.
+- `FineTuningRequest.kt` : KDoc ex `docs/afnor/**` → `docs/referential/**`.
+- `CorpusIngestMain.kt` / `CorpusChunksLoader.kt` / `DoubtPolicy.kt` :
+  KDoc "corpus FPA" → "referential corpus" + "historic EPIC id".
+- compileKotlin VERT.
+
+=== US-3 — Fixtures tests
+
+- `generateSPG` → `generateContentPlan`, `generateSPD` →
+  `generateContentPlanItem` (chunker, ontologizer, 3 steps, epic_x_2
+  feature, TaskResultVerifierTest), "scenario pedagogique global" →
+  "scenario de contenu global".
+- Globs `docs/afnor/**` → `docs/referential/**`, `docs/reac/**` →
+  `docs/framework/**` (11 fichiers finetuning + feature + FineTuningSteps).
+- `BenchmarkFixturesTest` (C2-content + REFERENTIAL CORPUS),
+  `BenchmarkComparisonMainTest` (C2-content).
+- `CorpusChunksLoaderTest` : sectionPath/content ex-métier → neutre.
+- `codebase_corpus_ingest.feature` : "FPA corpus" → "referential corpus".
+- KDoc tests store/scenarios : ID EPIC conservé + "(CB-FPA-RAG historic id)".
+- Gate combinée : 413 tests verts (store/benchmark/finetuning/quality/
+  autofocus/planning).
+
+=== US-4 — Docs + cadrages
+
+- `AGENT.adoc` : objectif "experts CDA/FPA" → "experts génériques
+  (coding, content — recettes en privé training)".
+- `STRATEGIC_ROADMAP.adoc` : pedagogy/Formation output/cda → content.
+- `VISION_ORCHESTRATION_LLM.adoc` : dispatcher experts → coding/content,
+  protocole JSON domain "coding | content", phases 1/4 dataset coding/content,
+  pointeur vers transfusion training.
+- `CADRAGE_EPIC_RENAME.adoc` + `_V3.adoc` : révision Vague 4 en tête
+  (D5/D11 ABROGÉES), D12 précisée (scénario/détaillé restent), D13
+  révisée, tableaux d'audit neutralisés en "ex-"/marque métier.
+- `.agents/BACKLOG.adoc` : RENAME-10 → ✅ S-254 (desync corrigée F1),
+  RENAME-2-V4 → ✅ S-255, gate D16 étendue, EPIC CB-FPA-RAG rebaptisé
+  "corpus référentiel" (ID historique conservé).
+
+== Gate D16 étendue (Vague 4)
+
+----
+grep -ni "formation|pédagog|pedagog|qualiopi|afnor|bloom|harrow|krathwohl|apprenant|stagiaire|formateur|livret|reac\b" src/
+→ zéro match (hors faux positifs informations/transformation/SPDX)
+----
+
+Cucumber dédiés verts : `cucumberTestCorpusIngest` 4/4,
+`cucumberTestFineTuning` 4/4, `cucumberTestEpicX2`, `cucumberTestEpicY4`
+(zéro failure). `publishToMavenLocal` VERT (signé CBE2926CD46D8E8B).
+
+== Commandes
+
+- `./gradlew test --tests "codebase.quality.*" ...` (413 tests verts)
+- `./gradlew cucumberTestCorpusIngest cucumberTestFineTuning ...`
+- `./gradlew publishToMavenLocal`
+
+== Résultats
+
+- RENAME Vague 4 codebase 100% exécuté (~3 pts) — RENAME-2-V4 ✅.
+- Transfusion training livrée (US-0) — la table § 2 du document vivant
+  est prête pour les vagues document/bakery/capsule/plantuml/planner.
+- Desync RENAME-10 (F1 de la code review) corrigée au passage.
+
+== Leçons
+
+1. *Transfuser avant de neutraliser* : le pattern US-0 (extraire la
+   logique métier → document vivant training) évite la perte de savoir
+   métier pendant la purge OSS. À répliquer par borough.
+2. La nuance D5/D11 (« sigles publics conservables en détection ») était
+   un compromis fragile : le detector identifiait le métier par ses
+   sigles — ils sont ipso facto métier. Abrogés sans état d'âme.
+3. Les traces d'audit (`ex-FPA`, `FpaPageResolver`) sont légitimes dans
+   les cadrages si explicitement marquées comme historiques (note en
+   tête du cadrage) — le grep gate vise src/ + docs courantes, pas
+   l'historique.
+
+== Prochaine session (S-256)
+
+1. Fix Z-6 (2 échecs cucumber préexistants, régression S-166) — gate
+   `cucumberTest` global / koverVerify.
+2. RENAME vague document : transfusion d'abord (US-3 OCR-QUALITY
+   structurelle + book pipeline ex-FpaPageResolver), puis neutralisation.
+3. Support Newark A2 sur demande pilote (RAG FPA prêt pour SPG/SPD).

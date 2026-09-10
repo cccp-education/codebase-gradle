@@ -29,7 +29,7 @@ class QualityGateTest {
     @Test
     fun `clean CONTENT output passes all checks`() {
         val result = sentinel.evaluate(
-            "Objectif pédagogique : acquérir les compétences Qualiopi via une évaluation formative.",
+            "Objectif : structurer le guide de publication via une relecture éditoriale.",
             Domain.CONTENT
         )
         assertEquals(QualityVerdict.PASS, result.overallVerdict)

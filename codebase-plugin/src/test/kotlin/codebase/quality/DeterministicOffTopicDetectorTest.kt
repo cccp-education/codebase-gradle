@@ -31,9 +31,9 @@ class DeterministicOffTopicDetectorTest {
     }
 
     @Test
-    fun `CONTENT output with pedagogical keywords is on topic`() {
+    fun `CONTENT output with editorial keywords is on topic`() {
         val result = detector.check(
-            "Objectif pédagogique : évaluer les compétences selon la taxonomie de Bloom.",
+            "Objectif : structurer le guide de publication selon le plan éditorial.",
             Domain.CONTENT,
             QualityGateConfig()
         )
@@ -64,9 +64,9 @@ class DeterministicOffTopicDetectorTest {
     }
 
     @Test
-    fun `CODING output about pedagogy is off topic for CODING domain`() {
+    fun `CODING output about content production is off topic for CODING domain`() {
         val result = detector.check(
-            "La formation professionnelle nécessite une évaluation formative continue.",
+            "La rédaction professionnelle nécessite une relecture éditoriale continue.",
             Domain.CODING,
             QualityGateConfig()
         )
@@ -101,9 +101,9 @@ class DeterministicOffTopicDetectorTest {
     }
 
     @Test
-    fun `generic pedagogical text is on topic for CONTENT`() {
+    fun `generic content text is on topic for CONTENT`() {
         val result = detector.check(
-            "L'apprenant doit acquérir les compétences nécessaires.",
+            "Le lecteur doit suivre la séquence du module de documentation.",
             Domain.CONTENT,
             QualityGateConfig()
         )
@@ -111,9 +111,9 @@ class DeterministicOffTopicDetectorTest {
     }
 
     @Test
-    fun `CONTENT text with Qualliopi reference is strongly on topic`() {
+    fun `CONTENT text with publishing reference is strongly on topic`() {
         val result = detector.check(
-            "Conforme aux exigences Qualiopi, RNCP niveau 6, AFNOR.",
+            "Conforme au plan éditorial, publication et diffusion de l'article.",
             Domain.CONTENT,
             QualityGateConfig()
         )
@@ -131,7 +131,7 @@ class DeterministicOffTopicDetectorTest {
     fun `score is always between 0 and 1`() {
         val texts = listOf(
             "Spring Boot Gradle Kotlin PostgreSQL Docker" to Domain.CODING,
-            "Qualliopi Bloom AFNOR formation évaluation pédagogie" to Domain.CONTENT,
+            "editorial outline publication article guide" to Domain.CONTENT,
             "recette cuisine jardinage météo" to Domain.CODING,
             "football tennis natation" to Domain.CONTENT
         )

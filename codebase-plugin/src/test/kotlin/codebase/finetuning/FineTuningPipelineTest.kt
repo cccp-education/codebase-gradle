@@ -20,7 +20,7 @@ class FineTuningPipelineTest {
     fun `FineTuningRequest defaults corpusRatio to 0_10`() {
         val request = FineTuningRequest(
             baseModel = "gpt-oss:120b-cloud",
-            dataset = listOf("docs/afnor/**/*.adoc"),
+            dataset = listOf("docs/referential/**/*.adoc"),
             outputModelName = "expert-coding"
         )
         assertEquals(0.10, request.corpusRatio, 1e-9)
@@ -128,7 +128,7 @@ class FineTuningPipelineTest {
         val fake = FakeFineTuner(FineTuningResult.Failure("no-op", emptyList()))
         val request = FineTuningRequest(
             baseModel = "gemma4:31b-cloud",
-            dataset = listOf("docs/reac/**/*.adoc"),
+            dataset = listOf("docs/framework/**/*.adoc"),
             outputModelName = "expert-content"
         )
         fake.fineTune(request)

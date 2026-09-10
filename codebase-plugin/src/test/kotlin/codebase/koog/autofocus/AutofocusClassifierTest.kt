@@ -233,8 +233,14 @@ class AutofocusClassifierTest {
     }
 
     @Test
-    fun `classifySync detects générer formation as BIG_PICTURE`() {
-        val result = AutofocusClassifier.classifySync("générer une formation complète")
+    fun `classifySync detects générer content as BIG_PICTURE`() {
+        val result = AutofocusClassifier.classifySync("générer un contenu complet")
+        assertEquals(AutofocusLevel.BIG_PICTURE, result)
+    }
+
+    @Test
+    fun `classifySync detects generate content (english) as BIG_PICTURE`() {
+        val result = AutofocusClassifier.classifySync("generate the content plan")
         assertEquals(AutofocusLevel.BIG_PICTURE, result)
     }
 

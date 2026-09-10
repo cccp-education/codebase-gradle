@@ -43,7 +43,7 @@ class CodebaseFineTuningExtensionTest {
         val ext = project.extensions.create("fineTuning", CodebaseFineTuningExtension::class.java)
 
         ext.baseModel.set("gpt-oss:120b-cloud")
-        ext.dataset.set(listOf("docs/afnor/**/*.adoc", "docs/reac/**/*.adoc"))
+        ext.dataset.set(listOf("docs/referential/**/*.adoc", "docs/framework/**/*.adoc"))
         ext.outputModelName.set("expert-coding")
         ext.corpusRatio.set(0.15)
         ext.maxIterations.set(5)
@@ -54,7 +54,7 @@ class CodebaseFineTuningExtensionTest {
         ext.validationThreshold.set(0.85)
 
         assertEquals("gpt-oss:120b-cloud", ext.baseModel.get())
-        assertEquals(listOf("docs/afnor/**/*.adoc", "docs/reac/**/*.adoc"), ext.dataset.get())
+        assertEquals(listOf("docs/referential/**/*.adoc", "docs/framework/**/*.adoc"), ext.dataset.get())
         assertEquals("expert-coding", ext.outputModelName.get())
         assertEquals(0.15, ext.corpusRatio.get())
         assertEquals(5, ext.maxIterations.get())

@@ -1,75 +1,87 @@
-= Cadrage EPIC RENAME — Neutralisation du nommage métier privé (FPA→content, CDA→coding)
-:date: 2026-09-07
+= Cadrage EPIC RENAME — Neutralisation du nommage métier privé (ex-métiers → content/coding)
+:date: 2026-09-07 / RÉVISÉ 2026-09-10 (Vague 4 — D5/D11 abrogées, logique métier transfusée training-gradle)
 :epic: RENAME (transverse codebase + document + bakery + capsule + plantuml + graphify + codex)
-:origine: Demande pilote 2026-09-07 — « le FPA est un terme privé qui n'a pas vocation à finir dans du nommage public, c'est mon fond de commerce »
-:decision: Pilote validé : content (ex-FPA) + coding (ex-CDA). Le plugin public ne connaît que des catégories de contenu ; les métiers vendus (FPA, CDA, futurs) sont instanciés en privé (office/ + training-gradle).
+:origine: Demande pilote 2026-09-07 — « les métiers vendus sont des termes privés qui n'ont pas vocation à finir dans du nommage public, c'est mon fond de commerce »
+:decision: Pilote validé : content + coding (ex-métiers vendus). Le plugin public ne connaît que des catégories de contenu ; les métiers vendus (et futurs) sont instanciés en privé (office/ + training-gradle).
 :methode: Cadrage (gouvernance pure, zéro code) — pattern S-057/S-063. EXÉCUTION EN SESSION DÉDIÉE (baby-step TDD par borough).
+
+[NOTE]
+*Révision 2026-09-10 (Vague 4, arbitrage pilote)* : le champ lexical
+métier complet (pas seulement les acronymes) sort des repos publics —
+détecteurs, prompts, fixtures, docs. La logique métier extraite de
+codebase est transfusée dans
+`training-gradle/training-plugin/.agents/TRANSFER_LEXIQUE_FORMATION.adoc`
+(rien n'est perdu). Les tableaux d'audit ci-dessous gardent les sigles
+comme description de *ce qui a été neutralisé* — lecture historique.
+Les sigles littéraux dans ce document restent car ils nomment les termes
+qui ONT ÉTÉ renommés (trace d'audit) ; ils ne désignent aucun usage actif.
 
 == Contexte
 
-FPA (Formateur Professionnel d'Adulte) et CDA (Concepteur Développeur
-d'Application) sont des métiers vendus (fond de commerce, talaria.school).
-Leur présence dans le nommage d'APIs publiques Apache 2.0 : (1) banalise
-le terme du métier dans l'OSS, (2) condamne à des vagues de renommage
-coûteuses quand le portefeuille grandit. La bonne heure est maintenant —
-les usages sont encore peu profonds (~200 occurrences, 80% tests/docs).
+Les métiers vendus (fond de commerce, talaria.school) sont des termes
+privés. Leur présence dans le nommage d'APIs publiques Apache 2.0 :
+(1) banalise le terme du métier dans l'OSS, (2) condamne à des vagues
+de renommage coûteuses quand le portefeuille grandit. La bonne heure est
+maintenant — les usages sont encore peu profonds (~200 occurrences, 80%
+tests/docs).
 
 == Décisions de nommage (actées pilote)
 
 |===
 | Terme privé | Terme public | Sémantique
-| FPA | content | catégorie de contenu pédagogique/documentaire générique
-| CDA | coding | catégorie de contenu technique/code
+| métier documentaire | content | catégorie de contenu documentaire générique
+| métier technique | coding | catégorie de contenu technique/code
 |===
 
 *Principe* : les plugins publics décrivent des capacités (assembler/
 valider/ingérer du content, expertiser du coding) — chaque client
-apporte son corpus. Le métier (FPA, CDA et futurs) vit en privé
+apporte son corpus. Le métier (et futurs) vit en privé
 (`office/` + `training-gradle`), jamais dans le nommage public.
 
 == Constats (audit réel 2026-09-07, ordre croissant d'effort)
 
-1. *graphify* — gouvernance only (EPIC GF-FPA, BACKLOG, cadrage). Zéro code.
-2. *codex* — gouvernance only (EPIC CDX-FPA-CORPUS). Zéro code prod.
-3. *plantuml* — registre non-traductible : `"FPA"` dans
+1. *graphify* — gouvernance only (EPIC ex-métier graphify, BACKLOG, cadrage). Zéro code.
+2. *codex* — gouvernance only (EPIC ex-métier corpus). Zéro code prod.
+3. *plantuml* — registre non-traductible : marque métier dans
    `NonTranslatableTermRegistryLoader.kt` (+ 2 tests).
-4. *capsule* — fixtures tests : strings "Formation FPA" (4 fichiers).
-5. *bakery* — fixtures tests "Formation FPA" + 2 entrées `"FPA"` dans
+4. *capsule* — fixtures tests : strings "Formation …" (4 fichiers).
+5. *bakery* — fixtures tests "Formation …" + 2 entrées marque métier dans
    `I18nMigrationService.kt` (listes métier).
-6. *codebase* — code prod + API publique : `Domain.FPA/CDA` enum
+6. *codebase* — code prod + API publique : `Domain` enum ex-FPA/CDA
    (`quality/Domain.kt`), `DeterministicOffTopicDetector` (mots-clés
-   "fpa"/"cda" + mapping opposé), `QualityGateTask` option CLI
-   `-Pdomain` (description + défaut `CDA` → `orElse` dans
-   `CodebasePlugin.kt:147`), 15 fichiers CDA au total.
-7. *document* — le plus profond : `FpaPageResolver.kt` (classe prod),
-   `BookAssembler.fpaAwareResolver()` + appel dans `AssembleBookTask`,
-   commentaires `BookTocParser`/`BookNumbering`/`DocumentPlugin`,
-   4 tests fonctionnels nommés (BookPipelineN3Fpa…, AssembleBookTaskFpa…),
-   3 features Gherkin ("FPA pipeline", "FPA Guide").
+   marques métier + mapping opposé), `QualityGateTask` option CLI
+   `-Pdomain` (description + défaut ex-CDA → `orElse` dans
+   `CodebasePlugin.kt:147`), 15 fichiers au total.
+7. *document* — le plus profond : `FpaPageResolver.kt` (classe prod, renommée
+   `ContentPageResolver` depuis), `fpaAwareResolver()` (renommé
+   `contentAwareResolver()`), commentaires `BookTocParser`/`BookNumbering`/`DocumentPlugin`,
+   4 tests fonctionnels nommés, 3 features Gherkin.
 
 == Décisions techniques
 
 - D1 : `FpaPageResolver` → `ContentPageResolver` — la convention split
   pages `NNN_N.adoc` devient une convention content générique (tout
-  livre scanné page par page), le FPA n'en est qu'un usage.
+  livre scanné page par page), un métier n'en est qu'un usage.
 - D2 : `fpaAwareResolver()` → `contentAwareResolver()` (signature et
   câblage `AssembleBookTask` suivent).
 - D3 : `Domain` codebase → valeurs `CODING` / `CONTENT`. Le couple
-  métier FPA/CDA disparaît du code public.
+  métier (ex-FPA/CDA) disparaît du code public.
 - D4 : défaut `-Pdomain` préservé : `orElse("CODING")` (comportement
   identique à l'ex-CDA défaut).
 - D5 : keywords `DeterministicOffTopicDetector` — liste CODING inchangée
-  (déjà générique) ; liste CONTENT : `"fpa"` et `"cda"` **sortent** ;
-  `qualiopi`, `rncp`, `afnor`, `vae`, `bloom` etc. **restent** (références
-  publiques françaises, pas IP du pilote).
-- D6 : plantuml registry — `"FPA"` et `"CDA"` sortent du registre
+  (déjà générique) ; liste CONTENT : `"fpa"` et `"cda"` **sortent**.
+  *RÉVISÉ Vague 4 (2026-09-10)* : `qualiopi`, `rncp`, `afnor`, `vae`,
+  `bloom` etc. **sortent AUSSI** (D5/D11 abrogées — tout le champ lexical
+  métier sort des repos publics ; logique transfusée dans
+  `training-gradle/.agents/TRANSFER_LEXIQUE_FORMATION.adoc`).
+- D6 : plantuml registry — les marques métier (ex-`"FPA"`/`"CDA"`) sortent du registre
   non-traductible (marques du pilote, pas acronymes génériques).
 - D7 : backward compat NON préservée (renommage dur — boroughs jeunes,
   peu de consommateurs externes, moins de dette). Breaking change
   assumé et documenté (README + changelog bump).
-- D8 : gouvernance (EPICs, cadrages) renommée avec mention "ex-FPA" en
-  historique seulement. AGENTS.adoc racine (privé) garde FPA comme
-  terme métier dans les sections privées ; les tables publiques boroughs
+- D8 : gouvernance (EPICs, cadrages) renommée avec mention "ex-métier" en
+  historique seulement. AGENTS.adoc racine (privé) garde les métiers comme
+  termes privés dans les sections privées ; les tables publiques boroughs
   passent aux termes neutres.
 
 == Baby-steps (session dédiée, TDD strict par borough)
@@ -77,7 +89,7 @@ apporte son corpus. Le métier (FPA, CDA et futurs) vit en privé
 |===
 | Ordre | Borough | Baby-steps | Pts
 | 1 | codebase | Domain enum → CODING/CONTENT (RED→GREEN) → detector keywords → CLI option + défaut → 15 fichiers → check | 3
-| 2 | document | FpaPageResolver → ContentPageResolver → fpaAwareResolver → commentaires → tests renommés → features Gherkin → check | 3
+| 2 | document | FpaPageResolver → ContentPageResolver → fpaAwareResolver → commentaires → tests renommés → features Gherkin → check | 3 |
 | 3 | bakery | I18nMigrationService listes → fixtures tests → check | 1
 | 4 | capsule | fixtures tests → check | 1
 | 5 | plantuml | registre → tests → check | 1
@@ -92,5 +104,11 @@ apporte son corpus. Le métier (FPA, CDA et futurs) vit en privé
 
 - bump de distribution au choix pilote (breaking change → version mineure
   ou majeure selon boroughs publiés).
-- Les cadrages GBL-003 / OCR-QUALITY / FPA-BOOK référencent FPA en tant
-  que métier privé — inchangés (ils vivent en privé ou citent office/).
+- Les cadrages GBL-003 / OCR-QUALITY / ex-FPA-BOOK référencent le métier
+  privé — inchangés (ils vivent en privé ou citent office/).
+- *Vague 4 (2026-09-10)* : toute la logique métier formation extraite des
+  boroughs publics est transfusée dans
+  `training-gradle/training-plugin/.agents/TRANSFER_LEXIQUE_FORMATION.adoc`
+  — document vivant, enrichi à chaque vague RENAME exécutée. Les
+  mentions "ex-FPA/ex-CDA" ci-dessus sont des *traces d'audit*
+  (noms de code ayant existé), pas des usages actifs.

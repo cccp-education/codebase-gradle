@@ -1,5 +1,6 @@
 package codebase.rag
 
+import codebase.koog.planning.PlanState
 import codebase.koog.state.AugmentedState
 import codebase.koog.KoogAugmentedContextGraph
 import org.gradle.api.DefaultTask
@@ -15,6 +16,7 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
 import java.io.File
+import java.time.Instant
 
 @DisableCachingByDefault(because = "LLM output is probabilistic — never cache")
 abstract class PlanIntentionTask : DefaultTask() {
@@ -181,4 +183,41 @@ abstract class PlanIntentionTask : DefaultTask() {
         }
         logger.lifecycle("[generatePlan] Indexés : {} documents, {} chunks", store.countDocuments(), store.countChunks())
     }
+}
+
+/**
+ * SVO-1 : ex-[PlannerIntegration.kt] — extensions de conversion en
+ * [PlanMetadata] migrées ici (seul consommateur) lors de la suppression
+ * du pont planner N2 (inversion N1→N2 tuée, pattern S-096/S-199).
+ */
+fun PlanState.toPlanMetadata(source: String = "codebase"): PlanMetadata? {
+    if (error != null || plan == null) return null
+    val p = plan
+    return PlanMetadata(
+        source = source,
+        version = "1.0",
+        generatedAt = Instant.now().toString(),
+        model = System.getenv("OLLAMA_MODEL") ?: "gpt-oss:120b-cloud",
+        dependencies = listOf("queens", "graphify", "codex"),
+        epics = p.epics.size,
+        totalPoints = p.totalPoints,
+        classification = "",
+        estimatedSessions = p.estimatedSessions
+    )
+}
+
+fun AugmentedState.toPlanMetadata(source: String = "codebase"): PlanMetadata? {
+    if (error != null || plan == null) return null
+    val p = plan
+    return PlanMetadata(
+        source = source,
+        version = "1.0",
+        generatedAt = Instant.now().toString(),
+        model = System.getenv("OLLAMA_MODEL") ?: "gpt-oss:120b-cloud",
+        dependencies = listOf("queens", "graphify", "codex"),
+        epics = p.epics.size,
+        totalPoints = p.totalPoints,
+        classification = "",
+        estimatedSessions = p.estimatedSessions
+    )
 }

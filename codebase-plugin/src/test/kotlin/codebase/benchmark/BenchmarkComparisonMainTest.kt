@@ -16,7 +16,7 @@ class BenchmarkComparisonMainTest {
             "summary": "test summary",
             "results": [
                 {"threshold": "10K", "totalSamples": 7, "errorRate": 0.1428, "boundaryCrossings": [{"documentId":"C0-strategie","expectedCircle":0,"actualCircle":1,"confidenceScore":0.8,"excerpt":"test"}]},
-                {"threshold": "30K", "totalSamples": 7, "errorRate": 0.2857, "boundaryCrossings": [{"documentId":"C1-tokens","expectedCircle":1,"actualCircle":2,"confidenceScore":0.7,"excerpt":"test"},{"documentId":"C2-pedagogie","expectedCircle":2,"actualCircle":3,"confidenceScore":0.6,"excerpt":"test"}]},
+                {"threshold": "30K", "totalSamples": 7, "errorRate": 0.2857, "boundaryCrossings": [{"documentId":"C1-tokens","expectedCircle":1,"actualCircle":2,"confidenceScore":0.7,"excerpt":"test"},{"documentId":"C2-content","expectedCircle":2,"actualCircle":3,"confidenceScore":0.6,"excerpt":"test"}]},
                 {"threshold": "60K", "totalSamples": 7, "errorRate": 0.0, "boundaryCrossings": []}
             ]
         }

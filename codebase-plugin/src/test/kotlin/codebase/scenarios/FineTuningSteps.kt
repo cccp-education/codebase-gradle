@@ -117,7 +117,7 @@ class FineTuningSteps(private val world: FineTuningWorld) {
     fun `graph executes`(threshold: Double, maxIterations: Int) {
         val request = FineTuningRequest(
             baseModel = "gpt-oss:120b-cloud",
-            dataset = listOf("docs/afnor/**/*.adoc"),
+            dataset = listOf("docs/referential/**/*.adoc"),
             outputModelName = "expert-coding",
         )
         val initial = FineTuningState(

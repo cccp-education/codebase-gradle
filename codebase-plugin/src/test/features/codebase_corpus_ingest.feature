@@ -1,8 +1,8 @@
 @corpus-ingest
-Feature: CB-FPA-RAG — corpus ingestion into the RAG socle
+Feature: Referential corpus ingestion into the RAG socle
   As a codebase-gradle maintainer
   I want the codex chunks corpus loaded, doubt-annotated and ingested via ingestWithDoubt
-  So that the FPA corpus becomes queryable augmented context (GBL-003.4 critical path)
+  So that the referential corpus becomes queryable augmented context (GBL-003.4 critical path)
 
   Background:
     Given a corpus ingest world is initialized

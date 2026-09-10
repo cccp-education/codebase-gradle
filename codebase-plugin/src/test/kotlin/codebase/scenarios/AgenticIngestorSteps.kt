@@ -90,7 +90,7 @@ class AgenticIngestorSteps(private val world: AgenticIngestorWorld) {
 
             == Mapping — Boroughs Existants
 
-            Manhattan plannerGenerateSPG → generateSPG.
+            Manhattan plannerGenerateContentPlan → generateContentPlan.
 
             == Roadmap d'Implementation
 

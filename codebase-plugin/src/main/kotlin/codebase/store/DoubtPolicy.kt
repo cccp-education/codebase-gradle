@@ -1,7 +1,8 @@
 package codebase.store
 
 /**
- * Derives [DoubtMetadata] from corpus text markers (EPIC CB-FPA-RAG US-1).
+ * Derives [DoubtMetadata] from corpus text markers (EPIC CB-FPA-RAG
+ * US-1 — historic EPIC id).
  *
  * The codex chunk corpus (chunks.json) carries no confidence column — the
  * doubt is derived heuristically from the visible OCR markers. A chunk

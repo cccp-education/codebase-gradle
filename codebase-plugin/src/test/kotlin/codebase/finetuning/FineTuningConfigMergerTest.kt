@@ -26,7 +26,7 @@ class FineTuningConfigMergerTest {
             codebase.finetuning.epochs=5
             codebase.finetuning.learningRate=1e-4
             codebase.finetuning.batchSize=8
-            codebase.finetuning.corpusGlobs=docs/afnor/**/*.adoc,docs/reac/**/*.adoc
+            codebase.finetuning.corpusGlobs=docs/referential/**/*.adoc,docs/framework/**/*.adoc
             codebase.finetuning.continualPreTrainingRatio=0.20
         """.trimIndent())
 
@@ -35,7 +35,7 @@ class FineTuningConfigMergerTest {
         assertEquals(5, config.epochs)
         assertEquals(1e-4, config.learningRate)
         assertEquals(8, config.batchSize)
-        assertEquals(listOf("docs/afnor/**/*.adoc", "docs/reac/**/*.adoc"), config.corpusGlobs)
+        assertEquals(listOf("docs/referential/**/*.adoc", "docs/framework/**/*.adoc"), config.corpusGlobs)
         assertEquals(0.20, config.continualPreTrainingRatio)
     }
 
@@ -243,12 +243,12 @@ class FineTuningConfigMergerTest {
     fun `merge corpusGlobs CLI comma-split overrides YAML`() {
         val projectDir = File(tempDir, "merge11").also { it.mkdirs() }
         val yamlConfig = FineTuningConfig(corpusGlobs = listOf("docs/old/**/*.adoc"))
-        val cliParams = mapOf("corpusGlobs" to "docs/afnor/**/*.adoc,docs/reac/**/*.adoc")
+        val cliParams = mapOf("corpusGlobs" to "docs/referential/**/*.adoc,docs/framework/**/*.adoc")
 
         val merged = FineTuningConfigMerger.merge(projectDir, yamlConfig, cliParams)
 
         assertEquals(
-            listOf("docs/afnor/**/*.adoc", "docs/reac/**/*.adoc"),
+            listOf("docs/referential/**/*.adoc", "docs/framework/**/*.adoc"),
             merged.corpusGlobs,
             "CLI comma-split should override YAML"
         )
@@ -257,13 +257,13 @@ class FineTuningConfigMergerTest {
     @Test
     fun `merge corpusGlobs empty CLI string falls back to YAML`() {
         val projectDir = File(tempDir, "merge12").also { it.mkdirs() }
-        val yamlConfig = FineTuningConfig(corpusGlobs = listOf("docs/afnor/**/*.adoc"))
+        val yamlConfig = FineTuningConfig(corpusGlobs = listOf("docs/referential/**/*.adoc"))
 
         val merged = FineTuningConfigMerger.merge(
             projectDir, yamlConfig, mapOf("corpusGlobs" to "")
         )
 
-        assertEquals(listOf("docs/afnor/**/*.adoc"), merged.corpusGlobs, "Empty CLI should fall back to YAML")
+        assertEquals(listOf("docs/referential/**/*.adoc"), merged.corpusGlobs, "Empty CLI should fall back to YAML")
     }
 
     @Test

@@ -108,7 +108,7 @@ class ExecutableArtifactTest {
         val chunk = buildChunk(
             chunkType = ChunkType.PROCEDURE,
             verb = TaxonomyVerb.GENERER,
-            content = ". Generer le scenario pedagogique global"
+            content = ". Generer le scenario de contenu global"
         )
 
         val executable = compiler.compileExecutable(chunk)

@@ -55,14 +55,11 @@ class DeterministicOffTopicDetector {
             "github actions", "ci/cd", "test", "mock", "junit", "mockk"
         )
         Domain.CONTENT -> listOf(
-            "formation", "pédagogie", "formateur", "apprenant", "stagiaire",
-            "compétence", "évaluation", "objectif", "session", "module",
-            "qualiopi", "rncp", "afnor", "bloom", "harrow", "krathwohl",
-            "taxonomie", "référentiel", "certification", "validation",
-            "remédiation", "accompagnement", "tutorat", "ingénierie",
-            "scénario", "séquence", "spg", "spd", "livret",
-            "professionnel", "référentiel métier",
-            "fiche", "épreuve", "jury", "vae", "acquis"
+            "content", "article", "publication", "editorial", "guide", "audience",
+            "reader", "publishing", "outline", "draft", "rédaction",
+            "documentation", "taxonomie", "référentiel",
+            "scénario", "séquence", "module",
+            "section", "chapitre", "rubrique", "manuscrit"
         )
     }
 

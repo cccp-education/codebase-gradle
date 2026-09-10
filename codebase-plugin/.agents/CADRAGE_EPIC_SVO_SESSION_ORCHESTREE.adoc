@@ -1,0 +1,109 @@
+= Cadrage EPIC SVO — Session Vibecoding Orchestrée (contexte augmenté + planner sous-agent)
+:date: 2026-09-10 (session 255, arbitrage pilote)
+:epic: SVO (codebase N1 — pilotage ; planner N2 — sous-agent de décomposition)
+:origine: Demande pilote 2026-09-10 — « vibecoder une tâche qui lance une session de contexte augmenté avec un prompt transféré à la tâche ou un défaut par borough ; le planner en sous-agent fait un état d'avancement et oriente le prompt de reprise pour consommer le backlog ; si le backlog est fini, enchaîner sur une nouvelle session de vibecoding brainstorming augmenté du cadrage global »
+:decision: Pilote validé — le pilotage vibecoding vit dans codebase (N1), planner fournit la décomposition via un port (pattern LlmBuildService transposé). Prérequis : tuer l'inversion N1→N2 (retrait libs.planner.plugin de codebase).
+
+== 1. Constats (audit S-255, code réel)
+
+. *Machinerie de boucle complète* : `VibecodingGraph` (plan→execute→verify→adapt,
+  EPIC V/X) + hardening 14 US + autofocus (Z) + gouvernance enforcement (V-9)
+  — testé sur fakes, jamais dogfoodé sur mission réelle.
+. *Persistance session* : `SessionRepository` (R2DBC, create/update/get/resume,
+  EPIC SP) + `SessionLifecycleState` (CREATED/RUNNING/CLOSED) + audit JSONL.
+. *Prompt par borough* : `CompositeContextBuilder.buildScoped(boroughName,
+  ragQuestion)` lit `.agents/INDEX.adoc` + `PROMPT_REPRISE.adoc` (tronqué 2000
+  chars) ; `GovernanceContextLoader` extrait `backlogItems` (lignes `[ ]`/`[x]`
+  des BACKLOG.adoc).
+. *Planner branché à l'envers* : `codebase/rag/PlannerIntegration.kt` fait
+  `import planning.IntentionPlanner` ET `codebase-plugin/build.gradle.kts:55`
+  déclare `implementation(libs.planner.plugin)` — **cycle N1↔N2 en dur**
+  (planner dépend aussi de codebase, flèche légitime N2→N1 côté lui).
+. *Prompt de reprise 100% manuel* : le PROMPT_REPRISE.adoc est écrit par
+  l'humain en fin de session — rien ne le génère depuis le backlog + état.
+. *Pas de chaînage* : la boucle vibecoding s'arrête à `finished` ; aucun
+  mécanisme d'enchaînement (backlog fini → brainstorming).
+
+== 2. Décisions architecturales (actées pilote)
+
+- **D1 — Pilotage = codebase N1** : la boucle, le lifecycle, les retries,
+  le rollback, l'audit et le RAG socle vivent dans codebase (preuve :
+  PLN-LIFECYCLE S-074 « codebase gère lifecycle koog local, planner
+  stateless »). planner ne connaît pas les sessions.
+- **D2 — Appels LLM = socle N1** : tout LLM (y compris celui que planner
+  utilise pour décomposer) est obtenu via `LlmBuildService` (PLN-LLM-HUB
+  S-072). LLM-ADAPTER-EXTRACT S-073 a centralisé l'adapter dans codebase.
+- **D3 — Port/Adapter (pattern LlmBuildService transposé)** : codebase
+  définit `PlannerPort` (fun interface : intention + CompositeContext →
+  Plan). planner fournit l'adapter `KoogIntentionPlannerAdapter` qui
+  implémente le port avec `IntentionPlanner`. Fallback interne si aucun
+  adapter branché (dégradé propre, dryRun testable sans LLM).
+- **D4 — Inversion N1→N2 tuée** : codebase retire `libs.planner.plugin`
+  (build.gradle.kts:55) + supprime `PlannerIntegration.kt` + le câblage
+  associé. Le pont historique session-046 meurt comme les ponts OCR/RAG
+  (pattern S-096/S-199). Flèche unique : planner → codebase.
+- **D5 — Branchement par wiring Gradle** : le projet consommateur applique
+  `education.cccp.codebase` + `education.cccp.planner` ; `PlanningPlugin`
+  expose `registerPlannerPort` (mirror `registerLlmBuildService` PLN-LLM-HUB
+  US-2). Le port est résolu au runtime par le BuildService — zéro import
+  `planning.*` dans le code prod codebase.
+- **D6 — Session orchestrée = nouvelle tâche Gradle** `autonomousSession`
+  (groupe generate, `@DisableCachingByDefault`) : (1) résolution prompt
+  (option `--prompt` > défaut borough : PROMPT_REPRISE + backlog via
+  buildScoped/GovernanceContextLoader), (2) plan via PlannerPort (sous-agent),
+  (3) exécution boucle VibecodingGraph existante, (4) état d'avancement
+  (SessionRepository + audit JSONL existants), (5) génération du prompt de
+  reprise orienté backlog, (6) chaînage conditionnel.
+- **D7 — Résumption planner-first** : `SessionResumptionPlanner` (object pur)
+  : backlog items + dernier état de session → `resumption prompt` textuel
+  (priorise les `[ ]` ouverts, référence les artefacts produits, consigne
+  l'objectif de la session suivante). Remplace l'écriture manuelle du
+  PROMPT_REPRISE — *généré*, pas maintenu.
+- **D8 — BacklogDetector** (object pur) : heuristic — backlog fini si
+  aucune ligne `[ ]` non coché (hors sections historiques/stale marquées).
+  Fini → enchaînement `brainstormSession` (cadrage global augmenté :
+  intention "BRAINSTORM: <vision du borough>" sur le contexte composite
+  BIG_PICTURE autofocus).
+- **D9 — Garde anti-boucle infinie** : `maxChainedSessions` (défaut 3,
+  option CLI) — au-delà, la tâche rend la main avec un rapport d'orchestration
+  (sessions exécutées, backlog restant, raison de l'arrêt).
+- **D10 — Frontière licence** : la machinerie SVO est générique → publique
+  (codebase). Les recettes métier (que planifie le brainstorming pour
+  formation) restent en privé training — le pattern transfusion
+  (TRANSFER_LEXIQUE_FORMATION.adoc) s'applique si SVO révèle de la logique
+  métier.
+
+== 3. Découpage US (~13 pts)
+
+|===
+| US | Description | Pts | Dépend de
+| SVO-0 | Cadrage (ce document) | 1 | —
+| SVO-1 | Inversion port : `PlannerPort` fun interface (domaine `codebase.koog.plannerport`) + fallback interne + retrait `libs.planner.plugin` + suppression `PlannerIntegration.kt` + gate non-régression (cucumber vibecoding verts) | 3 | SVO-0
+| SVO-2 | `SessionResumptionPlanner` + `BacklogDetector` (objects purs, ~12 unit TDD) : backlog → resumption prompt ; detection fini/pas fini | 2 | SVO-0
+| SVO-3 | Adapter planner : `KoogIntentionPlannerAdapter` implémente PlannerPort côté planner + wiring `registerPlannerPort` (mirror registerLlmBuildService) — session Manhattan dédiée (cross-borough) | 2 | SVO-1
+| SVO-4 | Tâche `autonomousSession` : resolve prompt (CLI > défaut borough) → port → boucle → état → resumption prompt écrit dans build/vibecoding/ + option `--prompt`, `--borough`, `--maxChainedSessions` | 3 | SVO-2
+| SVO-5 | Chaînage : si backlog fini → `brainstormingSession` (cadrage global augmenté, autofocus BIG_PICTURE) ; Cucumber BDD `autonomous_session.feature` (4 scénarios : prompt transféré, défaut borough, backlog restant → resumption, backlog fini → brainstorming) — fakes in-memory pattern S-082/S-088 | 3 | SVO-4
+|===
+
+== 4. Risques
+
+- Cycle résiduel si l'adapter planner est classpath-dépendant → atténué :
+  wiring Gradle uniquement, port résolu au runtime, planner HORS classpath
+  de codebase après SVO-1.
+- Boucle infinie sur backlog auto-entretenu → D9 (maxChainedSessions).
+- LLM non-déterminisme dans le resumption prompt → atténué : resumption
+  prompt déterministe (template + backlog + état, pas de LLM) — le LLM ne
+  sert qu'à la décomposition et à l'exécution.
+- koverVerify/Z-6 préexistant bloquant la gate globale → fix Z-6 recommandé
+  AVANT SVO-2 (gate fiable pendant le développement).
+
+== 5. Ordre d'attaque
+
+1. Fix Z-6 (2 pts, préexistant — débloque la gate globale)
+2. SVO-1 inversion port (~3 pts, Queens)
+3. SVO-2 objects purs (~2 pts, Queens)
+4. SVO-3 adapter planner (~2 pts, Manhattan — session cross-borough)
+5. SVO-4 tâche autonomousSession (~3 pts, Queens)
+6. SVO-5 chaînage + BDD (~3 pts, Queens)
+7. Dogfood Newark A2 : la première mission réelle consomme le RAG
+   référentiel (critical path MVP0)

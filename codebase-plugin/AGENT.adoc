@@ -31,7 +31,8 @@ Ce projet vit dans `foundry/codebase-gradle/` → *cercle 4 (public, Apache 2.0)
 === Objectif
 
 . **Fine-tuning LLM** : Preparer les datasets depuis `office/books-collection/` + `office/data-engineering/`,
-  fine-tuner deux experts metiers (CDA et FPA) sur des modeles 70B, exposer via Ollama.
+  fine-tuner des experts metiers generiques (coding, content — les recettes
+  metier vivent en privé dans training-gradle) sur des modeles 70B, exposer via Ollama.
 . **Benchmark de perception spatiale** : Mesurer a quel seuil de tokens le LLM perd la notion
   de cercle de confiance. Evaluer l'apport du vecteur composite (RAG pgvector + Graphify knowledge graph)
   sur la resilience du contexte long.
