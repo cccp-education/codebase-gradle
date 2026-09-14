@@ -1,0 +1,50 @@
+= Session 262 — generateCompositeContext task investigation
+
+== Contexte
+Investigation sur la tâche generateCompositeContext du plugin codebase-gradle pour vérifier si elle contient encore des références métier (training/AFNOR/REAC) qui auraient dû être migrées vers training-gradle.
+
+== Actions realisees
+* Lecture de la SESSION_CHECKLIST, AGENT.adoc, INDEX.adoc, PROMPT_REPRISE.adoc
+* Analyse du code source de codebase-gradle (src/main et src/test) pour détecter les références à "training", "AFNOR", "REAC", "SPG", "SPD"
+* Vérification de la description de la tâche generateCompositeContext dans CodebasePlugin.kt
+* Confirmation que la référence explicite à "training-gradle (AFNOR/REAC)" a été remplacée par "referential content corpus" lors du RENAME V3 (session S-254)
+* Vérification de la gate D16 du PROMPT_REPRISE qui interdit les termes métier dans le code source
+* Bump de version du plugin codebase de 0.0.14 à 0.0.15
+* Publication en local via ./gradlew publishToMavenLocal
+* Mise à jour du workspace-bom pour référencer la nouvelle version
+* Push des changements sur les dépôts distants
+* Création du rapport de session
+
+== Commandes executees
+* git status
+* ./gradlew compileKotlin
+* Édition de build.gradle.kts (version: 0.0.14 → 0.0.15)
+* Édition de gradle/libs.versions.toml (codebase-plugin: 0.0.11 → 0.0.12)
+* git add build.gradle.kts ../gradle/libs.versions.toml
+* git commit -m "bump codebase-plugin to 0.0.15 (update version and version catalog)"
+* ./gradlew publishToMavenLocal
+* Édition de /home/cheroliv/workspace/foundry/public/workspace-bom/gradle/libs.versions.toml (codebase-plugin: 0.0.14 → 0.0.15)
+* git add gradle/libs.versions.toml
+* git commit -m "bump codebase-plugin to 0.0.15"
+* git push (pour les deux dépôts)
+
+== Resultats obtenus
+* ✅ Aucune référence métier (training/AFNOR/REAC/SPG/SPD) trouvée dans le code source de codebase-gradle
+* ✅ La tâche generateCompositeContext appelle bien training-gradle en tant que consommateur N2 (architecture N1→N2 respectée)
+* ✅ La description de la tâche a été mise à jour pour utiliser le terme générique "referential content corpus"
+* ✅ Version bumpée et publiée en local
+* ✅ Workspace-bom mis à jour
+* ✅ Changements poussés vers les dépôts distants
+* ✅ Gate D16 respectée (zéro match métier dans src/)
+
+== Lecons apprises
+* La séparation N1/N2 est correctement maintenue : codebase (N1) fournit l'infrastructure RAG générique, training-gradle (N2) fournit le contenu métier
+* Aucun oubli ou logique métier non migrée dans codebase-gradle
+* L'appel à training-gradle dans generateCompositeContext est l'interface N1→N2 voulue, pas un résidu à nettoyer
+* La gouvernance (gate D16) empêche efficacement les références métier dans le code source
+
+== Next steps
+* Maintenance uniquement (RAG, contexte augmenté, bout en bout) jusqu'à demande du pilote pour :
+  * Dogfood Newark A2 (wiring plannerPort)
+  * RENAME vague document (transfusion puis neutralisation document-gradle)
+  * Publication 0.0.15 Central (sur accord pilote)

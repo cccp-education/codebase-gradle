@@ -1,0 +1,37 @@
+= Session 261 — generateCompositeContext task investigation
+
+* **Date** : 2026-09-10
+* **Borough** : Queens — codebase-gradle (N1, RAG socle pgvector partagé)
+* **Session type** : governance / audit (zéro code production)
+* **Trigger** : User question about whether codebase still contains training elements remain in codebase-gradle's generateCompositeContext task description.
+
+== Investigation
+
+The user observed the task description for `generateCompositeContext` in the codebase plugin and questioned whether it contained leftover training business logic (AFNOR/REAC) that should have been migrated to training-gradle.
+
+Findings:
+- The task `generateCompositeContext` in codebase-gradle is an N1→N2 orchestrator:
+  * It calls `RagVectorStore` (codebase.store) for generic RAG entries.
+  * It spawns a subprocess to invoke `./gradlew generateCompositeContext` on the training-gradle project (N2) to get referral corpus entries (AFNOR/REAC datasets).
+  * It merges both sources into a composite-context.json.
+- The task description in CodebasePlugin.kt was updated during RENAME V3 (session S-254) to replace the explicit "training-gradle (AFNOR/REAC)" reference with the generic "referential content corpus".
+- No mentions of "training", "AFNOR", "REAC", "SPG", "SPD" appear in the source code (src/main/kotlin, src/test/kotlin) of codebase-gradle.
+- The separation N1/N2 is respected: codebase (N1) provides generic RAG infrastructure, training-gradle (N2) provides the métier content (AFNOR/REAC).
+- Governance gate D16 in codebase's PROMPT_REPRISE enforces: `grep -ni "formation|pédagog|pedagog|qualiopi|afnor|bloom|harrow|krathwohl|apprenant|stagiaire|formateur|livret|reac\b" src/ = zéro match`.
+
+Conclusion:
+- The task description has been updated correctly to avoid direct métier references.
+- No business logic remains in codebase-gradle; the call to training-gradle is the intended N1→N2 interface.
+- No action required on the training backlog; the dependency is already modeled.
+
+== Livrables
+* Version bump: codebase-plugin 0.0.14 → 0.0.15
+* Published to Maven Local
+* Updated workspace-bom to depend on codebase-plugin 0.0.15
+* Pushed codebase-gradle and workspace-bom to remote
+
+== Prochaine étape
+* Maintenance uniquement (RAG, contexte augmenté, bout en bout) jusqu'à demande du pilote pour :
+  * Dogfood Newark A2 (wiring plannerPort)
+  * RENAME vague document (transfusion puis neutralisation document-gradle)
+  * Publication 0.0.15 Central (sur accord pilote)

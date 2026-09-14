@@ -15,6 +15,18 @@
 * **Conclusion** : zéro feature récupérable, cadrage document annulé
 * **Rapport** : `.agents/sessions/260-audit-lion92-fork-no-op.adoc`
 
+== Session 261 — 2026-09-10
+
+* **EPICs** : Aucun (gouvernance pure — audit tâche generateCompositeContext)
+* **Type** : gouvernance (zéro code production)
+* **Livrables** :
+** Audit tâche generateCompositeContext : vérifié absence de références métier (AFNOR/REAC) dans le code source
+** Bump codebase-plugin 0.0.15 publié en local
+** Mise à jour workspace-bom vers codebase-plugin 0.0.15
+** Push des dépôts codebase-gradle et workspace-bom
+* **Conclusion** : séparation N1/N2 respectée, aucun oubli métier dans codebase
+* **Rapport** : `.agents/sessions/261-generatecompositecontext-investigation.adoc`
+
 == Session 259 — 2026-09-10
 
 * **EPICs** : SVO-4 tâche `autonomousSession` (~3 pts) + SVO-5 chaînage brainstorming + BDD (~3 pts) — **EPIC SVO TERMINÉ 6/6 US**
