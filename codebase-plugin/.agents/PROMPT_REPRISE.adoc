@@ -1,62 +1,63 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 261
-:session: 261
-:borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 260 — Audit lion92/codebase-gradle fork (no-op, zéro code, fork stéré)
+= Prompt de Reprise — Codebase (Queens N1) — Session 264
+:session: 264
+:borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector partagé)
+:session_precedente: 263 — Fix rotation pool Ollama Cloud (isQuotaError ne détectait pas « monthly usage limit » → toute rotation cassée au 1er compte épuisé) + test d'intégration plage réelle 11437..11465 gated OLLAMA_RANGE_SCAN (RED→GREEN 11/11 + intégration 2/2)
 
-== Mission Session 261
+== Mission Session 264 — à la demande du pilote
 
-Borough DORMANT (tous EPICs terminés). Maintenance uniquement — RAG,
-contexte augmenté, bout en bout. La prochaine session sera déterminée
-par le pilote.
+Borough DORMANT (tous EPICs terminés). Maintenance uniquement.
 
-EPIC SVO ✅ TERMINÉ 6/6 US (S-255→S-259). Missions candidates (ordre
-critical path) :
+Missions candidates (ordre critical path MVP0) :
 
-. **Dogfood Newark A2 (sur demande pilote)** — la première mission réelle
+. **Dogfood Newark A2 (sur demande pilote)** — première mission réelle
    d'`autonomousSession` consomme le contexte augmenté : résoudre le port
    planner (wiring `education.cccp.planner` + `plannerPortService`) et
    lancer la tâche sur un borough réel. Critical path MVP0.
+. **Retour BKY-LANG-22 (bakery)** — US-8/9 dogfooding 22 langues + US-10
+   publication Central consommateurs. Le pool est désormais résilient au
+   quota mensuel : dogfooding possible sur les instances saines.
+   ⚠️ Le port 11437 a un compte en quota épuisé (`cherolivcontact`) —
+   rotation OK, mais surveiller le coût.
+. **Publication 0.0.16 Central** (le HEAD contient le fix rotation S-263).
+   Central = 0.0.15 (14 Sep, pré-fix). Sur accord pilote uniquement.
 . **RENAME vague document** (sur demande pilote) — transfusion d'abord
    (`TRANSFER_LEXIQUE_FORMATION.adoc` table § 2), puis neutralisation
    document-gradle (3 pts + OCR-QUALITY US-3).
-. **Maintenance** : publication 0.0.15 Central (le HEAD contient
-   SVO-1/2/3/4/5), support boroughs consommateurs.
 
 == Contexte technique
 
-* SVO-1/2/3 ✅ (S-256/257/258) : `PlannerPort` + `BacklogDetector` +
-  `SessionResumptionPlanner` + adapter Manhattan (`plannerPortService`).
-* SVO-4 ✅ S-259 : domaine `codebase.koog.svo` — `SessionPromptResolver`
-  (CLI > défaut borough PROMPT_REPRISE+backlog), `PlannerPortResolver`
-  (duck-typed `port()` sur registrations, nom canonique
-  `plannerPortService`, fallback NoOp), `AutonomousSessionOrchestrator`
-  (boucle chaînée pure : audit JSONL, D8 brainstorming exécuté, D9 borné 3,
-  resumption prompt `build/vibecoding/resumption-prompt.adoc`),
-  `AutonomousSessionTask` (adaptateur mince, options CLI
-  `--prompt/--borough/--maxChainedSessions/--maxActions/--model`), tâche
-  12e wiring `CodebasePlugin`. 45 unit SVO 0 FAIL + 4 functional.
-* SVO-5 ✅ S-259 : chaînage brainstorming D8 dans l'orchestrateur +
-  `autonomous_session.feature` 4/4 PASSED (45e runner
-  `cucumberTestAutonomousSession`, fakes in-memory pattern S-082/S-088).
-* Pièges Cucumber Expression documentés (S-259) : `/` dans un step =
-  alternative (→ reformuler), nombre en tête = paramètre.
-* Version : 0.0.14 mavenLocal (Central 0.0.14 — publication 0.0.15 à
-  l'accord pilote). BOM 0.0.37. Conventions 0.0.4.
+* **Pool LLM (S-263)** : `OllamaPoolKeyAdapter.isQuotaError` reconnaît
+  désormais `usage limit` (message réel Ollama Cloud : « you (X) have
+  reached your monthly usage limit »). Rotation active sur quota mensuel.
+* **Test d'intégration** : `OllamaPoolRealEnvironmentIntegrationTest`
+  (plage 11437..11465, 2 tests). Gate opt-in `OLLAMA_RANGE_SCAN=true` ;
+  sans gate → SKIPPED (suite hermétique préservée).
+  Commande : `OLLAMA_RANGE_SCAN=true ./gradlew test
+  --tests "codebase.koog.llm.pool.OllamaPoolRealEnvironmentIntegrationTest" --rerun-tasks`.
+* Contrat `epic_v6_resolver.feature` **préservé** : défaut =
+  `OllamaInstanceFactory` déterministe (29 instances, zéro probe réseau).
+  Le probe réseau reste l'opt-in `OLLAMA_SCAN_PORTS=true`.
+* Environnement Ollama réel (2026-09-15) : 28/31 ports vivants
+  (11438/11449/11450 down), `gemma4:31b-cloud` partout.
+* Version : 0.0.15 mavenLocal (Central 0.0.15 = pré-fix). BOM 0.0.37.
 * Gate ciblé : jamais `./gradlew test` global sans permission (2 fails
   préexistants OcrTaskTest drift pdf S-211). Suites ciblées :
-  `--tests "codebase.koog.svo.*"` etc.
+  `--tests "codebase.koog.llm.pool.*"` etc.
+  ⚠️ Local : `ignoreFailures = !isCI()` → vérifier les XML JUnit, pas le
+  `BUILD SUCCESSFUL`.
 * Gouvernance unifiée dans `codebase-plugin/.agents/` (S-207).
 
 == Règles absolues
 
 * Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la
   fois, séquentiel pur (interdiction @xp/subagents/parallélisation).
+* Plage Ollama autorisée : **11437..11465** (pilot decision S-263 —
+  amendement 11435 écarté). Seul 11434 est interdit (perso).
 * Zéro commit/push sans permission explicite du pilote.
 * Zéro secret, zéro token dans le code ou les logs.
-* RENAME : transfuser la logique métier dans training AVANT toute purge.
 
 == References
 
+* `.agents/sessions/263-ollama-pool-quota-rotation-fix.adoc` (rapport S-263)
 * `.agents/sessions/259-svo4-svo5-autonomous-session-chainup-bdd.adoc` (rapport S-259)
 * `.agents/CADRAGE_EPIC_SVO_SESSION_ORCHESTREE.adoc` (cadrage S-255 — 10 décisions)
-* `training-gradle/training-plugin/.agents/TRANSFER_LEXIQUE_FORMATION.adoc` (transfusion)

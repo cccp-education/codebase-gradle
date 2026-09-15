@@ -1,5 +1,25 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-09-10
+:date: 2026-09-15
+
+== Session 263 — Fix rotation pool Ollama Cloud + couverture plage réelle
+
+Tests ajoutés/modifiés :
+
+* `OllamaPoolKeyAdapterTest` — +1 test `callWithRotation should rotate on
+  real Ollama Cloud monthly usage limit` (message réel Ollama Cloud verbatim).
+  11/11 PASSED.
+* `OllamaPoolRealEnvironmentIntegrationTest` (nouveau) — 2 tests d'intégration
+  sur la plage réelle `11437..11465` : `scan discovers live instances across
+  the authorized range` + `provider call succeeds through the pool on the real
+  range`. Gate opt-in `OLLAMA_RANGE_SCAN=true` ; sans gate → 2 SKIPPED
+  (suite hermétique préservée, zéro probe réseau par défaut).
+
+Trou de couverture comblé : les suites existantes ne testaient qu'un port CI
+unique (`11466`) avec fakes ; aucune ne scannait la plage entière ni ne posait
+un appel réel à travers le pool. C'est ce trou qui masquait le bug P1.
+
+Gate : suites pool+resolver+service 0 failure (XML JUnit) ; `cucumberTest`
+8922 tests 0 échec ; `publishToMavenLocal` VERT.
 
 == Session 258 — SVO-3 (cross-borough Manhattan — zéro test codebase)
 

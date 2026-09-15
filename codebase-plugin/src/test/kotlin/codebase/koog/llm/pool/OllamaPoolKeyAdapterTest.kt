@@ -98,6 +98,31 @@ class OllamaPoolKeyAdapterTest {
     }
 
     @Test
+    fun `callWithRotation should rotate on real Ollama Cloud monthly usage limit`() {
+        val pool = OllamaPool(
+            listOf(instance("a", 11437), instance("b", 11439)),
+            rotationStrategy = RotationStrategy.ROUND_ROBIN
+        )
+        val adapter = OllamaPoolKeyAdapter(pool)
+        var calls = 0
+
+        val result = adapter.callWithRotation { instance ->
+            calls++
+            if (instance.id == "a") {
+                throw RuntimeException(
+                    """{"error":"you (test-account) have reached your monthly usage limit, """ +
+                        """upgrade for higher limits: https://ollama.com/upgrade or add usage credits: """ +
+                        """https://ollama.com/settings (ref: 0e1bd4da-2c19-4ad7-b09a-7487ff620ec8)"}"""
+                )
+            }
+            "ok-${instance.id}"
+        }
+
+        assertEquals("ok-b", result, "Monthly usage limit must trigger rotation to the next instance")
+        assertEquals(2, calls)
+    }
+
+    @Test
     fun `callWithRotation should throw IllegalStateException when pool exhausted`() {
         val pool = OllamaPool(listOf(instance("a", 11437), instance("b", 11438)), RotationStrategy.ROUND_ROBIN)
         val adapter = OllamaPoolKeyAdapter(pool)

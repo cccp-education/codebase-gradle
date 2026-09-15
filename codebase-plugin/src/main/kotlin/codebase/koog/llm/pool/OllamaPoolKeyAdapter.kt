@@ -106,6 +106,7 @@ class OllamaPoolKeyAdapter(
     private fun isQuotaError(message: String): Boolean =
         message.contains("quota", ignoreCase = true) ||
             message.contains("rate limit", ignoreCase = true) ||
+            message.contains("usage limit", ignoreCase = true) ||
             message.contains("exceeded", ignoreCase = true) ||
             message.contains("429", ignoreCase = true)
 

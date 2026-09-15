@@ -1,0 +1,127 @@
+= Session 263 — Fix rotation pool Ollama Cloud (monthly usage limit) + test d'intégration plage réelle
+
+:session: 263
+:date: 2026-09-15
+:type: DDD + TDD + intégration réelle
+:borough: Queens — codebase-gradle (N1, socle LLM pool partagé)
+
+== Contexte
+
+Session initiée depuis le borough bakery (EPIC BKY-LANG-22, US-8 dogfooding).
+Le pilote a demandé de **tester l'environnement** de l'EPIC avant de générer
+le moindre deck : valider le câblage `OllamaInstanceScanner` →
+`OllamaLlmProvider` → rotation sur les instances Ollama Docker réelles
+(plage autorisée `11437..11465`).
+
+Constat de cadrage : le dogfooding (générer des decks) et la **validation
+d'environnement** sont deux besoins distincts. Générer un deck est un artefact
+métier LLM-metered ; valider la plomberie du pool ne requiert **aucun** deck.
+
+Amendement de gouvernance proposé puis **écarté** par le pilote : élargir la
+plage à `11435..11465` (seul `11434` interdit). Décision finale : **on reste
+sur `11437..11465`** — zéro modification N0 `OllamaConfig`/`ByokLlmConfig`,
+zéro cycle release cross-borough.
+
+== Constats d'audit (avant code)
+
+. Les tests `OllamaInstanceScannerTest` et `OllamaLlmProviderTest` ne testent
+  qu'**un seul port CI fixe** (`11466`) via `assumeTrue`/`EnabledIf`. Aucun test
+  ne scanne la **plage autorisée entière** `11437..11465`.
+. `LlmProviderResolver.resolveOllamaInstances()` retombe, sans
+  `OLLAMA_SCAN_PORTS`/`OLLAMA_POOL_PORTS`, sur `OllamaInstanceFactory.create()` :
+  29 instances déclarées sans probe réseau. **Vérifié : ce n'est pas un bug** —
+  c'est un contrat documenté (`epic_v6_resolver.feature` : « available without
+  probing the network », scénario `@factory` = 29 instances). Corriger ce défaut
+  aurait cassé un contrat BDD et rendu la suite non-hermétique. **Option A
+  retenue** : préserver le contrat, ajouter le test d'intégration gated.
+. Probe terrain : **28/31** ports vivants (`11438`, `11449`, `11450` down),
+  `gemma4:31b-cloud` servi partout. Ollama Cloud proxifie tout modèle cloud
+  même non listé dans `/api/tags` (appel `gpt-oss` sur un port gemma-only OK).
+
+== Livrable 1 — Test d'intégration plage réelle (US implicite BKY-LANG-22 env)
+
+`OllamaPoolRealEnvironmentIntegrationTest` (2 tests) :
+
+* `scan discovers live instances across the authorized range` — scan réel
+  `OllamaInstanceScanner(portRange = 11437..11465)` via `HttpInstanceScanner`,
+  vérifie ≥1 instance, ports dans la plage, unicité.
+* `provider call succeeds through the pool on the real range` — appel LLM réel
+  à travers `OllamaLlmProvider` + `OllamaPool(ROUND_ROBIN)`.
+
+**Gate opt-in** : `OLLAMA_RANGE_SCAN=true` (défaut skip). `./gradlew test` reste
+hermétique — zéro probe réseau par défaut (pattern `assumeTrue` existant).
+
+== Livrable 2 — Bug P1 découvert par le test d'intégration
+
+Le test d'intégration réel **a révélé un bug de production** :
+
+* Symptôme : appel pool → `dev.langchain4j.exception.RateLimitException`
+  propagée, test FAILED (2/2 → 1/2).
+* Message réel Ollama Cloud :
+  `you (cherolivcontact) have reached your monthly usage limit, upgrade for
+  higher limits` (compte du port 11437, premier de la rotation).
+* Cause : `OllamaPoolKeyAdapter.isQuotaError` (ligne 106) ne matchait que
+  `quota`, `rate limit`, `exceeded`, `429` — **pas** `usage limit`. La branche
+  `else -> throw e` propageait l'exception au lieu de rotationner.
+* Impact : **tout appel pool échouait** dès que le premier port tombait sur un
+  compte épuisé, alors que 27 autres instances étaient saines. Le pool perdait
+  sa raison d'être (résilience par rotation).
+
+[CAUTION]
+====
+Le bug était invisible pour la CI : les tests unitaires injectaient des messages
+`"quota exceeded"` (déjà matchés), et les tests d'intégration ne ciblaient qu'un
+port CI sans quota réel. Seul un **appel réel sur la plage réelle** pouvait le
+révéler — exactement le trou de couverture identifié.
+====
+
+== Méthode (baby-step DDD/TDD strict)
+
+. **RED** — test unitaire `callWithRotation should rotate on real Ollama Cloud
+  monthly usage limit` (message réel Ollama Cloud copié verbatim) → FAILED.
+. **GREEN** — ajout du motif `message.contains("usage limit", ignoreCase=true)`
+  dans `isQuotaError` → 11/11 `OllamaPoolKeyAdapterTest` PASSED.
+. **REFACTOR** — re-run du test d'intégration réel : 2/2 PASSED (rotation
+  depuis 11437 épuisé vers un port sain, 4 occurrences du message limit dans
+  les logs, issue OK).
+
+== Gates
+
+* `OllamaPoolKeyAdapterTest` — 11/11 PASSED (0 failure).
+* `OllamaPoolRealEnvironmentIntegrationTest` — sans gate : 2 SKIPPED
+  (hermétique) ; avec `OLLAMA_RANGE_SCAN=true` : **2/2 PASSED**.
+* Suites pool + resolver + service (XML) : `GeminiKeyPoolTest` 13/0,
+  `GeminiMultiAccountPoolTest` 8/0, `GeminiPoolFactoryTest` 11/0,
+  `OllamaInstanceFactoryTest` 8/0, `OllamaInstanceScannerTest` 7/1 skip/0,
+  `OllamaLlmProviderTest` 8/3 skip/0, `OllamaPoolTest` 9/0,
+  `LlmProviderResolverTest` 9/0, `LlmBuildServiceTest` 5/0.
+* `cucumberTest` global : **8922 tests, 0 échec** — contrat
+  `epic_v6_resolver` (factory déterministe) intact.
+* `publishToMavenLocal` VERT.
+
+== Fichiers
+
+* `src/main/kotlin/codebase/koog/llm/pool/OllamaPoolKeyAdapter.kt` — motif
+  `usage limit` ajouté à `isQuotaError` (1 ligne).
+* `src/test/kotlin/codebase/koog/llm/pool/OllamaPoolKeyAdapterTest.kt` —
+  nouveau test RED→GREEN (message réel mois/quota Ollama Cloud).
+* `src/test/kotlin/codebase/koog/llm/pool/OllamaPoolRealEnvironmentIntegrationTest.kt`
+  — nouveau, 2 tests gated `OLLAMA_RANGE_SCAN`.
+
+== Décisions
+
+. D1 — Plage inchangée `11437..11465` (amendement `11435` écarté par le pilote).
+. D2 — Fallback `OllamaInstanceFactory` **conservé** (contrat documenté
+  `epic_v6_resolver.feature`) : option A, pas de probe par défaut.
+. D3 — Test d'intégration **gated opt-in** (`OLLAMA_RANGE_SCAN=true`), skip
+  propre hors environnement — `./gradlew test` reste hermétique.
+. D4 — Fix minimal `isQuotaError` (détection par motif, pas de refonte) —
+  aligné sur la nature string-based des messages d'exception langchain4j.
+. D5 — Zéro bump de version (fix local, publication Central non demandée).
+
+== Suites
+
+* Retour BKY-LANG-22 (bakery) : US-8/9 (dogfooding LLM 22 langues) et US-10
+  (publication Central consommateurs) restent à faire, sur demande pilote.
+* Le pool Ollama Cloud est désormais **résilient au quota mensuel** : un compte
+  épuisé fait rotationner l'appel vers l'instance suivante.

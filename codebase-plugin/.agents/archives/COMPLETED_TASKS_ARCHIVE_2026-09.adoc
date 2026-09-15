@@ -1,5 +1,28 @@
 = Archive — Tâches Terminées — Septembre 2026
 
+== S-263 (2026-09-15) — Fix rotation pool Ollama Cloud (Queens)
+
+* **Bug P1** : `OllamaPoolKeyAdapter.isQuotaError` ne détectait pas le
+  message réel Ollama Cloud (« you (X) have reached your monthly usage
+  limit »). La branche `else -> throw e` propageait l'exception au lieu de
+  rotationner → tout appel pool échouait dès que le 1er port (11437, compte
+  `cherolivcontact` épuisé) était sélectionné. Fix : motif `usage limit`.
+  Invisible pour la CI (fakes injectaient « quota exceeded », port CI unique).
+* **Test intégration** : `OllamaPoolRealEnvironmentIntegrationTest` (2 tests,
+  plage `11437..11465`), gate opt-in `OLLAMA_RANGE_SCAN=true`, skip propre
+  hors environnement. Scan réel + appel pool réel + rotation depuis compte
+  épuisé → 2/2 PASSED.
+* **Méthode** : TDD strict RED (test échoue sur message réel) → GREEN
+  (11/11 `OllamaPoolKeyAdapterTest`) → REFACTOR (intégration 2/2).
+* **Décisions** : plage `11437..11465` inchangée (amendement `11435` écarté
+  par le pilote) ; contrat `epic_v6_resolver.feature` préservé (défaut
+  factory déterministe, zéro probe réseau) ; zéro bump version.
+* **Gates** : suites pool+resolver+service 0 failure ; `cucumberTest` 8922
+  tests 0 échec ; `publishToMavenLocal` VERT.
+* **Fichiers** : `OllamaPoolKeyAdapter.kt` (1 ligne), `OllamaPoolKeyAdapterTest.kt`
+  (+1 test), `OllamaPoolRealEnvironmentIntegrationTest.kt` (nouveau).
+* **Rapport** : `.agents/sessions/263-ollama-pool-quota-rotation-fix.adoc`
+
 == Session 260 — 2026-09-10 — Audit lion92 fork (no-op, zéro code)
 
 * Audit du fork `lion92/codebase-gradle` — conclusion : fork stéré,

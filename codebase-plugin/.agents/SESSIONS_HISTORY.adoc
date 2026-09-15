@@ -2,6 +2,36 @@
 :toc: left
 :icons: font
 
+== Session 263 — 2026-09-15
+
+* **EPICs** : Aucun (maintenance — robustesse socle LLM pool partagé)
+* **Type** : DDD + TDD + intégration réelle
+* **Origine** : demande pilote (depuis bakery BKY-LANG-22) — valider
+  l'environnement du pool Ollama avant tout dogfooding LLM
+* **Livrables** :
+** **Bug P1 corrigé** — `OllamaPoolKeyAdapter.isQuotaError` ne matchait pas
+   `usage limit` (message réel Ollama Cloud « you (X) have reached your
+   monthly usage limit ») → branche `else -> throw e` propageait l'exception
+   au lieu de rotationner. Tout appel pool échouait dès que le 1er port
+   (11437, compte `cherolivcontact` épuisé) était sélectionné, alors que
+   27 instances étaient saines. Fix : motif `usage limit` (1 ligne).
+** **Test intégration** `OllamaPoolRealEnvironmentIntegrationTest` (2 tests,
+   plage `11437..11465`) — gate opt-in `OLLAMA_RANGE_SCAN=true`, skip propre
+   hors environnement (suite hermétique préservée). Scan réel + appel pool
+   réel + rotation depuis 11437 épuisé.
+** Constats terrain : 28/31 ports vivants (11438/11449/11450 down),
+   `gemma4:31b-cloud` partout ; Ollama Cloud proxifie tout modèle cloud.
+** Amendement plage `11435` **écarté** par le pilote (reste `11437..11465`,
+   seul 11434 interdit) — zéro modification N0 `OllamaConfig`/`ByokLlmConfig`.
+** Contrat `epic_v6_resolver.feature` **préservé** (défaut factory
+   déterministe 29 instances, zéro probe réseau — option A).
+* **Gates** : `OllamaPoolKeyAdapterTest` 11/11 ; suites pool+resolver+service
+  0 failure ; `cucumberTest` 8922 tests 0 échec ; `publishToMavenLocal` VERT.
+* **Conclusion** : le pool Ollama Cloud est désormais résilient au quota
+  mensuel. Bug invisible pour la CI (fakes + port unique), révélé par un appel
+  réel sur la plage — justifie la couverture ajoutée.
+* **Rapport** : `.agents/sessions/263-ollama-pool-quota-rotation-fix.adoc`
+
 == Session 260 — 2026-09-10
 
 * **EPICs** : Aucun (audit lecture seule — fork lion92/codebase-gradle)

@@ -2,7 +2,7 @@
 :sectnums:
 :date: 2026-06-16
 
-_Dernière mise à jour : 2026-09-10 (S-259 — **SVO-4 + SVO-5 TERMINÉ**, EPIC SVO ✅ 6/6 US : domaine `codebase.koog.svo` — SessionPromptResolver + PlannerPortResolver + AutonomousSessionOrchestrator + AutonomousSessionTask + wiring tâche 12e + BDD 4/4 `cucumberTestAutonomousSession`. 45 unit + 4 functional 0 FAIL. Prochaines : dogfood Newark A2 (critical path MVP0) / RENAME vague document / publication 0.0.15.)_
+_Dernière mise à jour : 2026-09-15 (S-263 — **maintenance : fix rotation pool Ollama Cloud**. Bug P1 `OllamaPoolKeyAdapter.isQuotaError` ne détectait pas le message réel « monthly usage limit » → l'exception était propagée au lieu de rotationner, cassant tout appel pool dès que le 1er port (11437) tombait sur un compte épuisé. TDD strict RED→GREEN (motif `usage limit`, 11/11). Nouveau `OllamaPoolRealEnvironmentIntegrationTest` (plage réelle `11437..11465`, gate `OLLAMA_RANGE_SCAN=true`, 2/2 PASSED) — trou de couverture qui masquait le bug. Amélioration qualité socle, **zéro US backlog ouverte**. Amendement plage `11435` écarté (reste 11437..11465). Antérieur S-259 — **SVO-4 + SVO-5 TERMINÉ**, EPIC SVO ✅ 6/6 US. Prochaines : dogfood Newark A2 (critical path MVP0) / RENAME vague document / publication 0.0.16.)_
 
 '''
 == EPIC SVO — Session Vibecoding Orchestrée ✅ TERMINÉ (P0, 6/6 US — S-255→S-259)
