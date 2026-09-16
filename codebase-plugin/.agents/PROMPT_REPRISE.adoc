@@ -50,10 +50,10 @@ Missions candidates (ordre critical path MVP0) :
 == Règles absolues
 
 * Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la
-  fois, séquentiel pur (interdiction @xp/subagents/parallélisation).
+  fois (parallélisation autorisée depuis le 2026-09-17).
 * Plage Ollama autorisée : **11437..11465** (pilot decision S-263 —
   amendement 11435 écarté). Seul 11434 est interdit (perso).
-* Zéro commit/push sans permission explicite du pilote.
+* Git autorisé (décision pilote 2026-09-17) — zéro secret commité.
 * Zéro secret, zéro token dans le code ou les logs.
 
 == References

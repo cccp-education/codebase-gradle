@@ -64,8 +64,8 @@ consomme le contexte augmenté (critical path MVP0).
 == Règles absolues
 
 * Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la
-  fois, séquentiel pur (interdiction @xp/subagents/parallélisation).
-* Zéro commit/push sans permission explicite du pilote.
+  fois (parallélisation autorisée depuis le 2026-09-17).
+* Git autorisé (décision pilote 2026-09-17) — zéro secret commité.
 * Zéro secret, zéro token dans le code ou les logs.
 * Ne JAMAIS lancer `./gradlew test` global en fin de session sans permission.
 * RENAME : transfuser la logique métier dans training AVANT toute purge.

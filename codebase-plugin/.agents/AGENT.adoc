@@ -42,7 +42,7 @@ Ce projet vit dans `foundry/public/codebase-gradle/` → *cercle 4 (public, Apac
 
 * *TDD/BDD/DDD en baby steps* — test unitaire → test fonctionnel → test Cucumber
 * *Clean Architecture + Clean Code* — pas de shortcuts, pas de code jetable
-* *SEQUENTIEL PUR* — interdiction d'utiliser @xp, subagents, parallelisation
+* *Parallélisation autorisée* — @xp, subagents et sessions concurrentes sont des outils légitimes (décision pilote 2026-09-17 — règle « SÉQUENTIEL PUR » supprimée)
 * *1 fichier a la fois* — modifier, valider, puis passer au suivant
 
 === Instances Ollama — Ports reserves + Rotation
@@ -62,10 +62,9 @@ Si la conversation depasse 50 messages ou plus de 3 fichiers modifies en paralle
 
 === Git
 
-**INTERDICTION FORMELLE** de commit/push/merge sans permission explicite.
+* Commit/push/merge autorisés (décision pilote 2026-09-17 — suppression de l'interdiction formelle). Ne JAMAIS commiter de secret.
 
-Commandes autorisees (lecture seule) : `git status`, `git diff`, `git log`, `git show`
-Commandes interdites (sauf ordre) : `git add`, `git commit`, `git push`, `git merge`, `git rebase`
+Lecture seule toujours autorisée : `git status`, `git diff`, `git log`, `git show`
 
 === Tests
 

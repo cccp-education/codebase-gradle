@@ -299,8 +299,8 @@ US-0 (cadrage ✅) → US-1 (domaine pur) → US-2 (adapter Ollama) →
 US-3 (graphe koog itératif) → US-4 (tâches Gradle + extension) →
 US-5 (Cucumber BDD) → US-6 (cross-borough training-gradle TRN-8 reformulé).
 
-Baby-step TDD/BDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois,
-séquentiel pur. Gate ciblé : `./gradlew test --tests "codebase.finetuning.*"`
+Baby-step TDD/BDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois.
+Gate ciblé : `./gradlew test --tests "codebase.finetuning.*"`
 (pas de `./gradlew test` global — Cucumber interminable, pratique canonique
 S175/S179).
 
