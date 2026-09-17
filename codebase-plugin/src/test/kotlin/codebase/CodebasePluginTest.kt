@@ -7,6 +7,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -15,7 +16,7 @@ class CodebasePluginTest {
     private val expectedTasks = setOf(
         "collectFromCodebase",
         "collectCompositeContext",
-        "generatePlan",
+        "generateAugmentedPlan",
         "vibecode",
         "autonomousSession",
         "vibecodingDashboard",
@@ -77,13 +78,24 @@ class CodebasePluginTest {
     }
 
     @Test
-    fun `generatePlan is in generate group`() {
+    fun `generateAugmentedPlan is in generate group`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply(CodebasePlugin::class.java)
 
-        val task = project.tasks.findByName("generatePlan")
+        val task = project.tasks.findByName("generateAugmentedPlan")
         assertNotNull(task)
         assertEquals("generate", task.group)
+    }
+
+    @Test
+    fun `generatePlan name is free for the planner plugin (cross-borough SVO D5)`() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply(CodebasePlugin::class.java)
+
+        assertNull(
+            project.tasks.findByName("generatePlan"),
+            "codebase must not own 'generatePlan' — planner registers that name, and SVO D5 requires both plugins applied together",
+        )
     }
 
     @Test

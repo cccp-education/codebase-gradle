@@ -1,5 +1,21 @@
 = Archive — Tâches Terminées — Septembre 2026
 
+== S-264 (2026-09-17) — Dogfood Newark A2 + RENAME Vague 4 document (Queens)
+
+* **Mission 4 (RENAME Vague 4 document, cross-borough)** : cadrage révisé
+  2026-09-10 (D5/D11 abrogées — champ lexical complet) postdatant l'audit
+  document S-256. Transfusion `TRANSFER_LEXIQUE_FORMATION.adoc` § 1bis/§ 2
+  puis neutralisation (docs courantes + 11 fixtures). Gate Vague 4 `src/` = zéro.
+* **Mission 1 (Dogfood Newark A2)** — **2 bugs P1 d'intégration** :
+  1. `PlannerPortResolver` (SVO-4) implémenté/testé mais **jamais appelé**
+     dans `AutonomousSessionTask` → `resolvePlannerPort()` + graphe branché.
+  2. Collision de nom `generatePlan` codebase↔planner → task codebase
+     renommée `generateAugmentedPlan`.
+* **Run réel prouvé** : `planner port resolved — KoogIntentionPlannerAdapter`.
+* **Gates** : check VERT 27m06s 10760 tests (2 préexistants OcrTaskTest),
+  SVO 47/0, BDD 4/4, mavenLocal VERT.
+* Rapport : `.agents/sessions/264-dogfood-a2-2-bugs-integration-rename-v4-doc.adoc`.
+
 == S-263 (2026-09-15) — Fix rotation pool Ollama Cloud (Queens)
 
 * **Bug P1** : `OllamaPoolKeyAdapter.isQuotaError` ne détectait pas le

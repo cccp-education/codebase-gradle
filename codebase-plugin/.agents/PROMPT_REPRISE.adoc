@@ -1,63 +1,61 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 264
-:session: 264
-:borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector partagé)
-:session_precedente: 263 — Fix rotation pool Ollama Cloud (isQuotaError ne détectait pas « monthly usage limit » → toute rotation cassée au 1er compte épuisé) + test d'intégration plage réelle 11437..11465 gated OLLAMA_RANGE_SCAN (RED→GREEN 11/11 + intégration 2/2)
+= Prompt de Reprise — Codebase (Queens N1) — Session 265
+:session: 265
+:borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
+:session_precedente: 264 — Dogfood Newark A2 ✅ (2 bugs P1 d'intégration découverts+corrigés : `PlannerPort` jamais consommé → NoOp silencieux ; collision `generatePlan` codebase↔planner bloquant SVO D5 → task codebase renommée `generateAugmentedPlan`) + RENAME Vague 4 document ✅ (cross-borough, transfusion + neutralisation)
+:session_pre_precedente: 263 — Fix rotation pool Ollama Cloud (`usage limit`) + test d'intégration plage réelle
 
-== Mission Session 264 — à la demande du pilote
+== Mission Session 265 — à la demande du pilote
 
-Borough DORMANT (tous EPICs terminés). Maintenance uniquement.
+Ordre pilote S-264 : **4 → 1 → 3** — **les 3 missions ✅ TERMINÉES**.
+Mission 3 : **publication codebase-plugin 0.0.16 Central** (accord pilote
+obtenu) + bump cascade MEMPHIS (BOM/catalog **0.0.50**) — bundle MEMPHIS
+`547e3e46`, bundle codebase `db5e1158` (AUTOMATIC).
 
 Missions candidates (ordre critical path MVP0) :
 
-. **Dogfood Newark A2 (sur demande pilote)** — première mission réelle
-   d'`autonomousSession` consomme le contexte augmenté : résoudre le port
-   planner (wiring `education.cccp.planner` + `plannerPortService`) et
-   lancer la tâche sur un borough réel. Critical path MVP0.
-. **Retour BKY-LANG-22 (bakery)** — US-8/9 dogfooding 22 langues + US-10
-   publication Central consommateurs. Le pool est désormais résilient au
-   quota mensuel : dogfooding possible sur les instances saines.
-   ⚠️ Le port 11437 a un compte en quota épuisé (`cherolivcontact`) —
-   rotation OK, mais surveiller le coût.
-. **Publication 0.0.16 Central** (le HEAD contient le fix rotation S-263).
-   Central = 0.0.15 (14 Sep, pré-fix). Sur accord pilote uniquement.
-. **RENAME vague document** (sur demande pilote) — transfusion d'abord
-   (`TRANSFER_LEXIQUE_FORMATION.adoc` table § 2), puis neutralisation
-   document-gradle (3 pts + OCR-QUALITY US-3).
+. **Génération réelle A2** (sur accord pilote — LLM metered) : lancer
+   `autonomousSession` sur training/Newark avec le RAG référentiel peuplé
+   + port planner résolu (prouvé S-264). C'est la première mission réelle
+   qui consomme le contexte augmenté.
+. **RENAME Vague 4 transverse** (suite document ✅ S-264) : bakery →
+   capsule → plantuml → graphify/codex, chacune transfusion d'abord
+   (`TRANSFER_LEXIQUE_FORMATION.adoc`).
+. **Drift gouvernance racine** : ✅ corrigé S-264 (PROMPT_REPRISE racine
+   synchronisé + synthèse BACKLOG racine mis à jour). Le drift catalogue
+   local codebase (`workspace-bom 0.0.27` → **0.0.50**) a été réaligné au
+   bump S-264.
 
 == Contexte technique
 
-* **Pool LLM (S-263)** : `OllamaPoolKeyAdapter.isQuotaError` reconnaît
-  désormais `usage limit` (message réel Ollama Cloud : « you (X) have
-  reached your monthly usage limit »). Rotation active sur quota mensuel.
-* **Test d'intégration** : `OllamaPoolRealEnvironmentIntegrationTest`
-  (plage 11437..11465, 2 tests). Gate opt-in `OLLAMA_RANGE_SCAN=true` ;
-  sans gate → SKIPPED (suite hermétique préservée).
-  Commande : `OLLAMA_RANGE_SCAN=true ./gradlew test
-  --tests "codebase.koog.llm.pool.OllamaPoolRealEnvironmentIntegrationTest" --rerun-tasks`.
-* Contrat `epic_v6_resolver.feature` **préservé** : défaut =
-  `OllamaInstanceFactory` déterministe (29 instances, zéro probe réseau).
-  Le probe réseau reste l'opt-in `OLLAMA_SCAN_PORTS=true`.
-* Environnement Ollama réel (2026-09-15) : 28/31 ports vivants
-  (11438/11449/11450 down), `gemma4:31b-cloud` partout.
-* Version : 0.0.15 mavenLocal (Central 0.0.15 = pré-fix). BOM 0.0.37.
-* Gate ciblé : jamais `./gradlew test` global sans permission (2 fails
-  préexistants OcrTaskTest drift pdf S-211). Suites ciblées :
-  `--tests "codebase.koog.llm.pool.*"` etc.
-  ⚠️ Local : `ignoreFailures = !isCI()` → vérifier les XML JUnit, pas le
-  `BUILD SUCCESSFUL`.
-* Gouvernance unifiée dans `codebase-plugin/.agents/` (S-207).
+* Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25).
+* Version locale **0.0.16** (Central 0.0.16, bundle `db5e1158`). Conventions
+  0.0.4. BOM/catalog **0.0.50**. `publishToMavenLocal` VERT S-264.
+* **Wiring SVO prouvé** : `AutonomousSessionTask.resolvePlannerPort()` résout
+  le `PlannerPort` par nom canonique `plannerPortService` (adapter planner
+  `KoogIntentionPlannerAdapter`) ; NoOp dégradé si rien n'est branché.
+* **Contrat cross-borough** : un consommateur applique `education.cccp.codebase`
+  + `education.cccp.planner` (les 2 coexistent depuis S-264). codebase
+  `generateAugmentedPlan` (ex-`generatePlan`) ; planner garde `generatePlan`.
+* 45 cucumber runners dédiés (dont `cucumberTestAutonomousSession`).
+* koverVerify VERT (check complet 27m06s S-264).
+* Catalogue local codebase : `workspace-bom = "0.0.50"` (realigné S-264,
+  drift 0.0.27 → 0.0.50).
+
+== Échecs préexistants (orthogonaux, ne pas confondre)
+
+* 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`, `isImageFile
+  false for pdf`) — drift S-211, **stash-confirmés identiques à HEAD S-264**.
 
 == Règles absolues
 
-* Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la
-  fois (parallélisation autorisée depuis le 2026-09-17).
-* Plage Ollama autorisée : **11437..11465** (pilot decision S-263 —
-  amendement 11435 écarté). Seul 11434 est interdit (perso).
+* Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois.
 * Git autorisé (décision pilote 2026-09-17) — zéro secret commité.
-* Zéro secret, zéro token dans le code ou les logs.
+* Publication Central = accord pilote explicite (Règle 2).
+* Dogfood-first : exercer le wiring cross-borough réel (le dogfood S-264 a
+  révélé 2 bugs invisibles aux tests unitaires).
 
 == References
 
-* `.agents/sessions/263-ollama-pool-quota-rotation-fix.adoc` (rapport S-263)
-* `.agents/sessions/259-svo4-svo5-autonomous-session-chainup-bdd.adoc` (rapport S-259)
-* `.agents/CADRAGE_EPIC_SVO_SESSION_ORCHESTREE.adoc` (cadrage S-255 — 10 décisions)
+* `.agents/sessions/264-dogfood-a2-2-bugs-integration-rename-v4-doc.adoc`
+* `.agents/CADRAGE_EPIC_SVO_SESSION_ORCHESTREE.adoc` (cadrage S-255)
+* `training-gradle/.agents/TRANSFER_LEXIQUE_FORMATION.adoc` (transfusion)

@@ -71,7 +71,7 @@ class CodebasePlugin : Plugin<Project> {
         }
 
         project.tasks.register(
-            "generatePlan",
+            "generateAugmentedPlan",
             PlanIntentionTask::class.java
         ) {
             it.group = "generate"

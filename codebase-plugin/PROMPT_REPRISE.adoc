@@ -1,78 +1,61 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 257
-:session: 257
-:borough: Queens — codebase-gradle (N1, RAG socle pgvector partagé)
-:session_precedente: 256 — fix Z-6 TERMINÉ (popFocusNode supprimé — zoom persiste pendant les retries, drain en fin de session ; koverVerify débloqué, check VERT) + SVO-1 TERMINÉ (PlannerPort fun interface domaine codebase.koog.plannerport + fallback NoOp + branché KoogAugmentedContextGraph/KoogPlanningOrchestrator + PlannerIntegration.kt supprimé + libs.planner.plugin retiré — cycle N1↔N2 mort, pattern S-096/S-199)
-:session_pre_precedente: 255 — RENAME Vague 4 TERMINÉ (champ lexical métier formation → content + transfusion training TRANSFER_LEXIQUE_FORMATION.adoc) + cadrage EPIC SVO (7 US ~14 pts)
+= Prompt de Reprise — Codebase (Queens N1) — Session 265
+:session: 265
+:borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
+:session_precedente: 264 — Dogfood Newark A2 ✅ (2 bugs P1 d'intégration découverts+corrigés : `PlannerPort` jamais consommé → NoOp silencieux ; collision `generatePlan` codebase↔planner bloquant SVO D5 → task codebase renommée `generateAugmentedPlan`) + RENAME Vague 4 document ✅ (cross-borough, transfusion + neutralisation)
+:session_pre_precedente: 263 — Fix rotation pool Ollama Cloud (`usage limit`) + test d'intégration plage réelle
 
-== Mission Session 257 — Critical path (suite ordre acté)
+== Mission Session 265 — à la demande du pilote
 
-*1. EPIC SVO-2 — objects purs (~2 pts)* — `SessionResumptionPlanner` +
-`BacklogDetector` (domaine `codebase.koog.session`) : backlog items →
-resumption prompt orienté backlog (priorise `[ ]` ouverts, référence
-les artefacts produits, consigne l'objectif suivant) ; heuristic
-backlog fini (aucune ligne `[ ]` non coché hors sections historiques).
-~12 unit TDD strict. Décisions D7/D8 du cadrage.
+Ordre pilote S-264 : **4 → 1 → 3** — **les 3 missions ✅ TERMINÉES**.
+Mission 3 : **publication codebase-plugin 0.0.16 Central** (accord pilote
+obtenu) + bump cascade MEMPHIS (BOM/catalog **0.0.50**) — bundle MEMPHIS
+`547e3e46`, bundle codebase `db5e1158` (AUTOMATIC).
 
-*2. EPIC SVO-4 — tâche `autonomousSession` (~3 pts)* — résolution
-prompt (`--prompt` > défaut borough : PROMPT_REPRISE + backlog via
-buildScoped/GovernanceContextLoader) → PlannerPort → boucle
-VibecodingGraph → état d'avancement (SessionRepository + audit JSONL)
-→ resumption prompt écrit dans `build/vibecoding/`. Options `--prompt`,
-`--borough`, `--maxChainedSessions` (défaut 3, D9).
+Missions candidates (ordre critical path MVP0) :
 
-*3. EPIC SVO-5 — chaînage + BDD (~3 pts)* — si backlog fini →
-`brainstormingSession` (cadrage global augmenté, autofocus
-BIG_PICTURE, intention "BRAINSTORM: <vision du borough>") ;
-Cucumber `autonomous_session.feature` 4 scénarios (fakes in-memory
-pattern S-082/S-088).
-
-*4. RENAME vague document (sur demande pilote)* — transfusion d'abord
-(`TRANSFER_LEXIQUE_FORMATION.adoc` table § 2), puis neutralisation
-document-gradle.
-
-*5. Support Newark A2 (sur demande pilote)* — le RAG référentiel est
-prêt pour la génération des plans de formation (canal Docs doubt-aware).
-*Dogfood cible de SVO* : la première mission réelle d'`autonomousSession`
-consomme le contexte augmenté (critical path MVP0).
+. **Génération réelle A2** (sur accord pilote — LLM metered) : lancer
+   `autonomousSession` sur training/Newark avec le RAG référentiel peuplé
+   + port planner résolu (prouvé S-264). C'est la première mission réelle
+   qui consomme le contexte augmenté.
+. **RENAME Vague 4 transverse** (suite document ✅ S-264) : bakery →
+   capsule → plantuml → graphify/codex, chacune transfusion d'abord
+   (`TRANSFER_LEXIQUE_FORMATION.adoc`).
+. **Drift gouvernance racine** : ✅ corrigé S-264 (PROMPT_REPRISE racine
+   synchronisé + synthèse BACKLOG racine mis à jour). Le drift catalogue
+   local codebase (`workspace-bom 0.0.27` → **0.0.50**) a été réaligné au
+   bump S-264.
 
 == Contexte technique
 
-* Build autonome : `cd codebase-plugin && ./gradlew ...`.
-* Version locale : 0.0.15-SNAPSHOT (Central : 0.0.14, bundle
-  `3e82490d`). Conventions 0.0.4. BOM 0.0.37. `publishToMavenLocal`
-  VERT S-256.
-* SVO-1 posé : `PlannerPort` (fun interface, companion `NoOp`) dans
-  domaine `codebase.koog.plannerport` ; `KoogAugmentedContextGraph`
-  et `KoogPlanningOrchestrator` prennent `plannerPort` en paramètre
-  constructeur (défaut NoOp) ; `planNode` consomme le port (try/catch →
-  `PlannerPortFailed`). `libs.planner.plugin` retiré — entrée catalogue
-  `planner-plugin` (toml:46) conservée pour SVO-3.
-* Z-6 corrigé : contrat = zoom persiste pendant les retries
-  (`drainAutofocusStack` en fin de session garantit Z-7). NE PAS
-  réintroduire de pop sur replan.
-* Gate D16 étendue : `grep -ni "formation|pédagog|pedagog|qualiopi|afnor|bloom|harrow|krathwohl|apprenant|stagiaire|formateur|livret|reac\b" src/` = zéro match.
-* 44 cucumber runners dédiés (pas de `cucumberTestEpicZ6` — Z-6 tourne
-  dans cucumberTest global).
-* koverVerify : minBound 63 — VERT S-256 (check complet 26m29s).
+* Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25).
+* Version locale **0.0.16** (Central 0.0.16, bundle `db5e1158`). Conventions
+  0.0.4. BOM/catalog **0.0.50**. `publishToMavenLocal` VERT S-264.
+* **Wiring SVO prouvé** : `AutonomousSessionTask.resolvePlannerPort()` résout
+  le `PlannerPort` par nom canonique `plannerPortService` (adapter planner
+  `KoogIntentionPlannerAdapter`) ; NoOp dégradé si rien n'est branché.
+* **Contrat cross-borough** : un consommateur applique `education.cccp.codebase`
+  + `education.cccp.planner` (les 2 coexistent depuis S-264). codebase
+  `generateAugmentedPlan` (ex-`generatePlan`) ; planner garde `generatePlan`.
+* 45 cucumber runners dédiés (dont `cucumberTestAutonomousSession`).
+* koverVerify VERT (check complet 27m06s S-264).
+* Catalogue local codebase : `workspace-bom = "0.0.50"` (realigné S-264,
+  drift 0.0.27 → 0.0.50).
 
-== Échecs préexistants à documenter (orthogonaux, ne pas confondre)
+== Échecs préexistants (orthogonaux, ne pas confondre)
 
-* 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`,
-  `isImageFile false for pdf`) — drift S-211 (non re-testés S-256,
-  échecs non observés dans check — à vérifier).
+* 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`, `isImageFile
+  false for pdf`) — drift S-211, **stash-confirmés identiques à HEAD S-264**.
 
 == Règles absolues
 
-* Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la
-  fois (parallélisation autorisée depuis le 2026-09-17).
+* Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois.
 * Git autorisé (décision pilote 2026-09-17) — zéro secret commité.
-* Zéro secret, zéro token dans le code ou les logs.
-* Ne JAMAIS lancer `./gradlew test` global en fin de session sans permission.
-* RENAME : transfuser la logique métier dans training AVANT toute purge.
+* Publication Central = accord pilote explicite (Règle 2).
+* Dogfood-first : exercer le wiring cross-borough réel (le dogfood S-264 a
+  révélé 2 bugs invisibles aux tests unitaires).
 
 == References
 
-* `.agents/sessions/256-fix-z6-svo1-inversion-port.adoc` (rapport S-256)
-* `.agents/CADRAGE_EPIC_SVO_SESSION_ORCHESTREE.adoc` (cadrage S-255 — 10 décisions)
-* `.agents/CADRAGE_EPIC_RENAME_V3.adoc` (révisé Vague 4 — D5/D11 abrogées)
-* `training-gradle/training-plugin/.agents/TRANSFER_LEXIQUE_FORMATION.adoc` (transfusion)
+* `.agents/sessions/264-dogfood-a2-2-bugs-integration-rename-v4-doc.adoc`
+* `.agents/CADRAGE_EPIC_SVO_SESSION_ORCHESTREE.adoc` (cadrage S-255)
+* `training-gradle/.agents/TRANSFER_LEXIQUE_FORMATION.adoc` (transfusion)

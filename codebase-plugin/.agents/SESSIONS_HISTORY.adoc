@@ -2,6 +2,42 @@
 :toc: left
 :icons: font
 
+== Session 264 — 2026-09-17
+
+* **EPICs** : SVO (dogfood A2) + RENAME (Vague 4 document, cross-borough)
+* **Type** : DDD + TDD + dogfooding cross-borough — ordre pilote 4 → 1 → 3
+* **Livrables** :
+** Mission 4 — RENAME Vague 4 document ✅ (cross-borough depuis Queens) :
+   cadrage révisé 2026-09-10 (D5/D11 abrogées) postdatant l'audit S-256 →
+   transfusion `TRANSFER_LEXIQUE_FORMATION.adoc` (§ 1bis + § 2) puis
+   neutralisation lexicale docs courantes + 11 fixtures. Gate Vague 4
+   document `src/` = zéro ; 81 UT 0 FAIL + ocrQuality 8/8 + 2 FT corpus.
+   Clôture document complète (S-257).
+** Mission 1 — Dogfood Newark A2 ✅ : **2 bugs P1 d'intégration découverts**
+   par le dogfood cross-borough (invisibles aux tests unitaires) :
+   (1) `PlannerPortResolver` (SVO-4) implémenté/testé mais **jamais appelé**
+   dans `AutonomousSessionTask` → graphe = NoOp, tout le chemin planner mort.
+   Fix TDD RED (`Unresolved reference 'resolvePlannerPort'`) → GREEN
+   (`resolvePlannerPort()` + `KoogAugmentedContextGraph(plannerPort)`),
+   47 tests SVO 0 FAIL.
+   (2) **collision de nom de tâche `generatePlan`** codebase↔planner
+   (héritage EPIC K K-1) → appliquer les 2 plugins (contrat SVO D5) échouait.
+   Fix TDD RED (`generatePlan name is free for the planner plugin`) → GREEN
+   (task codebase renommée `generateAugmentedPlan`), `CodebasePluginTest`
+   16/0 + `TaskSchemaScannerTest` 7/0.
+** Run réel end-to-end prouvé (consommateur transitoire + pgvector jetable) :
+   les 2 plugins s'appliquent, `autonomousSession` exécute, log décisif
+   `planner port resolved — planning.adapter.KoogIntentionPlannerAdapter`,
+   resumption prompt écrit `build/vibecoding/`.
+* **Gates** : `check` VERT 27m06s — 10 760 tests, 2 échecs préexistants
+  (`OcrTaskTest` drift pdf S-211 **stash-confirmés identiques à HEAD**) +
+  SVO 47/0 + BDD autonomousSession 4/4 + `publishToMavenLocal` VERT.
+* **Fichiers** : codebase 5 (2 prod + 3 test), document 18, training 1.
+* **Leçons** : le dogfood-first a révélé 2 bugs de wiring qu'aucun test
+  unitaire isolé ne pouvait voir (le contrat cross-borough n'était jamais
+  exercé). Pattern à généraliser pour tout contrat d'intégration.
+* Rapport : `.agents/sessions/264-dogfood-a2-2-bugs-integration-rename-v4-doc.adoc`.
+
 == Session 263 — 2026-09-15
 
 * **EPICs** : Aucun (maintenance — robustesse socle LLM pool partagé)

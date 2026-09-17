@@ -6,7 +6,7 @@ graphify = "0.0.5"
 
 [libraries]
 # BOM — source unique de vérité pour toutes les versions
-workspace-bom = { module = "education.cccp:workspace-bom", version = "0.0.27" }
+workspace-bom = { module = "education.cccp:workspace-bom", version = "0.0.50" }
 
 # External deps — versions explicites pour propagation POM transitive
 # (le BOM en implementation(platform()) ne propage pas ses contraintes aux consommateurs transitifs)

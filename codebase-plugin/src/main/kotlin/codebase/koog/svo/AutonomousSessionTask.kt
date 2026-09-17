@@ -112,6 +112,20 @@ abstract class AutonomousSessionTask : DefaultTask() {
     }
 
     /**
+     * Resolves the [codebase.koog.plannerport.PlannerPort] wired by the planner
+     * plugin (SVO-3 `plannerPortService`, D5), falling back to
+     * [codebase.koog.plannerport.PlannerPort.NoOp] when nothing is wired.
+     *
+     * Cross-borough contract: the consumer build applies both plugins
+     * (`education.cccp.codebase` + `education.cccp.planner`); resolution is
+     * duck-typed by shared-service name — zero `planning.*` import on N1.
+     */
+    fun resolvePlannerPort(): codebase.koog.plannerport.PlannerPort =
+        codebase.koog.svo.PlannerPortResolver.resolve(
+            project.gradle.sharedServices.registrations.toList(),
+        )
+
+    /**
      * Builds the vibecoding loop exactly like [codebase.koog.VibecodingTask]:
      * auto-registered gradle_* tools + structured args mapping + governance hook
      * + planner branché via `KoogAugmentedContextGraph` (port résolu au wiring).
@@ -144,8 +158,14 @@ abstract class AutonomousSessionTask : DefaultTask() {
 
         log.info("[autonomousSession] vibecoding loop built — {} gradle_* tools", schemas.size)
 
+        val plannerPort = resolvePlannerPort()
+        log.info(
+            "[autonomousSession] planner port resolved — {}",
+            if (plannerPort === codebase.koog.plannerport.PlannerPort.NoOp) "NoOp (no adapter wired)" else plannerPort.javaClass.name,
+        )
+
         return VibecodingGraph(
-            augmentedGraph = KoogAugmentedContextGraph(),
+            augmentedGraph = KoogAugmentedContextGraph(plannerPort),
             toolRegistry = toolRegistry,
             llmProvider = null,
         )

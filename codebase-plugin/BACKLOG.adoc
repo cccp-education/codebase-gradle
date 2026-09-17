@@ -4,7 +4,18 @@
 
 _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux. Pour le backlog à jour détaillé, voir `.agents/BACKLOG.adoc`._
 
-== Synthèse Backlog (Session 203 — 2026-08-24)
+== Synthèse Backlog (Session 264 — 2026-09-17)
+
+*Le backlog détaillé à jour est dans `.agents/BACKLOG.adoc`. Résumé S-264 :*
+le dogfood Newark A2 a révélé **2 bugs P1 d'intégration** (corrigés) —
+`PlannerPortResolver` jamais appelé dans `AutonomousSessionTask` (NoOp
+silencieux) ; collision de nom de tâche `generatePlan` codebase↔planner
+(task codebase renommée `generateAugmentedPlan`). Run réel prouvé. RENAME
+Vague 4 document cross-borough ✅. Reste : **publication codebase 0.0.16
+Central** (accord pilote), RENAME Vague 4 transverse (bakery → capsule →
+plantuml → graphify/codex), génération réelle A2 (LLM metered).
+
+== Synthèse Backlog (Session 203 — 2026-08-24) — HISTORIQUE
 
 [cols="1,3,1,2"]
 |===

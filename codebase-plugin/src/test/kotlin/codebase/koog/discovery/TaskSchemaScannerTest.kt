@@ -18,7 +18,7 @@ class TaskSchemaScannerTest {
         val schemas = scanner.scanAll()
         val pluginTaskNames = setOf(
             "collectFromCodebase", "collectCompositeContext", "ocrDocument", "ocrIngest",
-            "generatePlan", "vibecode", "sessionProtocolDaemon", "ingestGovernance",
+            "generateAugmentedPlan", "vibecode", "sessionProtocolDaemon", "ingestGovernance",
             "vibecodingDashboard", "qualityGate", "endSessionBlog",
             "generateCompositeContext", "exposeExperts"
         )
