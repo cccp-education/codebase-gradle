@@ -125,7 +125,7 @@ Ordre DAG MEMPHIS-first, TDD strict (garde RED → bump GREEN) :
 - **codebase** : version 0.0.16 + catalogue local realigné (drift
   `workspace-bom 0.0.27`→`0.0.50`) → `publishToMavenLocal` VERT (POM porte
   BOM 0.0.50, zéro codex-plugin) → **codebase-plugin 0.0.16 Central**
-  (bundle `db5e1158`, AUTOMATIC).
+  (bundle `db5e1158`, AUTOMATIC, repo1 200 POM+JAR).
 - Contenu 0.0.16 : fix rotation pool S-263 (`isQuotaError` reconnaît
   `usage limit`) + `PlannerPort` câblé + `generateAugmentedPlan`.
 
