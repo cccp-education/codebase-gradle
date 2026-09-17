@@ -543,6 +543,48 @@ class SubgraphExtractorTest {
             assertThat(result.nodes).isNotEmpty
             assertThat(result.nodes.mapNotNull { it.community }.distinct()).containsExactly("bakery-gradle")
         }
+
+        @Test
+        @DisplayName("loadGraph tolerates a graph json carrying unknown fields (GF-SCHEMA-5)")
+        fun `loadGraph tolerates a graph json carrying unknown fields`() {
+            val graphFile = File(tempDir, "future-graph.json")
+            graphFile.writeText(
+                """
+                {
+                  "schemaVersion": 99,
+                  "nodes": [{"id":"a.kt","label":"a.kt","type":"file","futureNodeField":42}],
+                  "edges": [],
+                  "communities": [],
+                  "futureTopLevelField": "ignored"
+                }
+                """.trimIndent()
+            )
+
+            val result = extractor.loadGraph(graphFile.absolutePath)
+
+            assertThat(result.nodes).hasSize(1)
+            assertThat(result.nodes.first().id).isEqualTo("a.kt")
+        }
+
+        @Test
+        @DisplayName("loadGraph reads a legacy graph json without a schema version")
+        fun `loadGraph reads a legacy graph json without a schema version`() {
+            val graphFile = File(tempDir, "legacy-graph.json")
+            graphFile.writeText(
+                """
+                {
+                  "nodes": [{"id":"b.kt","label":"b.kt","type":"file"}],
+                  "edges": [],
+                  "communities": []
+                }
+                """.trimIndent()
+            )
+
+            val result = extractor.loadGraph(graphFile.absolutePath)
+
+            assertThat(result.nodes).hasSize(1)
+            assertThat(result.schemaVersion).isEqualTo(GraphModel.SCHEMA_VERSION)
+        }
     }
 
     // ──────────────────────────────────────
