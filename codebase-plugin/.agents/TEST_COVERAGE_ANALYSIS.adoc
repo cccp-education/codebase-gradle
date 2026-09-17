@@ -1,5 +1,32 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-09-15
+:date: 2026-09-17
+
+== Session 264 — Dogfood Newark A2 : 2 bugs d'intégration + renommage task
+
+Tests créés/modifiés :
+
+* `AutonomousSessionPlannerPortWiringTest` (nouveau) — 2 unit TDD strict :
+  `task resolves the wired PlannerPort from the canonical shared service`
+  (le port branché gagne sur le NoOp) + `task falls back to NoOp when no
+  planner is wired` (dégradé propre). RED prouvé (`Unresolved reference
+  'resolvePlannerPort'`) avant tout code prod. Comble le trou : le port était
+  implémenté et testé en isolation (`PlannerPortResolverTest`) mais **jamais
+  résolu dans la tâche** — le graphe recevait le NoOp par défaut.
+* `CodebasePluginTest` — baseline `expectedTasks` + test `generatePlan is in
+  generate group` → `generateAugmentedPlan` + nouveau test anti-collision
+  `generatePlan name is free for the planner plugin (cross-borough SVO D5)`.
+  16/0 PASSED.
+* `TaskSchemaScannerTest` — baseline `generatePlan` → `generateAugmentedPlan`.
+  7/0 PASSED.
+
+Trou de couverture comblé : les contrats cross-borough (wiring du port,
+application simultanée codebase+planner) n'étaient exercés par aucun test.
+Seul le dogfood réel (consommateur transitoire + pgvector jetable) les a
+révélés — pattern à généraliser.
+
+Gate : `check` 27m06s — **10 760 tests, 2 échecs préexistants** (`OcrTaskTest`
+drift pdf S-211, stash-confirmés identiques à HEAD) ; SVO 47/0 ;
+`cucumberTestAutonomousSession` 4/4 ; `publishToMavenLocal` VERT.
 
 == Session 263 — Fix rotation pool Ollama Cloud + couverture plage réelle
 
