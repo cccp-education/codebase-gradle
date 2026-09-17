@@ -2,7 +2,7 @@
 :sectnums:
 :date: 2026-06-16
 
-_Dernière mise à jour : 2026-09-15 (S-263 — **maintenance : fix rotation pool Ollama Cloud**. Bug P1 `OllamaPoolKeyAdapter.isQuotaError` ne détectait pas le message réel « monthly usage limit » → l'exception était propagée au lieu de rotationner, cassant tout appel pool dès que le 1er port (11437) tombait sur un compte épuisé. TDD strict RED→GREEN (motif `usage limit`, 11/11). Nouveau `OllamaPoolRealEnvironmentIntegrationTest` (plage réelle `11437..11465`, gate `OLLAMA_RANGE_SCAN=true`, 2/2 PASSED) — trou de couverture qui masquait le bug. Amélioration qualité socle, **zéro US backlog ouverte**. Amendement plage `11435` écarté (reste 11437..11465). Antérieur S-259 — **SVO-4 + SVO-5 TERMINÉ**, EPIC SVO ✅ 6/6 US. Prochaines : dogfood Newark A2 (critical path MVP0) / RENAME vague document / publication 0.0.16.)_
+_Dernière mise à jour : 2026-09-17 — **cadrage cross-borough EPIC CB-PAGE-PROVENANCE** (gouvernance pure, zéro code, pilotée Brooklyn S-225) : persister la page au retrieval N1 par jointure **exacte** SHA-256 à l'ingestion (sidecar ↔ `DocumentChunk.id`) — la jointure dérivée S-224 est approximative (70,8 % par `sectionPath`). 11 constats, 11 décisions, 5 options écartées, 5 US ~9 pts (US-0 ✅ cadrage, US-1→4 🟡 À FAIRE). Doc `CADRAGE_EPIC_CB_PAGE_PROVENANCE.adoc` côté codex. Zéro bump BOM (types de store N1, pas de contrat N0), zéro code modifié — baseline `check` VERT 1393 tests 0 FAIL. / Antérieur S-263 — **maintenance : fix rotation pool Ollama Cloud**. Bug P1 `OllamaPoolKeyAdapter.isQuotaError` ne détectait pas le message réel « monthly usage limit » → l'exception était propagée au lieu de rotationner, cassant tout appel pool dès que le 1er port (11437) tombait sur un compte épuisé. TDD strict RED→GREEN (motif `usage limit`, 11/11). Nouveau `OllamaPoolRealEnvironmentIntegrationTest` (plage réelle `11437..11465`, gate `OLLAMA_RANGE_SCAN=true`, 2/2 PASSED) — trou de couverture qui masquait le bug. Amélioration qualité socle, **zéro US backlog ouverte**. Amendement plage `11435` écarté (reste 11437..11465). Antérieur S-259 — **SVO-4 + SVO-5 TERMINÉ**, EPIC SVO ✅ 6/6 US. Prochaines : dogfood Newark A2 (critical path MVP0) / RENAME vague document / publication 0.0.16.)_
 
 '''
 == EPIC SVO — Session Vibecoding Orchestrée ✅ TERMINÉ (P0, 6/6 US — S-255→S-259)
@@ -431,6 +431,75 @@ _Portée_ : cross-borough Brooklyn (codex) + Queens (codebase).
 |===
 
 *Total* : ~10 pts (6/6 US ✅ — EPIC TERMINÉ. L'inversion N1→N2 est morte, flèche unique codex→codebase.)
+
+'''
+== 🟡 EPIC CB-PAGE-PROVENANCE — Persistance de la page au retrieval (N1) — Cadrage S-225 (Brooklyn + Queens)
+
+_Origine : PROMPT_REPRISE S-225 Option A + CADRAGE_EPIC_CDX_PAGE_PROVENANCE.adoc (décision D7, S-223)._
+_Doc cadrage_ : `CADRAGE_EPIC_CB_PAGE_PROVENANCE.adoc` (côté codex-gradle).
+_Pattern_ : gouvernance pure S-057/S-063 (cadrage) + baby-step DDD/TDD/BDD strict.
+_Portée_ : cross-borough Queens (N1, persistance + exposition) + Brooklyn (N2, transport).
+_Statut_ : 🟡 CADRÉ (S-225) — à implémenter.
+
+La jointure dérivée S-224 (sidecar `page-provenance.json`, codex N2) localise
+le doute à la page, mais au retrieval `RetrieveResult` n'expose que
+`chunkId: Long` (BIGSERIAL) et `sectionPath` → jointure **heuristique**
+(70,8 % mesuré sur le corpus FPA réel, déviation D6 S-224). Cet EPIC
+**persiste** la page à l'ingestion par jointure **exacte**
+`ChunkPageProvenance.chunkId` (SHA-256) ↔ `DocumentChunk.id` — les deux
+coexistent dans `chunks.json` — et l'expose dans `RetrieveResult.pages`.
+Patron : le doute (DOUBT-BRIDGE S-219, dérivé N2, transporté N1).
+
+[cols="1,3,2,1", options="header"]
+|===
+| US | Description | Statut | Pts
+
+| CB-PAGE-PROVENANCE-0
+| Cadrage EPIC (gouvernance pure, zéro code) — 11 constats, 11 décisions,
+  5 options écartées, 5 US. Doc `CADRAGE_EPIC_CB_PAGE_PROVENANCE.adoc`.
+| ✅ TERMINÉ (S-225)
+| 1
+
+| CB-PAGE-PROVENANCE-1
+| N1 transport — `DocumentChunk.pages: List<Int> = emptyList()` +
+  `StoreStatements.provenanceSchema()` (`ALTER TABLE … ADD COLUMN IF NOT
+  EXISTS pages TEXT`, comma-joined) + `initSchema()` `pages TEXT` +
+  `insertChunkWithDoubt` bind 8 (bind count 7→8) + `RagVectorStore` bind +
+  `RetrieveResult.pages` + SELECT read/parse. Unit + FT testcontainers
+  `PostgresFixture`.
+| 🟡 À FAIRE
+| 3
+
+| CB-PAGE-PROVENANCE-2
+| N2 transport (codex) — `CodexIngestTask.pageProvenanceFile`
+  (`@InputFiles` tolérante pattern S-221) + jointure exacte
+  `ChunkPageProvenance.chunkId` ↔ `DocumentChunk.id` + attache `pages`
+  avant `ingestWithDoubt` + dégradé silencieux. Wiring `CodexPlugin`. Unit.
+| 🟡 À FAIRE
+| 2
+
+| CB-PAGE-PROVENANCE-3
+| N1 exposition — `CompositeContextBuilder.loadDocsContext` (canal Docs) +
+  `CodebaseCompositeContextTask` entrées `pages` (additif, omis si vide).
+| 🟡 À FAIRE
+| 2
+
+| CB-PAGE-PROVENANCE-4
+| BDD Cucumber cross-borough `@page-retrieval` — sidecar joint (exact
+  SHA-256), page exposée au retrieval, dégradé silencieux, multi-pages
+  préservé, backward compat. Runner dédié (pattern S-082) + fakes.
+| 🟡 À FAIRE
+| 1
+
+|===
+
+*Total* : ~9 pts (5 US) — EPIC CADRÉ S-225.
+*Ordre* : US-1 (N1 transport) → US-2 (N2 codex) → US-3 (N1 exposition) → US-4 (BDD).
+*Publication* (optionnelle, accord pilote) : bump `codebase-plugin` puis `codex-plugin`
+Central (DAG codebase-first). Zéro bump MEMPHIS (types de store N1, pas de contrat N0).
+*Hors scope* : suppression du sidecar S-224 (coexistence), array PostgreSQL,
+backfill UPDATE-only, contrat N0, extension `DoubtMetadata`.
+*Débloque* : localisation exacte au retrieval sans sidecar ; clôture GBL-003.4.
 
 == ✅ EPIC CB-STORE-UNIFY — Consolidation `codebase.rag.VectorStore` JDBC legacy — ✅ CADUQUE (S-206)
 
