@@ -1,6 +1,41 @@
 = Test Coverage Analysis — Codebase Gradle
 :date: 2026-09-18
 
+== Session 267 — CB-PAGE-PROVENANCE US-3 (N1 exposition)
+
+Tests créés/modifiés :
+
+* `CompositeContextEntriesTest` (nouveau, 5 unit) — noyau pur `codexEntry` /
+  `docsMetaLine` : `pages` présentes quand non vide, **absentes (omission)
+  quand vide** (rétro-compat byte-identique), 7 clés legacy intactes pour le
+  canal Codex, suffixe `pages=[40,41]` brackets comma-joined sur la ligne meta
+  Docs. RED prouvé à la compile (`Unresolved reference 'CompositeContextEntries'`)
+  avant toute production.
+* `CompositeContextPageExpositionTest` (nouveau, fonctionnel testcontainers,
+  `PostgresFixture`) — round-trip réel ingestion `ingestWithDoubt` (pages
+  `[7,42]`) → retrieval → `CompositeContextBuilder` : `pages` exposées dans les
+  **2 canaux** (ligne meta Docs + entrée JSON Codex). Première preuve réelle
+  de l'exposition, sans fake.
+* `RagVectorStorePageProvenanceTest` (MAJ, US-1) — **durcissement
+  anti-pollution** : ne purgeait que son propre UUID → résiduel inter-sessions
+  cassait le topK global (contenu quasi identique, tie-breaking arbitraire).
+  Sweep **famille fermée** `page-provenance-test-%`/`page-exposition-test-%`
+  en setup. 2/2 PASSED.
+
+Leçon documentée (S-267) : le conteneur Testcontainers pg17 est un **singleton
+persistant** partagé entre classes et sessions — tout test fonctionnel sur
+`codex_documents`/`codex_chunks` doit balayer sa famille fermée en setup
+(jamais seulement son propre UUID), et utiliser un jeton unique
+`traceable-<uuid>` par run pour isoler le ranking (topK global).
+
+Trou de couverture comblé : l'exposition des `pages` depuis `RetrieveResult`
+vers le contexte augmenté (canal Docs + canal Codex de la tâche) n'était
+exercée par aucun test — ni niveau décision D8 du cadrage CB-PAGE-PROVENANCE.
+
+Gate : `test` **10 776 tests, 2 échecs préexistants** (`OcrTaskTest` drift pdf
+S-211, stash-confirmés) ; `cucumberTestRagSocle` 6/6 + `cucumberTestDoubtQuality`
+9/9 + `cucumberTestCorpusIngest` 4/4 ; `publishToMavenLocal` VERT.
+
 == Session 265 — CB-PAGE-PROVENANCE US-1 (N1 transport)
 
 Tests créés/modifiés :

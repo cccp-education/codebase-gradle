@@ -1,5 +1,31 @@
 = Archive — Tâches Terminées — Septembre 2026
 
+== S-267 (2026-09-18) — CB-PAGE-PROVENANCE US-3 : N1 exposition (Queens)
+
+* **EPIC cross-borough CB-PAGE-PROVENANCE US-3** (cadrage S-225) — exposition
+  des `pages` depuis `RetrieveResult.pages` vers le contexte augmenté,
+  self-contained codebase (traitée avant US-2 N2, aucune dépendance codex).
+* `CompositeContextEntries.kt` (nouveau, noyau pur `codebase.rag`) : `codexEntry(r)`
+  → entrée JSON canal Codex avec `pages` **additive omise si vide** (7 clés
+  legacy intactes) ; `docsMetaLine(r)` → ligne meta canal Docs avec suffixe
+  `pages=[40,41]` brackets comma-joined, seulement si `r.pages` non vide.
+* Câblage : `CompositeContextBuilder.loadDocsContext` (canal Docs) +
+  `CodebaseCompositeContextTask` (canal Codex) — 10 et 4 lignes d'inline
+  remplacées par les 2 fonctions pures.
+* **Backward compat byte-identique** : pages vides → sorties strictement
+  identiques (aucun breaking change).
+* **Proof of work réel** : `CompositeContextPageExpositionTest` round-trip
+  testcontainers (`PostgresFixture`) — `pages [7,42]` exposées dans les 2 canaux.
+* **Flaky anti-pollution tué** : conteneur Testcontainers pg17 singleton
+  persistant partagé inter-classes/sessions → résiduel cassait le topK global.
+  Sweep **famille fermée** (`page-provenance-test-%`/`page-exposition-test-%`)
+  dans US-1 + US-3 + jeton unique `traceable-<uuid>` par run.
+* Gates : `test` 10 776 (2 FAIL préexistants `OcrTaskTest` drift S-211),
+  `@rag-socle` 6/6 + `@doubt-quality` 9/9 + `@corpus-ingest` 4/4,
+  `publishToMavenLocal` VERT.
+* Zéro bump BOM, zéro secret. Commit `ee529f4`. Prochaine : US-2 (N2 transport
+  codex — Brooklyn) puis US-4 (BDD cross-borough).
+
 == S-266 (2026-09-18) — RENAME Vague 4 transverse : vérification clôture (Queens)
 
 * **EPIC RENAME ✅ TERMINÉ 7/7 baby-steps** — mission 3 PROMPT_REPRISE
