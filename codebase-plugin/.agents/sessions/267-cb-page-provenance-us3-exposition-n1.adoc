@@ -1,0 +1,102 @@
+= Rapport Session 267 — CB-PAGE-PROVENANCE US-3 : exposition N1 du canal Docs + task codebase
+:session: 267
+:date: 2026-09-18
+:borough: Queens — codebase-gradle (N1, RAG pgvector + contexte augmenté)
+
+== Mission
+
+Poursuivre l'EPIC **CB-PAGE-PROVENANCE** au niveau N1. Prochaine US dans
+l'ordre du cadrage D8 : US-2 (N2 transport, Brooklyn) OU US-3 (exposition N1),
+qui est **self-contained codebase** (zéro accord pilote requis) — choisie en
+conséquence : le cadrage D11 gâte chaque US sur son propre niveau
+« unit → fonctionnel → Cucumber » et US-3 = exposition N1 (unit + fonctionnel ;
+le Cucumber BDD est US-4, cross-borough).
+
+## Implémentation — US-3 (D8) : pages additifs dans les deux surfaces N1
+
+Baby-step DDD/TDD strict, 3 niveaux.
+
+### US-3 RED (preuve par compilation)
+
+* Test unit `CompositeContextEntriesTest` (5 tests) créé **avant** le code —
+  `Unresolved reference 'CompositeContextEntries'` prouvé par le compilateur.
+* Spec D8 : `pages` **additif, omis si vide** (backward compat totale — aucune
+  page → sortie byte-identique au format pré-EPIC), dans les deux surfaces :
+  . `CompositeContextBuilder.loadDocsContext` (canal Docs, ligne meta
+    `[Doc] source=… section=… sim=…`) ;
+  . `CodebaseCompositeContextTask` (entrées JSON `source=codex`).
+
+### US-3 GREEN (5/5 PASSED)
+
+* Noyau pur **`codebase/rag/CompositeContextEntries.kt`** (48 lignes) :
+  . `codexEntry(r): Map<String, Any>` — mêmes 7 clés legacy + `pages`
+    (List<Int>) conditionnel ;
+  . `docsMetaLine(r): String` — suffixe ` pages=[40,41]` conditionnel
+    (joinToString comma, jamais de fragment `pages=` quand vide).
+* Câblage des 2 consommateurs (diff chirurgical) :
+  . `CompositeContextBuilder.kt` : la meta line devient
+    `CompositeContextEntries.docsMetaLine(r)` (4 lignes d'inline remplacées) ;
+  . `CodebaseCompositeContextTask.kt` : `codexEntries.add(CompositeContextEntries.codexEntry(r))`
+    (10 lignes de `mapOf` inline remplacées).
+
+### US-3 fonctionnel — conteneur réel (testcontainers)
+
+* `CompositeContextPageExpositionTest` : round-trip réel `PostgresFixture` +
+  `RagVectorStore.ingestWithDoubt` (1 chunk avec `pages=[40,41]`, 1 chunk sans)
+  puis `CompositeContextBuilder.build(...)` → le canal Docs expose
+  `pages=[40,41]` sur la ligne paginée et reste sans fragment `pages=` sur la
+  ligne legacy. **Passé.**
+
+## Flaky débusqué et tué : pollution du conteneur persistant
+
+Le conteneur Testcontainers pg17 est un **singleton persistant partagé entre
+sessions et classes de test**. Deux surfaces de flakiness découvertes et
+corrigées :
+
+* le test ne passait que **isolé** — pas en suite globale : les lignes laissées
+  par les run précédents (contenu <token>semblable) faisaient sortir les chunks
+  attendus du **topK global** (tie-breaking arbitraire sur embeddings
+  identiques) ;
+* `RagVectorStorePageProvenanceTest` (US-1, HEAD) ne purgeait que son **propre
+  UUID** → résiduel inter-sessions.
+
+Fix : les deux tests balayent désormais **toute la famille fermée**
+(`page-provenance-test-%` OU `page-exposition-test-%`) en setup. + jeton unique
+`marker = traceable-<uuid>` dans le contenu de l'US-3, requête
+`"$marker competences"`, assertions réancrées sur `sourceDocument` (la ligne
+meta porte le source, pas le marker). Résiduel préexistant purgé une fois
+(`DELETE 11`).
+
+## Gates
+
+* `test` global : **10776 tests, 2 failed** — les 2 FAIL sont les `OcrTaskTest`
+  **préexistants** (drift PDF S-211, stash-confirmés, documentés au PROMPT_REPRISE).
+  Zéro nouvelle régression.
+* 3 suites Cucumber dédiées (RagSocle + DoubtQuality + CorpusIngest) VERTES,
+  dont le scénario « Composite context Docs channel ».
+* `publishToMavenLocal` **VERT** (Règle 0).
+* Backward compat : `docsMetaLine` byte-identique sans pages (test unitaire),
+  entrées JSON legacy 7 clés inchangées.
+
+## Fichiers
+
+* créés : `CompositeContextEntries.kt`, `CompositeContextEntriesTest.kt`,
+  `CompositeContextPageExpositionTest.kt` (3).
+* modifiés : `CompositeContextBuilder.kt`, `CodebaseCompositeContextTask.kt`,
+  `RagVectorStorePageProvenanceTest.kt` (durci anti-pollution) (3).
+* gouvernance : `PROMPT_REPRISE.adoc`, `BACKLOG.adoc`, `INDEX.adoc`,
+  `SESSIONS_HISTORY.adoc` (4).
+
+## Reste de l'EPIC
+
+* US-2 (N2 transport codex, Brooklyn) 🟡
+* US-4 (Cucumber BDD cross-borough) 🟡
+
+## Échecs préexistants confirmés
+
+* 2 × `OcrTaskTest` (drift PDF S-211) — non régressés, identiques au HEAD.
+
+## Clôture
+
+* Session États : 7/7. Commit + push en clôture (décision pilote 2026-09-17).
+* Zéro secret, zéro bump BOM, zéro publication Central.

@@ -41,15 +41,7 @@ abstract class CodebaseCompositeContextTask : DefaultTask() {
             val store = RagVectorStore()
             val results = store.searchBlocking(q, k)
             results.forEach { r ->
-                codexEntries.add(mapOf(
-                    "source" to "codex",
-                    "chunkId" to r.chunkId,
-                    "chunkText" to r.chunkText.take(500),
-                    "sectionPath" to r.sectionPath,
-                    "headingLevel" to r.headingLevel,
-                    "sourceDocument" to r.sourceDocument,
-                    "similarity" to r.similarity
-                ))
+                codexEntries.add(CompositeContextEntries.codexEntry(r))
             }
             logger.lifecycle("[codebase] RagVectorStore OK — {} resultats", results.size)
         }.onFailure { e ->

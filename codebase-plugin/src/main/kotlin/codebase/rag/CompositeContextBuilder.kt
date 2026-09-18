@@ -73,9 +73,7 @@ class CompositeContextBuilder(
             lines.joinToString("\n\n") { line ->
                 val source = results.firstOrNull { line.endsWith(it.chunkText.take(500)) }
                 buildString {
-                    val meta = source?.let { r ->
-                        "[Doc] source=${r.sourceDocument} section=${r.sectionPath} sim=${"%.3f".format(Locale.US, r.similarity)}"
-                    } ?: "[Doc]"
+                    val meta = source?.let { r -> CompositeContextEntries.docsMetaLine(r) } ?: "[Doc]"
                     appendLine(meta)
                     appendLine(line)
                 }

@@ -2,6 +2,47 @@
 :toc: left
 :icons: font
 
+== Session 267 — 2026-09-18
+
+* **EPICs** : CB-PAGE-PROVENANCE (US-3 — N1 exposition, EPIC cross-borough S-225)
+* **Type** : DDD + TDD + BDD strict — baby-step RED (compile statique) → GREEN
+* **Livrables** :
+** `CompositeContextEntries.kt` (nouveau domaine `codebase.rag`, noyau pur) :
+   `codexEntry(r)` → entrée JSON canal Codex **additive** `pages` (List<Int>,
+   omise si vide) ; `docsMetaLine(r)` → ligne meta canal Docs avec suffixe
+   `pages=[40,41]` (seulement si `r.pages` non vide). Backward compat
+   byte-identique : pages vides → sorties strictement identiques à S-266.
+** `CompositeContextBuilder.kt` : canal Docs consomme `docsMetaLine(r)` (4 lignes
+   d'inline remplacées), `JsonObject` existe déjà (`loadDocsContext`).
+** `CodebaseCompositeContextTask.kt` : canal Codex consomme `codexEntry(r)` (10
+   lignes d'inline remplacées). 7 clés legacy intactes.
+* **Proof of work réel** : `CompositeContextPageExpositionTest` (testcontainers,
+   `PostgresFixture` pg17) — round-trip ingestion `ingestWithDoubt` → retrieval
+   → `CompositeContextBuilder` : `pages` exposées dans les 2 canaux.
+* **Flaky anti-pollution tué (leçon majeure)** : le conteneur Testcontainers
+   pg17 est un **singleton persistant** partagé entre classes et sessions — les
+   lignes résiduelles de runs antérieurs (contenu quasi identique) sortaient les
+   chunks attendus du **topK global** (tie-breaking embeddings identiques). Fix :
+   `RagVectorStorePageProvenanceTest` (US-1) et `CompositeContextPageExpositionTest`
+   balayent la **famille fermée** (`page-provenance-test-%`/`page-exposition-test-%`)
+   en setup + jeton unique `traceable-<uuid>` par run. Les 8 tests (US-1 + US-3
+   unit + fonctionnel) passent ensemble.
+* **Piège assertion** : la ligne meta `[Doc] source=…` porte le `sourceDocument`
+   (pas le `marker`) ; le marker est dans la ligne de contenu. Assertions filtre
+   par `sourceDocument`, requête `"$marker competences"`. Purge manuelle
+   `DELETE 11` sur `codex_chunks`.
+* **Gates** : `test` **10776 tests, 2 FAIL** (uniquement `OcrTaskTest` drift S-211,
+   **préexistants documentés**) ; `cucumberTestRagSocle` **6/6** +
+   `cucumberTestDoubtQuality` **9/9** + `cucumberTestCorpusIngest` **4/4** ;
+   `publishToMavenLocal` VERT (Règle 0).
+* **Fichiers** : prod 3 (2 MAJ + 1 N), test 3 (1 MAJ - durcissement US-1 + 2 N).
+* **Décisions** : US-3 self-contained codebase traitée avant US-2 (N2) — aucune
+   dépendance au transport codex pour l'exposition N1 ; format `pages=[a,b]`
+   brackets comma-joined (symétrique `doubtful`).
+* **EPIC** : US-0 ✅ S-225, US-1 ✅ S-265, **US-3 ✅ S-267**, reste US-2 (N2 codex,
+   Brooklyn) + US-4 (BDD).
+* Rapport : `.agents/sessions/267-cb-page-provenance-us3-exposition-n1.adoc`.
+
 == Session 266 — 2026-09-18
 
 * **EPICs** : RENAME (Vague 4 transverse — vérification clôture, cross-borough)

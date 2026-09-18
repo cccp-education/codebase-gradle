@@ -1,17 +1,28 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 267
-:session: 267
+= Prompt de Reprise — Codebase (Queens N1) — Session 268
+:session: 268
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
-:session_precedente: 266 — **RENAME Vague 4 transverse VÉRIFIÉE — DÉJÀ FAITE** (gouvernance pure, zéro code). Gate D16 rejouée sur `src/` de bakery/capsule/plantuml/graphify/codex = zéro match ; transfusions `TRANSFER_LEXIQUE_FORMATION.adoc` § 2 déjà actées ; backlogs boroughs sans US RENAME. **EPIC RENAME → ✅ TERMINÉ 7/7 baby-steps.** Backlog/INDEX/PROMPT_REPRISE mis à jour (mission 3 rayée), commit `2139652`.
+:session_precedente: 267 — **CB-PAGE-PROVENANCE US-3 TERMINÉ** (exposition
+N1). Noyau pur `CompositeContextEntries.kt` (codexEntry + docsMetaLine) +
+câblage `CompositeContextBuilder` (canal Docs) + `CodebaseCompositeContextTask`
+(entrées JSON), `pages` **additif omis si vide** (backward compat byte-
+identique). Flaky débusqué et tué : conteneur Testcontainers persistant —
+sweep famille fermée (`page-provenance-test-%`/`page-exposition-test-%`) dans
+les 2 tests US-1/US-3 + jeton unique par run. Gates : 10776 tests 2 FAIL
+préexistants OcrTaskTest (drift S-211), 3 suites cucumber dédiées VERTES,
+`publishToMavenLocal` VERT. Rapport + BACKLOG/INDEX/PROMPT_REPRISE + commit en
+clôture.
 
-== Mission Session 267 — à définir (ordre pilote)
+== Mission Session 268 — à définir (ordre pilote)
 
 Nombreux candidats (critical path MVP0) :
 
 . **CB-PAGE-PROVENANCE US-2 (N2 transport codex, Brooklyn)** — prochaine US
-   de l'EPIC dans l'ordre du cadrage (US-1 → US-2 → US-3 → US-4). Session
-   trans borough : prévoir cadrage + implémentation côté codex
+   de l'EPIC dans l'ordre du cadrage (US-1 ✅ S-265 → US-3 ✅ S-267 → US-2 →
+   US-4). Session trans borough : prévoir cadrage + implémentation côté codex
    (`CodexIngestTask.pageProvenanceFile` `@InputFiles` tolérante + jointure
    exacte SHA-256 + attach avant `ingestWithDoubt`).
+. **CB-PAGE-PROVENANCE US-4 (Cucumber BDD cross-borough)** — clôture BDD de
+   l'EPIC (niveau Cucumber du cadrage D11).
 . **Génération réelle A2** (accord pilote — LLM metered) : `autonomousSession`
    sur training/Newark avec le RAG peuplé + port planner prouvé S-264.
    Première mission réelle qui consomme le contexte augmenté.
@@ -20,22 +31,23 @@ Nombreux candidats (critical path MVP0) :
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25).
 * Version locale **0.0.16** (Central 0.0.16, bundle `db5e1158`). BOM/catalog
-  **0.0.50**. `publishToMavenLocal` VERT S-265.
+  **0.0.50**. `publishToMavenLocal` VERT S-267.
 * **EPIC CB-PAGE-PROVENANCE** : US-0 ✅ (cadrage S-225), **US-1 ✅ S-265**,
-  US-2 → US-4 🟡. Doc `CADRAGE_EPIC_CB_PAGE_PROVENANCE.adoc` (côté codex).
-  Prochaine : US-2 (N2 transport, Brooklyn).
+  **US-3 ✅ S-267** (exposition N1), US-2 → US-4 🟡. Doc
+  `CADRAGE_EPIC_CB_PAGE_PROVENANCE.adoc` (côté codex).
 * `codebase.store.*` VERT (Round-trip réel + 3 suites Cucumber dédiées).
 * 45 cucumber runners dédiés ; koverVerify VERT (check complet 27m06s S-264).
+* Leçon apprise S-267 : le conteneur Testcontainers pg17 est un singleton
+  persistant partagé — tout test fonctionnel sur codex_documents doit balayer
+  sa famille fermée en setup (jamais seulement son propre UUID).
 * Wiring SVO prouvé S-264 : `autonomousSession` + `PlannerPort` (planner
   sous-agent), task codebase `generateAugmentedPlan`.
 
 == Échecs préexistants (orthogonaux, ne pas confondre)
 
 * 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`, `isImageFile
-  false for pdf`) — drift S-211, **stash-confirmés identiques à HEAD S-264**.
-* Suite globale `test` non relancée S-265 (delta confiné `codebase.store`,
-  preuve round-trip réel + suites dédiées) — relance complète si un prochain
-  delta la justifie.
+  false for pdf`) — drift S-211, **stash-confirmés identiques à HEAD S-264,
+  revérifiés S-267**.
 
 == Règles absolues
 
@@ -46,6 +58,7 @@ Nombreux candidats (critical path MVP0) :
 
 == References
 
+* `.agents/sessions/267-cb-page-provenance-us3-exposition-n1.adoc`
 * `.agents/sessions/266-rename-v4-verification.adoc`
 * `.agents/sessions/265-cb-page-provenance-us1.adoc`
 * `codex-gradle/codex-plugin/.agents/CADRAGE_EPIC_CB_PAGE_PROVENANCE.adoc`
