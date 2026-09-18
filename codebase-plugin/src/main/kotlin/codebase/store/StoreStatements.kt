@@ -57,13 +57,6 @@ object StoreStatements {
         "INSERT INTO codex_documents (source_document, chunk_count, license) VALUES ($1, $2, $3) RETURNING id"
 
     /**
-     * INSERT d'un chunk avec RETURNING id.
-     * Binds : (1=document_id, 2=chunk_index, 3=chunk_text, 4=section_path, 5=heading_level).
-     */
-    fun insertChunk(): String =
-        "INSERT INTO codex_chunks (document_id, chunk_index, chunk_text, section_path, heading_level) VALUES ($1, $2, $3, $4, $5) RETURNING id"
-
-    /**
      * INSERT d'un chunk avec métadonnées de doute et provenance de page
      * (EPIC OCR-QUALITY US-4 + CB-PAGE-PROVENANCE US-1).
      * Binds : (1=document_id, 2=chunk_index, 3=chunk_text, 4=section_path,
@@ -96,9 +89,6 @@ object StoreStatements {
 
     /** Nombre de binds attendus pour [insertDocument]. */
     fun insertDocumentBindCount(): Int = 3
-
-    /** Nombre de binds attendus pour [insertChunk]. */
-    fun insertChunkBindCount(): Int = 5
 
     /** Nombre de binds attendus pour [insertChunkWithDoubt]. */
     fun insertChunkWithDoubtBindCount(): Int = 8

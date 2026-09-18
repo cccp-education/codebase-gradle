@@ -1,5 +1,17 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-09-18
+:date: 2026-09-19
+
+== Session 268 — Suppression du code mort N1 (codex C-3 constat A)
+
+Tests créés/modifiés :
+
+* Aucun test ajouté ou modifié — suppression de code mort orphelin :
+  - `StoreStatementsTest.kt` : retrait de 2 tests morts (`insertChunk uses 5 positional parameters...`, `insertChunk bind count is 5`).
+  - Suppression totale de `IngestIndexingTest.kt` (6 tests orphelins).
+  - Résultat net : −8 tests dans la suite `codebase.store.*` (65 tests au lieu de 73).
+  - Aucune régression fonctionnelle : le test restant `RagVectorStorePageProvenanceTest` (flake conteneur S-267 documenté) reste identique en comportement isolé.
+
+Leçon documentée (S-268) : la suppression de code mort orphelin (zéro appelant prod) suit la Loi de l'Économie d'Encre — pas de conservation de variantes inutilisées quand un actif (`insertChunkWithDoubt()` 8 binds) les supplante. Aucune modification de `initSchema()` ni des appelants prod (`insertDocument(+BindCount)`, `AgenticChunkRepository.insertChunk`).
 
 == Session 267 — CB-PAGE-PROVENANCE US-3 (N1 exposition)
 

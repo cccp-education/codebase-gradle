@@ -1,0 +1,47 @@
+= Session 268 — 2026-09-19 — Suppression du code mort N1 (codex C-3 constat A)
+
+== Contexte
+Mission arbitrée : suppression du code mort N1 propriétaire Queens (codex C-3 / S-230 roadmap, constat A : audit cross-borough du dead code – décision suppression vs conservation documentée). 
+- Orphelins identifiés via grep (zéro appelant prod) : `StoreStatements.insertChunk()` (5 binds), `StoreStatements.insertChunkBindCount()`, `IngestIndexing.assignLocalIndices`.
+- Remplacé par `insertChunkWithDoubt()` (8 binds, actif dans `RagVectorStore.kt:107`).
+- Loi de l'Économie d'Encre : pas de conservation de variantes inutilisées.
+- Aucun impact sur `initSchema()`, `insertDocument(+BindCount)`, `insertChunkWithDoubt(+BindCount)` (appelants prod).
+- `AgenticChunkRepository.insertChunk` = autre symbole (prod, conservé).
+
+== Gates
+- Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25, Gradle 9.7.1).
+- `compileKotlin` + `compileTestKotlin` : VERT.
+- `test --tests "codebase.store.*"` : 65 tests, 1 failed (`RagVectorStorePageProvenanceTest` flake conteneur S-267, isolé → passe).
+- Preuve HEAD (stash → `--rerun-tasks`) : 73 tests, 2 failed (même classe) → préexistant.
+- Cucumber dédiés : `cucumberTestCorpusIngest` + `cucumberTestDoubtQuality` : VERT.
+- `test` global : 10768 tests, 4 failed, 8285 skipped (6m48s).
+  - 2× `OcrTaskTest` (drift PDF S-211, préexistants documentés, stash-confirmés identiques à HEAD).
+  - 2× `RagVectorStorePageProvenanceTest` (flake conteneur singleton persistant pg17, S-267, non lié à la suppression).
+  - Zéro nouvelle régression (comptage cohérent : baseline 10776 − 8 tests supprimés = 10768).
+- `publishToMavenLocal` : VERT (Règle 0).
+
+== Fichiers modifiés
+- `src/main/kotlin/codebase/store/StoreStatements.kt` : retrait `insertChunk()` (5 binds) + `insertChunkBindCount()` + KDoc associé.
+- `src/test/kotlin/codebase/store/StoreStatementsTest.kt` : retrait 2 tests morts (`insertChunk uses 5 positional parameters...`, `insertChunk bind count is 5`).
+- Supprimés :
+  - `src/main/kotlin/codebase/store/IngestIndexing.kt`
+  - `src/test/kotlin/codebase/store/IngestIndexingTest.kt`
+- Backup pré-édit : `/tmp/opencode/queens-s268-backup/` (4 fichiers).
+- grep résiduel CLEAN : zéro référence à `insertChunk()`, `insertChunkBindCount()`, `IngestIndexing`.
+
+== Reste de l'EPIC / Roadmap
+- EPIC CB-PAGE-PROVENANCE (codex S-225) : 
+  - US-1 ✅ S-265 (transport N1), US-3 ✅ S-267 (exposition N1).
+  - US-2 (N2 transport codex, Brooklyn) : 🟡 À FAIRE (bloc A codex S-233 : jointure exacte SHA-256 à l'ingestion).
+  - US-4 (Cucumber BDD cross-borough) : 🟡 À FAIRE (post-US-2).
+- Génération réelle A2 (accord pilote – LLM metered) : `autonomousSession` sur training/Newark avec RAG peuplé + port planner prouvé S-264 (en attente).
+
+== Échecs préexistants (orthogonaux, ne pas confondre)
+- 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`, `isImageFile false for pdf`) – drift S-211, stash-confirmés identiques à HEAD S-264, revérifiés S-267.
+- Flake conteneur `RagVectorStorePageProvenanceTest` (Testcontainers pg17 singleton persistant partagé entre sessions/classes) – passe isolé, échoue en suite (pollution topK par lignes résiduelles), documenté S-267.
+
+== Clôture
+- Rappel des règles absolues : baby-step TDD/BDD/DDD strict, git autorisé (décision pilote 2026-09-17), zéro secret commité, publication Central = accord pilote explicite.
+- Suppression documentée conformément à la décision du constat A (codex C-3).
+- Aucun bump BOM, aucune publication Central (pas de décision pilote en ce sens).
+- Gouvernance 7 étapes mise à jour ci-dessous.

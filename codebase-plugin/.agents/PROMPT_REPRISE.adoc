@@ -12,9 +12,16 @@ préexistants OcrTaskTest (drift S-211), 3 suites cucumber dédiées VERTES,
 `publishToMavenLocal` VERT. Rapport + BACKLOG/INDEX/PROMPT_REPRISE + commit en
 clôture.
 
-== Mission Session 268 — à définir (ordre pilote)
+== Mission Session 268 — Terminée : suppression du code mort N1 (codex C-3 constat A)
 
-Nombreux candidats (critical path MVP0) :
+Mission arbitrée : suppression du code mort N1 propriétaire Queens (codex C-3 / S-230 roadmap, constat A : audit cross-borough du dead code – décision suppression vs conservation documentée).
+- Orphelins identifiés via grep (zéro appelant prod) : `StoreStatements.insertChunk()` (5 binds), `StoreStatements.insertChunkBindCount()`, `IngestIndexing.assignLocalIndices`.
+- Remplacé par `insertChunkWithDoubt()` (8 binds, actif dans `RagVectorStore.kt:107`).
+- Loi de l'Économie d'Encre : pas de conservation de variantes inutilisées.
+- Aucun impact sur `initSchema()`, `insertDocument(+BindCount)`, `insertChunkWithDoubt(+BindCount)` (appelants prod).
+- `AgenticChunkRepository.insertChunk` = autre symbole (prod, conservé).
+
+Prochaines missions candidates (critical path MVP0) :
 
 . **CB-PAGE-PROVENANCE US-2 (N2 transport codex, Brooklyn)** — prochaine US
    de l'EPIC dans l'ordre du cadrage (US-1 ✅ S-265 → US-3 ✅ S-267 → US-2 →

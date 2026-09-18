@@ -2,6 +2,50 @@
 :toc: left
 :icons: font
 
+== Session 268 — 2026-09-19
+
+* **EPICs** : Suppression du code mort N1 (codex C-3 constat A — Queens propriétaire).
+* **Type** : gouvernance pure + maintenance N1 (suppression de code mort orphelin).
+* **Livrables** :
+** Code mort supprimé** : 
+   `StoreStatements.insertChunk()` (5 binds) + `StoreStatements.insertChunkBindCount()` +
+   `IngestIndexing.assignLocalIndices` (tous orphelins : zéro appelant prod).
+   Remplacé fonctionnellement par `insertChunkWithDoubt()` (8 binds, actif dans
+   `RagVectorStore.kt:107`). Loi de l'Économie d'Encre appliquée.
+   Aucun impact sur `initSchema()`, `insertDocument(+BindCount)`,
+   `insertChunkWithDoubt(+BindCount)` (appelants prod).
+   `AgenticChunkRepository.insertChunk` = autre symbole (prod, conservé).
+* **Proof of work réel** : 
+   - `compileKotlin` + `compileTestKotlin` VERT.
+   - `test --tests "codebase.store.*"` : 65 tests, 1 failed (flake conteneur S-267,
+     isolé → passe). Preuve HEAD (stash → `--rerun-tasks`) : 73 tests, 2 failed
+     (même classe) → préexistant.
+   - Cucumber dédiés : `cucumberTestCorpusIngest` + `cucumberTestDoubtQuality` : VERT.
+   - `test` global : 10768 tests, 4 failed, 8285 skipped (6m48s).
+     - 2× `OcrTaskTest` (drift PDF S-211, préexistants documentés).
+     - 2× `RagVectorStorePageProvenanceTest` (flake conteneur singleton persistant
+       pg17, S-267, non lié à la suppression).
+     - Zéro nouvelle régression (baseline 10776 − 8 tests supprimés = 10768).
+   - `publishToMavenLocal` : VERT (Règle 0).
+* **Fichiers** : 
+   - Modifiés : `src/main/kotlin/codebase/store/StoreStatements.kt`,
+     `src/test/kotlin/codebase/store/StoreStatementsTest.kt`.
+   - Supprimés : `src/main/kotlin/codebase/store/IngestIndexing.kt`,
+     `src/test/kotlin/codebase/store/IngestIndexingTest.kt`.
+   - Backup : `/tmp/opencode/queens-s268-backup/` (4 fichiers).
+* **Gates** : `compileKotlin` VERT, `test codebase.store.*` 65/1 (flake conteneur isolé),
+  `test` global 10768/4 (2 OcrTaskTest préexistants + 2 flake conteneur),
+  8285 skipped, `publishToMavenLocal` VERT.
+* **Décisions** : 
+   - Mission arbitrée : suppression du code mort N1 propriétaire Queens
+     (codex C-3 / S-230 roadmap, constat A : décision suppression vs conservation
+     documentée). Réf roadmap codex S-227 C-3 (S-230).
+   - Aucun bump BOM, aucune publication Central (pas de décision pilote en ce sens).
+* **EPIC** : maintenance N1 (codex C-3 constat A) ✅.
+* **Rapport** : `.agents/sessions/268-dead-code-n1-suppression.adoc`.
+* **Prochaine mission** : CB-PAGE-PROVENANCE US-2 (N2 transport codex, Brooklyn) ou
+  génération réelle A2.
+
 == Session 267 — 2026-09-18
 
 * **EPICs** : CB-PAGE-PROVENANCE (US-3 — N1 exposition, EPIC cross-borough S-225)

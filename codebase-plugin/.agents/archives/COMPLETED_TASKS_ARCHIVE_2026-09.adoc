@@ -1,8 +1,27 @@
 = Archive — Tâches Terminées — Septembre 2026
 
-== S-267 (2026-09-18) — CB-PAGE-PROVENANCE US-3 : N1 exposition (Queens)
+== S-268 (2026-09-19) — Suppression du code mort N1 (codex C-3 constat A) (Queens)
 
-* **EPIC cross-borough CB-PAGE-PROVENANCE US-3** (cadrage S-225) — exposition
+* **Maintenance N1** : suppression du code mort orphelin propriétaire Queens (codex C-3 / S-230 roadmap, constat A).
+* `StoreStatements.insertChunk()` (5 binds) + `StoreStatements.insertChunkBindCount()` +
+  `IngestIndexing.assignLocalIndices` supprimés (zéro appelant prod).
+  Remplacé fonctionnellement par `insertChunkWithDoubt()` (8 binds, actif dans
+  `RagVectorStore.kt:107`). Loi de l'Économie d'Encre appliquée.
+  Aucun impact sur `initSchema()`, `insertDocument(+BindCount)`,
+  `insertChunkWithDoubt(+BindCount)` (appelants prod).
+  `AgenticChunkRepository.insertChunk` = autre symbole (prod, conservé).
+* Gates : `compileKotlin` VERT, `test codebase.store.*` 65 tests/1 failed
+  (flake conteneur S-267 isolé → passe), `test` global 10768/4 failed
+  (2 OcrTaskTest préexistants + 2 flake conteneur), 8285 skipped,
+  `publishToMavenLocal` VERT.
+* Fichiers modifiés : `StoreStatements.kt` + `StoreStatementsTest.kt`.
+  Supprimés : `IngestIndexing.kt` + `IngestIndexingTest.kt`.
+  Backup : `/tmp/opencode/queens-s268-backup/` (4 fichiers).
+* Rapport : `.agents/sessions/268-dead-code-n1-suppression.adoc`.
+* Prochaine mission : CB-PAGE-PROVENANCE US-2 (N2 transport codex, Brooklyn) ou
+  génération réelle A2.
+
+== S-267 (2026-09-18) — CB-PAGE-PROVENANCE US-3 : N1 exposition (Queens)
   des `pages` depuis `RetrieveResult.pages` vers le contexte augmenté,
   self-contained codebase (traitée avant US-2 N2, aucune dépendance codex).
 * `CompositeContextEntries.kt` (nouveau, noyau pur `codebase.rag`) : `codexEntry(r)`

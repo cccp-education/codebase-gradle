@@ -35,18 +35,6 @@ class StoreStatementsTest {
     }
 
     @Test
-    fun `insertChunk uses 5 positional parameters and no interpolation`() {
-        val sql = StoreStatements.insertChunk()
-        assertTrue(sql.contains("$1"), "insertChunk should bind document_id at $1")
-        assertTrue(sql.contains("$2"), "insertChunk should bind chunk_index at $2")
-        assertTrue(sql.contains("$3"), "insertChunk should bind chunk_text at $3")
-        assertTrue(sql.contains("$4"), "insertChunk should bind section_path at $4")
-        assertTrue(sql.contains("$5"), "insertChunk should bind heading_level at $5")
-        assertTrue(sql.contains("RETURNING id"))
-        assertFalse(containsInterpolation(sql), "insertChunk must not interpolate variables: $sql")
-    }
-
-    @Test
     fun `updateEmbedding inlines safe vector literal and chunkId`() {
         val sql = StoreStatements.updateEmbedding("0.1,0.2,0.3", 42L)
         assertTrue(
@@ -88,11 +76,6 @@ class StoreStatementsTest {
     @Test
     fun `updateEmbedding bind count is 0`() {
         assertEquals(0, StoreStatements.updateEmbeddingBindCount())
-    }
-
-    @Test
-    fun `insertChunk bind count is 5`() {
-        assertEquals(5, StoreStatements.insertChunkBindCount())
     }
 
     /**
