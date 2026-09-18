@@ -15,8 +15,12 @@ Nombreux candidats (critical path MVP0) :
 . **Génération réelle A2** (accord pilote — LLM metered) : `autonomousSession`
    sur training/Newark avec le RAG peuplé + port planner prouvé S-264.
    Première mission réelle qui consomme le contexte augmenté.
-. **RENAME Vague 4 transverse** (bakery → capsule → plantuml → graphify/codex,
-   chacune transfusion `TRANSFER_LEXIQUE_FORMATION.adoc` d'abord).
+. **~~RENAME Vague 4 transverse~~ ✅ DÉJÀ FAIT (S-266)** — la gate D16
+   (`grep -riE "formation|pédagog|qualiopi|afnor|bloom|apprenant|stagiaire|
+   formateur" src/`) rejouée sur bakery/capsule/plantuml/graphify/codex =
+   zéro match ; transfusions `TRANSFER_LEXIQUE_FORMATION.adoc` § 2 déjà
+   actées (bakery RENAME-9/RENAME-3, capsule RENAME-4, plantuml RENAME-5/11) ;
+   backlogs boroughs sans US RENAME. EPIC RENAME → ✅ TERMINÉ (7/7 baby-steps).
 
 == Contexte technique
 
