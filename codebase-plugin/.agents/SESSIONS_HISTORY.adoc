@@ -2,6 +2,32 @@
 :toc: left
 :icons: font
 
+== Session 266 — 2026-09-18
+
+* **EPICs** : RENAME (Vague 4 transverse — vérification clôture, cross-borough)
+* **Type** : gouvernance pure — zéro code, gate Vague 4 rejouée + audit transfusion
+* **Mission** : PROMPT_REPRISE mission 3 — RENAME Vague 4 sur bakery → capsule →
+  plantuml → graphify/codex. Demande pilote : *vérifier si pas déjà fait → backlog*.
+* **Verdict : DÉJÀ FAITE** — 3 preuves indépendantes :
+** Gate D16 étendue Vague 4 (`rg -inE "formation|pédagog|qualiopi|afnor|bloom|
+   apprenant|stagiaire|formateur"`) sur `src/` des 4 boroughs restants =
+   **zéro match**. 2e grep large `spg|spd` = faux positifs (capsule.feature,
+   TranscriptPromptBuilder, Metadata.kt…) re-vérifiés ligne à ligne.
+** Transfusion `TRANSFER_LEXIQUE_FORMATION.adoc` § 2 : toutes vagues RENAME
+   closes (bakery RENAME-9 S-212/RENAME-3, capsule RENAME-4 S-135, plantuml
+   RENAME-5 S-216/RENAME-11 S-254, document/planner/hyperframes). Graphify/
+   codex = gouvernance only (baby-step 6, zéro logique).
+** Backlogs bakery/capsule/plantuml/graphify sans US RENAME restante.
+* **Conclusion** : **7/7 baby-steps RENAME TERMINÉS** (codebase S-212/254/255,
+  document S-251/253/254/264, bakery S-212, capsule S-135, plantuml S-216/254,
+  graphify/codex gouvernance). EPIC → ✅ TERMINÉ.
+* **Livrables gouvernance** : BACKLOG (EPIC ✅ + « Reste transverse » périmé →
+  constat S-266 + header), INDEX (ligne RENAME ✅, +session 266), PROMPT_REPRISE
+  (mission 3 rayée « ✅ DÉJÀ FAIT »). Commit `2139652` poussé.
+* **Gates** : zéro build (delta source nul) — règle cycle build/test piloté par
+  le delta respectée. Zéro bump BOM, zéro secret.
+* Rapport : `.agents/sessions/266-rename-v4-verification.adoc`.
+
 == Session 265 — 2026-09-18
 
 * **EPICs** : CB-PAGE-PROVENANCE (US-1 — N1 transport, EPIC cross-borough S-225)

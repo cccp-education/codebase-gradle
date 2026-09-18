@@ -1,0 +1,66 @@
+= Rapport Session 266 — RENAME Vague 4 transverse : vérification (déjà faite)
+:session: 266
+:date: 2026-09-18
+:borough: Queens — codebase-gradle (N1, RAG pgvector + contexte augmenté)
+
+== Mission
+
+Mission 3 du PROMPT_REPRISE — exécuter la RENAME Vague 4 transverse sur les
+boroughs restants (bakery → capsule → plantuml → graphify/codex, chacune avec
+transfusion `TRANSFER_LEXIQUE_FORMATION.adoc` d'abord). Demande pilote :
+*vérifier si ce n'est pas déjà fait ; dans ce cas, mettre à jour le backlog*.
+
+== Vérification — verdict : mission DÉJÀ FAITE
+
+Trois preuves indépendantes :
+
+. **Gate D16 étendue Vague 4** rejouée sur `src/` des 4 boroughs restants :
+   `rg -inE "formation|pédagog|qualiopi|afnor|bloom|apprenant|stagiaire|
+   formateur" <plugin>/src` = **zéro match** (bakery, capsule, plantuml,
+   graphify, codex). Un 2e grep large `spg|spd|…` remontait des fichiers
+   (capsule.feature, TranscriptPromptBuilder, Metadata.kt…) — vérifiés ligne
+   par ligne : **faux positifs** du pattern trop permissif (`spd` = `spdx`,
+   segments de mots), aucun terme métier réel.
+. **Transfusion** `TRANSFER_LEXIQUE_FORMATION.adoc` § 2 (lignes 117-129) :
+   toutes les vagues RENAME closes et transfusées — document (S-251/254),
+   planner (RENAME-7), bakery (RENAME-9 S-212 + RENAME-3), capsule
+   (RENAME-4 S-135), plantuml (RENAME-5 S-216 + RENAME-11 S-254),
+   hyperframes (RENAME-12 S-254). Graphify/codex = gouvernance only
+   (baby-step 6), zéro logique à transfuser.
+. **Backlogs boroughs** : bakery/capsule/plantuml/graphify ne listent plus
+   d'US RENAME dans `.agents/BACKLOG.adoc`.
+
+Conclusion : la Vague 4 transverse est intégralement exécutée — **7/7
+baby-steps RENAME TERMINÉS** (codebase S-212/254/255, document S-251/253/254/
+264, bakery S-212, capsule S-135, plantuml S-216/254, graphify/codex
+gouvernance).
+
+== Livrables (gouvernance seule, zéro code)
+
+* `.agents/BACKLOG.adoc` : EPIC RENAME → **✅ TERMINÉ** (en-tête) + ligne
+  « Reste transverse » périmée remplacée par le constat de vérification S-266
+  (gate D16 rejouée, transfusions § 1bis/§ 2 actées, backlogs boroughs sans US
+  RENAME) + header « Dernière mise à jour » complété (S-266).
+* `.agents/INDEX.adoc` : ligne EPIC RENAME → **✅ TERMINÉ** (7/7 baby-steps),
+  sessions 215, 212, 254, 255, 264, 266.
+* `.agents/PROMPT_REPRISE.adoc` : mission 3 rayée (« ~~RENAME Vague 4
+  transverse~~ ✅ DÉJÀ FAIT (S-266) » avec la preuve gate D16) — restent les
+  candidats 1 (CB-PAGE-PROVENANCE US-2) et 2 (génération réelle A2).
+
+== Détail d'audit
+
+* Constat accessoire : la gouvernance codex contient l'artefact « renommé
+  RENAME » (remplacement botché d'un ancien renommage) dans INDEX/CDX-CORPUS —
+  inoffensif, hors portée mission, non corrigé (IP de date).
+
+== Gates
+
+* Zéro build (aucun code touché) — pas de `test` ni `check` requis (delta
+  source nul, règle cycle build/test piloté par le delta).
+* Zéro secret, zéro bump BOM, zéro publication Central.
+
+== Fichiers
+
+* gouvernance modifiés : `.agents/BACKLOG.adoc`, `.agents/INDEX.adoc`,
+  `.agents/PROMPT_REPRISE.adoc` (3).
+* commit `2139652` poussé en session (décision pilote 2026-09-17).

@@ -1,5 +1,22 @@
 = Archive — Tâches Terminées — Septembre 2026
 
+== S-266 (2026-09-18) — RENAME Vague 4 transverse : vérification clôture (Queens)
+
+* **EPIC RENAME ✅ TERMINÉ 7/7 baby-steps** — mission 3 PROMPT_REPRISE
+  (bakery → capsule → plantuml → graphify/codex) **déjà exécutée**, vérifiée
+  sur demande pilote, backlog mis à jour.
+* Gate D16 étendue Vague 4 (`rg -inE "formation|pédagog|qualiopi|afnor|bloom|
+  apprenant|stagiaire|formateur" src/`) sur les 4 boroughs = **zéro match**
+  (2e grep `spg|spd` = faux positifs, re-vérifiés).
+* Transfusion `TRANSFER_LEXIQUE_FORMATION.adoc` § 2 : toutes vagues closes
+  (bakery RENAME-9 S-212/RENAME-3, capsule RENAME-4 S-135, plantuml RENAME-5
+  S-216/RENAME-11 S-254, document S-251/254/264) ; graphify/codex = gouvernance
+  only (baby-step 6).
+* Backlogs boroughs sans US RENAME restante.
+* Gouvernance : BACKLOG (EPIC ✅ + section périmée → constat), INDEX (ligne
+  RENAME ✅), PROMPT_REPRISE (mission 3 rayée). Commit `2139652`.
+* Zéro code, zéro build (delta nul), zéro bump BOM, zéro secret.
+
 == S-265 (2026-09-18) — CB-PAGE-PROVENANCE US-1 : N1 transport (Queens)
 
 * **EPIC cross-borough CB-PAGE-PROVENANCE US-1** (cadrage S-225, côté codex) :

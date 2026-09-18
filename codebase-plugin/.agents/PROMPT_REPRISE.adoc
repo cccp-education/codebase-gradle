@@ -1,9 +1,9 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 266
-:session: 266
+= Prompt de Reprise — Codebase (Queens N1) — Session 267
+:session: 267
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
-:session_precedente: 265 — **CB-PAGE-PROVENANCE US-1 (N1 transport) ✅** — `DocumentChunk.pages` + `StoreStatements.provenanceSchema()`/`initSchema` pages TEXT + `insertChunkWithDoubt` bind 8 (bind count 7→8) + `RagVectorStore` bind + SELECT read/parse (`searchSimilar` + `searchSimilarWithDoubt`) + `RetrieveResult.pages`. TDD strict RED (6 `Unresolved reference 'pages'` + functional `No parameter with name 'pages'`) → GREEN. Round-trip réel testcontainers `RagVectorStorePageProvenanceTest` 2/2 + gate `@doubt-quality` **9/9** (step feature `binds 7 → 8`) + `@corpus-ingest` 4/4 + `@rag-socle` 6/6 + `publishToMavenLocal` VERT (0.0.16).
+:session_precedente: 266 — **RENAME Vague 4 transverse VÉRIFIÉE — DÉJÀ FAITE** (gouvernance pure, zéro code). Gate D16 rejouée sur `src/` de bakery/capsule/plantuml/graphify/codex = zéro match ; transfusions `TRANSFER_LEXIQUE_FORMATION.adoc` § 2 déjà actées ; backlogs boroughs sans US RENAME. **EPIC RENAME → ✅ TERMINÉ 7/7 baby-steps.** Backlog/INDEX/PROMPT_REPRISE mis à jour (mission 3 rayée), commit `2139652`.
 
-== Mission Session 266 — à définir (ordre pilote)
+== Mission Session 267 — à définir (ordre pilote)
 
 Nombreux candidats (critical path MVP0) :
 
@@ -15,12 +15,6 @@ Nombreux candidats (critical path MVP0) :
 . **Génération réelle A2** (accord pilote — LLM metered) : `autonomousSession`
    sur training/Newark avec le RAG peuplé + port planner prouvé S-264.
    Première mission réelle qui consomme le contexte augmenté.
-. **~~RENAME Vague 4 transverse~~ ✅ DÉJÀ FAIT (S-266)** — la gate D16
-   (`grep -riE "formation|pédagog|qualiopi|afnor|bloom|apprenant|stagiaire|
-   formateur" src/`) rejouée sur bakery/capsule/plantuml/graphify/codex =
-   zéro match ; transfusions `TRANSFER_LEXIQUE_FORMATION.adoc` § 2 déjà
-   actées (bakery RENAME-9/RENAME-3, capsule RENAME-4, plantuml RENAME-5/11) ;
-   backlogs boroughs sans US RENAME. EPIC RENAME → ✅ TERMINÉ (7/7 baby-steps).
 
 == Contexte technique
 
@@ -52,7 +46,7 @@ Nombreux candidats (critical path MVP0) :
 
 == References
 
+* `.agents/sessions/266-rename-v4-verification.adoc`
 * `.agents/sessions/265-cb-page-provenance-us1.adoc`
-* `.agents/sessions/264-dogfood-a2-2-bugs-integration-rename-v4-doc.adoc`
 * `codex-gradle/codex-plugin/.agents/CADRAGE_EPIC_CB_PAGE_PROVENANCE.adoc`
 * `training-gradle/.agents/TRANSFER_LEXIQUE_FORMATION.adoc` (transfusion)
