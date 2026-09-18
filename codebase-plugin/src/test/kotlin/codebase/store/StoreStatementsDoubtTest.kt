@@ -31,18 +31,22 @@ class StoreStatementsDoubtTest {
     }
 
     @Test
-    fun `insertChunkWithDoubt binds confidence and doubtful at positions 6 and 7`() {
+    fun `insertChunkWithDoubt binds confidence doubtful and pages at positions 6 7 and 8`() {
         val sql = StoreStatements.insertChunkWithDoubt()
         assertTrue(sql.contains("INSERT INTO codex_chunks"))
-        assertTrue(sql.contains("document_id, chunk_index, chunk_text, section_path, heading_level, confidence, doubtful"))
-        assertTrue(sql.contains("\$6, \$7"))
+        assertTrue(
+            sql.contains(
+                "document_id, chunk_index, chunk_text, section_path, heading_level, confidence, doubtful, pages"
+            )
+        )
+        assertTrue(sql.contains("\$6, \$7, \$8"))
         assertTrue(sql.contains("RETURNING id"))
         assertFalse(containsInterpolation(sql), "insertChunkWithDoubt must not interpolate variables: $sql")
     }
 
     @Test
-    fun `insertChunkWithDoubt bind count is 7`() {
-        assertEquals(7, StoreStatements.insertChunkWithDoubtBindCount())
+    fun `insertChunkWithDoubt bind count is 8`() {
+        assertEquals(8, StoreStatements.insertChunkWithDoubtBindCount())
     }
 
     private fun containsInterpolation(sql: String): Boolean {

@@ -34,7 +34,7 @@ Feature: OCR-QUALITY US-4 — doubt metadata in the RAG ingestion and exposure
     Then the doubt schema has 2 statements
     And the doubt schema alters codex_documents with avg_confidence
     And the doubt schema alters codex_chunks with confidence and doubtful
-    And the insert chunk with doubt template binds 7 parameters
+    And the insert chunk with doubt template binds 8 parameters
 
   Scenario: RagVectorStore exposes doubt-aware search contract
     Given a rag store stub for doubt search

@@ -1,0 +1,86 @@
+= Rapport Session 265 — CB-PAGE-PROVENANCE US-1 (N1 transport)
+:session: 265
+:date: 2026-09-18
+:borough: Queens — codebase-gradle (N1, RAG pgvector + contexte augmenté)
+
+== Mission
+
+Implémenter **CB-PAGE-PROVENANCE US-1 — N1 transport** (EPIC cross-borough
+piloté Brooklyn S-225, cadrage côté codex) : persister la page source au
+retrieval par jointure **exacte** à l'ingestion. Zéro bump BOM (types de
+store N1, pas de contrat N0).
+
+== Livrables (GREEN baby-step DDD/TDD/BDD strict)
+
+* `DocumentChunk` (D3) : `val pages: List<Int> = emptyList()` — additif,
+  rétro-compatible JSON (`CorpusChunksLoader` = `ignoreUnknownKeys`).
+* `StoreStatements` (D2/D4) :
+** `provenanceSchema()` = `ALTER TABLE codex_chunks ADD COLUMN IF NOT EXISTS
+   pages TEXT` (idempotent, zéro re-vectorisation, pattern `doubtSchema`) ;
+** `initSchema()` : `pages TEXT` dans le `CREATE TABLE codex_chunks` (bases
+   neuves, taille 3 stmts préservée) ;
+** `insertChunkWithDoubt()` : colonne `pages`, bind 8 comma-joined ;
+** `insertChunkWithDoubtBindCount()` : 7 → 8.
+* `RagVectorStore` :
+** DDL exécutées = `initSchema() + doubtSchema() + provenanceSchema()` ;
+** `ingestWithDoubt` : `.bind(7, entry.chunk.pages.joinToString(","))` ;
+** `searchSimilar` + `searchSimilarWithDoubt` : `c.pages AS pages` /
+   `sub.pages` dans les SQL, parse `row.get("pages").split(",")
+   .mapNotNull { it.toIntOrNull() } ?: emptyList()` (D5).
+* `RetrieveResult` (D5) : `val pages: List<Int> = emptyList()` — additif,
+  defaults backward compat.
+
+== Tests (RED prouvé → GREEN)
+
+* `StoreStatementsDoubtTest` MAJ : assertions positions 6/7/8 + colonne
+  `confidence, doubtful, pages` + `$6, $7, $8` ; bind count 8.
+* `StoreStatementsProvenanceTest` (nouveau, 3 unit) : provenanceSchema
+  additif + initSchema pages TEXT + 3 stmts parameterless sans interpolation.
+* `PageProvenanceTypesTest` (nouveau, 4 unit) : défauts emptyList +
+  portage `DocumentChunk.pages` / `RetrieveResult.pages` (avec doute).
+* `RagVectorStorePageProvenanceTest` (nouveau, 2 fonctionnel testcontainers,
+  `PostgresFixture` `pgvector/pg17`) : **round-trip ingestion → retrieval**
+  (`pages [40,41]` restituées au chunk 0, `doubtful` restitué) + `searchBlocking`
+  lit aussi `pages`. RED compel : `Unresolved reference 'pages'` × 6 +
+  `No parameter with name 'pages'` — preuve statique du split-brain aval.
+* Feature `codebase_doubt_quality.feature` MAJ : step `binds 7 parameters`
+  → `binds 8 parameters` (gate US-1 du cadrage).
+
+== Gates
+
+* `test --tests 'codebase.store.*' --rerun-tasks` : BUILD SUCCESSFUL —
+  StoreStatements 6/6, StoreStatementsDoubt 3/3, StoreStatementsProvenance
+  3/3, PageProvenanceTypes 4/4, RagVectorStorePageProvenance **2/2 round-trip
+  réel** (9,9 s).
+* Non-régression Cucumber dédiées : `cucumberTestCorpusIngest` 4/4,
+  `cucumberTestDoubtQuality` **9/9** (RED initiale 1 FAIL — step bind 7 →
+  8 corrigé, gate US-1), `cucumberTestRagSocle` 6/6.
+* Rule 0 : `publishToMavenLocal` BUILD SUCCESSFUL — artefacts
+  `codebase-plugin:0.0.16` (jar/javadoc/sources) publiés.
+
+== Non couvert (session suivante)
+
+* CB-PAGE-PROVENANCE US-2 → US-4 🟡 (US-2 = transport N2 codex —
+  `CodexIngestTask.pageProvenanceFile` + jointure SHA-256 ; US-3 = exposure
+  N1 canal Docs + task entrées `pages` ; US-4 = BDD cross-borough).
+
+== Décisions de session
+
+* Pas de codec `PageListCodec` dédié — encode/parse inline conformes au
+  cadrage D2/D5 (joinToString au bind, split/mapNotNull/toIntOrNull au
+  SELECT) ; NULL/`""` legacy → `emptyList()`.
+* Suite globale `test` non rejouée : delta confiné à `codebase.store`
+  (4 fichiers prod), consommateurs inchangés (constructeurs nommés, defaults
+  additifs) — preuve Round-trip réel + 3 suites Cucumber dédiées suffisantes.
+
+== Fichiers
+
+* prod : `store/DocumentChunk.kt`, `store/StoreStatements.kt`,
+  `store/RagVectorStore.kt`, `store/RetrieveResult.kt` (4) ;
+* test : `store/StoreStatementsDoubtTest.kt` (MAJ), `store/StoreStatements
+  ProvenanceTest.kt` (N), `store/PageProvenanceTypesTest.kt` (N),
+  `store/RagVectorStorePageProvenanceTest.kt` (N), `features/codebase_doubt
+  _quality.feature` (MAJ).
+
+Zéro secret, zéro bump BOM, zéro publication Central (accord pilote requis),
+rétro-compat totale (champ additif, DDL idempotent).

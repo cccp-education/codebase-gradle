@@ -13,6 +13,10 @@ import kotlinx.serialization.Serializable
  * backward compatible defaults (confident chunk) keep existing call
  * sites and JSON payloads intact.
  *
+ * EPIC CB-PAGE-PROVENANCE US-1 : the page provenance travels with the
+ * chunk — defaulted empty list keeps existing call sites and JSON
+ * payloads intact (D5).
+ *
  * @property chunkId primary key of the matching chunk
  * @property chunkIndex position of this chunk within its source document
  * @property chunkText the chunk's full text content
@@ -22,6 +26,7 @@ import kotlinx.serialization.Serializable
  * @property similarity cosine similarity score (0.0 to 1.0)
  * @property confidence OCR confidence of the chunk (0.0-1.0, default 1.0)
  * @property doubtful explicit doubt flag (default false)
+ * @property pages source page numbers of the chunk (default empty)
  */
 @Serializable
 data class RetrieveResult(
@@ -33,5 +38,6 @@ data class RetrieveResult(
     val sourceDocument: String,
     val similarity: Double,
     val confidence: Double = DoubtMetadata.MAX_CONFIDENCE,
-    val doubtful: Boolean = false
+    val doubtful: Boolean = false,
+    val pages: List<Int> = emptyList()
 )

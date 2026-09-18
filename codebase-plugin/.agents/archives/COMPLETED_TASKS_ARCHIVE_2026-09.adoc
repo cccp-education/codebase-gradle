@@ -1,5 +1,27 @@
 = Archive — Tâches Terminées — Septembre 2026
 
+== S-265 (2026-09-18) — CB-PAGE-PROVENANCE US-1 : N1 transport (Queens)
+
+* **EPIC cross-borough CB-PAGE-PROVENANCE US-1** (cadrage S-225, côté codex) :
+  persistre la page source au retrieval par jointure **exacte** à l'ingestion.
+* `DocumentChunk.pages: List<Int> = emptyList()` (D3) — additif, rétro-compat
+  JSON.
+* `StoreStatements` (D2/D4) : `provenanceSchema()` (`ALTER TABLE codex_chunks
+  ADD COLUMN IF NOT EXISTS pages TEXT`, idempotent) ; `initSchema()` `pages TEXT`
+  (bases neuves, 3 stmts) ; `insertChunkWithDoubt()` bind 8 comma-joined (bind
+  count 7→8).
+* `RagVectorStore` : DDL `initSchema + doubtSchema + provenanceSchema` ;
+  `ingestWithDoubt` bind `.bind(7, pages.joinToString(","))` ; SELECT
+  read/parse pages × 2 (`searchSimilar` + `searchSimilarWithDoubt`, D5).
+* `RetrieveResult.pages: List<Int> = emptyList()` (D5).
+* **Proof of work réel** : `RagVectorStorePageProvenanceTest` round-trip
+  testcontainers (`PostgresFixture`) pages `[40,41]` + `doubtful` restitués.
+* Gates : store suite VERT (Round-trip 2/2), `@doubt-quality` 9/9 (step
+  feature `binds 7 → 8`), `@corpus-ingest` 4/4, `@rag-socle` 6/6,
+  `publishToMavenLocal` VERT (0.0.16).
+* Zéro bump BOM, zéro secret, rétro-compat totale. Prochaine : US-2 (N2
+  transport codex — Brooklyn).
+
 == S-264 (2026-09-17) — Dogfood Newark A2 + RENAME Vague 4 document (Queens)
 
 * **Mission 4 (RENAME Vague 4 document, cross-borough)** : cadrage révisé

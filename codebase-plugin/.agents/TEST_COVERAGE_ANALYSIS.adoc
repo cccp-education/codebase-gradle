@@ -1,7 +1,37 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-09-17
+:date: 2026-09-18
+
+== Session 265 — CB-PAGE-PROVENANCE US-1 (N1 transport)
+
+Tests créés/modifiés :
+
+* `RagVectorStorePageProvenanceTest` (nouveau, 2 fonctionnel testcontainers,
+  `PostgresFixture`) — **comble le trou du round-trip ingestion → retrieval
+  sur pgvector réel** : `pages round-trip from ingestion to retrieval`
+  (`pages [40,41]` restituées au chunk 0, `doubtful` restitué au chunk 1) +
+  `plain searchBlocking also reads pages`. RED prouvé à la compile
+  (`No parameter with name 'pages'`) avant toute production.
+* `StoreStatementsProvenanceTest` (nouveau, 3 unit) — `provenanceSchema` est
+  un ALTER TABLE additif `ADD COLUMN IF NOT EXISTS pages TEXT` sans
+  interpolation ; `initSchema` déclare `pages TEXT` pour les bases neuves et
+  reste 3 DDL parameterless.
+* `PageProvenanceTypesTest` (nouveau, 4 unit) — `DocumentChunk`/`RetrieveResult`
+  : default `emptyList()` + portage `pages` (avec doute pour RetrieveResult).
+* `StoreStatementsDoubtTest` (MAJ) — assertions positions 6/7/8 + colonne
+  `confidence, doubtful, pages` + `$6, $7, $8` ; bind count 7 → 8.
+* `codebase_doubt_quality.feature` (MAJ) — step `binds 7 parameters` →
+  `binds 8 parameters` (gate US-1 : la feature Cucumber est le contrat bas
+  niveau du bind count — elle a attrapé le changement en RED 1 FAIL).
+
+Trou de couverture comblé : le chemin d'ingestion doubt-aware n'était exercé
+que via des fakes in-memory (suites Cucumber) — le round-trip réel
+`ingestWithDoubt` → `searchWithDoubt`/`searchBlocking` n'existait pas. Il
+garantit que la colonne `pages` est bien écrite au bind 8 et relue dans les
+deux SELECT sans régression de la métadonnée de doute.
 
 == Session 264 — Dogfood Newark A2 : 2 bugs d'intégration + renommage task
+
+Tests créés/modifiés :
 
 Tests créés/modifiés :
 

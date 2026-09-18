@@ -2,6 +2,40 @@
 :toc: left
 :icons: font
 
+== Session 265 — 2026-09-18
+
+* **EPICs** : CB-PAGE-PROVENANCE (US-1 — N1 transport, EPIC cross-borough S-225)
+* **Type** : DDD + TDD + BDD strict — baby-step RED (compile statique) → GREEN
+* **Livrables** :
+** `DocumentChunk.pages: List<Int> = emptyList()` (D3) — additif, rétro-compat
+   JSON (`CorpusChunksLoader` `ignoreUnknownKeys`).
+** `StoreStatements` (D2/D4) : `provenanceSchema()` (`ALTER TABLE codex_chunks
+   ADD COLUMN IF NOT EXISTS pages TEXT`, idempotent, zéro re-vectorisation) ;
+   `initSchema()` + `pages TEXT` (bases neuves, toujours 3 stmts) ;
+   `insertChunkWithDoubt()` bind 8 comma-joined ; `insertChunkWithDoubtBindCount()`
+   7 → 8.
+** `RagVectorStore` : DDL = `initSchema() + doubtSchema() + provenanceSchema()` ;
+   `ingestWithDoubt` `.bind(7, pages.joinToString(","))` ;
+   `searchSimilar` + `searchSimilarWithDoubt` `pages AS …` + parse
+   `split(",").mapNotNull { toIntOrNull() } ?: emptyList()` (D5).
+** `RetrieveResult.pages: List<Int> = emptyList()` (D5) — defaults backward compat.
+* **Proof of work réel** : `RagVectorStorePageProvenanceTest` (testcontainers,
+   `PostgresFixture` pg17) — round-trip ingestion → retrieval : `pages [40,41]`
+   restituées au chunk 0, `doubtful` restitué ; `searchBlocking` lit aussi `pages`.
+* **Gates** : `test --tests 'codebase.store.*' --rerun-tasks` BUILD SUCCESSFUL
+  (Round-trip 2/2 + 4/4 + 3/3 + baselines store) ; `cucumberTestCorpusIngest`
+  4/4 ; `cucumberTestDoubtQuality` **9/9** (RED initiale 1 FAIL — step feature
+  `binds 7 → 8`, gate US-1 du cadrage) ; `cucumberTestRagSocle` 6/6 ;
+  `publishToMavenLocal` VERT (0.0.16).
+* **Fichiers** : prod 4, test 5 (1 MAJ + 3 N + 1 feature MAJ).
+* **Décisions** : pas de codec `PageListCodec` (encode/parse inline D2/D5) ;
+  NULL/`""` legacy → `emptyList()` ; suite globale `test` non rejouée (delta
+  confiné `codebase.store`, preuve round-trip réel + suites dédiées).
+* **Leçons** : le step feature épinglé `binds 7` a attrapé le changement de
+  contrat avant la publication — la feature Cucumber est le contrat le plus
+  bas niveau et doit suivre le bind count.
+* Rapport : `.agents/sessions/265-cb-page-provenance-us1.adoc`.
+
 == Session 264 — 2026-09-17
 
 * **EPICs** : SVO (dogfood A2) + RENAME (Vague 4 document, cross-borough)

@@ -68,9 +68,10 @@ open class RagVectorStore(
      * Groups chunks by [DocumentChunk.sourceDocument], inserts the
      * document row (with `avg_confidence` derived from its chunks), then
      * each chunk row carrying its [DoubtMetadata] — using the additive
-     * [StoreStatements.doubtSchema] DDL and [StoreStatements
-     * .insertChunkWithDoubt] template. The embedding pipeline and the
-     * `RETURNING id` flow stay identical to the existing ingestion.
+     * [StoreStatements.doubtSchema] / [StoreStatements.provenanceSchema] DDL
+     * and [StoreStatements.insertChunkWithDoubt] template. The embedding
+     * pipeline and the `RETURNING id` flow stay identical to the existing
+     * ingestion (CB-PAGE-PROVENANCE US-1 : `pages` ride bind 8).
      *
      * @param chunks the chunks to ingest (with per-chunk doubt metadata)
      * @param batchLogger optional progress logger (defaults to no-op)
@@ -83,7 +84,9 @@ open class RagVectorStore(
         val factory = buildConnectionFactory()
         val conn = factory.create().awaitFirst()
         try {
-            (StoreStatements.initSchema() + StoreStatements.doubtSchema())
+            (StoreStatements.initSchema()
+                + StoreStatements.doubtSchema()
+                + StoreStatements.provenanceSchema())
                 .forEach { conn.createStatement(it).execute().awaitFirst() }
 
             var docCount = 0
@@ -109,6 +112,7 @@ open class RagVectorStore(
                         .bind(4, entry.chunk.headingLevel)
                         .bind(5, entry.doubt.confidence)
                         .bind(6, entry.doubt.doubtful)
+                        .bind(7, entry.chunk.pages.joinToString(","))
                         .execute().awaitFirst()
                         .map { r, _ -> r.get("id", Long::class.java)!! }
                         .awaitFirst()
@@ -181,6 +185,7 @@ open class RagVectorStore(
                     sub.section_path,
                     sub.heading_level,
                     sub.source_document,
+                    sub.pages,
                     1.0 - sub.distance AS similarity
                 FROM (
                     SELECT
@@ -190,6 +195,7 @@ open class RagVectorStore(
                         c.section_path,
                         c.heading_level,
                         d.source_document,
+                        c.pages,
                         c.embedding <=> ${'$'}1::vector AS distance
                     FROM codex_chunks c
                     JOIN codex_documents d ON c.document_id = d.id
@@ -214,7 +220,11 @@ open class RagVectorStore(
                     sectionPath = row.get("section_path", String::class.java)!!,
                     headingLevel = (row.get("heading_level") as Number).toInt(),
                     sourceDocument = row.get("source_document", String::class.java)!!,
-                    similarity = row.get("similarity", Double::class.java)!!
+                    similarity = row.get("similarity", Double::class.java)!!,
+                    pages = row.get("pages", String::class.java)
+                        ?.split(",")
+                        ?.mapNotNull { it.toIntOrNull() }
+                        ?: emptyList()
                 )
             }).collectList().awaitFirst()
         } finally {
@@ -244,6 +254,7 @@ open class RagVectorStore(
                     sub.source_document,
                     sub.confidence,
                     sub.doubtful,
+                    sub.pages,
                     1.0 - sub.distance AS similarity
                 FROM (
                     SELECT
@@ -255,6 +266,7 @@ open class RagVectorStore(
                         d.source_document,
                         c.confidence,
                         c.doubtful,
+                        c.pages,
                         c.embedding <=> ${'$'}1::vector AS distance
                     FROM codex_chunks c
                     JOIN codex_documents d ON c.document_id = d.id
@@ -282,7 +294,11 @@ open class RagVectorStore(
                     similarity = row.get("similarity", Double::class.java)!!,
                     confidence = row.get("confidence", Double::class.java)
                         ?: DoubtMetadata.MAX_CONFIDENCE,
-                    doubtful = row.get("doubtful", Boolean::class.java) ?: false
+                    doubtful = row.get("doubtful", Boolean::class.java) ?: false,
+                    pages = row.get("pages", String::class.java)
+                        ?.split(",")
+                        ?.mapNotNull { it.toIntOrNull() }
+                        ?: emptyList()
                 )
             }).collectList().awaitFirst()
         } finally {

@@ -20,7 +20,7 @@ object StoreStatements {
     fun initSchema(): List<String> = listOf(
         "CREATE EXTENSION IF NOT EXISTS vector",
         "CREATE TABLE IF NOT EXISTS codex_documents (id BIGSERIAL PRIMARY KEY, source_document TEXT NOT NULL, chunk_count INTEGER NOT NULL, license TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW())",
-        "CREATE TABLE IF NOT EXISTS codex_chunks (id BIGSERIAL PRIMARY KEY, document_id BIGINT REFERENCES codex_documents(id) ON DELETE CASCADE, chunk_index INTEGER NOT NULL, chunk_text TEXT NOT NULL, section_path TEXT NOT NULL, heading_level INTEGER DEFAULT 0, embedding vector(384), created_at TIMESTAMPTZ DEFAULT NOW())"
+        "CREATE TABLE IF NOT EXISTS codex_chunks (id BIGSERIAL PRIMARY KEY, document_id BIGINT REFERENCES codex_documents(id) ON DELETE CASCADE, chunk_index INTEGER NOT NULL, chunk_text TEXT NOT NULL, section_path TEXT NOT NULL, heading_level INTEGER DEFAULT 0, pages TEXT, embedding vector(384), created_at TIMESTAMPTZ DEFAULT NOW())"
     )
 
     /**
@@ -38,6 +38,18 @@ object StoreStatements {
     )
 
     /**
+     * DDL additif de la provenance de page (EPIC CB-PAGE-PROVENANCE US-1).
+     *
+     * `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` — idempotent, idem
+     * [doubtSchema] : zéro re-vectorisation, les lignes existantes lisent
+     * `pages NULL` → `emptyList()` au retrieval. Représentation comma-joined
+     * (`"40,41"`), alignée sur `training-gradle` (D2).
+     */
+    fun provenanceSchema(): List<String> = listOf(
+        "ALTER TABLE codex_chunks ADD COLUMN IF NOT EXISTS pages TEXT"
+    )
+
+    /**
      * INSERT du document source avec RETURNING id.
      * Binds : (1=source_document, 2=chunk_count, 3=license).
      */
@@ -52,12 +64,13 @@ object StoreStatements {
         "INSERT INTO codex_chunks (document_id, chunk_index, chunk_text, section_path, heading_level) VALUES ($1, $2, $3, $4, $5) RETURNING id"
 
     /**
-     * INSERT d'un chunk avec métadonnées de doute (EPIC OCR-QUALITY US-4).
+     * INSERT d'un chunk avec métadonnées de doute et provenance de page
+     * (EPIC OCR-QUALITY US-4 + CB-PAGE-PROVENANCE US-1).
      * Binds : (1=document_id, 2=chunk_index, 3=chunk_text, 4=section_path,
-     * 5=heading_level, 6=confidence, 7=doubtful).
+     * 5=heading_level, 6=confidence, 7=doubtful, 8=pages — comma-joined).
      */
     fun insertChunkWithDoubt(): String =
-        "INSERT INTO codex_chunks (document_id, chunk_index, chunk_text, section_path, heading_level, confidence, doubtful) VALUES (\$1, \$2, \$3, \$4, \$5, \$6, \$7) RETURNING id"
+        "INSERT INTO codex_chunks (document_id, chunk_index, chunk_text, section_path, heading_level, confidence, doubtful, pages) VALUES (\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8) RETURNING id"
 
     /**
      * Construit le SQL d'UPDATE de l'embedding pour un chunk.
@@ -88,7 +101,7 @@ object StoreStatements {
     fun insertChunkBindCount(): Int = 5
 
     /** Nombre de binds attendus pour [insertChunkWithDoubt]. */
-    fun insertChunkWithDoubtBindCount(): Int = 7
+    fun insertChunkWithDoubtBindCount(): Int = 8
 
     /** Nombre de binds attendus pour [updateEmbedding] (aucun — littéraux safe). */
     fun updateEmbeddingBindCount(): Int = 0

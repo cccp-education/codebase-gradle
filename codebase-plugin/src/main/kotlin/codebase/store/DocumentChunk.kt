@@ -18,6 +18,7 @@ import kotlinx.serialization.Serializable
  * @property entities named entity references (placeholder for future extraction)
  * @property overlapNext first two sentences of the following section for context continuity
  * @property license license tag for this chunk (Apache-2.0 / PROPRIETARY / UNKNOWN)
+ * @property pages source page numbers of this chunk (EPIC CB-PAGE-PROVENANCE US-1)
  */
 @Serializable
 data class DocumentChunk(
@@ -29,5 +30,6 @@ data class DocumentChunk(
     val codeBlocks: List<String> = emptyList(),
     val entities: List<String> = emptyList(),
     val overlapNext: String? = null,
-    val license: String = "UNKNOWN"
+    val license: String = "UNKNOWN",
+    val pages: List<Int> = emptyList()
 )
