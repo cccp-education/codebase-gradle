@@ -1,72 +1,45 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 268
-:session: 268
+= Prompt de Reprise — Codebase (Queens N1) — Session 267
+:session: 267
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
-:session_precedente: 267 — **CB-PAGE-PROVENANCE US-3 TERMINÉ** (exposition
-N1). Noyau pur `CompositeContextEntries.kt` (codexEntry + docsMetaLine) +
-câblage `CompositeContextBuilder` (canal Docs) + `CodebaseCompositeContextTask`
-(entrées JSON), `pages` **additif omis si vide** (backward compat byte-
-identique). Flaky débusqué et tué : conteneur Testcontainers persistant —
-sweep famille fermée (`page-provenance-test-%`/`page-exposition-test-%`) dans
-les 2 tests US-1/US-3 + jeton unique par run. Gates : 10776 tests 2 FAIL
-préexistants OcrTaskTest (drift S-211), 3 suites cucumber dédiées VERTES,
-`publishToMavenLocal` VERT. Rapport + BACKLOG/INDEX/PROMPT_REPRISE + commit en
-clôture.
+:session_precedente: 266 — Analyse et préparation pour le lancement d'autonomousSession (Mission Génération réelle A2) : tâche non trouvée en raison de problèmes de configuration du build multi-projet. Analyse du code et des tests effectués.
+:session_pre_precedente: 265 — CB-PAGE-PROVENANCE US-1 (N1 transport) ✅
 
-== Mission Session 268 — Terminée : suppression du code mort N1 (codex C-3 constat A)
+== Mission Session 267 — à la demande du pilote
 
-Mission arbitrée : suppression du code mort N1 propriétaire Queens (codex C-3 / S-230 roadmap, constat A : audit cross-borough du dead code – décision suppression vs conservation documentée).
-- Orphelins identifiés via grep (zéro appelant prod) : `StoreStatements.insertChunk()` (5 binds), `StoreStatements.insertChunkBindCount()`, `IngestIndexing.assignLocalIndices`.
-- Remplacé par `insertChunkWithDoubt()` (8 binds, actif dans `RagVectorStore.kt:107`).
-- Loi de l'Économie d'Encre : pas de conservation de variantes inutilisées.
-- Aucun impact sur `initSchema()`, `insertDocument(+BindCount)`, `insertChunkWithDoubt(+BindCount)` (appelants prod).
-- `AgenticChunkRepository.insertChunk` = autre symbole (prod, conservé).
-
-Prochaines missions candidates (critical path MVP0) :
-
-. **CB-PAGE-PROVENANCE US-2 (N2 transport codex, Brooklyn)** — prochaine US
-   de l'EPIC dans l'ordre du cadrage (US-1 ✅ S-265 → US-3 ✅ S-267 → US-2 →
-   US-4). Session trans borough : prévoir cadrage + implémentation côté codex
-   (`CodexIngestTask.pageProvenanceFile` `@InputFiles` tolérante + jointure
-   exacte SHA-256 + attach avant `ingestWithDoubt`).
-. **CB-PAGE-PROVENANCE US-4 (Cucumber BDD cross-borough)** — clôture BDD de
-   l'EPIC (niveau Cucumber du cadrage D11).
-. **Génération réelle A2** (accord pilote — LLM metered) : `autonomousSession`
-   sur training/Newark avec le RAG peuplé + port planner prouvé S-264.
-   Première mission réelle qui consomme le contexte augmenté.
+Ordre pilote S-266 : **1 → 2 → 3** — 
+Mission 1 : **Génération réelle A2** (sur accord pilote — LLM metered) : 
+    Travailler directement dans le projet codebase-plugin (sans includeBuild dans le racine) pour lancer la tâche autonomousSession.
+    Utiliser la commande : `./gradlew autonomousSession --borough=newark --maxChainedSessions=1 --no-daemon`
+    Si la tâche réussit, passer aux missions suivantes.
+    C'est la première mission réelle qui consomme le contexte augmenté.
+Mission 2 : **RENAME Vague 4 transverse** (suite document ✅ S-264) : bakery → capsule → plantuml → graphify/codex, chacune transfusion d'abord (`TRANSFER_LEXIQUE_FORMATION.adoc`).
+Mission 3 : **Drift gouvernance racine** : ✅ corrigé S-264 (PROMPT_REPRISE racine synchronisé + synthèse BACKLOG racine mis à jour). Le drift catalogue local codebase (`workspace-bom 0.0.27` → **0.0.50**) a été réaligné au bump S-264.
 
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25).
-* Version locale **0.0.16** (Central 0.0.16, bundle `db5e1158`). BOM/catalog
-  **0.0.50**. `publishToMavenLocal` VERT S-267.
-* **EPIC CB-PAGE-PROVENANCE** : US-0 ✅ (cadrage S-225), **US-1 ✅ S-265**,
-  **US-3 ✅ S-267** (exposition N1), US-2 → US-4 🟡. Doc
-  `CADRAGE_EPIC_CB_PAGE_PROVENANCE.adoc` (côté codex).
-* `codebase.store.*` VERT (Round-trip réel + 3 suites Cucumber dédiées).
-* 45 cucumber runners dédiés ; koverVerify VERT (check complet 27m06s S-264).
-* Leçon apprise S-267 : le conteneur Testcontainers pg17 est un singleton
-  persistant partagé — tout test fonctionnel sur codex_documents doit balayer
-  sa famille fermée en setup (jamais seulement son propre UUID).
-* Wiring SVO prouvé S-264 : `autonomousSession` + `PlannerPort` (planner
-  sous-agent), task codebase `generateAugmentedPlan`.
+* Version locale **0.0.16** (Central 0.0.16, bundle `db5e1158`). Conventions 0.0.4. BOM/catalog **0.0.50**. `publishToMavenLocal` VERT S-264.
+* **Wiring SVO prouvé** : `AutonomousSessionTask.resolvePlannerPort()` résout le `PlannerPort` par nom canonique `plannerPortService` (adapter planner `KoogIntentionPlannerAdapter`) ; NoOp dégradé si rien n'est branché.
+* **Contrat cross-borough** : un consommateur applique `education.cccp.codebase` + `education.cccp.planner` (les 2 coexistent depuis S-264). codebase `generateAugmentedPlan` (ex-`generatePlan`) ; planner garde `generatePlan`.
+* 45 cucumber runners dédiés (dont `cucumberTestAutonomousSession`).
+* koverVerify VERT (check complet 27m06s S-264).
+* Catalogue local codebase : `workspace-bom = "0.0.50"` (realigné S-264, drift 0.0.27 → 0.0.50).
 
 == Échecs préexistants (orthogonaux, ne pas confondre)
 
-* 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`, `isImageFile
-  false for pdf`) — drift S-211, **stash-confirmés identiques à HEAD S-264,
-  revérifiés S-267**.
+* 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`, `isImageFile false for pdf`) — drift S-211, **stash-confirmés identiques à HEAD S-264**.
 
 == Règles absolues
 
 * Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois.
 * Git autorisé (décision pilote 2026-09-17) — zéro secret commité.
 * Publication Central = accord pilote explicite (Règle 2).
-* Dogfood-first : la preuve réelle prime sur les fakes (S-264).
+* Dogfood-first : exercer le wiring cross-borough réel (le dogfood S-264 a révélé 2 bugs invisibles aux tests unitaires).
 
 == References
 
-* `.agents/sessions/267-cb-page-provenance-us3-exposition-n1.adoc`
-* `.agents/sessions/266-rename-v4-verification.adoc`
-* `.agents/sessions/265-cb-page-provenance-us1.adoc`
-* `codex-gradle/codex-plugin/.agents/CADRAGE_EPIC_CB_PAGE_PROVENANCE.adoc`
+* `.agents/sessions/266-sujet.adoc`
+* `.agents/sessions/265-tentative-autonomousSession-SVO.adoc`
+* `.agents/sessions/264-dogfood-a2-2-bugs-integration-rename-v4-doc.adoc`
+* `.agents/CADRAGE_EPIC_SVO_SESSION_ORCHESTREE.adoc` (cadrage S-255)
 * `training-gradle/.agents/TRANSFER_LEXIQUE_FORMATION.adoc` (transfusion)
