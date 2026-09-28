@@ -175,7 +175,36 @@ Correctif baby-step, 1 fichier à la fois. Compile VERT. Leçon (miroir bakery
 S-243) : **une CI morte en configuration masque toute la dette de tests en
 aval** ; la ressusciter est un préalable à toute preuve.
 
+=== Preuve CI (règle : le vert CI est l'unique preuve)
+
+Run `36465426319` (commit `0608360`) — **CI ENTIÈREMENT VERTE**, première
+depuis ≥ 2026-09-17 :
+
+* **Fast Tests ✓** (1m45s) ;
+* **Full Test Suite ✓** (21m43s, `testAll` BUILD SUCCESSFUL 17m46s) ;
+* **OCR workflow ✓** (3m5s, run `36465426335`) ;
+* **Publish** ignoré (pas de tag).
+
+Les **5 scénarios `page_retrieval` PASSENT en CI** (`PageRetrievalCucumberRunner`
+— single / multi / none / canal Docs expose / canal Docs sans fragment), preuve
+que le runner orphelin est bien exécuté. `10893 tests completed, 0 failed`.
+
+== Fichiers (bilan complet)
+
+* US-4 : `build.gradle.kts`, `page_retrieval.feature`,
+  `PageRetrievalCucumberRunner.kt`, `PageRetrievalSteps.kt`,
+  `PageRetrievalWorld.kt` (5).
+* CI : `.github/workflows/test.yml`, `.github/workflows/ocr.yml` (2).
+* Dette CI : `src/test/kotlin/codebase/ocr/OcrTaskTest.kt`,
+  `src/test/kotlin/codebase/publishing/PublishedPomCharacterizationTest.kt` (2).
+* Gouvernance : `PROMPT_REPRISE.adoc` (×2), `.agents/INDEX.adoc`,
+  `.agents/SESSIONS_HISTORY.adoc`, `.agents/BACKLOG.adoc`, `BACKLOG.adoc`,
+  `.agents/TEST_COVERAGE_ANALYSIS.adoc`,
+  `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-09.adoc`, ce rapport.
+* Backups : `/tmp/opencode/queens-s269-backup/`.
+
 == Clôture
 
-* 7 étapes exécutées. Commit + push en clôture (décision pilote 2026-09-17).
-* Zéro secret, zéro bump de version, zéro publication Central.
+* 7 étapes exécutées. 4 commits poussés : `2b51038` (US-4), `920f7fa` (workflows
+  JDK+working-dir), `62385c8` (nmcp fallback), `0608360` (dette tests).
+* CI verte prouvée. Zéro secret, zéro bump de version, zéro publication Central.

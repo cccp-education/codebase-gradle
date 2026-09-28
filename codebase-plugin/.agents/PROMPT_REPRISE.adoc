@@ -1,7 +1,7 @@
 = Prompt de Reprise — Codebase (Queens N1) — Session 270
 :session: 270
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
-:session_precedente: 269 — CB-PAGE-PROVENANCE US-4 (N1 BDD) ✅ — runner orphelin soldé (f6e5605 faux positif : 4 fichiers de test cassés non enregistrés → corrigés + `cucumberTestPageRetrieval` 46e runner). Working tree assaini (refactor build abandonné S-265/266 backupé + restore HEAD).
+:session_precedente: 269 — CB-PAGE-PROVENANCE US-4 (N1 BDD) ✅ + CI ressuscitée VERTE (run `36465426319`). Runner orphelin soldé (`cucumberTestPageRetrieval` 46e) ; 3 verrous CI levés (JDK 25, working-directory, nmcp) ; 4 échecs préexistants masqués soldés. Working tree assaini.
 :session_pre_precedente: 268 — suppression code mort N1 (codex C-3 constat A) ✅
 
 == Mission Session 270 — à la demande du pilote
