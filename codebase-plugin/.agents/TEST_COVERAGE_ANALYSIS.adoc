@@ -1,5 +1,35 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-09-19
+:date: 2026-09-28
+
+== Session 269 — CB-PAGE-PROVENANCE US-4 (N1 BDD)
+
+Tests créés/modifiés :
+
+* `page_retrieval.feature` (réécrit, 5 scénarios `@page-retrieval`) — BDD
+  de clôture N1 : page unique restituée, multi-pages préservées, absence de
+  page (rétro-compat), canal Docs expose `pages=[40,41]`, canal Docs **omet**
+  le fragment `pages=` quand le chunk n'a pas de page (byte-compat US-3).
+* `PageRetrievalWorld.kt` (réécrit) + `PageRetrievalFakeRagStore` — fake
+  in-memory (pattern `CorpusFakeRagStore`) ; la page rode **dans** le
+  `DocumentChunk` (type N1, zéro side-channel), miroir du contrat réel
+  `DocumentChunk.pages` → `RetrieveResult.pages`.
+* `PageRetrievalSteps.kt` (réécrit, 10 steps préfixés « page » — S-088).
+* `PageRetrievalCucumberRunner.kt` (réécrit) + **enregistré** dans
+  `build.gradle.kts` : `CucumberTaskSpec("cucumberTestPageRetrieval")`
+  **46e runner dédié** (pattern S-082). RED prouvé par `tasks --all | grep
+  pageRetrieval` = **absent** (test fantôme) → GREEN présent.
+
+Défauts soldés sur l'artefact orphelin `f6e5605` (5) : runner non enregistré ;
+`pages` hors du `DocumentChunk` ; relecture `chunk.chunk.pages` (toujours
+vide) ; `"test-chunk-id".toLong()` → `NumberFormatException` ; steps non
+préfixés. Bug `{string}` Cucumber (guillemets oraux requis) attrapé par
+auto-relecture.
+
+Leçon documentée (S-269) : un **runner Cucumber non enregistré** est un
+**test fantôme** — il compile, il est versionné, il ne s'exécute **jamais**.
+Le gate `./gradlew tasks --all | grep <runner>` est un RED objectif, sans
+lancer de test (conforme à la règle Local = Build, Tests = CI). Un message
+de commit (« US-2 and US-4 ») n'est pas une preuve d'implémentation.
 
 == Session 268 — Suppression du code mort N1 (codex C-3 constat A)
 

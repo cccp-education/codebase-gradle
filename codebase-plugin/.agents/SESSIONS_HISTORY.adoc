@@ -2,8 +2,86 @@
 :toc: left
 :icons: font
 
- 
-=== Session 266 — 2026-09-19
+== Session 269 — 2026-09-28
+
+* **EPICs** : CB-PAGE-PROVENANCE US-4 (N1 BDD) ✅ — runner orphelin soldé
+* **Type** : feature (BDD) + maintenance gouvernance
+* **Livrables** :
+** **Working tree assaini** en ouverture : refactor build abandonné S-265/266
+   (build cassé — `pluginManagement` retiré) backupé
+   `/tmp/opencode/queens-s269-backup/` (patch 263 lignes) puis `git checkout -- .`.
+** **Diagnostic faux positif `f6e5605`** (« Implement US-2 and US-4 ») : 4
+   fichiers de test cassés non enregistrés — 5 défauts (runner absent du task
+   graph ; `pages` stockées hors du `DocumentChunk` ; relecture
+   `chunk.chunk.pages` vide ; `"test-chunk-id".toLong()` →
+   `NumberFormatException` ; steps non préfixés S-088).
+** Réécriture baby-step BDD strict : `PageRetrievalWorld` +
+   `PageRetrievalFakeRagStore` in-memory (la page rode dans le
+   `DocumentChunk` N1, zéro side-channel) ; `PageRetrievalSteps` préfixés
+   « page » (10 steps) ; `page_retrieval.feature` 5 scénarios
+   `@page-retrieval` (single / multi / none backward-compat / canal Docs
+   expose `pages=[40,41]` / canal Docs sans fragment) ; `build.gradle.kts`
+   `CucumberTaskSpec("cucumberTestPageRetrieval")` **46e runner** (S-082).
+** Bug `{string}` Cucumber attrapé par auto-relecture (guillemets oraux
+   requis) — `pages 10, 11` → `pages "10, 11"` (2 scénarios).
+** Rapport : `.agents/sessions/269-cb-page-provenance-us4-bdd-n1.adoc`.
+* **Résultats** :
+** RED prouvé : `./gradlew tasks --all | grep pageRetrieval` = **absent** du
+   task graph (test fantôme). GREEN : présent (`cucumberTestPageRetrieval`).
+** Gates locaux (règle Local = Build, Tests = CI) : `compileKotlin`
+   `compileTestKotlin` VERT (1m52s), `compileTestKotlin --rerun-tasks` VERT,
+   `assemble`/`validatePlugins` VERT, `publishToMavenLocal` VERT.
+** Contrôles statiques : binding feature↔steps (10 steps/15 usages),
+   `grep` doublons glue = zéro ; 5 runners non enregistrés **préexistants**
+   à HEAD (hors périmètre).
+** Zéro bump de version, zéro publication Central, zéro secret.
+* **Leçons** :
+** Un message de commit n'est **pas** une preuve d'implémentation — vérifier
+   le **task graph** (`tasks`) et l'enregistrement du runner, jamais le message.
+** Un runner Cucumber non enregistré est un **test fantôme** : il compile,
+   il est versionné, il ne s'exécute jamais. `tasks | grep` = RED objectif
+   sans lancer de test.
+** Vérifier le **working tree** AVANT toute mission (un refactor abandonné
+   cassait le build entier).
+** Clôtures incomplètes S-267/S-268 (absentes de l'historique) — backfillées
+   ci-dessous.
+
+== Session 268 — 2026-09-19
+
+* **EPICs** : Aucun — suppression code mort N1 (codex C-3 constat A)
+* **Livrables** :
+** `StoreStatements.insertChunk()` (5 binds) + `insertChunkBindCount()` +
+   `IngestIndexing.assignLocalIndices` supprimés (orphelins, zéro appelant
+   prod). Loi de l'Économie d'Encre. Backup
+   `/tmp/opencode/queens-s268-backup/`.
+** Rapport : `.agents/sessions/268-dead-code-n1-suppression.adoc`.
+* **Résultats** : `compileKotlin` VERT, test codebase.store.* 65/1 (flake
+   conteneur isolé), test global 10768/4 (2 OcrTaskTest préexistants + 2
+   flake conteneur), `publishToMavenLocal` VERT.
+* **Leçons** : la suppression d'orphelins ne touche pas les appelants
+   (`insertDocument`, `AgenticChunkRepository.insertChunk`).
+
+== Session 267 — 2026-09-18
+
+* **EPICs** : CB-PAGE-PROVENANCE US-3 (N1 exposition) ✅
+* **Livrables** :
+** Noyau pur `CompositeContextEntries.kt` (`codexEntry` + `docsMetaLine`,
+   `pages` additif **omis si vide** — backward compat byte-identique) +
+   câblage `CompositeContextBuilder` (canal Docs) +
+   `CodebaseCompositeContextTask` (entrée JSON `pages` conditionnelle).
+** FT testcontainers `CompositeContextPageExpositionTest` (round-trip réel).
+** **Flaky anti-pollution tué** : le conteneur Testcontainers pg17 est un
+   singleton persistant partagé entre classes/sessions → balayage de la
+   famille fermée (`page-provenance-test-%`/`page-exposition-test-%`) +
+   jeton unique par run.
+** Rapport : `.agents/sessions/267-cb-page-provenance-us3-exposition-n1.adoc`.
+* **Résultats** : `test` 10776 (2 FAIL préexistants OcrTaskTest drift S-211),
+   3 suites cucumber dédiées VERTES, `publishToMavenLocal` VERT.
+* **Leçons** : un conteneur persistant partagé exige un balayage de famille,
+   pas une purge par UUID.
+
+== Session 266 — 2026-09-19
+
 * **EPICs** : Aucune (tâche autonomousSession non lancée en raison de problèmes de configuration multi-projet) — analyse du code et des tests effectués.
 * **Livrables** :
 ** Rapport de session : `.agents/sessions/266-sujet.adoc`.

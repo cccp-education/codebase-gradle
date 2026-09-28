@@ -1,45 +1,69 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 267
-:session: 267
+= Prompt de Reprise — Codebase (Queens N1) — Session 270
+:session: 270
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
-:session_precedente: 266 — Analyse et préparation pour le lancement d'autonomousSession (Mission Génération réelle A2) : tâche non trouvée en raison de problèmes de configuration du build multi-projet. Analyse du code et des tests effectués.
-:session_pre_precedente: 265 — CB-PAGE-PROVENANCE US-1 (N1 transport) ✅
+:session_precedente: 269 — CB-PAGE-PROVENANCE US-4 (N1 BDD) ✅ — runner orphelin soldé (f6e5605 faux positif : 4 fichiers de test cassés non enregistrés → corrigés + `cucumberTestPageRetrieval` 46e runner). Working tree assaini (refactor build abandonné S-265/266 backupé + restore HEAD).
+:session_pre_precedente: 268 — suppression code mort N1 (codex C-3 constat A) ✅
 
-== Mission Session 267 — à la demande du pilote
+== Mission Session 270 — à la demande du pilote
 
-Ordre pilote S-266 : **1 → 2 → 3** — 
-Mission 1 : **Génération réelle A2** (sur accord pilote — LLM metered) : 
-    Travailler directement dans le projet codebase-plugin (sans includeBuild dans le racine) pour lancer la tâche autonomousSession.
-    Utiliser la commande : `./gradlew autonomousSession --borough=newark --maxChainedSessions=1 --no-daemon`
-    Si la tâche réussit, passer aux missions suivantes.
-    C'est la première mission réelle qui consomme le contexte augmenté.
-Mission 2 : **RENAME Vague 4 transverse** (suite document ✅ S-264) : bakery → capsule → plantuml → graphify/codex, chacune transfusion d'abord (`TRANSFER_LEXIQUE_FORMATION.adoc`).
-Mission 3 : **Drift gouvernance racine** : ✅ corrigé S-264 (PROMPT_REPRISE racine synchronisé + synthèse BACKLOG racine mis à jour). Le drift catalogue local codebase (`workspace-bom 0.0.27` → **0.0.50**) a été réaligné au bump S-264.
+Ordre pilote : reprise de la mission **Génération réelle A2**
+(critical path MVP0), sur **accord pilote explicite** — LLM *metered*.
+
+* Lancer `autonomousSession` **directement dans le projet codebase-plugin**
+  (build autonome, PAS d'includeBuild dans le build racine — leçon S-265/266) :
+  `cd codebase-plugin && ./gradlew autonomousSession --borough=newark --maxChainedSessions=1 --no-daemon`
+  (l'ordre des options doit être vérifié : `--borough` avant la task si Gradle
+  le requiert).
+* RAG référentiel peuplé + port planner résolu (wiring prouvé S-264).
+* C'est la première mission réelle qui consomme le contexte augmenté.
+
+Alternatives si accord A2 non donné :
+
+. **CB-PAGE-PROVENANCE US-2 (N2 transport codex, Brooklyn)** — le volet
+   cross-borough qui reste : `CodexIngestTask.pageProvenanceFile`
+   (`@InputFiles` tolérante, pattern S-221) + jointure exacte SHA-256
+   `ChunkPageProvenance.chunkId` ↔ `DocumentChunk.id` + attache `pages`.
+   Le scénario BDD sidecar (reporté de US-4 S-269) suit cette US.
+. **RENAME Vague 4 transverse** : bakery → capsule → plantuml →
+   graphify/codex (transfusion `TRANSFER_LEXIQUE_FORMATION.adoc` d'abord).
 
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25).
-* Version locale **0.0.16** (Central 0.0.16, bundle `db5e1158`). Conventions 0.0.4. BOM/catalog **0.0.50**. `publishToMavenLocal` VERT S-264.
-* **Wiring SVO prouvé** : `AutonomousSessionTask.resolvePlannerPort()` résout le `PlannerPort` par nom canonique `plannerPortService` (adapter planner `KoogIntentionPlannerAdapter`) ; NoOp dégradé si rien n'est branché.
-* **Contrat cross-borough** : un consommateur applique `education.cccp.codebase` + `education.cccp.planner` (les 2 coexistent depuis S-264). codebase `generateAugmentedPlan` (ex-`generatePlan`) ; planner garde `generatePlan`.
-* 45 cucumber runners dédiés (dont `cucumberTestAutonomousSession`).
-* koverVerify VERT (check complet 27m06s S-264).
-* Catalogue local codebase : `workspace-bom = "0.0.50"` (realigné S-264, drift 0.0.27 → 0.0.50).
+* Version locale **0.0.16** (Central 0.0.16, bundle `db5e1158`). Conventions
+   0.0.4. BOM/catalog **0.0.50**. `publishToMavenLocal` VERT S-269.
+* **Wiring SVO prouvé** : `AutonomousSessionTask.resolvePlannerPort()` résout
+   le `PlannerPort` par nom canonique `plannerPortService` (adapter planner
+   `KoogIntentionPlannerAdapter`) ; NoOp dégradé si rien n'est branché.
+* **Contrat cross-borough** : un consommateur applique `education.cccp.codebase`
+   + `education.cccp.planner` (les 2 coexistent depuis S-264). codebase
+   `generateAugmentedPlan` (ex-`generatePlan`) ; planner garde `generatePlan`.
+* **46 cucumber runners dédiés** (dont `cucumberTestAutonomousSession` et
+   `cucumberTestPageRetrieval` S-269).
+* Catalogue local codebase : `workspace-bom = "0.0.50"`.
+* NB : 5 runners sont **préexistants non enregistrés** à HEAD (EpicV6OllamaCloud/
+   Pool/Resolver, EpicV912, EpicZ6) — dette connue, hors périmètre.
 
 == Échecs préexistants (orthogonaux, ne pas confondre)
 
-* 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`, `isImageFile false for pdf`) — drift S-211, **stash-confirmés identiques à HEAD S-264**.
+* 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`, `isImageFile
+   false for pdf`) — drift S-211, **stash-confirmés identiques à HEAD**.
 
 == Règles absolues
 
 * Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois.
+* **Local = Build, Tests = CI** (règle EAGER) : compiler/builder en local
+   seulement ; `test`/`cucumberTest`/`check` s'exécutent en CI après push.
 * Git autorisé (décision pilote 2026-09-17) — zéro secret commité.
 * Publication Central = accord pilote explicite (Règle 2).
-* Dogfood-first : exercer le wiring cross-borough réel (le dogfood S-264 a révélé 2 bugs invisibles aux tests unitaires).
+* Vérifier le **working tree** avant toute mission (`git status`) — un
+   refactor abandonné a cassé le build S-269.
 
 == References
 
-* `.agents/sessions/266-sujet.adoc`
-* `.agents/sessions/265-tentative-autonomousSession-SVO.adoc`
+* `.agents/sessions/269-cb-page-provenance-us4-bdd-n1.adoc`
+* `.agents/sessions/268-dead-code-n1-suppression.adoc`
 * `.agents/sessions/264-dogfood-a2-2-bugs-integration-rename-v4-doc.adoc`
 * `.agents/CADRAGE_EPIC_SVO_SESSION_ORCHESTREE.adoc` (cadrage S-255)
+* `../codex-gradle/codex-plugin/.agents/CADRAGE_EPIC_CB_PAGE_PROVENANCE.adoc` (EPIC cross-borough)
 * `training-gradle/.agents/TRANSFER_LEXIQUE_FORMATION.adoc` (transfusion)

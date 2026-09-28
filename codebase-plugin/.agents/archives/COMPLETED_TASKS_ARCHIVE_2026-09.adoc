@@ -1,5 +1,22 @@
 = Archive — Tâches Terminées — Septembre 2026
 
+== S-269 (2026-09-28) — CB-PAGE-PROVENANCE US-4 (N1 BDD) (Queens)
+
+* **Feature** : runner orphelin soldé — `cucumberTestPageRetrieval`, **46e runner dédié**.
+* `f6e5605` (« US-2 and US-4 ») = **faux positif** : 4 fichiers de test cassés et
+  non enregistrés. 5 défauts soldés (runner absent du task graph ; `pages` hors
+  du `DocumentChunk` ; relecture `chunk.chunk.pages` vide ; `"test-chunk-id".toLong()`
+  → `NumberFormatException` ; steps non préfixés S-088).
+* Réécriture baby-step BDD strict : `PageRetrievalWorld` +
+  `PageRetrievalFakeRagStore` in-memory (page dans le `DocumentChunk`, zéro
+  side-channel) + `PageRetrievalSteps` (10 steps préfixés) +
+  `page_retrieval.feature` 5 scénarios (`@page-retrieval`) + enregistrement
+  `CucumberTaskSpec`.
+* RED `tasks --all | grep pageRetrieval` absent → GREEN présent.
+* Working tree assaini en ouverture (refactor build abandonné S-265/266 backupé
+  + restore HEAD). Zéro bump, zéro publication, zéro secret.
+* Rapport : `.agents/sessions/269-cb-page-provenance-us4-bdd-n1.adoc`.
+
 == S-268 (2026-09-19) — Suppression du code mort N1 (codex C-3 constat A) (Queens)
 
 * **Maintenance N1** : suppression du code mort orphelin propriétaire Queens (codex C-3 / S-230 roadmap, constat A).

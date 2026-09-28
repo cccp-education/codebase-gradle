@@ -1,0 +1,131 @@
+= Rapport Session 269 — CB-PAGE-PROVENANCE US-4 : BDD de clôture N1 (runner orphelin soldé)
+:session: 269
+:date: 2026-09-28
+:borough: Queens — codebase-gradle (N1, socle RAG pgvector + contexte augmenté)
+:epic: CB-PAGE-PROVENANCE
+:us: US-4 (N1 scope)
+:type: feature (BDD) + maintenance gouvernance
+
+== Mission
+
+Soldier l'anomalie découverte à l'ouverture : le commit `f6e5605`
+(« Implement CB-PAGE-PROVENANCE US-2 and US-4 ») est un **faux positif** —
+il déclare US-2 et US-4 mais n'ajoute que 4 fichiers de test
+(`page_retrieval.feature` + `PageRetrievalCucumberRunner/Steps/World`),
+**cassés et non enregistrés**. Décision pilote S-269 : Mission 3 (US-4 N1
+self-contained, zéro LLM metered), en attendant l'accord pour la
+génération réelle A2.
+
+== Constat d'ouverture — anomalie bloquante soldée d'abord
+
+Le working tree était **sale** : reliquat abandonné des tentatives
+S-265/S-266 « autonomousSession » (include du plugin dans le build racine).
+Le build était **cassé** (`education.cccp.build.gradle-plugin:0.0.4` plus
+résoluble — `pluginManagement` retiré du projet). Backup intégral
+(`/tmp/opencode/queens-s269-backup/`, patch 263 lignes) puis
+`git checkout -- .` → working tree propre, `compileKotlin` +
+`compileTestKotlin` **VERT** (1m52s).
+
+== Diagnostic US-4 (5 défauts sur l'artefact orphelin f6e5605)
+
+|===
+| # | Défaut | Impact
+
+| 1 | `PageRetrievalCucumberRunner` **non enregistré** dans `build.gradle.kts`
+| Les scénarios ne s'exécutent **jamais** (runner mort)
+
+| 2 | `PageRetrievalWorld.storeChunk` stocke `pages` **hors** du `DocumentChunk`
+| Scénarios 1/2 échouent (pages perdues à l'ingestion)
+
+| 3 | `FakeRagVectorStore.search` relit `chunk.chunk.pages` (toujours vide)
+| Scénario 3 (multi-pages) impossible
+
+| 4 | `chunk.chunk.id.toLong()` sur `"test-chunk-id"`
+| `NumberFormatException` à l'exécution
+
+| 5 | Steps non préfixés (`I search for the query`)
+| Risque collision glue (S-088), non conforme au pattern maison
+|===
+
+`grep pageProvenanceFile CodexIngestTask` = **vide** → US-2 (N2 transport
+codex) **n'est pas implémentée** ; le scénario sidecar SHA-256 est reporté
+à l'EPIC côté Brooklyn (bloc A). Périmètre US-4 retenu = **N1 seul**.
+
+== Implémentation — US-4 (N1 BDD, baby-step strict)
+
+=== RED (preuve par `tasks`, pas par test)
+
+`./gradlew tasks --all | grep -i pageRetrieval` → **absent** du task graph
+(le runner n'existe pas pour Gradle). Orphelin sauvegardé avant réécriture.
+
+=== GREEN — 4 fichiers, 1 à la fois
+
+. `PageRetrievalWorld.kt` — `PageRetrievalFakeRagStore` in-memory
+  (pattern `CorpusFakeRagStore`) : la page **rode dans le `DocumentChunk`**
+  (le type N1 possède sa provenance, jamais de side-channel) ; le fake
+  mirror le contrat réel `DocumentChunk.pages` → `RetrieveResult.pages`.
+  + chemin exposition `loadPageDocsContext` (vrai `CompositeContextBuilder`,
+  canal Docs US-3).
+. `PageRetrievalSteps.kt` — steps préfixés « page » / « page retrieval »
+  (S-088), 10 steps : 3 Given (1 page / N pages / aucune), 2 When (search /
+  docs context), 5 Then (page / pages / aucune / canal expose / canal
+  sans fragment).
+. `page_retrieval.feature` — 5 scénarios `@page-retrieval` : single page,
+  multi-pages, no page (backward compat), canal Docs expose `pages=[40,41]`,
+  canal Docs sans fragment.
+. `build.gradle.kts` — `CucumberTaskSpec("cucumberTestPageRetrieval", …)`
+  **46e runner dédié** (pattern S-082), `PageRetrievalCucumberRunner`.
+
+Bug attrapé par auto-relecture : `{string}` Cucumber exige des guillemets
+oraux — `pages 10, 11` (non quoté) ne se lie pas au step ; corrigé en
+`pages "10, 11"` (2 scénarios).
+
+=== GREEN prouvé (build local, tests délégués CI)
+
+`./gradlew tasks --all | grep pageRetrieval` → `cucumberTestPageRetrieval`
+**présent** (ancien RED). `compileKotlin compileTestKotlin` VERT,
+`compileTestKotlin --rerun-tasks` VERT, `assemble validatePlugins` VERT,
+`publishToMavenLocal` VERT (Règle 0, production inchangée mais checklist).
+
+Contrôles statiques (les tests s'exécutent en CI, règle EAGER
+« Local = Build, Tests = CI ») :
+
+* binding feature ↔ steps vérifié ligne à ligne (10 steps, 15 usages) ;
+* `grep` doublons de glue sur tout `codebase.scenarios/` = **zéro** ;
+* 5 runners non enregistrés **préexistants à HEAD** (EpicV6OllamaCloud/
+  Pool/Resolver, EpicV912, EpicZ6) — hors périmètre, non régressés.
+
+== Fichiers
+
+* modifiés : `build.gradle.kts`, `src/test/features/page_retrieval.feature`,
+  `src/test/kotlin/codebase/scenarios/PageRetrievalCucumberRunner.kt`,
+  `PageRetrievalSteps.kt`, `PageRetrievalWorld.kt` (5).
+* gouvernance : `PROMPT_REPRISE.adoc`, `.agents/PROMPT_REPRISE.adoc`,
+  `.agents/INDEX.adoc`, `.agents/SESSIONS_HISTORY.adoc`,
+  `.agents/BACKLOG.adoc`, `BACKLOG.adoc`,
+  `.agents/TEST_COVERAGE_ANALYSIS.adoc`,
+  `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-09.adoc`.
+* backups : `/tmp/opencode/queens-s269-backup/`.
+
+== Reste de l'EPIC
+
+* US-2 (N2 transport codex, Brooklyn) 🟡 — `CodexIngestTask.pageProvenanceFile`
+  jamais implémentée ; scénario sidecar SHA-256 à écrire côté Brooklyn.
+* US-4 close au périmètre **N1** ; le volet cross-borough (sidecar) suit US-2.
+
+== Leçons
+
+* Un message de commit n'est **pas** une preuve d'implémentation : `f6e5605`
+  annonçait « US-2 and US-4 » pour 4 fichiers de test non enregistrés.
+  Vérifier le **task graph** (`tasks`) et l'**enregistrement du runner**, pas
+  le message.
+* Un runner Cucumber non enregistré est un **test fantôme** : il compile,
+  il est versionné, il ne s'exécute jamais. Le gate `tasks | grep` est un
+  RED objectif, sans lancer de test.
+* Le working tree doit être vérifié **avant** toute mission : le refactor
+  abandonné cassait le build entier (`pluginManagement` retiré).
+
+== Clôture
+
+* 7 étapes exécutées. Commit + push en clôture (décision pilote 2026-09-17).
+* Zéro secret, zéro bump de version, zéro publication Central.
