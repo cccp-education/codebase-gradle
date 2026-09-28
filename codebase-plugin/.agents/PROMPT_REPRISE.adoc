@@ -6,16 +6,21 @@
 
 == Mission Session 272 — à la demande du pilote
 
+. **Bloc B — publication N1→N2 (PRÉREQUIS DUR, découvert S-271/S-230)** :
+   la CI codex, ressuscitée S-230, échoue à `:compileKotlin`
+   (`PageProvenanceAttacher.kt:45 Unresolved reference 'pages'`) car le
+   **`codebase-plugin:0.0.16` de Maven Central est stale** — publié **S-264**
+   (avant l'US-1 `DocumentChunk.pages` de S-265). En local, seul mavenLocal
+   (0.0.16 republié S-265/S-267) compile. **Résolution** : bump
+   `codebase-plugin` 0.0.16 → **0.0.17** (une version Central est immuable),
+   publication Central, puis bump `codex-plugin` 0.0.11 → **0.0.12**. Zéro
+   bump MEMPHIS (types de store N1, pas de contrat N0 — D9).
+   → **accord pilote explicite requis** (Règle 2).
 . **Dette self-application codebase** (constat S-270, non bloquant) :
    `codebase-plugin/build.gradle.kts:17` épingle
-   `id("education.cccp.codebase") version "0.0.10"` — trois valeurs
-   divergentes (build `0.0.10`, toml local `0.0.11`, project version
-   `0.0.16`). Aligner + ajouter une **garde anti-drift** (pattern
-   `BakeryPluginPublicationTest` whitespace-insensitive, `CodexPluginPublicationTest`
-   côté codex). Candidat US dédiée — baby-step TDD strict.
-. **Bloc B publication** (accord pilote requis, Règle 2) : DAG codebase-first
-   (`codebase-plugin` → `codex-plugin` → propagation repo1 + consommateurs).
-   Le contenu CB-PAGE-PROVENANCE (US-1/US-3/US-4 N1 + US-2 N2) est prêt.
+   `id("education.cccp.codebase") version "0.0.10"` — valeurs divergentes
+   (build `0.0.10`, toml local `0.0.11`, project `0.0.16`). Aligner + garde
+   anti-drift (pattern `BakeryPluginPublicationTest` whitespace-insensitive).
 . **Re-run A2 en cloud** si le quota Ollama est rétabli (sinon, la preuve
    locale via `-Pollama.baseUrl=http://localhost:11443` reste valable).
 . **Arbitrage lot RENAME-13+** (résidus hors 6 boroughs) : `workspace-bom`
