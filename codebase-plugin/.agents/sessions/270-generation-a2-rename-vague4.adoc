@@ -135,7 +135,19 @@ travail RENAME de la session est conservé.
   plantuml, hyperframes **BUILD SUCCESSFUL** (codex à neuf).
 * Run A2 : BUILD SUCCESSFUL (cloud bloqué quota, local prouvé plan produit).
 * Aucun `test`/`check`/`cucumberTest` en local (règle EAGER).
-* Zéro secret.
+* **CI codebase VERTE** (run `36485374120`, commit `c7e46fa`) : Fast Tests ✓
+  2m03s + OCR ✓ 59s + Full Test Suite ✓ 21m28s.
+* **CI bakery VERTE** (run `36485355168`) : Test ✓ 10m16s + Publish website ✓
+  — les fixtures RENAME bakery passent les tests.
+* **CI plantuml/codex/graphify/hyperframes : rouges — PRÉEXISTANTES**
+  (échecs en **configuration** 5-39s, avant tout test) : workflows/settings
+  obsolètes (codex : `./gradlew publishToMavenLocal` au root sans tâche + JDK
+  24 ; plantuml : `settings.gradle.kts` inclut `readme-plugin` inexistant ;
+  graphify/hyperframes idem). Rouges **avant** S-270 (commits précédents
+  `build: adopt conventions-plugin 0.0.7`, `build: bump Gradle wrapper`,
+  `gov(rules)…` tous failure) → dette d'infra CI hors périmètre RENAME.
+  Les changements de fixtures/KDoctors ne peuvent pas produire ce type
+  d'échec (configuration time). À traiter dans une session d'infra dédiée.
 
 == Fichiers
 
