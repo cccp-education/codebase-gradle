@@ -119,7 +119,7 @@ class OcrTaskTest {
 
     @Test
     fun `isImageFile detects all supported image formats`() {
-        for (ext in listOf("png", "jpg", "jpeg", "gif", "bmp", "tiff")) {
+        for (ext in listOf("png", "jpg", "jpeg", "gif", "bmp", "tiff", "pdf")) {
             assertTrue(OcrTask.isImageFile(File("/tmp/doc.$ext")), "Failed for $ext")
             assertTrue(OcrTask.isImageFile(File("/tmp/DOC.${ext.uppercase()}")), "Failed for uppercase $ext")
         }
@@ -127,7 +127,6 @@ class OcrTaskTest {
 
     @Test
     fun `isImageFile returns false for text files`() {
-        assertFalse(OcrTask.isImageFile(File("/tmp/doc.pdf")))
         assertFalse(OcrTask.isImageFile(File("/tmp/doc.txt")))
         assertFalse(OcrTask.isImageFile(File("/tmp/doc.adoc")))
         assertFalse(OcrTask.isImageFile(File("/tmp/doc.md")))
@@ -144,11 +143,11 @@ class OcrTaskTest {
         assertEquals("image/gif", OcrTask.detectMimeType("gif"))
         assertEquals("image/bmp", OcrTask.detectMimeType("bmp"))
         assertEquals("image/tiff", OcrTask.detectMimeType("tiff"))
+        assertEquals("application/pdf", OcrTask.detectMimeType("pdf"))
     }
 
     @Test
     fun `detectMimeType returns octet-stream for unknown extensions`() {
-        assertEquals("application/octet-stream", OcrTask.detectMimeType("pdf"))
         assertEquals("application/octet-stream", OcrTask.detectMimeType("xyz"))
     }
 
