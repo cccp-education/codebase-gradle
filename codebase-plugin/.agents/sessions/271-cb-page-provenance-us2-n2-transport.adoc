@@ -1,0 +1,63 @@
+= Session 271 — CB-PAGE-PROVENANCE US-2 (N2 transport codex, Brooklyn) ✅ — EPIC clos 5/5
+
+:session: 271
+:date: 2026-09-29
+:type: cross-borough (mission codex, pilotage depuis Queens)
+:borough: Queens — codebase-gradle (N1) / Brooklyn — codex-gradle (N2, modifié)
+
+== Contexte
+
+Mission S-271 du `PROMPT_REPRISE` : **CB-PAGE-PROVENANCE US-2 (N2 transport
+codex, Brooklyn)** — le dernier volet cross-borough de l'EPIC. La session a
+ouvert le borough codex (`foundry/public/codex-gradle/codex-plugin`) et livré
+l'US ; la présente entrée consigne la synchronisation gouvernance Queens.
+
+Règle EAGER rappelée : **Local = Build, Tests = CI**.
+
+== Travail (détail dans le rapport codex S-230)
+
+* Noyau pur `codex.provenance.PageProvenanceAttacher` — jointure **exacte**
+  SHA-256 `ChunkPageProvenance.chunkId` ↔ `DocumentChunk.id` (le carrier N1
+  `DocumentChunk.pages` livré en US-1 S-265), préserve les pages existantes,
+  dégrade silencieux sans allocation (Loi de l'Économie d'Encre).
+* `CodexIngestTask.pageProvenanceFile` (`@InputFiles` tolérante, pattern
+  S-221) + seam `internal attachPages` + wiring `CodexPlugin` défaut
+  `build/codex/page-provenance.json`.
+* BDD `codex_page_provenance.feature` `@provenance` +2 scénarios (transport
+  exact + dégradé silencieux) traversant le **vrai** `ingestInto`.
+* Baby-step DDD/TDD/BDD strict, RED prouvé ×2 (compilation), GREEN, gates
+  locaux VERT (compile, validatePlugins, assemble, publishToMavenLocal).
+
+Rapport complet : `codex-gradle/codex-plugin/.agents/sessions/230-cb-page-provenance-us2-n2-transport.adoc`.
+
+== Valeur (périmètre Queens)
+
+* **EPIC CB-PAGE-PROVENANCE TERMINÉ 5/5 US** — US-0 S-225 · US-1 S-265 ·
+  US-2 S-230 · US-3 S-267 · US-4 S-269. Côté N1, aucune modification de code
+  cette session (US-1/US-3/US-4 déjà livrées) ; la clôture est gouvernance.
+* Chaîne GBL-003.4 close : le doute OCR remonte de la page source jusqu'au
+  retrieval de bout en bout, sans sidecar pour les chunks localisables.
+* Le N1 transportait déjà la page (US-1) ; US-2 branche la source N2 — le
+  carrier existant a suffi (zéro changement de type N0, zéro bump BOM).
+
+== Dette restante (hors scope)
+
+* **Self-application périmée** : `codebase-plugin/build.gradle.kts:17` épingle
+  `id("education.cccp.codebase") version "0.0.10"` — trois valeurs divergentes
+  (build 0.0.10, toml 0.0.11, project 0.0.16). Candidat US dédiée (garde
+  anti-drift, pattern `BakeryPluginPublicationTest`).
+* **Arbitrage RENAME-13+** : résidus hors 6 boroughs (`agent-contracts`
+  `afnorCorpus` N0 breaking, `academy-gradle` enum SPG/SPD, `codebase-contracts`
+  KDoc, `planner-gradle` fixtures) — accord pilote requis.
+* **Bloc B (publication)** codex/codebase — accord pilote.
+
+== Échecs préexistants (orthogonaux)
+
+* 2 × `OcrTaskTest` (drift pdf S-211) — stash-confirmés, non touchés.
+
+== Gouvernance mise à jour
+
+* `INDEX.adoc` (EPIC CB-PAGE-PROVENANCE ✅ 5/5).
+* `BACKLOG.adoc` (EPIC ✅ TERMINÉ, US-2 ✅ S-230).
+* Cross-borough codex : rapport, PROMPT_REPRISE (S-231 = C-3), INDEX,
+  SESSIONS_HISTORY, archive.

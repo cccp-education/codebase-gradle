@@ -433,13 +433,13 @@ _Portée_ : cross-borough Brooklyn (codex) + Queens (codebase).
 *Total* : ~10 pts (6/6 US ✅ — EPIC TERMINÉ. L'inversion N1→N2 est morte, flèche unique codex→codebase.)
 
 '''
-== 🟡 EPIC CB-PAGE-PROVENANCE — Persistance de la page au retrieval (N1) — Cadrage S-225 (Brooklyn + Queens) — US-1 ✅ S-265, US-3 ✅ S-267, US-4 ✅ S-269, reste US-2 (N2 codex, reporté S-271)
+== ✅ EPIC CB-PAGE-PROVENANCE — Persistance de la page au retrieval (N1) — Cadrage S-225 (Brooklyn + Queens) — TERMINÉ 5/5 US
 
 _Origine : PROMPT_REPRISE S-225 Option A + CADRAGE_EPIC_CDX_PAGE_PROVENANCE.adoc (décision D7, S-223)._
 _Doc cadrage_ : `CADRAGE_EPIC_CB_PAGE_PROVENANCE.adoc` (côté codex-gradle).
 _Pattern_ : gouvernance pure S-057/S-063 (cadrage) + baby-step DDD/TDD/BDD strict.
 _Portée_ : cross-borough Queens (N1, persistance + exposition) + Brooklyn (N2, transport).
-_Statut_ : 🟡 EN COURS — US-1 ✅ (S-265), US-3 ✅ (S-267), US-4 ✅ (S-269, périmètre N1), reste US-2 (N2 codex, Brooklyn).
+_Statut_ : ✅ TERMINÉ 5/5 US — US-0 cadrage S-225, US-1 ✅ S-265, **US-2 ✅ S-230 (codex, Brooklyn)**, US-3 ✅ S-267, US-4 ✅ S-269.
 
 La jointure dérivée S-224 (sidecar `page-provenance.json`, codex N2) localise
 le doute à la page, mais au retrieval `RetrieveResult` n'expose que
@@ -475,7 +475,7 @@ Patron : le doute (DOUBT-BRIDGE S-219, dérivé N2, transporté N1).
   (`@InputFiles` tolérante pattern S-221) + jointure exacte
   `ChunkPageProvenance.chunkId` ↔ `DocumentChunk.id` + attache `pages`
   avant `ingestWithDoubt` + dégradé silencieux. Wiring `CodexPlugin`. Unit.
-| 🟡 À FAIRE
+| ✅ TERMINÉ (S-230 — Brooklyn)
 | 2
 
 | CB-PAGE-PROVENANCE-3
@@ -500,10 +500,10 @@ Patron : le doute (DOUBT-BRIDGE S-219, dérivé N2, transporté N1).
 
 |===
 
-*Total* : ~9 pts (5 US — US-0 ✅ S-225, **US-1 ✅ S-265**, **US-3 ✅ S-267**, **US-4 ✅ S-269 (N1)**) — EPIC EN COURS, reste **US-2 (N2 transport codex, Brooklyn)**.
-*Ordre* : US-2 (N2 codex, Brooklyn) — l'exposition N1 (US-3) et le BDD N1
+*Total* : ~9 pts (5 US — US-0 ✅ S-225, **US-1 ✅ S-265**, **US-3 ✅ S-267**, **US-4 ✅ S-269 (N1)**) — **EPIC TERMINÉ 5/5 US**, US-2 ✅ S-230 (codex, Brooklyn).
+*Ordre* : US-2 (N2 codex, Brooklyn) livrée en dernier (S-230) — l'exposition N1 (US-3) et le BDD N1
 (US-4) n'attendaient pas le transport N2 : self-contained codebase, traités
-d'abord. Le scénario sidecar SHA-256 (reporté de US-4) sera écrit avec US-2.
+d'abord. Le scénario sidecar SHA-256 a été écrit avec US-2 (S-230, codex).
 *Publication* (optionnelle, accord pilote) : bump `codebase-plugin` puis `codex-plugin`
 Central (DAG codebase-first). Zéro bump MEMPHIS (types de store N1, pas de contrat N0).
 *Hors scope* : suppression du sidecar S-224 (coexistence), array PostgreSQL,

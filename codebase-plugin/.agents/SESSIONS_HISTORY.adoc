@@ -2,6 +2,30 @@
 :toc: left
 :icons: font
 
+== Session 271 — 2026-09-29
+
+* **EPICs** : CB-PAGE-PROVENANCE US-2 (N2 transport codex, Brooklyn) ✅ — **EPIC clos 5/5**
+* **Type** : cross-borough (mission codex, pilotage depuis Queens)
+* **Livrables** :
+** Livré côté codex (`codex-gradle/codex-plugin`, rapport S-230) : noyau pur
+   `codex.provenance.PageProvenanceAttacher` (jointure **exacte** SHA-256
+   `ChunkPageProvenance.chunkId` ↔ `DocumentChunk.id`), `CodexIngestTask.pageProvenanceFile`
+   (`@InputFiles` tolérante, pattern S-221) + seam `internal attachPages`,
+   wiring `CodexPlugin` défaut `build/codex/page-provenance.json`, BDD
+   `codex_page_provenance.feature` `@provenance` +2 scénarios (transport
+   exact + dégradé silencieux) traversant le vrai `ingestInto`.
+** Baby-step DDD/TDD/BDD strict : RED prouvé ×2 (compilation
+   `Unresolved reference` ×15 puis `'pageProvenanceFile'`/`'attachPages'`) →
+   GREEN → gates locaux VERT (compile, validatePlugins, assemble,
+   publishToMavenLocal codex 0.0.11). Tests = CI.
+** Côté N1 : **aucun code modifié** (US-1/US-3/US-4 déjà livrées S-265/S-267/S-269) —
+   clôture gouvernance.
+* **Valeur** : **EPIC CB-PAGE-PROVENANCE TERMINÉ 5/5 US** (US-0 S-225,
+  US-1 S-265, US-2 S-230, US-3 S-267, US-4 S-269). Chaîne GBL-003.4 close,
+  symétrie doute/page (DOUBT-BRIDGE S-219) achevée. Zéro bump BOM, zéro
+  publication Central, zéro secret.
+* **Rapport** : `.agents/sessions/271-cb-page-provenance-us2-n2-transport.adoc`.
+
 == Session 270 — 2026-09-28
 
 * **EPICs** : Génération réelle A2 ✅ (pipeline prouvé end-to-end) + RENAME Vague 4 transverse ✅ (résidus)

@@ -1,5 +1,20 @@
 = Archive — Tâches Terminées — Septembre 2026
 
+== S-271 (2026-09-29) — CB-PAGE-PROVENANCE US-2 (N2 transport codex) — EPIC clos 5/5 (Queens + Brooklyn)
+
+* **US-2 N2 transport** (livrée côté codex, rapport `230-cb-page-provenance-us2-n2-transport.adoc`) :
+  noyau pur `PageProvenanceAttacher` (jointure **exacte** SHA-256
+  `ChunkPageProvenance.chunkId` ↔ `DocumentChunk.id`), `CodexIngestTask.pageProvenanceFile`
+  (`@InputFiles` tolérante, pattern S-221) + seam `internal attachPages`, wiring
+  `CodexPlugin`, BDD `@provenance` +2 scénarios traversant le vrai `ingestInto`.
+* Baby-step DDD/TDD/BDD strict : RED prouvé ×2 (compilation) → GREEN → gates
+  locaux VERT (compile, validatePlugins, assemble, publishToMavenLocal).
+* **EPIC CB-PAGE-PROVENANCE TERMINÉ 5/5 US** (US-0 S-225, US-1 S-265, US-2 S-230,
+  US-3 S-267, US-4 S-269). Côté N1 : zéro code modifié (US-1/US-3/US-4 déjà
+  livrées) — clôture gouvernance. Chaîne GBL-003.4 close.
+* Zéro bump, zéro publication, zéro secret.
+* Rapport : `.agents/sessions/271-cb-page-provenance-us2-n2-transport.adoc`.
+
 == S-270 (2026-09-28) — Génération réelle A2 + RENAME Vague 4 (Queens + 5 boroughs)
 
 * **A2 (dogfood)** : pipeline prouvé end-to-end. 2 causes racines S-265/266 —
