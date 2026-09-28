@@ -2,6 +2,57 @@
 :toc: left
 :icons: font
 
+== Session 270 — 2026-09-28
+
+* **EPICs** : Génération réelle A2 ✅ (pipeline prouvé end-to-end) + RENAME Vague 4 transverse ✅ (résidus)
+* **Type** : dogfooding + DDD/TDD/BDD cross-borough
+* **Livrables** :
+** **Mission 1 — A2** : 2 causes racines des échecs S-265/266 identifiées —
+   (1) recette du PROMPT_REPRISE fausse (lancer dans `codebase-plugin` ne
+   résout jamais le planner → `PlannerPort.NoOp` → zéro LLM ; correct = le
+   consommateur transitoire 2 plugins, pattern S-264) ; (2) self-application
+   périmée `0.0.10` (commit `4601cb0`, avant S-259) → `autonomousSession`
+   absente du task graph.
+** Consommateur `/tmp/opencode/cb-dogfood-a2-s270` (Règle 2) :
+   `codebase:0.0.16` + `planner:0.0.2` → `autonomousSession` +
+   `generateAugmentedPlan` + `generatePlan` coexistent (contrat SVO D5).
+** pgvector jetable (`cb-a2-pgvector-s270`, pg17, port 5432) → ingestion
+   `CorpusIngestMain` : **387 chunks / 387 embeddings ONNX / 18 doubtful /
+   avg 0.953** (ident. S-214).
+** Run cloud (metered) : BUILD SUCCESSFUL 3m35s, `PlannerPort` résolu
+   (`KoogIntentionPlannerAdapter` invoqué) — mais **26 comptes Ollama cloud
+   à quota mensuel épuisé** (externe) → pas de plan cloud.
+** Run **local non-metered** (`-Pollama.baseUrl=http://localhost:11443`,
+   `qwen3:0.6b`) : BUILD SUCCESSFUL 2m27s, zéro exception. Log décisif
+   `[VibecodingGraph] Task execution failed: Gradle task denied: not in
+   allowlist` (VibecodingGraph:585, atteint **uniquement** après
+   `executePlanTasks`) → **un plan réel a été produit par le planner adapter**.
+   Resumption prompt générée depuis le **vrai backlog training** (23 items).
+** Proof-of-work RAG non-metered : `searchWithDoubtBlocking` → 5 chunks
+   pertinents (sim 0.58-0.67).
+** **Mission 3 — RENAME** (subagent) : S-266 déclarait « fait » mais sa gate
+   D16 était **sensible à la casse** → résidus réels. 6 boroughs audités,
+   5 neutralisés : plantuml (KDoc+fixtures → ISO/IEEE/RFC), codex (fixtures
+   provenance/normalisation + KDoc prod ; `FpaPageProvenanceJoinRateTest` →
+   `PageProvenanceJoinRateTest` paramétré), bakery (fixture `RFC` + acteurs
+   `Concepteur/Testeur` + `git mv vocabulaire-technique.adoc`), graphify
+   (titre corpus générique), hyperframes (« My Presentation »). Gate D16
+   robuste sur `src/` des 6 = **0**. Transfusion `TRANSFER_LEXIQUE_FORMATION.adoc`
+   § 2 complétée.
+** Working tree assaini : résidu préexistant abandonné S-265/266
+   (mtime 2026-09-19, troncatures `SESSIONS_HISTORY` −3184 codex / −74
+   plantuml, sans backup) restauré à HEAD + backup `/tmp/opencode/cb-s270-wt-backup/`.
+** Rapport : `.agents/sessions/270-generation-a2-rename-vague4.adoc`.
+* **Résultats** : `compileKotlin`/`compileTestKotlin --rerun-tasks` VERT
+   (codex, bakery, graphify, plantuml, hyperframes). Zéro bump, zéro
+   publication, zéro secret. Aucun test local (règle EAGER).
+* **Décisions** : la recette A2 est le consommateur transitoire (jamais la
+   self-application) ; le run local non-metered (11443) est la technique de
+   preuve quand le quota cloud est épuisé ; la gate RENAME D16 doit être
+   insensible à la casse ; les historiques `SESSIONS_HISTORY` sont immuables.
+* **Dette** : self-application `0.0.10` / toml `0.0.11` / project `0.0.16`
+   divergent → à aligner + garde anti-drift (US dédiée).
+
 == Session 269 — 2026-09-28
 
 * **EPICs** : CB-PAGE-PROVENANCE US-4 (N1 BDD) ✅ — runner orphelin soldé

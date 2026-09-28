@@ -1,0 +1,170 @@
+= Session 270 — Génération réelle A2 (dogfood) + RENAME Vague 4 transverse (résidus)
+
+:session: 270
+:date: 2026-09-28
+:type: dogfooding + DDD/TDD/BDD cross-borough
+:borough: Queens — codebase-gradle (N1) + 5 boroughs RENAME (plantuml, codex, bakery, graphify, hyperframes) + training
+
+== Contexte
+
+Session ouverte sur ordre pilote : mission 1 (Génération réelle A2, LLM
+*metered*, accord explicite donné) **+** mission 3 (RENAME Vague 4 transverse
+via subagent, accord donné). Mission 2 (CB-PAGE-PROVENANCE US-2, codex
+Brooklyn) reportée à S-271 à la demande du pilote.
+
+Règle EAGER rappelée par le pilote : **Local = Build, Tests = CI** — seules
+`compileKotlin`/`compileTestKotlin` en local, aucun `test`/`check`.
+
+== Mission 1 — Génération réelle A2 ✅ (pipeline prouvé end-to-end)
+
+=== Diagnostic — les échecs S-265/266 avaient 2 causes racines
+
+. *La recette du PROMPT_REPRISE S-270 était fausse.* Lancer `autonomousSession`
+  « directement dans codebase-plugin » ne peut **jamais** résoudre le planner :
+  le plugin `education.cccp.planner` n'y est pas appliqué → `PlannerPort.NoOp`
+  → zéro appel LLM. Le précédent réussi (S-264) utilisait un **consommateur
+  transitoire** avec les **2 plugins**.
+. *Self-application périmée.* `codebase-plugin/build.gradle.kts:17` épingle
+  `id("education.cccp.codebase") version "0.0.10"` (publié 2026-08-25, commit
+  `4601cb0`) — **antérieur** à l'ajout de la tâche `autonomousSession`
+  (S-259, 2026-09-10). D'où `autonomousSession` absente du task graph en
+  auto-application (les tentatives S-265/266 ont tourné en rond sur ce point).
+
+=== Recette prouvée (pattern S-264)
+
+Consommateur transitoire `/tmp/opencode/cb-dogfood-a2-s270` (Règle 2) :
+
+* `settings.gradle.kts` : `pluginManagement` mavenLocal + portail + central.
+* `build.gradle.kts` : `education.cccp.codebase:0.0.16` + `education.cccp.planner:0.0.2`.
+* `./gradlew tasks --all` → **`autonomousSession` + `generateAugmentedPlan` +
+  `generatePlan` enregistrés et coexistant** (contrat SVO D5 re-prouvé).
+* pgvector jetable (`pgvector/pgvector:pg17`, `cb-a2-pgvector-s270`, port 5432,
+  extension vector 0.8.2).
+
+=== Ingestion du corpus référentiel (pattern S-214, init-script)
+
+`ingest.init.gradle.kts` → `codebase.store.CorpusIngestMain` :
+
+* **387 chunks ingérés, 387 embeddings ONNX AllMiniLmL6V2, 18 doubtful,
+  avg_confidence 0.953** — identique au run S-214 (non-régression du socle).
+
+=== Run réel A2 (LLM metered) — exécuté
+
+`./gradlew autonomousSession --borough=newark --maxChainedSessions=1 --maxActions=2`
+avec PGVECTOR_* → BUILD SUCCESSFUL 3m35s.
+
+* Le `PlannerPort` a été **résolu** (l'adapter `KoogIntentionPlannerAdapter` a
+  été invoqué — preuve : il loggue `KoogIntentionPlannerAdapter: plan failed` ;
+  un NoOp ne produit jamais ce log). L'architecture SVO est fonctionnelle.
+* **Blocage externe** : les **26 comptes Ollama cloud** du pool (11437-11465)
+  sont tous à leur quota mensuel (`you (<account>) have reached your monthly
+  usage limit`) → le LLM cloud n'a pas pu répondre → pas de plan.
+* La boucle a néanmoins tourné et écrit la **resumption prompt générée depuis
+  le vrai backlog training** (23 items TRN-9/TRN-10/TRN-11/TRN-TEMP), dans
+  `build/vibecoding/resumption-prompt.adoc` + audit JSONL.
+
+=== Run local (non-metered) — la preuve décisive
+
+Découverte : le port **11443** sert des modèles **locaux** (`qwen3:0.6b`,
+`smollm:135m`) — sans quota. Le planner supporte `-Pollama.baseUrl`.
+
+`./gradlew autonomousSession --borough=newark --maxChainedSessions=1
+--maxActions=2 -Pollama.baseUrl=http://localhost:11443 -Pollama.modelName=qwen3:0.6b`
+→ **BUILD SUCCESSFUL 2m27s, zéro exception.**
+
+* Log décisif : `[VibecodingGraph] Task execution failed: Gradle task denied:
+  not in allowlist` — ce log ne peut être émis **qu'après** `executePlanTasks`
+  (VibecodingGraph:585), donc **un plan a été réellement produit par le LLM
+  local via le planner adapter** et la boucle est entrée en exécution.
+* L'échec allowlist est **nominal** : le LLM local (0.6B) a proposé une tâche
+  Gradle hors allowlist (durcissement VIBE-HARDENING S-185/S-186) — la garde
+  a fait son travail.
+
+**Conclusion** : le pipeline A2 (prompt borough → contexte augmenté RAG →
+planner adapter via N1 PlannerPort → plan → boucle vibecoding → resumption
+prompt) est **prouvé end-to-end**. Le seul blocage du volet cloud est le quota
+Ollama — externe, hors code.
+
+=== Proof-of-work RAG (non-metered)
+
+`query.init.gradle.kts` → `searchWithDoubtBlocking("qu'est-ce qu'un référentiel
+de compétences ?", 5)` : 5 chunks pertinents (sim 0.58-0.67), sectionPaths
+cohérents. Le RAG répond.
+
+== Mission 3 — RENAME Vague 4 transverse ✅ (résidus post-S-266)
+
+**Découverte** : l'INDEX déclarait RENAME ✅ TERMINÉ (vérifié S-266), mais la
+gate D16 de S-266 était **sensible à la casse** (`Qualiopi` ≠ `QUALIOPI`) et
+n'incluait ni `FPA` ni le lexique français — des résidus réels subsistaient.
+
+Subagent dédié (6 boroughs audités) — gate D16 robuste rejouée = **zéro** :
+
+|===
+| Borough | Résidu | Action
+| plantuml | KDoc loader `QUALIOPI`/`RNCP` + 4 fixtures | → `ISO/IEEE/RFC` (RENAME-11)
+| codex | fixtures provenance/normalisation (`SPG`/`SPD`/`REAC`/`FPA`) + KDoc prod | → titres génériques de même forme ; `FpaPageProvenanceJoinRateTest` → `PageProvenanceJoinRateTest` paramétré par propriétés système (corpus privé hors du repo public)
+| bakery | fixture `QUALIOPI` + acteurs `Formateur/Stagiaire` | → `RFC` + `Concepteur/Testeur` ; fixture renommée `vocabulaire-technique.adoc`
+| graphify | titre corpus réel `Devenir Formateur...` | → générique
+| hyperframes | « My Formation »/`ma-formation.adoc` (français, règle English only) | → « My Presentation »/`my-presentation.adoc`
+| capsule | 0 résidu | —
+|===
+
+**Transfusion d'abord** : `TRANSFER_LEXIQUE_FORMATION.adoc` § 2 complétée
+(codex join-rate rejouable, graphify, précisions bakery/plantuml/hyperframes).
+Gate D16 finale sur `src/` des 6 boroughs = **0** (faux positifs écartés :
+`unreachable`, `information`, `SPDX`, `asparagus`, branding Cheroliv).
+
+*Hors périmètre signalé, non traité* (à arbitrer, lot RENAME-13+ distinct) :
+`workspace-bom/agent-contracts` champ prod `afnorCorpus` (contrat N0
+cross-borough, breaking), `academy-gradle` enum `MaterialArtifactType.SPG/SPD`,
+`codebase-contracts` KDoc, `planner-gradle` fixtures. Le branding personnel
+`Cheroliv — développeur formateur` (bakery) est hors D16.
+
+== Assainissement du working tree (pattern S-269)
+
+Les 6 repos RENAME portaient un **résidu préexistant abandonné** (mtime
+`2026-09-19 02:04:42`, reliquat S-265/266) : troncatures destructives de
+`SESSIONS_HISTORY.adoc` (codex −3184 lignes, plantuml −74) + retouches
+INDEX/HIST/PROMPT_REPRISE **sans backup**. Restauré à HEAD (`git checkout`),
+backup horodaté conservé dans `/tmp/opencode/cb-s270-wt-backup/`. Seul le
+travail RENAME de la session est conservé.
+
+== Gates (Local = Build, tests = CI)
+
+* `compileKotlin`/`compileTestKotlin --rerun-tasks` : codex, bakery, graphify,
+  plantuml, hyperframes **BUILD SUCCESSFUL** (codex à neuf).
+* Run A2 : BUILD SUCCESSFUL (cloud bloqué quota, local prouvé plan produit).
+* Aucun `test`/`check`/`cucumberTest` en local (règle EAGER).
+* Zéro secret.
+
+== Fichiers
+
+* codebase (Queens) : **aucun code production modifié** — session dogfooding +
+  gouvernance. Diagnostics consignés.
+* 5 boroughs RENAME : 37 fichiers (prod KDoc + fixtures tests + features + docs
+  courantes) — voir table mission 3.
+* training : `TRANSFER_LEXIQUE_FORMATION.adoc` (§ 2 complétée).
+
+== Décisions
+
+. La recette A2 du PROMPT_REPRISE était fausse (self-application impossible
+   pour le planner) — la recette correcte est le consommateur transitoire 2
+   plugins (S-264). PROMPT_REPRISE S-271 corrigé.
+. Self-application `0.0.10` périmée = cause racine du trap S-265/266 —
+   signalée (à aligner, cf. PROMPT_REPRISE S-271).
+. Run non-metered via LLM local (11443) = technique de preuve réutilisable
+   quand le quota cloud est épuisé.
+. RENAME Vague 4 : la gate D16 doit être **insensible à la casse** et inclure
+   `FPA` + lexique français (leçon S-266).
+. Les historiques `SESSIONS_HISTORY` sont immuables : le résidu préexistant a
+   été restauré, jamais tronqué.
+
+== Prochaine session (271)
+
+* **CB-PAGE-PROVENANCE US-2** (N2 transport codex, Brooklyn) — reporté.
+* Ou re-run A2 en cloud si le quota Ollama est rétabli.
+* Arbitrage lot RENAME-13+ (agent-contracts `afnorCorpus`, academy enum).
+
+== Échecs préexistants (orthogonaux)
+
+* 2 × `OcrTaskTest` (drift pdf S-211) — stash-confirmés, non touchés.

@@ -4,16 +4,18 @@
 
 _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux. Pour le backlog à jour détaillé, voir `.agents/BACKLOG.adoc`._
 
-== Synthèse Backlog (Session 269 — 2026-09-28)
+== Synthèse Backlog (Session 270 — 2026-09-28)
 
-*Le backlog détaillé à jour est dans `.agents/BACKLOG.adoc`. Résumé S-269 :*
-**CB-PAGE-PROVENANCE US-4 (N1 BDD) ✅** — runner orphelin soldé
-(`cucumberTestPageRetrieval`, 46e). Le commit `f6e5605` (« US-2 and US-4 »)
-était un faux positif : 4 fichiers de test cassés non enregistrés.
-Le working tree a été assaini en ouverture (refactor build abandonné
-S-265/266 backupé + restore HEAD — le build était cassé).
-Reste : **US-2 (N2 transport codex, Brooklyn)** + **génération réelle A2**
-(accord pilote — LLM metered).
+*Le backlog détaillé à jour est dans `.agents/BACKLOG.adoc`. Résumé S-270 :*
+**Génération réelle A2 ✅** (pipeline prouvé end-to-end) + **RENAME Vague 4
+transverse ✅** (résidus). A2 : 2 causes racines S-265/266 (recette fausse +
+self-application périmée `0.0.10`) ; recette correcte = consommateur transitoire
+2 plugins (S-264). RAG 387 chunks ; run cloud bloqué quota externe (26 comptes),
+run local non-metered prouvé (plan produit). RENAME : 5 boroughs neutralisés,
+gate D16 robuste = 0.
+Reste : **CB-PAGE-PROVENANCE US-2 (N2 transport codex, Brooklyn)** — reporté
+S-271 ; arbitrage lot RENAME-13+ (`agent-contracts.afnorCorpus`, academy enum) ;
+dette self-application `0.0.10`/`0.0.11`/`0.0.16` divergente.
 
 == Synthèse Backlog (Session 264 — 2026-09-17) — HISTORIQUE
 
@@ -38,7 +40,7 @@ Reste : **US-2 (N2 transport codex, Brooklyn)** + **génération réelle A2**
 | Tous autres EPICs | V, W, X, Y, Z, K, L, OCR, CR, TRAD, PUB, V-LOCAL, SP, V-6, V-7, V-8, V-9, 2→12 | ✅ TERMINÉ | Voir détails ci-dessous
 |===
 
-*Backlog réellement restant* (S-269) : **CB-PAGE-PROVENANCE US-2** (N2 transport codex, Brooklyn) + **génération réelle A2** (accord pilote — LLM metered) + SLD-8 US-8.2/8.3 (côté slider) + EPIC V-FLYWAY (P2 conditionnel, seuil 5 migrations) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5. EPIC CDX-OCR-CONTRACTS ✅ TERMINÉ 5/5 US (S-202). EPIC CDX-RAG-SOCLE ✅ TERMINÉ 6/6 US (S-201). EPIC FT-PIPELINE ✅ TERMINÉ 7/7 US (S-198). CB-STORE-UNIFY ✅ CADUQUE (S-206).
+*Backlog réellement restant* (S-270) : **CB-PAGE-PROVENANCE US-2** (N2 transport codex, Brooklyn — reporté S-271) + SLD-8 US-8.2/8.3 (côté slider) + EPIC V-FLYWAY (P2 conditionnel, seuil 5 migrations) + PublishingConventionsPlugin pom.name+description (conventions-gradle) + Warnings CI actions@v4→v5 + dette self-application (garde anti-drift) + arbitrage lot RENAME-13+. EPIC CDX-OCR-CONTRACTS ✅ TERMINÉ 5/5 US (S-202). EPIC CDX-RAG-SOCLE ✅ TERMINÉ 6/6 US (S-201). EPIC FT-PIPELINE ✅ TERMINÉ 7/7 US (S-198). CB-STORE-UNIFY ✅ CADUQUE (S-206). Génération réelle A2 ✅ pipeline prouvé (S-270).
 
 == EPIC VIBE-HARDENING — Durcissement vibecoding P1 (CR-GLOBALE-004)
 

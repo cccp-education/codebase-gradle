@@ -1,5 +1,24 @@
 = Archive — Tâches Terminées — Septembre 2026
 
+== S-270 (2026-09-28) — Génération réelle A2 + RENAME Vague 4 (Queens + 5 boroughs)
+
+* **A2 (dogfood)** : pipeline prouvé end-to-end. 2 causes racines S-265/266 —
+  recette fausse (self-application ne résout jamais le planner → NoOp) +
+  self-application périmée `0.0.10` (avant S-259). Recette correcte =
+  consommateur transitoire 2 plugins (pattern S-264). RAG : 387 chunks /
+  387 embeddings / 18 doubtful / avg 0.953. Run cloud bloqué **quota externe**
+  (26 comptes) ; run **local non-metered** (`qwen3:0.6b` @11443) → plan réel
+  produit (`executePlanTasks` atteint), resumption prompt depuis le vrai
+  backlog (23 items). Preuve RAG : 5 chunks pertinents.
+* **RENAME Vague 4** (5/6 boroughs) : plantuml, codex, bakery, graphify,
+  hyperframes neutralisés (KDoc prod + fixtures + features + docs courantes) ;
+  gate D16 robuste sur `src/` = 0 ; transfusion `TRANSFER_LEXIQUE_FORMATION.adoc` § 2.
+  Résidus hors-périmètre signalés (agent-contracts `afnorCorpus`, academy enum).
+* **Working tree assaini** : résidu abandonné S-265/266 (troncatures
+  `SESSIONS_HISTORY` −3184/−74) restauré + backup `/tmp/opencode/cb-s270-wt-backup/`.
+* Zéro bump, zéro publication, zéro secret. Gates : compile VERT (rerun codex).
+* Rapport : `.agents/sessions/270-generation-a2-rename-vague4.adoc`.
+
 == S-269 (2026-09-28) — CB-PAGE-PROVENANCE US-4 (N1 BDD) (Queens)
 
 * **Feature** : runner orphelin soldé — `cucumberTestPageRetrieval`, **46e runner dédié**.

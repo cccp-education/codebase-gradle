@@ -1,69 +1,69 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 270
-:session: 270
+= Prompt de Reprise — Codebase (Queens N1) — Session 271
+:session: 271
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
-:session_precedente: 269 — CB-PAGE-PROVENANCE US-4 (N1 BDD) ✅ + CI ressuscitée VERTE (run `36465426319`). Runner orphelin soldé (`cucumberTestPageRetrieval` 46e) ; 3 verrous CI levés (JDK 25, working-directory, nmcp) ; 4 échecs préexistants masqués soldés. Working tree assaini.
-:session_pre_precedente: 268 — suppression code mort N1 (codex C-3 constat A) ✅
+:session_precedente: 270 — Génération réelle A2 ✅ (pipeline prouvé end-to-end) + RENAME Vague 4 transverse ✅ (résidus). Pipeline A2 prouvé : planner résolu, RAG 387 chunks, plan produit par LLM local, resumption prompt générée depuis le vrai backlog. Blocage cloud = quota externe (26 comptes). RENAME : 5 boroughs neutralisés, gate D16 = 0. Working tree résiduel S-265/266 restauré.
+:session_pre_precedente: 269 — CB-PAGE-PROVENANCE US-4 (N1 BDD) ✅ + CI ressuscitée VERTE
 
-== Mission Session 270 — à la demande du pilote
-
-Ordre pilote : reprise de la mission **Génération réelle A2**
-(critical path MVP0), sur **accord pilote explicite** — LLM *metered*.
-
-* Lancer `autonomousSession` **directement dans le projet codebase-plugin**
-  (build autonome, PAS d'includeBuild dans le build racine — leçon S-265/266) :
-  `cd codebase-plugin && ./gradlew autonomousSession --borough=newark --maxChainedSessions=1 --no-daemon`
-  (l'ordre des options doit être vérifié : `--borough` avant la task si Gradle
-  le requiert).
-* RAG référentiel peuplé + port planner résolu (wiring prouvé S-264).
-* C'est la première mission réelle qui consomme le contexte augmenté.
-
-Alternatives si accord A2 non donné :
+== Mission Session 271 — à la demande du pilote
 
 . **CB-PAGE-PROVENANCE US-2 (N2 transport codex, Brooklyn)** — le volet
-   cross-borough qui reste : `CodexIngestTask.pageProvenanceFile`
+   cross-borough qui reste (reporté de S-270) : `CodexIngestTask.pageProvenanceFile`
    (`@InputFiles` tolérante, pattern S-221) + jointure exacte SHA-256
    `ChunkPageProvenance.chunkId` ↔ `DocumentChunk.id` + attache `pages`.
    Le scénario BDD sidecar (reporté de US-4 S-269) suit cette US.
-. **RENAME Vague 4 transverse** : bakery → capsule → plantuml →
-   graphify/codex (transfusion `TRANSFER_LEXIQUE_FORMATION.adoc` d'abord).
+   → **ouvrir le borough codex** (`foundry/public/codex-gradle/codex-plugin`).
+. **Re-run A2 en cloud** si le quota Ollama est rétabli (sinon, la preuve
+   locale via `-Pollama.baseUrl=http://localhost:11443` reste valable).
+. **Arbitrage lot RENAME-13+** (résidus hors 6 boroughs, constatés S-270) :
+   `workspace-bom/agent-contracts` champ prod `afnorCorpus` (contrat N0
+   cross-borough, breaking — consommé par planner), `academy-gradle` enum
+   `MaterialArtifactType.SPG/SPD`, `codebase-contracts` KDoc, `planner-gradle`
+   fixtures. À cadrer avec le pilote (breaking N0 = accord requis).
 
-== Contexte technique
+== Contexte technique (S-270)
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25).
-* Version locale **0.0.16** (Central 0.0.16, bundle `db5e1158`). Conventions
-   0.0.4. BOM/catalog **0.0.50**. `publishToMavenLocal` VERT S-269.
-* **Wiring SVO prouvé** : `AutonomousSessionTask.resolvePlannerPort()` résout
-   le `PlannerPort` par nom canonique `plannerPortService` (adapter planner
-   `KoogIntentionPlannerAdapter`) ; NoOp dégradé si rien n'est branché.
-* **Contrat cross-borough** : un consommateur applique `education.cccp.codebase`
-   + `education.cccp.planner` (les 2 coexistent depuis S-264). codebase
-   `generateAugmentedPlan` (ex-`generatePlan`) ; planner garde `generatePlan`.
-* **46 cucumber runners dédiés** (dont `cucumberTestAutonomousSession` et
-   `cucumberTestPageRetrieval` S-269).
-* Catalogue local codebase : `workspace-bom = "0.0.50"`.
-* NB : 5 runners sont **préexistants non enregistrés** à HEAD (EpicV6OllamaCloud/
-   Pool/Resolver, EpicV912, EpicZ6) — dette connue, hors périmètre.
+* Version locale **0.0.16** (Central 0.0.16). Conventions 0.0.4. BOM/catalog 0.0.50.
+* **Recette A2 prouvée** = *consommateur transitoire* (Règle 2, `/tmp`) avec
+  **les 2 plugins** (`education.cccp.codebase:0.0.16` + `education.cccp.planner:0.0.2`),
+  PAS la self-application de `codebase-plugin` (cf. Dette ci-dessous).
+  `./gradlew autonomousSession --borough=<b> --maxChainedSessions=1
+  -Pollama.baseUrl=http://localhost:11443 -Pollama.modelName=qwen3:0.6b`
+  (LLM **local** non-metered — le port 11443 sert `qwen3:0.6b`/`smollm:135m`).
+* RAG : init-script `CorpusIngestMain` (env `CORPUS_CHUNKS_FILE` + `PGVECTOR_*`),
+  pgvector jetable `pgvector/pgvector:pg17` port 5432. 387 chunks / 18 doubtful.
 
-== Échecs préexistants (orthogonaux, ne pas confondre)
+== Dette découverte S-270 (à traiter, non bloquante)
 
-* 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`, `isImageFile
-   false for pdf`) — drift S-211, **stash-confirmés identiques à HEAD**.
+* **Self-application périmée** : `codebase-plugin/build.gradle.kts:17` épingle
+  `id("education.cccp.codebase") version "0.0.10"` (avant S-259 → `autonomousSession`
+  absente en auto-application). Cause racine des échecs S-265/266. Le catalogue
+  local `gradle/libs.versions.toml:2` dit `0.0.11` — trois valeurs divergentes
+  (build 0.0.10, toml 0.0.11, project version 0.0.16). À aligner + garde anti-drift
+  (candidat US dédiée, pattern `BakeryPluginPublicationTest` whitespace-insensitive).
+
+== Échecs préexistants (orthogonaux)
+
+* 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`, `isImageFile false
+  for pdf`) — drift S-211, stash-confirmés identiques à HEAD.
 
 == Règles absolues
 
 * Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois.
-* **Local = Build, Tests = CI** (règle EAGER) : compiler/builder en local
-   seulement ; `test`/`cucumberTest`/`check` s'exécutent en CI après push.
+* **Local = Build, Tests = CI** : compiler/builder en local seulement ;
+  `test`/`cucumberTest`/`check` s'exécutent en CI après push.
 * Git autorisé (décision pilote 2026-09-17) — zéro secret commité.
 * Publication Central = accord pilote explicite (Règle 2).
-* Vérifier le **working tree** avant toute mission (`git status`) — un
-   refactor abandonné a cassé le build S-269.
+* Vérifier le **working tree** avant toute mission (`git status`) — un résidu
+  abandonné S-265/266 a été trouvé (troncatures d'historique sans backup) et
+  restauré S-270.
+* Gate RENAME D16 : **insensible à la casse** + inclure `FPA`/lexique français
+  (leçon S-266).
 
 == References
 
+* `.agents/sessions/270-generation-a2-rename-vague4.adoc`
 * `.agents/sessions/269-cb-page-provenance-us4-bdd-n1.adoc`
-* `.agents/sessions/268-dead-code-n1-suppression.adoc`
 * `.agents/sessions/264-dogfood-a2-2-bugs-integration-rename-v4-doc.adoc`
-* `.agents/CADRAGE_EPIC_SVO_SESSION_ORCHESTREE.adoc` (cadrage S-255)
 * `../codex-gradle/codex-plugin/.agents/CADRAGE_EPIC_CB_PAGE_PROVENANCE.adoc` (EPIC cross-borough)
-* `training-gradle/.agents/TRANSFER_LEXIQUE_FORMATION.adoc` (transfusion)
+* `../training-gradle/training-plugin/.agents/TRANSFER_LEXIQUE_FORMATION.adoc` (transfusion)
