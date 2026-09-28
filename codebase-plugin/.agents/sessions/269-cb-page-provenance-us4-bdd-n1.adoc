@@ -125,6 +125,35 @@ Contrôles statiques (les tests s'exécutent en CI, règle EAGER
 * Le working tree doit être vérifié **avant** toute mission : le refactor
   abandonné cassait le build entier (`pluginManagement` retiré).
 
+== Correctif CI bloquant (verrou V1 cross-borough)
+
+En vérifiant le run CI du commit poussé, découverte que **la CI était rouge
+sur TOUS les pushs depuis ≥ 2026-09-17** (30+ runs `failure`). Cause racine,
+**deux défauts structurels préexistants** dans les workflows (hérités de
+l'ère monorepo, cassés depuis le passage au build autonome S-176) :
+
+. **JDK 24 vs JVM 25** — les conventions `education.cccp.build.gradle-plugin`
+   0.0.4 exigent `jvmToolchain(25)` / `sourceCompatibility = VERSION_25`.
+   Le workflow épinglait `java-version: '24'` → erreur
+   `Dependency requires at least JVM runtime version 25. This build uses a
+   Java 24 JVM.` (même verrou V1 que bakery S-243).
+. **Invocation depuis la racine** — `./gradlew testFast` / `testAll` /
+   `:codebase-plugin:test` étaient lancés depuis la racine `codebase-gradle`,
+   or ces tâches vivent dans le build **autonome** `codebase-plugin/` depuis
+   S-176 → `Task 'testFast' not found in root project`.
+
+Correctif chirurgical (backups `/tmp/opencode/queens-s269-backup/`) :
+
+* `test.yml` + `ocr.yml` : `java-version: '24'` → `'25'` (4 emplacements) ;
+* `test.yml` (jobs `fast-tests`, `full-tests`, `publish`) + `ocr.yml` :
+  `defaults.run.working-directory: codebase-plugin` ;
+* `ocr.yml` : `:codebase-plugin:test` → `test` (contexte du répertoire).
+
+Vérifications locales : YAML valides, `testAll` résout 73 tâches (dont
+`cucumberTestPageRetrieval`), filtre OCR résout, `working-directory` cohérent.
+Ce correctif conditionne la **preuve de validité** de la session (règle : le
+vert CI est l'unique preuve).
+
 == Clôture
 
 * 7 étapes exécutées. Commit + push en clôture (décision pilote 2026-09-17).
