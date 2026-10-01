@@ -2,6 +2,28 @@
 :toc: left
 :icons: font
 
+== Session 272 — 2026-10-02
+
+* **EPICs** : Bloc B (publication N1→N2) ✅ — `codebase-plugin 0.0.17` Central
+* **Type** : publication cross-borough (B-1 codebase-first + N0 MEMPHIS + B-2 codex)
+* **Livrables** :
+** Prémisse **reproduite** : jar Central `0.0.16` inspecté par `javap` — pas de
+   `pages` (9 champs), la CI codex échouait légitimement (US-1 S-265 non publiée).
+** B-1 codebase : bump `build.gradle.kts:8` `0.0.16` → `0.0.17`,
+   `publishToMavenLocal` VERT (jar `getPages(): List<Integer>` ✅),
+   Central bundle `7d5a340d-287c-4801-aa01-983367949dac` (AUTOMATIC).
+** N0 MEMPHIS : BOM/catalog `0.0.61` → `0.0.62` (`codebase-plugin 0.0.17` +
+   `codex-plugin 0.0.12`), gardes `PlatformCatalogAlignmentTest` réalignées,
+   Central bundle `7baf6567-e27d-40d0-8ad5-3ec1c66fcdae`.
+** B-2 codex : pins catalog/BOM `0.0.50` → `0.0.62`, toml local
+   `codebase-plugin 0.0.12` → `0.0.17` + `codex-plugin 0.0.11` → `0.0.12`
+   (version dérivée `ws.versions.codex.plugin`), Central bundle `79d0ad3d`.
+** Propagation repo1 **HTTP 200 ×4** (codebase · bom · catalog · codex).
+* **Valeur** : le `pages` de l'US-1 est résolvable depuis Central → **la preuve
+  CI de l'US-2 (S-230) est débloquée**. Chaîne GBL-003.4 close au niveau
+  artefacts publiés.
+* **Rapport** : `.agents/sessions/272-bloc-b-publication-n1-n2.adoc`.
+
 == Session 271 — 2026-09-29
 
 * **EPICs** : CB-PAGE-PROVENANCE US-2 (N2 transport codex, Brooklyn) ✅ — **EPIC clos 5/5**

@@ -4,18 +4,19 @@
 
 _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux. Pour le backlog à jour détaillé, voir `.agents/BACKLOG.adoc`._
 
-== Synthèse Backlog (Session 270 — 2026-09-28)
+== Synthèse Backlog (Session 272 — 2026-10-02)
 
-*Le backlog détaillé à jour est dans `.agents/BACKLOG.adoc`. Résumé S-270 :*
-**Génération réelle A2 ✅** (pipeline prouvé end-to-end) + **RENAME Vague 4
-transverse ✅** (résidus). A2 : 2 causes racines S-265/266 (recette fausse +
-self-application périmée `0.0.10`) ; recette correcte = consommateur transitoire
-2 plugins (S-264). RAG 387 chunks ; run cloud bloqué quota externe (26 comptes),
-run local non-metered prouvé (plan produit). RENAME : 5 boroughs neutralisés,
-gate D16 robuste = 0.
-Reste : **CB-PAGE-PROVENANCE US-2 (N2 transport codex, Brooklyn)** — reporté
-S-271 ; arbitrage lot RENAME-13+ (`agent-contracts.afnorCorpus`, academy enum) ;
-dette self-application `0.0.10`/`0.0.11`/`0.0.16` divergente.
+*Le backlog détaillé à jour est dans `.agents/BACKLOG.adoc`. Résumé S-272 :*
+**Bloc B (publication N1→N2) ✅** — `codebase-plugin 0.0.17` + MEMPHIS
+BOM/catalog `0.0.62` + `codex-plugin 0.0.12` publiés Central (bundles
+`7d5a340d` / `7baf6567` / `79d0ad3d`), propagation repo1 HTTP 200 ×4. Le
+`pages` de l'US-1 est résolvable Central → preuve CI codex US-2 débloquée.
+Reste : **bloc C** (C-3 dead code N1 + désync gouvernance codex ; C-4
+pollution TOC chunking) ; **migration codebase → conventions 0.0.7 + dette
+self-application** (`build.gradle.kts:17` épingle `0.0.10`) ; arbitrage lot
+RENAME-13+ (`agent-contracts.afnorCorpus`, academy enum).
+
+== Synthèse Backlog (Session 270 — 2026-09-28) — HISTORIQUE
 
 == Synthèse Backlog (Session 264 — 2026-09-17) — HISTORIQUE
 

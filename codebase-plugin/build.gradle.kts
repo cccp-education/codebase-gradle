@@ -5,7 +5,7 @@ import java.time.Duration
 fun isCI() = System.getenv("CI") == "true"
 
 group = "education.cccp"
-version = "0.0.16"
+version = "0.0.17"
 
 plugins {
     `java-library`

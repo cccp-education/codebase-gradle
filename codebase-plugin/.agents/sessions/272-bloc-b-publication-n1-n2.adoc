@@ -1,0 +1,67 @@
+= Session 272 — Bloc B (publication N1→N2) ✅ — codebase-plugin 0.0.17 Central
+
+:session: 272
+:date: 2026-10-02
+:type: publication cross-borough (B-1 codebase-first + MEMPHIS + B-2 codex)
+:borough: Queens — codebase-gradle (N1) / MEMPHIS — workspace-bom (N0) / Brooklyn — codex-gradle (N2)
+
+== Contexte
+
+Mission S-272 du `PROMPT_REPRISE` : **bloc B — publication N1→N2**,
+prérequis dur découvert S-271/S-230. Le `codebase-plugin:0.0.16` de Maven
+Central (publié S-264, le 2026-09-17) est **stale** : il précède l'US-1
+`DocumentChunk.pages` (S-265). La CI codex ressuscitée S-230 échoue donc à
+`:compileKotlin` (`PageProvenanceAttacher.kt:45 Unresolved reference 'pages'`).
+
+*Accord pilote* : le pilote a explicitement autorisé le bloc B dans la
+consigne d'ouverture (« Ordre recommandé : 1. Bloc B — publication N1→N2 …
+Accord pilote requis — c'est toi qui tranches »).
+
+== Prémisse reproduite (audit d'ouverture)
+
+Le jar Central 0.0.16 a été téléchargé et inspecté par `javap` :
+`codebase.store.DocumentChunk` **n'a pas** le champ `pages` (confirmé :
+9 champs, pas de `getPages()`). Le source HEAD l'a (US-1 S-265). La
+prémisse du bloc B est donc **exacte**, non un artefact de cache local.
+
+== Travail — ordre DAG N0 → N1 → N2
+
+[cols="2,3,3"]
+|===
+| Étape | Action | Preuve
+
+| Ouvrir le codebase | `compileKotlin compileTestKotlin` VERT (Local = Build) | BUILD SUCCESSFUL 15s
+| B-1 codebase | bump `build.gradle.kts:8` `0.0.16` → `0.0.17` | `publishToMavenLocal` VERT, jar 0.0.17 `javap` → `getPages(): List<Integer>` ✅
+| B-1 Central | `publishAggregationToCentralPortal` | bundle `7d5a340d-287c-4801-aa01-983367949dac` (AUTOMATIC)
+| N0 MEMPHIS | bump `workspace-bom` `0.0.61` → `0.0.62` + `codebase-plugin` `0.0.16` → `0.0.17` + `codex-plugin` `0.0.11` → `0.0.12` ; gardes `PlatformCatalogAlignmentTest` réalignées | `publishToMavenLocal` VERT (toml publié porte codebase 0.0.17 + codex 0.0.12), BOM POM 0.0.62 constrain codebase 0.0.17 / codex 0.0.12
+| N0 Central | `publishAggregationToCentralPortal` | bundle `7baf6567-e27d-40d0-8ad5-3ec1c66fcdae` (AUTOMATIC)
+| B-2 codex | bump pins catalog `0.0.50` → `0.0.62`, toml local `codebase-plugin` `0.0.12` → `0.0.17` + `codex-plugin` `0.0.11` → `0.0.12` (version dérivée `ws.versions.codex.plugin`) | `compileKotlin compileTestKotlin` VERT contre codebase 0.0.17 ; `publishToMavenLocal` produit `codex-plugin:0.0.12`
+| B-2 Central | `publishAggregationToCentralPortal` | bundle `79d0ad3d-d4dc-44c3-9055-6747a03f44b5` (AUTOMATIC)
+|===
+
+*Note ordre DAG* : codex dérive sa version propre de `ws.versions.codex.plugin`
+(garde `CodexPluginPublicationTest` l'impose). Publier `codex-plugin:0.0.12`
+**exige** que le catalogue MEMPHIS déclare `codex-plugin = "0.0.12"`. Le bump
+MEMPHIS (0.0.62) est donc bien un maillon du bloc B, pas un ajout hors scope.
+
+== Valeur
+
+* Le `pages` de l'US-1 (S-265) est désormais **résolvable depuis Central**.
+  La CI codex peut compiler `PageProvenanceAttacher` → la preuve CI de
+  l'US-2 (S-230) devient possible.
+* Chaîne GBL-003.4 close de bout en bout au niveau des artefacts publiés :
+  `codebase-store.pages` (N1) + `codex.provenance` (N2).
+* Zéro contrat N0 nouveau (types de store N1) — le MEMPHIS bump ne fait que
+  propager les versions, pas de changement de contrat.
+
+== Gouvernance mise à jour (Queens)
+
+* `INDEX.adoc` (session 272, EPIC CB-PAGE-PROVENANCE publication ✅).
+* `PROMPT_REPRISE.adoc` (S-273).
+* `SESSIONS_HISTORY.adoc`, `BACKLOG.adoc`, archive.
+
+== Hors scope
+
+* Bloc C-3 (dead code N1 + désync gouvernance codex) et C-4 (pollution TOC).
+* Migration codebase → conventions 0.0.7 + dette self-application
+  (`build.gradle.kts:17` épingle `education.cccp.codebase` `0.0.10`).
