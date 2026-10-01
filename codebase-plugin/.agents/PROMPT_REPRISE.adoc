@@ -1,66 +1,48 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 272
-:session: 272
+= Prompt de Reprise — Codebase (Queens N1) — Session 273
+:session: 273
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
-:session_precedente: 271 — CB-PAGE-PROVENANCE US-2 (N2 codex, Brooklyn) ✅ — EPIC clos 5/5. Livrée côté codex S-230 (noyau pur `PageProvenanceAttacher` jointure exacte SHA-256, `CodexIngestTask.pageProvenanceFile` tolérante, wiring plugin, BDD @provenance ×2). Côté N1 : zéro code modifié (US-1/US-3/US-4 déjà livrées S-265/S-267/S-269).
-:session_pre_precedente: 270 — Génération réelle A2 ✅ (pipeline prouvé end-to-end) + RENAME Vague 4 transverse ✅
+:session_precedente: 272 — Bloc B (publication N1→N2) ✅ — `codebase-plugin 0.0.17` Central (bundle `7d5a340d`) + MEMPHIS BOM/catalog 0.0.62 (bundle `7baf6567`) + codex-plugin 0.0.12 (bundle `79d0ad3d`). Propagation repo1 HTTP 200 ×4. Preuve CI codex US-2 débloquée.
+:session_pre_precedente: 271 — CB-PAGE-PROVENANCE US-2 (N2 codex, Brooklyn) ✅ — EPIC clos 5/5.
 
-== Mission Session 272 — à la demande du pilote
+== Mission Session 273 — à la demande du pilote
 
-. **Bloc B — publication N1→N2 (PRÉREQUIS DUR, découvert S-271/S-230)** :
-   la CI codex, ressuscitée S-230, échoue à `:compileKotlin`
-   (`PageProvenanceAttacher.kt:45 Unresolved reference 'pages'`) car le
-   **`codebase-plugin:0.0.16` de Maven Central est stale** — publié **S-264**
-   (avant l'US-1 `DocumentChunk.pages` de S-265). En local, seul mavenLocal
-   (0.0.16 republié S-265/S-267) compile. **Résolution** : bump
-   `codebase-plugin` 0.0.16 → **0.0.17** (une version Central est immuable),
-   publication Central, puis bump `codex-plugin` 0.0.11 → **0.0.12**. Zéro
-   bump MEMPHIS (types de store N1, pas de contrat N0 — D9).
-   → **accord pilote explicite requis** (Règle 2).
-. **Dette self-application codebase** (constat S-270, non bloquant) :
-   `codebase-plugin/build.gradle.kts:17` épingle
-   `id("education.cccp.codebase") version "0.0.10"` — valeurs divergentes
-   (build `0.0.10`, toml local `0.0.11`, project `0.0.16`). Aligner + garde
-   anti-drift (pattern `BakeryPluginPublicationTest` whitespace-insensitive).
-. **Re-run A2 en cloud** si le quota Ollama est rétabli (sinon, la preuve
-   locale via `-Pollama.baseUrl=http://localhost:11443` reste valable).
-. **Arbitrage lot RENAME-13+** (résidus hors 6 boroughs) : `workspace-bom`
-   `agent-contracts` champ `afnorCorpus` (contrat N0 breaking), `academy-gradle`
-   enum `MaterialArtifactType.SPG/SPD`, `codebase-contracts` KDoc,
-   `planner-gradle` fixtures. Accord pilote requis (breaking N0).
+. **Bloc C-3 (préféré, suite ordonnée)** : dead code N1 — `StoreStatements.insertChunk()`
+   (5 binds) + `IngestIndexing.assignLocalIndices` sans appelant de production
+   (constat S-225 #4). Décision Queens : suppression (privilégiée si confirmée)
+   vs conservation (API publique d'un artefact Central). Baby-step TDD strict
+   (characterization avant, retrait, compile VERT). Voir
+   `codex-gradle/codex-plugin/.agents/CADRAGE_ROADMAP_S227_C_A_B.adoc` § C-3
+   + 8 désync gouvernance codex (côté codex).
+. **Migration codebase → conventions 0.0.7 + dette self-application** :
+   `codebase-plugin/build.gradle.kts:17` épingle `education.cccp.codebase`
+   `0.0.10` (build 0.0.10 / toml 0.0.11 / project 0.0.17 divergents). Aligner +
+   garde anti-drift (pattern `BakeryPluginPublicationTest` whitespace-insensitive).
+   Conventions 0.0.7 disponible sur le Plugin Portal (vérifié S-272).
+. **Bloc C-4** : pollution TOC chunking (99/387 chunks) — détection/exclusion
+   `SemanticChunker` ou marquage `doubtful` (zéro re-vectorisation).
 
-== Contexte technique (S-270/S-271)
+== Contexte technique (S-272)
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25).
-* Version locale **0.0.16** (Central 0.0.16). Conventions 0.0.4. BOM/catalog 0.0.50.
-* **Recette A2 prouvée** = *consommateur transitoire* (Règle 2, `/tmp`) avec
-  **les 2 plugins** (`education.cccp.codebase:0.0.16` + `education.cccp.planner:0.0.2`),
-  PAS la self-application (cf. dette self-application ci-dessus).
-  `./gradlew autonomousSession --borough=<b> --maxChainedSessions=1
-  -Pollama.baseUrl=http://localhost:11443 -Pollama.modelName=qwen3:0.6b`
-  (LLM **local** non-metered — le port 11443 sert `qwen3:0.6b`/`smollm:135m`).
-* RAG : init-script `CorpusIngestMain` (env `CORPUS_CHUNKS_FILE` + `PGVECTOR_*`),
-  pgvector jetable `pgvector/pgvector:pg17` port 5432. 387 chunks / 18 doubtful.
-* **EPIC CB-PAGE-PROVENANCE TERMINÉ 5/5 US** — publication optionnelle (bloc B).
+* Version locale **0.0.17** (Central 0.0.17). Conventions 0.0.4. BOM/catalog 0.0.62.
+* **EPIC CB-PAGE-PROVENANCE TERMINÉ 5/5 US** — publié (bloc B ✅).
+* EPIC CDX-OCR-CONTRACTS + CDX-RAG-SOCLE TERMINÉS.
 
 == Échecs préexistants (orthogonaux)
 
-* 2 × `OcrTaskTest` (`detectMimeType octet-stream for pdf`, `isImageFile false
-  for pdf`) — drift S-211, stash-confirmés identiques à HEAD.
+* 2 × `OcrTaskTest` (drift S-211, stash-confirmés) — à re-vérifier en CI.
 
 == Règles absolues
 
 * Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois.
 * **Local = Build, Tests = CI** : compiler/builder en local seulement ;
   `test`/`cucumberTest`/`check` s'exécutent en CI après push.
-* Git autorisé (décision pilote 2026-09-17) — zéro secret commité.
-* Publication Central = accord pilote explicite (Règle 2).
-* Vérifier le **working tree** avant toute mission (`git status`).
-* Gate RENAME D16 : **insensible à la casse** + inclure `FPA`/lexique français.
+* Git autorisé — zéro secret commité. Publication Central = accord pilote.
+* Vérifier le working tree avant toute mission (`git status`).
 
 == References
 
+* `.agents/sessions/272-bloc-b-publication-n1-n2.adoc`
+* `codex-gradle/codex-plugin/.agents/sessions/231-bloc-b-publication-n1-n2.adoc`
+* `codex-gradle/codex-plugin/.agents/CADRAGE_ROADMAP_S227_C_A_B.adoc` (§ C-3/C-4)
 * `.agents/sessions/271-cb-page-provenance-us2-n2-transport.adoc`
-* `codex-gradle/codex-plugin/.agents/sessions/230-cb-page-provenance-us2-n2-transport.adoc` (rapport codex)
-* `.agents/sessions/270-generation-a2-rename-vague4.adoc`
-* `../codex-gradle/codex-plugin/.agents/CADRAGE_EPIC_CB_PAGE_PROVENANCE.adoc` (EPIC cross-borough)
-* `../training-gradle/training-plugin/.agents/TRANSFER_LEXIQUE_FORMATION.adoc` (transfusion)
