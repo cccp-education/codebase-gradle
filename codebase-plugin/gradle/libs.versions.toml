@@ -1,12 +1,16 @@
 [versions]
-codebase-plugin = "0.0.11"
+# Self-application (dogfooding) — the version the plugin applies to itself.
+# MUST equal build.gradle.kts `version` (real HEAD) + the published catalog.
+# Guarded by CodebasePluginPublicationTest (anti-drift, S-273).
+codebase-plugin = "0.0.17"
 koog = "1.0.0"
 kotlin = "2.4.10"
 graphify = "0.0.5"
 
 [libraries]
-# BOM — source unique de vérité pour toutes les versions
-workspace-bom = { module = "education.cccp:workspace-bom", version = "0.0.50" }
+# BOM — the platform pin is dynamic in build.gradle.kts (ws.versions.workspace.bom,
+# catalog ws 0.0.62) ; the stale literal entry (0.0.50) is removed to avoid a
+# duplicate source of truth (piège #13, guard CodebasePluginPublicationTest).
 
 # External deps — versions explicites pour propagation POM transitive
 # (le BOM en implementation(platform()) ne propage pas ses contraintes aux consommateurs transitifs)

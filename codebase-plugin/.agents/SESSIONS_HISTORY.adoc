@@ -382,3 +382,40 @@
 ** Les commits post-session sans rapport (bump sync, align conventions)
    doivent être consignés à l'ouverture suivante, pas ignorés.
 * Zéro code production, zéro bump BOM, zéro secret.
+
+== Session 273 — 2026-10-02 — Migration conventions 0.0.7 + adoption catalog ws + garde anti-drift
+
+* **EPICs** : Dette technique (rollout conventions ABIDJAN P2)
+* **Type** : maintenance — baby-step TDD strict (RED → GREEN)
+* **Livrables** :
+** `build.gradle.kts` : conventions `education.cccp.build.{gradle-plugin,publishing}`
+   `0.0.4` → `0.0.7` (le standard workspace, 39 usages ; codebase était le
+   dernier consumer non migré).
+** Adoption catalog ws (pattern bakery MEM-CAT-3) : `settings.gradle.kts`
+   `create("ws") { from("education.cccp:workspace-catalog:0.0.62") }` ;
+   `version = ws.versions.codebase.plugin.get()` ; BOM platform dynamique
+   `platform("education.cccp:workspace-bom:${ws.versions.workspace.bom.get()}")`
+   (fin du littéral périmé 0.0.50, piège #13) ; self-application
+   `alias(libs.plugins.codebase)` alignée 0.0.17 (toml `codebase-plugin = "0.0.17"`).
+   Entrée toml `workspace-bom` morte supprimée.
+** **Split-brain tué** : build 0.0.10 / toml 0.0.11 / projet 0.0.17 → une source.
+** Garde `CodebasePluginPublicationTest` (4 tests, pattern `BakeryPluginPublicationTest`
+   S-244) : version dérivée du catalog, toml == ws, pin BOM dynamique, group+id
+   stables. Versions publiées **injectées par Gradle**
+   (`codebase.publishedCatalog.*`), jamais lues du working tree voisin
+   (raciness bakery S-243 / graphify D5-RACE).
+** Rapport : `.agents/sessions/273-migration-conventions-catalog-garde.adoc`.
+* **Fichiers** : `codebase-plugin/build.gradle.kts`, `settings.gradle.kts`,
+  `gradle/libs.versions.toml`, `.agents/PROMPT_REPRISE.adoc`, `.agents/INDEX.adoc`,
+  `BACKLOG.adoc`, `.agents/BACKLOG.adoc`, `.agents/SESSIONS_HISTORY.adoc`,
+  `.agents/sessions/273-*.adoc`,
+  `src/test/kotlin/codebase/publishing/CodebasePluginPublicationTest.kt`.
+* **Leçons** :
+** C-3 (dead code N1) du PROMPT_REPRISE était **déjà soldé S-268** — la
+   gouvernance d'ouverture peut être en retard d'une session ; vérifier par
+   grep avant d'engager.
+** Ce borough n'a **pas** de source set `functionalTest` — les 53 runners
+   Cucumber vivent dans `test` (piège de mapping de tâches).
+** Gates : `compileKotlin`/`compileTestKotlin`/`validatePlugins` VERT,
+   `properties` → 0.0.17, POM 0.0.17 + import `workspace-bom 0.0.62`,
+   `publishToMavenLocal` VERT. Tests = CI. Zéro bump/publication/secret.

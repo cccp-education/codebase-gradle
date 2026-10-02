@@ -5,16 +5,24 @@ import java.time.Duration
 fun isCI() = System.getenv("CI") == "true"
 
 group = "education.cccp"
-version = "0.0.17"
+// MEM-CAT — version propre dérivée du catalog workspace publié (pin unique
+// settings `ws`). Remplace le littéral dupliqué (0.0.17) — garde
+// `CodebasePluginPublicationTest`.
+version =
+    ws.versions.codebase.plugin
+        .get()
 
 plugins {
     `java-library`
     id("org.jetbrains.kotlin.plugin.serialization") version "2.4.10"
     id("org.jetbrains.kotlinx.kover") version "0.9.8"
-    id("education.cccp.build.gradle-plugin") version "0.0.4"
+    id("education.cccp.build.gradle-plugin") version "0.0.7"
     id("com.gradle.plugin-publish") version "2.1.0"
-    id("education.cccp.build.publishing") version "0.0.4"
-    id("education.cccp.codebase") version "0.0.10"
+    id("education.cccp.build.publishing") version "0.0.7"
+    // Self-application (dogfooding) — pinned to the *real* published version.
+    // Single source: `gradle/libs.versions.toml` `codebase-plugin` (guard
+    // `CodebasePluginPublicationTest`).
+    alias(libs.plugins.codebase)
 }
 
 publishingConventions {
@@ -37,7 +45,9 @@ publishing {
 }
 
 dependencies {
-    implementation(platform(libs.workspace.bom))
+    // MEM-CAT — BOM platform aligned on the published catalog (ws), never a
+    // stale literal (0.0.50 was neutralised by transitive resolution, piège #13).
+    implementation(platform("education.cccp:workspace-bom:${ws.versions.workspace.bom.get()}"))
     implementation(libs.kotlin.stdlib.jdk8)
     implementation(gradleApi())
     implementation(gradleKotlinDsl())
@@ -96,6 +106,15 @@ dependencies {
 
 tasks.named("pluginUnderTestMetadata").configure { dependsOn("jar") }
 tasks.named("validatePlugins").configure { dependsOn("jar") }
+
+// MEM-CAT — the publication hygiene guard must never read a neighbour
+// repository's working tree (racy between sessions, absent from an isolated CI
+// checkout — pattern bakery S-243 / graphify D5-RACE). The *published* catalog
+// versions resolved by Gradle (`ws.*`) are injected into the test JVM.
+tasks.named<Test>("test") {
+    systemProperty("codebase.publishedCatalog.codebaseVersion", ws.versions.codebase.plugin.get())
+    systemProperty("codebase.publishedCatalog.bomVersion", ws.versions.workspace.bom.get())
+}
 
 data class CucumberTaskSpec(
     val taskName: String,

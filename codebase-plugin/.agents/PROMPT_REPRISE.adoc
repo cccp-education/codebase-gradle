@@ -1,32 +1,32 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 273
-:session: 273
+= Prompt de Reprise — Codebase (Queens N1) — Session 274
+:session: 274
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
-:session_precedente: 272 — Bloc B (publication N1→N2) ✅ — `codebase-plugin 0.0.17` Central (bundle `7d5a340d`) + MEMPHIS BOM/catalog 0.0.62 (bundle `7baf6567`) + codex-plugin 0.0.12 (bundle `79d0ad3d`). Propagation repo1 HTTP 200 ×4. Preuve CI codex US-2 débloquée.
-:session_pre_precedente: 271 — CB-PAGE-PROVENANCE US-2 (N2 codex, Brooklyn) ✅ — EPIC clos 5/5.
+:session_precedente: 273 — **Migration conventions 0.0.4→0.0.7 + adoption catalog ws + garde anti-drift** ✅. Codebase était le dernier consumer non migré. `build.gradle.kts` conventions 0.0.7, `version = ws.versions.codebase.plugin.get()`, BOM platform dynamique (`ws.versions.workspace.bom` = 0.0.62), self-application `alias(libs.plugins.codebase)` alignée 0.0.17. Triple split-brain (build 0.0.10 / toml 0.0.11 / projet 0.0.17) **tué**. `CodebasePluginPublicationTest` (4 tests, injection Gradle). `publishToMavenLocal` VERT, POM 0.0.17 + import BOM 0.0.62.
+:session_pre_precedente: 272 — Bloc B (publication N1→N2) ✅ — `codebase-plugin 0.0.17` Central.
 
-== Mission Session 273 — à la demande du pilote
+== Mission Session 274 — à la demande du pilote
 
-. **Bloc C-3 (préféré, suite ordonnée)** : dead code N1 — `StoreStatements.insertChunk()`
-   (5 binds) + `IngestIndexing.assignLocalIndices` sans appelant de production
-   (constat S-225 #4). Décision Queens : suppression (privilégiée si confirmée)
-   vs conservation (API publique d'un artefact Central). Baby-step TDD strict
-   (characterization avant, retrait, compile VERT). Voir
-   `codex-gradle/codex-plugin/.agents/CADRAGE_ROADMAP_S227_C_A_B.adoc` § C-3
-   + 8 désync gouvernance codex (côté codex).
-. **Migration codebase → conventions 0.0.7 + dette self-application** :
-   `codebase-plugin/build.gradle.kts:17` épingle `education.cccp.codebase`
-   `0.0.10` (build 0.0.10 / toml 0.0.11 / project 0.0.17 divergents). Aligner +
-   garde anti-drift (pattern `BakeryPluginPublicationTest` whitespace-insensitive).
-   Conventions 0.0.7 disponible sur le Plugin Portal (vérifié S-272).
-. **Bloc C-4** : pollution TOC chunking (99/387 chunks) — détection/exclusion
-   `SemanticChunker` ou marquage `doubtful` (zéro re-vectorisation).
+* *EPIC PUB* (accord pilote) : tag `v0.0.17` → publication CI (le repo publie
+  déjà 0.0.17 Central S-272 ; le nettoyage S-273 est local). Un futur bump
+  `0.0.18` distribuera le delta si le pilote le souhaite.
+* *Bloc C-4* : pollution TOC chunking — déjà traité côté codex S-233
+  (`TocNoiseDetector` N2, `doubtful` zéro confiance). Vérifier si une US N1
+  reste nécessaire (a priori non : la détection est N2, zéro re-vectorisation).
+* *A2 — Génération réelle* (LLM metered) : bloqué quota externe (26 comptes
+  Ollama) / accord pilote. Run local non-metered `qwen3:0.6b` @11443 prouvé S-270.
+* *Arbitrage RENAME-13+* : `agent-contracts.afnorCorpus` prod N0 (hors codebase),
+  `academy-gradle` enum SPG/SPD.
+* *EPIC V-FLYWAY* (P2 conditionnel) : seuil 5 migrations (actuellement 4).
 
-== Contexte technique (S-272)
+== Contexte technique (S-273)
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25).
-* Version locale **0.0.17** (Central 0.0.17). Conventions 0.0.4. BOM/catalog 0.0.62.
-* **EPIC CB-PAGE-PROVENANCE TERMINÉ 5/5 US** — publié (bloc B ✅).
-* EPIC CDX-OCR-CONTRACTS + CDX-RAG-SOCLE TERMINÉS.
+* Version locale **0.0.17** (Central 0.0.17). Conventions **0.0.7**. BOM/catalog **0.0.62**.
+* Self-application : catalog ws `ws.versions.codebase.plugin` → toml local 0.0.17.
+* Pas de source set `functionalTest` — les 53 runners Cucumber vivent dans `test`.
+* **EPICs terminés** : CB-PAGE-PROVENANCE 5/5, CDX-OCR-CONTRACTS, CDX-RAG-SOCLE,
+  FT-PIPELINE, SVO, VIBE-HARDENING 1/2, OCR-QUALITY US-4.
+* Dette self-application ✅ **CLOSE** (S-273).
 
 == Échecs préexistants (orthogonaux)
 
@@ -37,12 +37,12 @@
 * Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois.
 * **Local = Build, Tests = CI** : compiler/builder en local seulement ;
   `test`/`cucumberTest`/`check` s'exécutent en CI après push.
+* **Règle 0** : `publishToMavenLocal` OBLIGATOIRE après toute modif source.
 * Git autorisé — zéro secret commité. Publication Central = accord pilote.
 * Vérifier le working tree avant toute mission (`git status`).
 
 == References
 
+* `.agents/sessions/273-migration-conventions-catalog-garde.adoc` (rapport S-273)
 * `.agents/sessions/272-bloc-b-publication-n1-n2.adoc`
-* `codex-gradle/codex-plugin/.agents/sessions/231-bloc-b-publication-n1-n2.adoc`
-* `codex-gradle/codex-plugin/.agents/CADRAGE_ROADMAP_S227_C_A_B.adoc` (§ C-3/C-4)
-* `.agents/sessions/271-cb-page-provenance-us2-n2-transport.adoc`
+* `bakery-gradle/bakery-plugin/src/test/kotlin/bakery/BakeryPluginPublicationTest.kt` (patron garde)

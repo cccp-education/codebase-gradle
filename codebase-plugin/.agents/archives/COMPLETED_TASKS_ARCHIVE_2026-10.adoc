@@ -1,0 +1,20 @@
+= Archive — Tâches Terminées — Octobre 2026
+
+== S-273 (2026-10-02) — Migration conventions 0.0.7 + adoption catalog ws + garde anti-drift (Queens)
+
+* **Type** : maintenance — dette technique (rollout conventions ABIDJAN P2)
+* **Mission** : codebase était le **dernier consumer** non migré vers les
+  conventions `0.0.7` + dette self-application (split-brain de version).
+* **Livrables** :
+** `build.gradle.kts` : conventions `education.cccp.build.{gradle-plugin,publishing}`
+   `0.0.4` → `0.0.7`.
+** Adoption catalog ws (pattern bakery MEM-CAT-3) : `create("ws")` pin
+   `workspace-catalog:0.0.62` ; `version = ws.versions.codebase.plugin.get()` ;
+   BOM platform dynamique `ws.versions.workspace.bom` ; self-application
+   `alias(libs.plugins.codebase)` alignée 0.0.17.
+** Split-brain tué : build 0.0.10 / toml 0.0.11 / projet 0.0.17 → une source.
+** Garde `CodebasePluginPublicationTest` (4 tests, injection Gradle).
+* **Gates** : compile/validatePlugins VERT, `properties` → 0.0.17, POM
+  0.0.17 + import BOM 0.0.62, `publishToMavenLocal` VERT. Zéro
+  bump/publication/secret.
+* **Rapport** : `.agents/sessions/273-migration-conventions-catalog-garde.adoc`.

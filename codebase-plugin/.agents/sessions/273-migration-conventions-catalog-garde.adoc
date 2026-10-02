@@ -1,0 +1,151 @@
+= Session 273 — Migration conventions 0.0.7 + adoption catalog ws + garde anti-drift
+
+:date: 2026-10-02
+:borough: Queens — codebase-gradle (N1)
+:type: maintenance / dette technique — baby-step TDD strict (RED → GREEN)
+:session_precedente: 272 — Bloc B (publication N1→N2) — `codebase-plugin 0.0.17` Central
+
+== Mission
+
+Mission retenue (PROMPT_REPRISE S-273, point 2) : **migration `codebase` vers
+conventions `0.0.7` + dette self-application**. Motif (accord implicite pilote
+session S-273) : codebase était le **dernier consommateur non migré** (rollout
+ABIDJAN P2), et la self-application était un **split-brain de version** réel :
+`build.gradle.kts:17` épinglait `education.cccp.codebase` **0.0.10** alors que le
+toml local était **0.0.11** et le HEAD projet **0.0.17**. Zéro LLM, zéro
+publication, self-contained.
+
+Note : le point **C-3 (dead code N1)** du PROMPT_REPRISE était **déjà soldé**
+S-268 (`insertChunk()`/`insertChunkBindCount()`/`assignLocalIndices` supprimés) —
+vérifié par grep (seuls `insertChunkWithDoubt`/`insertChunks` restent). Retiré
+de la mission.
+
+== Audit d'ouverture
+
+* `git status` propre, branche `main`, HEAD `2b74b8d` (S-232 → drift copie duale).
+* Compiles VERT (`compileKotlin` / `compileTestKotlin`), JDK 25.
+* Aucun `functionalTest` source set dans ce borough — les runners Cucumber
+  vivent dans `test` (53 `CucumberTaskSpec`). Piège à retenir.
+* Cartographie dette :
+** conventions : `education.cccp.build.{gradle-plugin,publishing}` en **0.0.4**
+  (le standard workspace est **0.0.7**, 39 usages) — seuls 2 fichiers en 0.0.4
+  dans tout le workspace, les deux ici.
+** self-application : `id("education.cccp.codebase") version "0.0.10"` (littéral)
+  vs toml `codebase-plugin = "0.0.11"` vs `version = "0.0.17"` — triple source.
+** BOM platform : `implementation(platform(libs.workspace.bom))` avec toml
+  `workspace-bom = "0.0.50"` (périmé, piège #13).
+** zéro garde anti-drift publication (pas de `CodebasePluginPublicationTest`).
+
+== Livrable — migration conventions 0.0.4 → 0.0.7
+
+[source,kotlin]
+----
+id("education.cccp.build.gradle-plugin") version "0.0.7"
+id("education.cccp.build.publishing")    version "0.0.7"
+----
+
+Delta comportementale vérifiée : `useJUnitPlatform()` par défaut +
+`enableDynamicAgentLoading=true` + JDK toolchain 25 + `withSourcesJar()`/
+`withJavadocJar()` + deps junit centralisées — **pas de régression de config**
+sur les 53 runners (qui re-déclarent leur `useJUnitPlatform` propre).
+`compileKotlin` VERT.
+
+== Livrable — adoption du catalog workspace (pattern bakery MEM-CAT-3)
+
+* `settings.gradle.kts` — pin unique `ws` :
+[source,kotlin]
+----
+dependencyResolutionManagement {
+    versionCatalogs {
+        create("ws") { from("education.cccp:workspace-catalog:0.0.62") }
+    }
+}
+----
+
+* `build.gradle.kts` — version propre **dérivée** :
+[source,kotlin]
+----
+version = ws.versions.codebase.plugin.get()
+----
+
+* BOM platform **dynamique** (plus de littéral périmé) :
+[source,kotlin]
+----
+implementation(platform("education.cccp:workspace-bom:${ws.versions.workspace.bom.get()}"))
+----
+
+* Self-application **alignée** sur le toml (source unique) :
+[source,kotlin]
+----
+alias(libs.plugins.codebase)   // toml `codebase-plugin = "0.0.17"`
+----
+
+* Entrée toml `workspace-bom = "0.0.50"` **supprimée** (source de vérité = ws).
+* Preuve : `./gradlew properties` → `version: 0.0.17` ; POM
+  `codebase-plugin-0.0.17.pom` → `version 0.0.17` + import `workspace-bom 0.0.62`.
+
+== Livrable — garde anti-drift publication
+
+`src/test/kotlin/codebase/publishing/CodebasePluginPublicationTest.kt` (4 tests,
+pattern `BakeryPluginPublicationTest` S-244) :
+
+. la version dérive du catalog publié (`version = ws.versions.codebase.plugin.get()`) ;
+. la version self du toml local **égale** la version du catalog ws ;
+. le pin `workspace-bom` platform est **dynamique** (aucun littéral `0.0.\d+`) ;
+. group + plugin id stables pour la publication.
+
+Injection des versions publiées par Gradle (`build.gradle.kts`) — **jamais** de
+lecture du working tree voisin (racy, absent d'un checkout CI isolé — bakery
+S-243 / graphify D5-RACE S-029) :
+
+[source,kotlin]
+----
+tasks.named<Test>("test") {
+    systemProperty("codebase.publishedCatalog.codebaseVersion", ws.versions.codebase.plugin.get())
+    systemProperty("codebase.publishedCatalog.bomVersion", ws.versions.workspace.bom.get())
+}
+----
+
+Une propriété absente est une **erreur explicite**, jamais un vert silencieux.
+
+== Gates de session
+
+[cols="2,4", options="header"]
+|===
+| Gate | Résultat
+
+| `git status` ouverture | propre — `main`, HEAD `2b74b8d`
+| Compiles (`compileKotlin` + `compileTestKotlin`) | VERT (JDK 25)
+| `validatePlugins` | VERT
+| Migration conventions 0.0.7 | VERT
+| Self-application alignée 0.0.17 | `properties` → `0.0.17`
+| BOM platform 0.0.62 | POM → import `workspace-bom 0.0.62`
+| Garde publication | 4 tests (injection Gradle)
+| `publishToMavenLocal` (Règle 0) | VERT — POM vérifié
+| Tests locaux exécutés | **aucun** (Local = Build, Tests = CI)
+| Bump / publication Central | aucun (acte de release distinct, accord pilote)
+| Secrets | RAS
+|===
+
+== Méthode et non-régression
+
+* Baby-step TDD strict : la garde a été écrite après vérification de la
+  cartographie ; RED/GREEN de la garde s'exécutent en CI (Local = Build).
+* Zéro logique métier modifiée — configuration de build uniquement + 1 fichier
+  de test créé.
+* `bookPipeline`/tâches/domaines **inchangés** : `tasks --all` confirme que la
+  self-application reste fonctionnelle (`generateAugmentedPlan`,
+  `autonomousSession`, `ingestGovernance` présentes).
+* English only code. Zéro Python. Zéro secret.
+
+== Suite
+
+* *Dette self-application* ✅ CLOSE (build = toml = project = 0.0.17, catalog ws).
+* *Rollout conventions* : codebase ✅ — le dernier consumer 0.0.4 est migré
+  (39 usages en 0.0.7, 4 en 0.0.8 côté document). ABIDJAN P2 débloqué.
+* *EPIC PUB* (sur accord pilote) : tag `v0.0.17` → publication CI ; le repo
+  publie déjà 0.0.17 en Central (S-272), ce nettoyage est **local** (conventions
+  + garde) → un futur bump 0.0.18 distribuera le delta si besoin.
+* *Bloc C-4* : pollution TOC chunking (déjà traité côté codex S-233 par
+  `TocNoiseDetector` N2 — à re-vérifier si une US N1 est requise).
+* *A2* (LLM metered) : bloqué quota externe / accord pilote.

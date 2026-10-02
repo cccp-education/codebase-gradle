@@ -4,17 +4,22 @@
 
 _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux. Pour le backlog à jour détaillé, voir `.agents/BACKLOG.adoc`._
 
-== Synthèse Backlog (Session 272 — 2026-10-02)
+== Synthèse Backlog (Session 273 — 2026-10-02)
 
-*Le backlog détaillé à jour est dans `.agents/BACKLOG.adoc`. Résumé S-272 :*
-**Bloc B (publication N1→N2) ✅** — `codebase-plugin 0.0.17` + MEMPHIS
-BOM/catalog `0.0.62` + `codex-plugin 0.0.12` publiés Central (bundles
-`7d5a340d` / `7baf6567` / `79d0ad3d`), propagation repo1 HTTP 200 ×4. Le
-`pages` de l'US-1 est résolvable Central → preuve CI codex US-2 débloquée.
-Reste : **bloc C** (C-3 dead code N1 + désync gouvernance codex ; C-4
-pollution TOC chunking) ; **migration codebase → conventions 0.0.7 + dette
-self-application** (`build.gradle.kts:17` épingle `0.0.10`) ; arbitrage lot
-RENAME-13+ (`agent-contracts.afnorCorpus`, academy enum).
+*Le backlog détaillé à jour est dans `.agents/BACKLOG.adoc`. Résumé S-273 :*
+**Migration conventions 0.0.4→0.0.7 + adoption catalog ws + garde anti-drift
+✅** — codebase était le **dernier consumer** non migré (rollout ABIDJAN P2).
+`version = ws.versions.codebase.plugin.get()` (pin unique
+`workspace-catalog:0.0.62`), BOM platform dynamique `ws.versions.workspace.bom`,
+self-application `alias(libs.plugins.codebase)` alignée 0.0.17, garde
+`CodebasePluginPublicationTest` (4 tests, injection Gradle). Triple split-brain
+(build 0.0.10 / toml 0.0.11 / projet 0.0.17) **tué**. `publishToMavenLocal` VERT.
+**C-3 dead code N1 déjà soldé S-268** (vérifié).
+Reste : **bloc C-4** (pollution TOC chunking — déjà traité côté codex S-233,
+N2 `TocNoiseDetector`, à confirmer sans US N1) ; **EPIC PUB** (tag `v*` accord
+pilote) ; **A2** LLM metered (quota externe/accord) ; arbitrage lot RENAME-13+
+(`agent-contracts.afnorCorpus`, academy enum) ; EPIC V-FLYWAY (P2, seuil 5
+migrations).
 
 == Synthèse Backlog (Session 270 — 2026-09-28) — HISTORIQUE
 
