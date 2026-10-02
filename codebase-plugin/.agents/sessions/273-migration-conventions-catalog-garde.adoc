@@ -123,6 +123,8 @@ Une propriété absente est une **erreur explicite**, jamais un vert silencieux.
 | Garde publication | 4 tests (injection Gradle)
 | `publishToMavenLocal` (Règle 0) | VERT — POM vérifié
 | Tests locaux exécutés | **aucun** (Local = Build, Tests = CI)
+| **Preuve CI** | CI run `37063848179` (commit `b328d78`) — **Fast ✅ + Full ✅ (19m42s) + OCR ✅**
+| Garde publication en CI | `CodebasePluginPublicationTest` **4/4 PASSED**
 | Bump / publication Central | aucun (acte de release distinct, accord pilote)
 | Secrets | RAS
 |===
