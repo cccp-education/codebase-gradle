@@ -1,0 +1,23 @@
+= Re-pin catalog 0.0.62 → 0.0.78
+
+_Date_ : 2026-10-11
+_Borough_ : codebase-gradle (Queens, N1)
+_Type_ : maintenance build (rollout catalog MEMPHIS 0.0.78)
+
+== Livré
+
+`settings.gradle.kts` : `from("education.cccp:workspace-catalog:0.0.62 → 0.0.78")`.
+
+Le BOM est tiré de `ws.versions.workspace.bom.get()` (build l.50) → passe de
+`0.0.62` à `0.0.78`, donc `langchain4j 1.16.3 → 1.22.0` et `koog 1.0.0 → 1.3.0`
+(constraints BOM, résolues au plus haut).
+
+== Preuve
+
+`./gradlew compileKotlin compileTestKotlin` **VERT** contre le catalog `0.0.78`
+(langchain4j 1.22, koog 1.3, codebase-contracts 0.0.2, agent-contracts 0.0.3,
+i18n-contracts 0.0.4) — l'API reste compatible.
+
+== Notes
+
+* Zéro secret, zéro Python.
