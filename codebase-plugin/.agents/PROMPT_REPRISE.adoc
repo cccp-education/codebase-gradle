@@ -1,5 +1,5 @@
 = Prompt de Reprise — Codebase (Queens N1) — Session 274
-:session: 274
+:session: 275
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
 :session_precedente: 273 — **Migration conventions 0.0.4→0.0.7 + adoption catalog ws + garde anti-drift** ✅. Codebase était le dernier consumer non migré. `build.gradle.kts` conventions 0.0.7, `version = ws.versions.codebase.plugin.get()`, BOM platform dynamique (`ws.versions.workspace.bom` = 0.0.62), self-application `alias(libs.plugins.codebase)` alignée 0.0.17. Triple split-brain (build 0.0.10 / toml 0.0.11 / projet 0.0.17) **tué**. `CodebasePluginPublicationTest` (4 tests, injection Gradle). `publishToMavenLocal` VERT, POM 0.0.17 + import BOM 0.0.62.
 :session_pre_precedente: 272 — Bloc B (publication N1→N2) ✅ — `codebase-plugin 0.0.17` Central.
