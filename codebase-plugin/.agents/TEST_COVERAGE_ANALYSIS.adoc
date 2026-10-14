@@ -1,6 +1,24 @@
 = Test Coverage Analysis — Codebase Gradle
 :date: 2026-10-14
 
+== Session 280 — Ollama natif + 2 forks JUnit (test-only, zéro prod)
+
+**Tests modifiés** : `CodebaseCiOllamaDecouplingTest` — la garde du job
+`unit-ollama` n'attend plus la chaîne `ollama/ollama` mais un serveur
+`ollama serve` vivant (Ollama n'est plus conteneurisé). Nombre de tests de la
+garde inchangé (5).
+
+**Build** : `test` gagne `maxParallelForks = 2` **en CI uniquement** (local
+inchangé). `unitOllama` inchangé.
+
+* **Couverture : inchangée.** Les 4 tests `@Tag("ollama")` s'exécutent toujours
+  dans `unit-ollama` (Ollama natif, readiness fail-loud → plus de skip
+  silencieux) ; le JUnit `unit` exécute les 1860 tests (preuve : 1860/1860 verts
+  avec 2 forks, run `38623944061`).
+* **Wall-clock** : `4m28s` (S-279) → **`3m15s-3m27s`** (Ollama natif + 2 forks).
+* Fichiers : `build.gradle.kts` + 1 garde + `test.yml`. Zéro bump, zéro
+  publication, zéro secret.
+
 == Session 279 — Découplage Ollama + démarrage parallèle (test-only, zéro prod)
 
 **Tests modifiés (tag uniquement, aucune sémantique changée)** : 4 méthodes

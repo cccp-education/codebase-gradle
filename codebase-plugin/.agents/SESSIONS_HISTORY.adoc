@@ -2,6 +2,32 @@
 :toc: left
 :icons: font
 
+== Session 280 — 2026-10-14 — Wall-clock CI réduit : Ollama natif + 2 forks JUnit ✅ (test-only)
+
+Suite S-279 : le chemin critique était `unit-ollama` (4m24s) ≈ `unit` (3m39s),
+dominé par un tarball `docker save` de **3,0 GB** (53 s restore + 82 s load) et
+par une suite JUnit mono-fork.
+* **Levier 1 — Ollama natif** : `ollama.com/install.sh` (version épinglée 0.40.4,
+  CDN GitHub, **74-86 s constant**) remplace le tarball 3 GB. Le pull direct
+  Docker Hub (41 s puis **117 s**) est écarté (throttling de l'IP partagée). Deux
+  `ollama serve` (11466-11467, `OLLAMA_MODELS` par instance), readiness
+  **fail-loud** (sinon les 4 tests `assumeTrue` se sauteraient en silence).
+* **Levier 1b — cache modèles réparé** : `chown` des mounts écrits par `root` →
+  la sauvegarde `actions/cache` réussit (le pull modèle ~20 s est évité à chaud).
+* **Levier 2 — cache pgvector : évalué puis REVERTÉ** (neutre : 3 s + 8-19 s ≈
+  21 s pull ; `unit` n'est plus critique).
+* **Levier 3 — 2 forks JUnit** (`maxParallelForks = 2` en CI seulement) :
+  `:test` **116 s → 84 s** (-28 %), 1860/1860 verts. Testcontainers = singleton
+  par JVM, donc isolation préservée.
+* **Preuve CI** : run `38623171057` (pull direct + fix cache) ✓ 3m50s ;
+  run `38623944061` (2 forks) ✓ 3m15s (`unit` 2m33s) — 1er passage dégradé
+  (plateforme ~2×) écarté mais vert (preuve de correction) ; run `38626416184`
+  (Ollama natif) ✓ 3m27s (`unit-ollama` 3m27s, install 74 s).
+* **Wall-clock** : `4m28s → 3m15s-3m27s`. Chemin critique = `unit-ollama`.
+* **Gates** : compile/compileTest/`publishToMavenLocal` VERT, YAML valide. Zéro
+  bump, zéro publication Central, zéro secret.
+* **Rapport** : `.agents/sessions/280-ci-wallclock-ollama-native-junit-forks.adoc`.
+
 == Session 279 — 2026-10-14 — Découplage Ollama + démarrage parallèle ✅ (test-only)
 
 Suite S-278 : le job `unit` (5m20s) était le goulot — **~157 s de setup

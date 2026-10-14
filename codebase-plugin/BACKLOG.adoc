@@ -1,8 +1,28 @@
 = Backlog — Codebase Gradle
 :sectnums:
-:date: 2026-09-28
+:date: 2026-10-14
 
 _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux. Pour le backlog à jour détaillé, voir `.agents/BACKLOG.adoc`._
+
+== Synthèse Backlog (Session 280 — 2026-10-14)
+
+**Wall-clock CI réduit — Ollama natif + 2 forks JUnit ✅** (test-only, suite
+S-278/S-279). Diagnostic : chemin critique `unit-ollama` (4m24s) ≈ `unit`
+(3m39s), dominé par un tarball `docker save` de **3,0 GB** (53 s restore + 82 s
+load) et une suite JUnit mono-fork. **Leviers retenus** : (1) **Ollama natif**
+(`ollama.com/install.sh`, 0.40.4, CDN GitHub, **74-86 s constant**) remplaçant le
+tarball 3 GB (le pull direct Docker Hub, 41-117 s, écarté pour throttling) ;
+(2) cache modèles **réparé** (`chown` des mounts root → la sauvegarde `tar`
+réussit enfin) ; (3) suite JUnit `test` en **2 forks** en CI (`:test` **116 s →
+84 s**, -28 %, 1860/1860 verts). **Levier évalué puis REVERTÉ** : cache image
+pgvector (neutre : 3 s + 8-19 s ≈ 21 s pull ; `unit` n'est plus critique).
+**Wall-clock `4m28s → 3m15s-3m27s`** ; chemin critique = `unit-ollama`. Garde
+`codebase.ci.CodebaseCiOllamaDecouplingTest` mise à jour (`ollama serve`). CI
+verte runs `38623171057` + `38623944061` + `38626416184`. Zéro bump, zéro
+publication, zéro secret. Rapport
+`.agents/sessions/280-ci-wallclock-ollama-native-junit-forks.adoc`.
+**Reste (gate pilote)** : cache de l'install native extraite (`/usr/local/lib/ollama`),
+EPIC PUB (tag `v*`).
 
 == Synthèse Backlog (Session 278 — 2026-10-14)
 

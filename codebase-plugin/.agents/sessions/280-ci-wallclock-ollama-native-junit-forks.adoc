@@ -1,0 +1,151 @@
+= Session 280 — CI `codebase-gradle` : réduction du wall-clock résiduel (Ollama natif + 2 forks JUnit)
+:toc: left
+:icons: font
+:sectnums:
+
+*Date* : 2026-10-14
+*Borough* : Queens — codebase-gradle (N1)
+*Type* : infrastructure CI (test-only) — réduction du wall-clock (suite S-278/S-279)
+*Référence* : capsule-gradle S-198/S-199 / slider-gradle S-075 (pattern shards)
+
+== Objectif
+
+S-279 avait ramené le wall-clock de `9m38s` à `4m08s` en découplant Ollama et en
+démarrant les jobs lourds en parallèle. Nouveau chemin critique mesuré (run
+`38613786633`, commit `590148f`) : **`unit-ollama` (4m24s) ≈ `unit` (3m39s)**.
+Objectif : attaquer les deux coûts Docker résiduels, sans perte de couverture,
+CI verte.
+
+== Diagnostic mesuré (run `38613786633`, step-level)
+
+|===
+| Job | Step | Durée
+
+| `unit-ollama`
+| Cache Docker image (`/tmp/ollama-image.tar` = **3,0 GB**) + `docker load`
+| **53 s + 82 s = 135 s**
+| `unit-ollama` | Pull modèle `qwen3:0.6b` | 20 s (**cache jamais sauvegardé**)
+| `unit-ollama` | Run tests (4 `@Tag("ollama")`) | 88 s
+| `unit` | Run unit tests (1860 tests, dont tirage à froid `pgvector/pgvector:pg17`) | 201 s
+|===
+
+Deux gaspillages identifiés : (1) le tarball `docker save` de 3,0 GB est
+**restauré puis re-`load`** (double E/S de 3 GB) ; (2) la sauvegarde du cache des
+modèles **échouait** (`tar` exit 2 — les fichiers écrits par le conteneur en
+`root` ne sont pas lisibles par `runner`), donc le modèle était re-tiré à chaque
+run.
+
+== Levier 1 — Ollama natif (retenu)
+
+Trois voies mesurées pour obtenir une instance Ollama vivante :
+
+|===
+| Voie | Mesure | Verdict
+
+| Cache `docker save` (3,0 GB) + load | 53 s + 82 s = 135 s
+| ~~reverté~~ remplacé
+| `docker pull ollama/ollama:0.20.2` direct | **41 s** (run 1) puis **117 s** (run 3 + rerun)
+| écarté — throttling Docker Hub sur l'IP partagée, variance élevée
+| **Install natif** (`ollama.com/install.sh`, CDN GitHub) | **74 s / 86 s** (2 runs)
+| **retenu** — constant, un seul flux, zéro Docker
+|===
+
+L'installation native (`OLLAMA_VERSION=0.40.4`) élimine le `docker load` (82 s) :
+un seul flux depuis le CDN GitHub, pas d'extraction de couches. Deux serveurs
+`ollama serve` sont lancés sur les ports CI 11466-11467 (hors rotation), chacun
+avec son propre `OLLAMA_MODELS` (`~/.ollama-ci-$port/models`) pour que le cache
+modèle round-trip proprement. Le step de readiness **échoue bruyamment** si un
+serveur ne monte pas (sinon les 4 tests `assumeTrue` se sauteraient en silence).
+
+*Conséquence sur la garde* : `CodebaseCiOllamaDecouplingTest` n'attend plus la
+chaîne `ollama/ollama` mais la présence d'un `ollama serve` vivant.
+
+=== Levier 1b — Cache des modèles réparé (retenu)
+
+`sudo chown -R "$USER":"$USER" ~/.ollama-ci-*` après le pull fait désormais
+réussir la sauvegarde `actions/cache` (le run 1 l'a prouvé : « Post Cache Ollama
+models » = 5 s, puis HIT aux runs suivants). Le pull modèle (~20 s) est ainsi
+évité sur les runs à cache chaud.
+
+== Levier 2 — Cache image pgvector (évalué, REVERTÉ)
+
+Hypothèse : la tâche `unit` payait ~21 s de tirage à froid de
+`pgvector/pgvector:pg17` (testcontainers). Mesure :
+
+|===
+| Voie | Mesure
+
+| `docker pull` explicite | 21 s (run 1)
+| Cache `docker save`/`load` | 3 s restore + **8 s / 19 s** load
+|===
+
+**Neutre** (≈ 21 s ↔ 22 s) : `docker load` d'un tar non compressé coûte autant que
+le pull. Et `unit` n'est plus le chemin critique. **Reverté** (règle « ne pas
+garder un changement non gagnant »).
+
+== Levier 3 — Suite JUnit en 2 forks (retenu)
+
+`test` : `maxParallelForks = 2` **en CI uniquement** (le runner standard a 4
+vCPU ; hors CI on garde le serial — Local = Build, mavenLocal partagé). Les
+testcontainers sont des singletons **par JVM** (`PostgresFixture`), donc chaque
+fork possède son propre conteneur ; les deux tests provenance/exposition purgent
+par famille d'UUID fermée.
+
+Mesure du task `:test` : **116 s (1 fork) → 84 s (2 forks)**, soit **-28 %**.
+Preuve de correction : le run 2 (2 forks, plateforme dégradée) a fait passer
+**les 1860 tests** au vert.
+
+== Preuve CI
+
+|===
+| Run | Commit | État | Wall-clock | `unit` | `unit-ollama`
+
+| `38613786633` | `590148f` (baseline S-279) | ✓ | 4m28s | 3m39s | 4m24s
+| `38623171057` | `bde4697` (pull direct + fix cache) | ✓ | 3m50s | 3m47s | **2m54s**
+| `38623944061` | `f1793c0` (2 forks) | ✓ | **3m15s** | **2m33s** | 3m15s
+| `38626416184` | `032ec45` (Ollama natif) | ✓ | 3m27s | 3m12s | 3m27s
+|===
+
+Run 2 (`38623944061` 1er passage) = **plateforme dégradée** (tous les jobs
+~2× — compilation Kotlin ~4 min) : écarté comme mesure, mais **preuve de
+correction** des 2 forks (1860/1860 verts). Run relancé à plateforme rétablie
+= 3m15s.
+
+Le step d'install natif est **constant (74-86 s)** vs le pull Docker Hub
+**41-117 s**. Le reliquat de variance vient de l'inférence Ollama elle-même
+(step tests 53-106 s selon le run) — hors de notre contrôle.
+
+== Wall-clock
+
+`4m28s → 3m15s-3m27s` (~1,3×). Le chemin critique est désormais `unit-ollama`,
+borné par l'install native (~80 s) + l'inférence Ollama des 4 tests.
+
+== Fichiers
+
+* CI : `.github/workflows/test.yml` (unit-ollama natif, readiness stricte,
+  fix ownership, revert cache pgvector).
+* Build : `codebase-plugin/build.gradle.kts` (`test` `maxParallelForks = 2` en CI).
+* Garde : `src/test/kotlin/codebase/ci/CodebaseCiOllamaDecouplingTest.kt`
+  (`ollama serve` au lieu de `ollama/ollama`).
+
+== Leçons
+
+* Un tarball `docker save` non compressé coûte **deux fois** 3 GB d'E/S
+  (restore + load) ; les voies « un seul flux » (pull direct, install natif)
+  sont structurellement meilleures. Le pull Docker Hub s'est révélé **très
+  variable** (throttling de l'IP partagée) — l'install native sur CDN GitHub est
+  **constante**.
+* Un `assumeTrue` de skip protège des faux échecs mais **cache une régression de
+  couverture** : rendre la readiness *fail-loud* évite qu'un Ollama mort fasse
+  passer le job vert avec 0 test exécuté.
+* `docker load` d'une petite image ≈ son `docker pull` : cacher une image de
+  ~200 Mo n'apporte rien (contrairement au tarball de 3 GB qu'on cherchait à
+  éviter par ailleurs).
+* `maxParallelForks` est sûr ici parce que l'état testcontainers est **par JVM** ;
+  la preuve de correction reste l'exécution complète en CI, pas un raisonnement.
+
+== Gates locaux (Local = Build, Tests = CI)
+
+`compileKotlin`/`compileTestKotlin` VERT, `publishToMavenLocal` VERT (Règle 0),
+YAML du workflow valide. Zéro bump de version, zéro publication Central, zéro
+secret. Tests = CI (runs `38623171057`, `38623944061`, `38626416184` — tous verts).

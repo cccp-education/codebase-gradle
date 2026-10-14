@@ -78,3 +78,25 @@
 * **Wall-clock** : `9m38s` → **`4m08s`** (~2,3×). Nouveau goulot `unit` (4m07s)
   ≈ `unit-ollama` (3m57s).
 * **Rapport** : `.agents/sessions/279-ci-ollama-decoupling-parallel-start.adoc`.
+
+== S-280 — Wall-clock CI réduit : Ollama natif + 2 forks JUnit ✅ (test-only)
+
+* **Type** : infrastructure CI (test-only), suite de S-278/S-279.
+* **Diagnostic** : chemin critique `unit-ollama` (4m24s) ≈ `unit` (3m39s) ;
+  tarball `docker save` de **3,0 GB** (53 s restore + 82 s load) + cache modèles
+  jamais sauvegardé (`tar` exit 2, fichiers root).
+* **Levier 1 (retenu)** : **Ollama natif** (`ollama.com/install.sh`, version
+  épinglée 0.40.4, CDN GitHub, **74-86 s constant**) ; deux `ollama serve`
+  (11466-11467, `OLLAMA_MODELS` par instance) ; readiness **fail-loud**. Pull
+  direct Docker Hub (41-117 s, throttling) écarté.
+* **Levier 1b (retenu)** : `chown` des mounts écrits par `root` → sauvegarde du
+  cache modèles réussie (pull ~20 s évité à chaud).
+* **Levier 2 (REVERTÉ)** : cache image pgvector — neutre (3 s + 8-19 s ≈ 21 s
+  pull) et `unit` n'est plus le chemin critique.
+* **Levier 3 (retenu)** : `test` `maxParallelForks = 2` en CI → `:test`
+  **116 s → 84 s** (-28 %), 1860/1860 verts ; testcontainers = singleton par JVM.
+* **Preuve CI** : runs `38623171057` (✓ 3m50s), `38623944061` (✓ 3m15s, `unit`
+  2m33s), `38626416184` (✓ 3m27s, Ollama natif). Garde
+  `codebase.ci.CodebaseCiOllamaDecouplingTest` mise à jour (`ollama serve`).
+* **Wall-clock** : `4m28s` → **`3m15s-3m27s`**. Chemin critique = `unit-ollama`.
+* **Rapport** : `.agents/sessions/280-ci-wallclock-ollama-native-junit-forks.adoc`.

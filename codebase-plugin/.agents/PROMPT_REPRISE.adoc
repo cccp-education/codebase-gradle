@@ -1,16 +1,15 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 280
-:session: 280
+= Prompt de Reprise — Codebase (Queens N1) — Session 281
+:session: 281
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO + koog)
-:session_precedente: 279 — **Découplage Ollama + démarrage parallèle ✅** — les 4 tests qui sondent une instance Ollama réelle sont `@Tag("ollama")`, exclus de `test`, exécutés par la tâche `unitOllama` / job CI `unit-ollama` ; les jobs lourds démarrent en parallèle du gate PR. Wall-clock **9m38s → 4m08s** (~2,3×). CI verte runs `38611333969` + `38612857259`. Rapport `.agents/sessions/279-ci-ollama-decoupling-parallel-start.adoc`.
+:session_precedente: 280 — **Wall-clock CI réduit (Ollama natif + 2 forks JUnit) ✅** — Ollama tourne **nativement** (install officielle, CDN GitHub, ~80 s constant) au lieu du tarball `docker save` de 3,0 GB (53 s restore + 82 s load) ; cache modèles réparé (`chown`) ; suite JUnit en **2 forks** en CI (`:test` 116 s → 84 s). Cache image pgvector évalué puis **reverté** (neutre). Wall-clock **4m28s → 3m15s-3m27s**. CI verte runs `38623171057` + `38623944061` + `38626416184`. Rapport `.agents/sessions/280-ci-wallclock-ollama-native-junit-forks.adoc`.
 
-== Mission Session 280 — à la demande du pilote
+== Mission Session 281 — à la demande du pilote
 
 *Priorité 1 (optionnelle) — **poursuivre l'optimisation CI** : le chemin
-  critique est désormais `unit` (4m07s) ≈ `unit-ollama` (3m57s). Le step « Run
-  unit tests » a gonflé à ~3m56s (tirage à froid de `pgvector/pgvector:pg17`
-  par les tests JUnit testcontainers, ≈1 min). Pistes : pré-puller / cacher
-  l'image pgvector dans `unit`, ou sortir les tests testcontainers dans un job
-  dédié. Gain attendu modéré — accord pilote.
+  critique est `unit-ollama` (~3m), borné par l'install Ollama native (~80 s) +
+  l'inférence des 4 tests (53-106 s, variable). Pistes : cacher l'installation
+  native extraite (`/usr/local/lib/ollama`, ~2,5 GB → restore ~40 s vs 80 s), ou
+  déplacer le coût d'inférence. Gain attendu modéré — accord pilote.
 
 *Autres items au choix (actionnables sans accord pilote) :
 * **EPIC V-FLYWAY** (P2 conditionnel) : seuil 5 migrations (actuellement 4).
@@ -20,7 +19,7 @@
 * **Bloc C-4** : pollution TOC chunking — a priori traité N2 côté codex S-233,
   vérifier qu'aucune US N1 ne reste (a priori non).
 
-== Contexte technique (S-279)
+== Contexte technique (S-280)
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25).
 * Version locale **0.0.18** (Central 0.0.18). Conventions **0.0.7**. BOM/catalog **0.0.92**.
@@ -28,19 +27,20 @@
   split-ref `codebase-gradle-plugin = "0.0.17"` (dernier marker publié).
 * Pas de source set `functionalTest` — les runners Cucumber vivent dans `test`.
 * **CI test.yml** : `fast-tests` (gate PR `testFast`) **∥** `unit` (`test`,
-  JUnit-only, sans Ollama) **∥** `unit-ollama` (`unitOllama`, setup Docker
-  Ollama) **∥** `bdd-shard` (matrice 7) → `publish` (tags, gaté sur TOUS).
-  Les jobs lourds n'ont **plus** `needs: [fast-tests]` (démarrage parallèle).
+  JUnit-only, sans Ollama, **`maxParallelForks = 2` en CI**) **∥** `unit-ollama`
+  (`unitOllama`, **Ollama natif** 0.40.4 sur 11466-11467, readiness fail-loud)
+  **∥** `bdd-shard` (matrice 7) → `publish` (tags, gaté sur TOUS). Les jobs
+  lourds n'ont **plus** `needs: [fast-tests]` (démarrage parallèle).
 * **Tags** : `test` = JUnit-only (`includeEngines("junit-jupiter")`) +
   `excludeTags("ollama")` ; `unitOllama` = `includeTags("ollama")` ; le tag
   `integration` reste exclu partout (base `withType<Test>`).
 * **Gardes** : `codebase.ci.CodebaseCucumberShardCoverageTest` (partition
   features) + `codebase.ci.CodebaseCiOllamaDecouplingTest` (découplage Ollama +
-  parallélisme).
+  parallélisme ; `unit-ollama` doit lancer `ollama serve`).
 
 == Échecs préexistants (orthogonaux)
 
-* Aucun identifié à HEAD (CI verte, 370 scénarios shardés + unit + ollama).
+* Aucun identifié à HEAD (CI verte, 370 scénarios shardés + 1860 unit + 4 ollama).
 
 == Règles absolues
 
@@ -53,6 +53,6 @@
 
 == References
 
+* `.agents/sessions/280-ci-wallclock-ollama-native-junit-forks.adoc` (rapport S-280)
 * `.agents/sessions/279-ci-ollama-decoupling-parallel-start.adoc` (rapport S-279)
 * `.agents/sessions/278-ci-sharding-parallel-matrix.adoc` (rapport S-278)
-* `capsule-gradle/capsule-plugin/.agents/sessions/198-ci-sharding-parallel-matrix.adoc`
