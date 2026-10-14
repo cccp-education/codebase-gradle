@@ -61,27 +61,6 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      # The pgvector-backed JUnit tests use testcontainers, which pulls
-      # `pgvector/pgvector:pg17` on demand — a cold pull inside the test task
-      # (~1 min). Caching the image as a `docker save` tarball (restore + load
-      # of a few hundred MB) is far cheaper than the cold pull.
-      - name: Cache pgvector Docker image
-        id: pgvector-image-cache
-        uses: actions/cache@v4
-        with:
-          path: /tmp/pgvector-image.tar
-          key: docker-pgvector-pg17-v1
-
-      - name: Load pgvector image from cache
-        if: steps.pgvector-image-cache.outputs.cache-hit == 'true'
-        run: docker load -i /tmp/pgvector-image.tar
-
-      - name: Pull pgvector image if not cached
-        if: steps.pgvector-image-cache.outputs.cache-hit != 'true'
-        run: |
-          docker pull pgvector/pgvector:pg17
-          docker save pgvector/pgvector:pg17 -o /tmp/pgvector-image.tar
-
       - name: Run unit tests
         run: ./gradlew test
         env:
@@ -94,11 +73,11 @@ jobs:
           name: reports-unit
           path: codebase-plugin/build/reports/
 
-  # ── Ollama-dependent unit tests (dedicated Docker setup) ────────────────────────
-  # Only the `@Tag("ollama")` JUnit tests need a live Ollama instance (the Docker
-  # image + lightweight model setup is ~2.5 min). Isolating them here keeps that
-  # cost off the bulk `unit` job, without losing any coverage. The tagged tests stay
-  # `assumeTrue(isOllamaReady)`-guarded, so they skip cleanly if Ollama is absent.
+  # ── Ollama-dependent unit tests (dedicated native Ollama setup) ────────────────
+  # Only the `@Tag("ollama")` JUnit tests need a live Ollama instance. Isolating
+  # them here keeps that setup cost off the bulk `unit` job, without losing any
+  # coverage. Ollama is installed natively (no Docker image); the tagged tests
+  # stay `assumeTrue(isOllamaReady)`-guarded, so they skip cleanly outside CI.
   unit-ollama:
     name: Unit Tests (Ollama)
     runs-on: ubuntu-latest
@@ -119,14 +98,17 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      # The Docker image is pulled directly from Docker Hub instead of being
-      # restored from a `docker save` tarball cache. The cached tarball was 3.0 GB
-      # (uncompressed) and cost ~53 s to restore + ~82 s to `docker load` = ~135 s;
-      # a direct pull streams the ~1.5 GB compressed image. The `tar` cache save
-      # was also failing on this runner. The original cache was added for
-      # reliability — measured tradeoff below (session 280).
-      - name: Pull Ollama Docker image
-        run: docker pull ollama/ollama:0.20.2
+      # Ollama runs natively (official install script) instead of inside a
+      # Docker container. The Docker route dominated the critical path: the
+      # `docker save` tarball cache cost ~53 s restore + ~82 s `docker load`,
+      # and a direct pull from Docker Hub cost ~117 s (anonymous throttling on
+      # the shared runner IP). The native install is a single stream from the
+      # GitHub release CDN into /usr/local — no image layer extraction
+      # (measured in session 280).
+      - name: Install Ollama (native)
+        env:
+          OLLAMA_VERSION: "0.40.4"
+        run: curl -fsSL https://ollama.com/install.sh | sh
 
       - name: Cache Ollama models
         id: ollama-cache
@@ -135,46 +117,46 @@ jobs:
           path: |
             ~/.ollama-ci-11466
             ~/.ollama-ci-11467
-          key: ollama-models-qwen3-0.6b-v1
+          key: ollama-models-qwen3-0.6b-native-v1
 
+      # Two instances on the CI ports (11466-11467, outside the rotation range),
+      # each backed by its own model store so the model cache round-trips.
       - name: Start Ollama instances on CI ports 11466-11467
         run: |
-          mkdir -p ~/.ollama-ci-11466 ~/.ollama-ci-11467
           for port in 11466 11467; do
-            docker run -d \
-              --name ollama-ci-$port \
-              --restart always \
-              -p $port:11434 \
-              -v ~/.ollama-ci-$port:/root/.ollama \
-              -e OLLAMA_HOST=0.0.0.0 \
-              ollama/ollama:0.20.2
+            mkdir -p ~/.ollama-ci-$port/models
+            OLLAMA_HOST=0.0.0.0:$port OLLAMA_MODELS=$HOME/.ollama-ci-$port/models \
+              nohup ollama serve >/tmp/ollama-$port.log 2>&1 &
           done
 
+      # Fail loudly if a server never comes up: otherwise the `@Tag("ollama")`
+      # tests would silently skip (their `assumeTrue` guard) and report green
+      # with zero coverage.
       - name: Wait for Ollama readiness
         run: |
           for port in 11466 11467; do
+            ready=""
             for i in $(seq 1 60); do
               if curl -s http://localhost:$port/api/version >/dev/null 2>&1; then
-                echo "Ollama ready on port $port"
+                ready=1
                 break
               fi
               sleep 1
             done
+            if [ -z "$ready" ]; then
+              echo "Ollama not ready on port $port"
+              cat /tmp/ollama-$port.log || true
+              exit 1
+            fi
+            echo "Ollama ready on port $port"
           done
 
       - name: Pull lightweight model on each instance
         if: steps.ollama-cache.outputs.cache-hit != 'true'
         run: |
           for port in 11466 11467; do
-            docker exec ollama-ci-$port ollama pull qwen3:0.6b
+            OLLAMA_HOST=127.0.0.1:$port ollama pull qwen3:0.6b
           done
-
-      # The models are written inside the container as root, so the mount's
-      # files are root-owned on the host and the `actions/cache` post-step (run
-      # as `runner`) fails to tar them (exit 2) — the model cache was never
-      # persisted. Re-own the mounted dirs so the cache save succeeds.
-      - name: Fix Ollama model cache ownership
-        run: sudo chown -R "$USER":"$USER" ~/.ollama-ci-11466 ~/.ollama-ci-11467
 
       - name: Run Ollama-dependent unit tests
         run: ./gradlew unitOllama

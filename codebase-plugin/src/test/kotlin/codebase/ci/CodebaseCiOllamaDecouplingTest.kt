@@ -8,14 +8,14 @@ import java.io.File
  * CI Ollama decoupling guard.
  *
  * The JUnit `test` task is the bulk of the `unit` CI job, and only a handful of
- * tests probe a real Ollama instance (the Docker image + model setup costs ~2.5
- * min). Those tests are marked `@Tag("ollama")`, excluded from `test`, and run by
- * the dedicated `unitOllama` task / CI `unit-ollama` job.
+ * tests probe a real Ollama instance (the native Ollama install + model setup
+ * costs minutes). Those tests are marked `@Tag("ollama")`, excluded from `test`,
+ * and run by the dedicated `unitOllama` task / CI `unit-ollama` job.
  *
  * This guard kills the two failure modes of that split, from the repository
  * sources only (no Gradle model, no test execution):
  * 1. **Decoupling drift** — the `unit` job must not re-introduce the Ollama
- *    Docker setup, and a `unit-ollama` job must exist and invoke `unitOllama`.
+ *    setup, and a `unit-ollama` job must exist and invoke `unitOllama`.
  * 2. **Tag drift** — every test source that reaches a real Ollama instance
  *    (`OLLAMA_TEST_PORT`) must carry the `@Tag("ollama")` marker, so a new
  *    Ollama-dependent test can never be silently excluded from both jobs.
@@ -66,14 +66,14 @@ class CodebaseCiOllamaDecouplingTest {
     }
 
     @Test
-    fun `a dedicated unit-ollama job runs unitOllama with the Docker setup`() {
+    fun `a dedicated unit-ollama job runs unitOllama with a live Ollama server`() {
         val ollama = jobBlock("unit-ollama")
         assertThat(ollama)
             .describedAs("the unit-ollama job must run the unitOllama task")
             .contains("./gradlew unitOllama")
         assertThat(ollama)
-            .describedAs("the unit-ollama job must provide the Ollama Docker image")
-            .contains("ollama/ollama")
+            .describedAs("the unit-ollama job must start a live Ollama server")
+            .contains("ollama serve")
         assertThat(ollama)
             .describedAs("the unit-ollama job must inject the CI Ollama env vars")
             .contains("OLLAMA_TEST_PORT")
