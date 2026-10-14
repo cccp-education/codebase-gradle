@@ -61,6 +61,27 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      # The pgvector-backed JUnit tests use testcontainers, which pulls
+      # `pgvector/pgvector:pg17` on demand — a cold pull inside the test task
+      # (~1 min). Caching the image as a `docker save` tarball (restore + load
+      # of a few hundred MB) is far cheaper than the cold pull.
+      - name: Cache pgvector Docker image
+        id: pgvector-image-cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/pgvector-image.tar
+          key: docker-pgvector-pg17-v1
+
+      - name: Load pgvector image from cache
+        if: steps.pgvector-image-cache.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/pgvector-image.tar
+
+      - name: Pull pgvector image if not cached
+        if: steps.pgvector-image-cache.outputs.cache-hit != 'true'
+        run: |
+          docker pull pgvector/pgvector:pg17
+          docker save pgvector/pgvector:pg17 -o /tmp/pgvector-image.tar
+
       - name: Run unit tests
         run: ./gradlew test
         env:
@@ -98,22 +119,14 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Cache Docker image ollama/ollama:0.20.2
-        id: docker-image-cache
-        uses: actions/cache@v4
-        with:
-          path: /tmp/ollama-image.tar
-          key: docker-ollama-0.20.2-v1
-
-      - name: Load Docker image from cache
-        if: steps.docker-image-cache.outputs.cache-hit == 'true'
-        run: docker load -i /tmp/ollama-image.tar
-
-      - name: Pull Docker image if not cached
-        if: steps.docker-image-cache.outputs.cache-hit != 'true'
-        run: |
-          docker pull ollama/ollama:0.20.2
-          docker save ollama/ollama:0.20.2 -o /tmp/ollama-image.tar
+      # The Docker image is pulled directly from Docker Hub instead of being
+      # restored from a `docker save` tarball cache. The cached tarball was 3.0 GB
+      # (uncompressed) and cost ~53 s to restore + ~82 s to `docker load` = ~135 s;
+      # a direct pull streams the ~1.5 GB compressed image. The `tar` cache save
+      # was also failing on this runner. The original cache was added for
+      # reliability — measured tradeoff below (session 280).
+      - name: Pull Ollama Docker image
+        run: docker pull ollama/ollama:0.20.2
 
       - name: Cache Ollama models
         id: ollama-cache
@@ -155,6 +168,13 @@ jobs:
           for port in 11466 11467; do
             docker exec ollama-ci-$port ollama pull qwen3:0.6b
           done
+
+      # The models are written inside the container as root, so the mount's
+      # files are root-owned on the host and the `actions/cache` post-step (run
+      # as `runner`) fails to tar them (exit 2) — the model cache was never
+      # persisted. Re-own the mounted dirs so the cache save succeeds.
+      - name: Fix Ollama model cache ownership
+        run: sudo chown -R "$USER":"$USER" ~/.ollama-ci-11466 ~/.ollama-ci-11467
 
       - name: Run Ollama-dependent unit tests
         run: ./gradlew unitOllama
