@@ -15,7 +15,7 @@ inchangé). `unitOllama` inchangé.
   dans `unit-ollama` (Ollama natif, readiness fail-loud → plus de skip
   silencieux) ; le JUnit `unit` exécute les 1860 tests (preuve : 1860/1860 verts
   avec 2 forks, run `38623944061`).
-* **Wall-clock** : `4m28s` (S-279) → **`3m15s-3m27s`** (Ollama natif + 2 forks).
+* **Wall-clock** : `4m28s` (S-279) → **`3m06s-3m27s`** (Ollama natif + 2 forks).
 * Fichiers : `build.gradle.kts` + 1 garde + `test.yml`. Zéro bump, zéro
   publication, zéro secret.
 

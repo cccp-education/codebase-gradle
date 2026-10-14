@@ -16,7 +16,7 @@ tarball 3 GB (le pull direct Docker Hub, 41-117 s, écarté pour throttling) ;
 réussit enfin) ; (3) suite JUnit `test` en **2 forks** en CI (`:test` **116 s →
 84 s**, -28 %, 1860/1860 verts). **Levier évalué puis REVERTÉ** : cache image
 pgvector (neutre : 3 s + 8-19 s ≈ 21 s pull ; `unit` n'est plus critique).
-**Wall-clock `4m28s → 3m15s-3m27s`** ; chemin critique = `unit-ollama`. Garde
+**Wall-clock `4m28s → 3m06s-3m27s`** ; chemin critique = `unit-ollama`/`unit`. Garde
 `codebase.ci.CodebaseCiOllamaDecouplingTest` mise à jour (`ollama serve`). CI
 verte runs `38623171057` + `38623944061` + `38626416184`. Zéro bump, zéro
 publication, zéro secret. Rapport

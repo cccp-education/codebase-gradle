@@ -104,6 +104,7 @@ Preuve de correction : le run 2 (2 forks, plateforme dégradée) a fait passer
 | `38623171057` | `bde4697` (pull direct + fix cache) | ✓ | 3m50s | 3m47s | **2m54s**
 | `38623944061` | `f1793c0` (2 forks) | ✓ | **3m15s** | **2m33s** | 3m15s
 | `38626416184` | `032ec45` (Ollama natif) | ✓ | 3m27s | 3m12s | 3m27s
+| `38627930005` | `111a965` (docs clôture S-280) | ✓ | **3m06s** | 3m06s | **2m23s**
 |===
 
 Run 2 (`38623944061` 1er passage) = **plateforme dégradée** (tous les jobs
@@ -111,14 +112,16 @@ Run 2 (`38623944061` 1er passage) = **plateforme dégradée** (tous les jobs
 correction** des 2 forks (1860/1860 verts). Run relancé à plateforme rétablie
 = 3m15s.
 
-Le step d'install natif est **constant (74-86 s)** vs le pull Docker Hub
-**41-117 s**. Le reliquat de variance vient de l'inférence Ollama elle-même
-(step tests 53-106 s selon le run) — hors de notre contrôle.
+Le step d'install natif s'est mesuré entre **48 s et 86 s** (CDN GitHub), contre
+**41-117 s** pour le pull Docker Hub (variance bien plus large). Le reliquat de
+variance vient de l'inférence Ollama elle-même (step tests 53-106 s selon le
+run) — hors de notre contrôle.
 
 == Wall-clock
 
-`4m28s → 3m15s-3m27s` (~1,3×). Le chemin critique est désormais `unit-ollama`,
-borné par l'install native (~80 s) + l'inférence Ollama des 4 tests.
+`4m28s → 3m06s-3m27s` (~1,4×). Le chemin critique alterne désormais entre `unit`
+(~2m33s-3m06s, dominé par la compilation Kotlin des tests) et `unit-ollama`
+(~2m23s-3m27s, borné par l'install native + l'inférence Ollama des 4 tests).
 
 == Fichiers
 
@@ -148,4 +151,5 @@ borné par l'install native (~80 s) + l'inférence Ollama des 4 tests.
 
 `compileKotlin`/`compileTestKotlin` VERT, `publishToMavenLocal` VERT (Règle 0),
 YAML du workflow valide. Zéro bump de version, zéro publication Central, zéro
-secret. Tests = CI (runs `38623171057`, `38623944061`, `38626416184` — tous verts).
+secret. Tests = CI (runs `38623171057`, `38623944061`, `38626416184`,
+`38627930005` — tous verts).

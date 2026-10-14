@@ -1,7 +1,7 @@
 = Prompt de Reprise — Codebase (Queens N1) — Session 281
 :session: 281
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO + koog)
-:session_precedente: 280 — **Wall-clock CI réduit (Ollama natif + 2 forks JUnit) ✅** — Ollama tourne **nativement** (install officielle, CDN GitHub, ~80 s constant) au lieu du tarball `docker save` de 3,0 GB (53 s restore + 82 s load) ; cache modèles réparé (`chown`) ; suite JUnit en **2 forks** en CI (`:test` 116 s → 84 s). Cache image pgvector évalué puis **reverté** (neutre). Wall-clock **4m28s → 3m15s-3m27s**. CI verte runs `38623171057` + `38623944061` + `38626416184`. Rapport `.agents/sessions/280-ci-wallclock-ollama-native-junit-forks.adoc`.
+:session_precedente: 280 — **Wall-clock CI réduit (Ollama natif + 2 forks JUnit) ✅** — Ollama tourne **nativement** (install officielle, CDN GitHub, ~80 s constant) au lieu du tarball `docker save` de 3,0 GB (53 s restore + 82 s load) ; cache modèles réparé (`chown`) ; suite JUnit en **2 forks** en CI (`:test` 116 s → 84 s). Cache image pgvector évalué puis **reverté** (neutre). Wall-clock **4m28s → 3m06s-3m27s**. CI verte runs `38623171057` + `38623944061` + `38626416184` + `38627930005`. Rapport `.agents/sessions/280-ci-wallclock-ollama-native-junit-forks.adoc`.
 
 == Mission Session 281 — à la demande du pilote
 

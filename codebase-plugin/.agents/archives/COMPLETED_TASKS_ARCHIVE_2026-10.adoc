@@ -98,5 +98,5 @@
 * **Preuve CI** : runs `38623171057` (✓ 3m50s), `38623944061` (✓ 3m15s, `unit`
   2m33s), `38626416184` (✓ 3m27s, Ollama natif). Garde
   `codebase.ci.CodebaseCiOllamaDecouplingTest` mise à jour (`ollama serve`).
-* **Wall-clock** : `4m28s` → **`3m15s-3m27s`**. Chemin critique = `unit-ollama`.
+* **Wall-clock** : `4m28s` → **`3m06s-3m27s`**. Chemin critique = `unit-ollama`/`unit`.
 * **Rapport** : `.agents/sessions/280-ci-wallclock-ollama-native-junit-forks.adoc`.

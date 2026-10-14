@@ -23,7 +23,7 @@ par une suite JUnit mono-fork.
   run `38623944061` (2 forks) ✓ 3m15s (`unit` 2m33s) — 1er passage dégradé
   (plateforme ~2×) écarté mais vert (preuve de correction) ; run `38626416184`
   (Ollama natif) ✓ 3m27s (`unit-ollama` 3m27s, install 74 s).
-* **Wall-clock** : `4m28s → 3m15s-3m27s`. Chemin critique = `unit-ollama`.
+* **Wall-clock** : `4m28s → 3m06s-3m27s`. Chemin critique = `unit-ollama`/`unit`.
 * **Gates** : compile/compileTest/`publishToMavenLocal` VERT, YAML valide. Zéro
   bump, zéro publication Central, zéro secret.
 * **Rapport** : `.agents/sessions/280-ci-wallclock-ollama-native-junit-forks.adoc`.
