@@ -2,6 +2,30 @@
 :toc: left
 :icons: font
 
+== Session 279 — 2026-10-14 — Découplage Ollama + démarrage parallèle ✅ (test-only)
+
+Suite S-278 : le job `unit` (5m20s) était le goulot — **~157 s de setup
+Docker/Ollama** (cache 54 s + load 77 s + pull 25 s) pour **4 tests** seulement.
+**Diagnostic** : exactement 4 méthodes touchent une Ollama réelle
+(`OllamaInstanceScannerTest` ×1 `@EnabledIf`, `OllamaLlmProviderTest` ×3
+`assumeTrue`) ; les autres méthodes des 2 classes + `LlmBuildServiceTest`/
+`LlmProviderResolverTest`/`OllamaInstanceFactoryTest`/`OllamaPoolTest`/
+`OllamaPoolKeyAdapterTest` font zéro appel réseau. **Design** : `@Tag("ollama")`
+sur les 4 méthodes ; `test` gagne `excludeTags("ollama")` ; tâche `unitOllama`
+(JUnit-only, `includeTags("ollama")`) ; `testAll` en dépend ; job CI
+`unit-ollama` (Docker Ollama conservé là seulement) ; `unit`,
+`unit-ollama`, `bdd-shard` démarrent **en parallèle** du gate PR (plus de
+`needs: [fast-tests]` ; `publish` reste gaté sur tous). **Garde**
+`codebase.ci.CodebaseCiOllamaDecouplingTest` (5 tests : job `unit` sans Ollama,
+`unit-ollama` invoque `unitOllama`, `test` exclut le tag, anti-drift
+`OLLAMA_TEST_PORT` ⇒ `@Tag("ollama")`, parallélisme verrouillé). **CI verte
+run `38611333969`** (découplage : unit 5m20s → 2m44s ; unit-ollama 3m30s, 4/4
+PASSED) **+ run `38612857259`** (parallèle : wall-clock **4m08s**, unit 4m07s,
+unit-ollama 3m57s, fast 1m32s). **Wall-clock 9m38s → 4m08s (~2,3×)**. Nouveau
+goulot = `unit` ≈ `unit-ollama` (tirage à froid pgvector testcontainers ≈1 min).
+Zéro bump/publication/secret. Rapport
+`.agents/sessions/279-ci-ollama-decoupling-parallel-start.adoc`.
+
 == Session 278 — 2026-10-14 — Éclatement CI en shards parallèles ✅ (test-only)
 
 Mission pilote : réduire le wall-clock CI comme capsule (S-198) / slider (S-075).

@@ -1,0 +1,115 @@
+= Session 279 — CI `codebase-gradle` : découplage Ollama + démarrage parallèle
+:toc: left
+:icons: font
+:sectnums:
+
+*Date* : 2026-10-14
+*Borough* : Queens — codebase-gradle (N1)
+*Type* : infrastructure CI (test-only) — réduction du wall-clock (suite S-278)
+*Référence* : capsule-gradle S-198/S-199 / slider-gradle S-075 (pattern shards)
+
+== Objectif
+
+S-278 avait éclaté `testAll` en `unit` + 7 shards BDD parallèles (wall-clock
+`20m49s → 9m38s`). Le job `unit` (5m20s) devenait le goulot. Diagnostic
+mesuré (run `38606180807`) : **~157 s de setup Docker/Ollama** (cache image
+54 s + load 77 s + pull modèle 25 s) pour seulement **4 tests** qui en ont
+besoin. Objectif : retirer ce coût du gros du JUnit **sans perdre de
+couverture**, puis réduire le chemin critique.
+
+== Diagnostic — qui dépend réellement d'Ollama ?
+
+Grep `OLLAMA_TEST_PORT` + lecture : **4 méthodes de test** seulement touchent
+une instance Ollama réelle :
+
+|===
+| Test | Garde
+
+| `OllamaInstanceScannerTest.scan integration probes real Ollama on CI port` | `@EnabledIf("isOllamaReady")`
+| `OllamaLlmProviderTest.should build OllamaChatModel lazily on first call` | `assumeTrue(isOllamaReady(ciPort))`
+| `OllamaLlmProviderTest.should rotate through pool instances on ModelNotFoundException` | `assumeTrue(isOllamaReady(ciPort))`
+| `OllamaLlmProviderTest.should rotate on quota exceeded using adapter` | `assumeTrue(isOllamaReady(ciPort + 1))`
+|===
+
+*Faux positifs écartés* : `LlmBuildServiceTest`, `LlmProviderResolverTest`,
+`OllamaInstanceFactoryTest`, `OllamaPoolTest`, `OllamaPoolKeyAdapterTest` et les
+**autres méthodes** des 2 classes ci-dessus ne font **aucun appel réseau**
+(fakes ou ports 11437/1/2, connexion refusée instantanée). `OllamaPoolReal…`
+est gardé par `OLLAMA_RANGE_SCAN=true` (absent en CI → skip).
+*pgvector* : des tests JUnit utilisent testcontainers (Docker **préinstallé**,
+`pgvector/pgvector:pg17` tiré à la demande) — Docker reste requis par `unit`,
+seul le setup Ollama est retiré.
+
+== Design (baby-step, 3 commits)
+
+. *Découplage Ollama* — `@Tag("ollama")` sur les 4 méthodes ; `test` gagne
+   `excludeTags("ollama")` ; nouvelle tâche `unitOllama` (JUnit-only,
+   `includeTags("ollama")`, classpath = `sourceSets.test.runtimeClasspath`) ;
+   `testAll` dépend de `unitOllama` (zéro perte locale).
+. *Job CI dédié `unit-ollama`* — conserve le setup Docker/Ollama et exécute
+   `./gradlew unitOllama` ; le job `unit` ne paie plus le setup ; `publish`
+   `needs` inclut `unit-ollama`.
+. *Démarrage parallèle* — `unit`, `unit-ollama`, `bdd-shard` n'attendent plus
+   `fast-tests` (le gate PR reste inchangé : seul `fast-tests` tourne sur
+   `pull_request`) ; `publish` reste gaté sur tous les jobs.
+
+Gardes : `codebase.ci.CodebaseCiOllamaDecouplingTest` (5 tests) — le job `unit`
+ne ré-introduit pas Ollama, `unit-ollama` invoque `unitOllama`, `test` exclut
+le tag, et **tout source de test lisant `OLLAMA_TEST_PORT` porte `@Tag("ollama")`**
+(anti-drift) ; décision de parallélisme verrouillée.
+
+== Preuve — CI verte + wall-clock
+
+* **Run `38611333969` (commit `816a8a3`, découplage seul) — CI VERTE** :
+  * Unit Tests ✓ — **5m20s → 2m44s** (step « Run unit tests » ≈ 2m32s, le setup
+    Ollama de ~2m36s a disparu) ;
+  * Unit Tests (Ollama) ✓ — 3m30s (les 4 tests **exécutés** et PASSED, log
+    vérifié) ;
+  * wall-clock `9m38s → 9m07s` — peu, car tout attendait encore `fast-tests`
+    (5m34s ce run).
+* **Run `38612857259` (commit `6972ae6`, + démarrage parallèle) — CI VERTE** :
+  * tous les jobs démarrés à `18:10:14` (en parallèle) ;
+  * Fast ✓ 1m32s ; **Unit ✓ 4m07s** ; Unit (Ollama) ✓ 3m57s ; 7 shards ✓
+    (1m16s-2m19s) ;
+  * **wall-clock `9m38s → 4m08s` (~2,3×)**.
+* **Couverture intacte** : les 4 tests `@Tag("ollama")` ont tourné pour de vrai
+  (`OllamaInstanceScannerTest … PASSED` + 3 × `OllamaLlmProviderTest … PASSED`) ;
+  le garde découplage 5/5 + le garde shards 3/3 PASSED dans `unit`.
+
+== Nouveau goulot
+
+Après découplage + parallélisme, le `unit` **n'est plus** derrière `fast-tests`
+(le mission-objectif est atteint). Le chemin critique est désormais **`unit`
+(4m07s) ≈ `unit-ollama` (3m57s)** : les deux sont maintenant indépendants et
+démarrent immédiatement. Le step « Run unit tests » a gonflé à 3m56s ce run
+(tirage **à froid** de `pgvector/pgvector:pg17` par les tests testcontainers,
+≈1 min) — piste suivante : pré-puller/cacher l'image pgvector, ou sharder les
+tests testcontainers. `fast-tests` reste très variable (1m32s → 5m34s selon le
+warmup du cache Gradle).
+
+== Fichiers
+
+* Build : `codebase-plugin/build.gradle.kts` (`test` excludeTags + tâche
+  `unitOllama` + `testAll`).
+* Tests : `OllamaInstanceScannerTest.kt`, `OllamaLlmProviderTest.kt` (`@Tag`).
+* Garde : `src/test/kotlin/codebase/ci/CodebaseCiOllamaDecouplingTest.kt`.
+* CI : `.github/workflows/test.yml` (`unit` allégé, `unit-ollama`, `needs`).
+
+== Leçons
+
+* Un tag JUnit (`@Tag("ollama")`) est le bon grain : il **sépare** les 4 tests
+  qui ont réellement besoin du réseau du reste de la classe (mêmes classes,
+  méthodes pures conservées dans `test`). Tagger au niveau **classe** aurait
+  fait perdre les tests purs de `OllamaLlmProviderTest`/`OllamaInstanceScannerTest`.
+* Un garde doit être **exempt de lui-même** : le fichier de garde contient le
+  littéral `OLLAMA_TEST_PORT` dans ses assertions → exclure `codebase/ci/` du
+  scan anti-drift (sinon il se dénonce).
+* Le découplage seul ne suffit pas si un préfixe sérialise tout : c'est le
+  **démarrage parallèle** qui libère le wall-clock. Les deux leviers sont
+  complémentaires (job-level vs chemin critique).
+
+== Gates locaux (Local = Build, Tests = CI)
+
+`compileKotlin`/`compileTestKotlin` VERT, `tasks --all` expose `test`/`unitOllama`/
+`testAll`/`testFast`. Zéro bump de version, zéro publication Central, zéro
+secret. Tests = CI (runs `38611333969` + `38612857259`, tous deux verts).

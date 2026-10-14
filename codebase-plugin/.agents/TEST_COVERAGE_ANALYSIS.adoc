@@ -1,6 +1,30 @@
 = Test Coverage Analysis — Codebase Gradle
 :date: 2026-10-14
 
+== Session 279 — Découplage Ollama + démarrage parallèle (test-only, zéro prod)
+
+**Tests modifiés (tag uniquement, aucune sémantique changée)** : 4 méthodes
+marquées `@Tag("ollama")` — `OllamaInstanceScannerTest` ×1 (intégration
+`@EnabledIf`), `OllamaLlmProviderTest` ×3 (`assumeTrue(isOllamaReady)`). Le
+reste des deux classes (méthodes pures, fakes) reste dans `test`.
+
+**Build** : `test` gagne `excludeTags("ollama")` ; nouvelle tâche `unitOllama`
+(JUnit-only, `includeTags("ollama")`) ; `testAll` dépend de `unitOllama`.
+
+**Garde** : `codebase.ci.CodebaseCiOllamaDecouplingTest` (5 tests, test-only) —
+job `unit` sans Ollama, job `unit-ollama` invoquant `unitOllama`, `test`
+excluant le tag, anti-drift (tout source lisant `OLLAMA_TEST_PORT` porte le
+tag), et parallélisme verrouillé (`publish` gaté sur tous).
+
+* **Couverture : zéro perte.** Les 4 tests `@Tag("ollama")` s'exécutent dans
+  le job CI `unit-ollama` avec le setup Docker Ollama — **preuve run
+  `38612857259`** (4/4 PASSED, log vérifié). Le `unit` JUnit exécute le reste.
+* **Wall-clock** : `9m38s` (S-278) → **`4m08s`** (découplage + démarrage
+  parallèle). Le `unit` job passe de 5m20s à 2m44s (découplage seul) puis le
+  chemin critique est `unit`≈`unit-ollama`.
+* Fichiers : 2 tests + `build.gradle.kts` + 1 garde + `test.yml`. Zéro bump,
+  zéro publication, zéro secret.
+
 == Session 278 — CI sharding (test-only, zéro prod)
 
 **Tests ajoutés** : 7 runners `CucumberShard*Runner` (test-only) +

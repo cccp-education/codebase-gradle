@@ -61,3 +61,20 @@
   5m20s, 7 × BDD ✓ (1m04s-1m41s), 370 scénarios (core-misc exécute epic_7/8).
 * **Wall-clock** : `20m49s` (run `38601405974`) → **`9m38s`** (~2,2×).
 * **Rapport** : `.agents/sessions/278-ci-sharding-parallel-matrix.adoc`.
+
+== S-279 — Découplage Ollama + démarrage parallèle ✅ (test-only)
+
+* **Type** : infrastructure CI (test-only), suite de S-278.
+* **Diagnostic** : 4 méthodes de test seulement sondent une Ollama réelle
+  (`OllamaInstanceScannerTest` ×1 + `OllamaLlmProviderTest` ×3) — le job `unit`
+  payait ~157 s de setup Docker/Ollama (cache + load + pull) pour elles.
+* **Livrables** : `@Tag("ollama")` ×4 ; `test` `excludeTags("ollama")` ; tâche
+  `unitOllama` (JUnit-only, `includeTags("ollama")`) ; `testAll` en dépend ;
+  job CI `unit-ollama` (setup Docker Ollama) ; `unit`/`unit-ollama`/`bdd-shard`
+  démarrent en parallèle du gate PR (`publish` gaté sur tous). Garde
+  `codebase.ci.CodebaseCiOllamaDecouplingTest` (5 tests).
+* **Preuve CI** : run `38611333969` (découplage, unit ✓ 2m44s) + run
+  `38612857259` (parallèle, ✓ wall-clock 4m08s ; 4/4 `@Tag("ollama")` PASSED).
+* **Wall-clock** : `9m38s` → **`4m08s`** (~2,3×). Nouveau goulot `unit` (4m07s)
+  ≈ `unit-ollama` (3m57s).
+* **Rapport** : `.agents/sessions/279-ci-ollama-decoupling-parallel-start.adoc`.

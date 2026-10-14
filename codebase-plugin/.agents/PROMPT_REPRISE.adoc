@@ -1,53 +1,58 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 279
-:session: 279
+= Prompt de Reprise — Codebase (Queens N1) — Session 280
+:session: 280
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO + koog)
-:session_precedente: 278 — **Éclatement CI en shards parallèles ✅** — `testAll` (19-23 min, double-run) → `unit` + **7 shards BDD** en matrice parallèle. Wall-clock **20m49s → 9m38s** (~2,2×). CI verte run `38606180807` (commit `b2063ce`), couverture 370 scénarios = union actuelle. Rapport `.agents/sessions/278-ci-sharding-parallel-matrix.adoc`.
+:session_precedente: 279 — **Découplage Ollama + démarrage parallèle ✅** — les 4 tests qui sondent une instance Ollama réelle sont `@Tag("ollama")`, exclus de `test`, exécutés par la tâche `unitOllama` / job CI `unit-ollama` ; les jobs lourds démarrent en parallèle du gate PR. Wall-clock **9m38s → 4m08s** (~2,3×). CI verte runs `38611333969` + `38612857259`. Rapport `.agents/sessions/279-ci-ollama-decoupling-parallel-start.adoc`.
 
-== Mission Session 279 — à la demande du pilote
+== Mission Session 280 — à la demande du pilote
 
-*Priorité 1 (optionnelle) — **optimiser le chemin critique** : le job `unit` (5m20s,
-  JUnit + setup Docker Ollama) est désormais le goulot (les 7 shards BDD font ~1-1,7 min).
-  Pistes : scinder le unit (p.ex. tests testcontainers pgvector vs tests Ollama vs
-  tests purs) ou retirer `needs: [fast-tests]` des jobs unit/shards (démarrage immédiat).
-  Gain attendu limité (~5 min de mur) — accord pilote.
+*Priorité 1 (optionnelle) — **poursuivre l'optimisation CI** : le chemin
+  critique est désormais `unit` (4m07s) ≈ `unit-ollama` (3m57s). Le step « Run
+  unit tests » a gonflé à ~3m56s (tirage à froid de `pgvector/pgvector:pg17`
+  par les tests JUnit testcontainers, ≈1 min). Pistes : pré-puller / cacher
+  l'image pgvector dans `unit`, ou sortir les tests testcontainers dans un job
+  dédié. Gain attendu modéré — accord pilote.
 
 *Autres items au choix (actionnables sans accord pilote) :
-* **Bloc C-4** : pollution TOC chunking — a priori traité N2 côté codex S-233
-  (`TocNoiseDetector`) ; vérifier qu'aucune US N1 ne reste (a priori non).
 * **EPIC V-FLYWAY** (P2 conditionnel) : seuil 5 migrations (actuellement 4).
 * **Arbitrage RENAME-13+** : `agent-contracts.afnorCorpus` prod N0 (hors
   codebase), `academy-gradle` enum SPG/SPD.
 * **EPIC PUB** : tag `v*` (accord pilote).
+* **Bloc C-4** : pollution TOC chunking — a priori traité N2 côté codex S-233,
+  vérifier qu'aucune US N1 ne reste (a priori non).
 
-== Contexte technique (S-278)
+== Contexte technique (S-279)
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25).
 * Version locale **0.0.18** (Central 0.0.18). Conventions **0.0.7**. BOM/catalog **0.0.92**.
 * Self-application : catalog ws `ws.versions.codebase.plugin` → toml local 0.0.18,
   split-ref `codebase-gradle-plugin = "0.0.17"` (dernier marker publié).
 * Pas de source set `functionalTest` — les runners Cucumber vivent dans `test`.
-* **CI test.yml** : `fast-tests` (gate PR `testFast`) → `unit` (`test`, JUnit-only,
-  Ollama) ∥ `bdd-shard` (matrice 7 × `cucumberTestShard*`) → `publish` (tag).
-* **`test` est JUnit-only** (`includeEngines("junit-jupiter")`) — le BDD passe par
-  les shards. `testAll`/`testFast`/les ~59 runners EPIC restent (usage local).
-* **Garde** : `codebase.ci.CodebaseCucumberShardCoverageTest` (partition features +
-  enregistrement/invocation des shards).
+* **CI test.yml** : `fast-tests` (gate PR `testFast`) **∥** `unit` (`test`,
+  JUnit-only, sans Ollama) **∥** `unit-ollama` (`unitOllama`, setup Docker
+  Ollama) **∥** `bdd-shard` (matrice 7) → `publish` (tags, gaté sur TOUS).
+  Les jobs lourds n'ont **plus** `needs: [fast-tests]` (démarrage parallèle).
+* **Tags** : `test` = JUnit-only (`includeEngines("junit-jupiter")`) +
+  `excludeTags("ollama")` ; `unitOllama` = `includeTags("ollama")` ; le tag
+  `integration` reste exclu partout (base `withType<Test>`).
+* **Gardes** : `codebase.ci.CodebaseCucumberShardCoverageTest` (partition
+  features) + `codebase.ci.CodebaseCiOllamaDecouplingTest` (découplage Ollama +
+  parallélisme).
 
 == Échecs préexistants (orthogonaux)
 
-* Aucun identifié à HEAD (CI verte, 370 scénarios shardés).
+* Aucun identifié à HEAD (CI verte, 370 scénarios shardés + unit + ollama).
 
 == Règles absolues
 
 * Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois.
 * **Local = Build, Tests = CI** : compiler/builder en local seulement ;
-  `test`/`cucumberTest`/`check` s'exécutent en CI après push.
+  `test`/`unitOllama`/`cucumberTest`/`check` s'exécutent en CI après push.
 * **Règle 0** : `publishToMavenLocal` OBLIGATOIRE après toute modif source.
 * Git autorisé — zéro secret commité. Publication Central = accord pilote.
 * Vérifier le working tree avant toute mission (`git status`).
 
 == References
 
+* `.agents/sessions/279-ci-ollama-decoupling-parallel-start.adoc` (rapport S-279)
 * `.agents/sessions/278-ci-sharding-parallel-matrix.adoc` (rapport S-278)
 * `capsule-gradle/capsule-plugin/.agents/sessions/198-ci-sharding-parallel-matrix.adoc`
-* `slider-gradle/slider-plugin/.agents/sessions/075-ci-sharding-parallel-matrix.adoc`
