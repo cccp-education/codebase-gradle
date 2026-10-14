@@ -44,3 +44,20 @@
 * **Central bundle `d107805c-dd8c-4418-b0c1-7cd2f7e8cab5`** (AUTOMATIC) ; propagation
   repo1 HTTP 200 (pom + marker).
 * Rapport `.agents/sessions/277-koog-pipeline-dedup-bs2-codebase-0.0.18.adoc`.
+
+== S-278 (2026-10-14) — Éclatement CI en shards parallèles ✅ (test-only)
+
+* **Type** : infrastructure CI (test-only) — réduction du wall-clock, pattern
+  capsule S-198 / slider S-075.
+* **Recon** : double-run confirmé (`test` 10776 vs `testAll` 10893 — `test`
+  détecte toutes les `@Suite` via `@Testable`). Couverture de référence =
+  370 scénarios (hors @integration/@wip, sauf epic_7/8 @wip).
+* **Livrables** : 7 `CucumberShard*Runner` (partition exhaustive/disjointe des
+  76 features) ; `test` JUnit-only (`includeEngines("junit-jupiter")`) ; garde
+  `codebase.ci.CodebaseCucumberShardCoverageTest` (partition + enregistrement +
+  workflow) ; `test.yml` = `unit` (JUnit + Ollama) ∥ `bdd-shard` (matrice 7).
+  `fast-tests` + `publish` conservés.
+* **Preuve CI** : run `38606180807` (commit `b2063ce`) VERTE — Fast ✓, Unit ✓
+  5m20s, 7 × BDD ✓ (1m04s-1m41s), 370 scénarios (core-misc exécute epic_7/8).
+* **Wall-clock** : `20m49s` (run `38601405974`) → **`9m38s`** (~2,2×).
+* **Rapport** : `.agents/sessions/278-ci-sharding-parallel-matrix.adoc`.

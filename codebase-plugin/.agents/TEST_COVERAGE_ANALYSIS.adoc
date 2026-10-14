@@ -1,5 +1,22 @@
 = Test Coverage Analysis — Codebase Gradle
-:date: 2026-09-28
+:date: 2026-10-14
+
+== Session 278 — CI sharding (test-only, zéro prod)
+
+**Tests ajoutés** : 7 runners `CucumberShard*Runner` (test-only) +
+`codebase.ci.CodebaseCucumberShardCoverageTest` (3 tests). **`build.gradle.kts`** :
+`test` devient JUnit-only (`includeEngines("junit-jupiter")`).
+
+* **Couverture BDD inchangée et prouvée** : les 7 shards couvrent les **76
+  features** en partition exhaustive/disjointe ; total exécuté = **370 scénarios**
+  (= 381 déclarations − 3 `epic_2` @wip − 8 @integration), identique à l'union
+  actuelle (agrégat + runners dédiés). Le shard `core-misc` préserve les `@wip`
+  `epic_7`/`epic_8` exécutés par leurs runners dédiés.
+* **Double-run historique supprimé** : `test` (10776) ne rejoue plus les `@Suite` ;
+  les shards portent le BDD une fois (`testAll`/`testFast`/runners EPIC conservés
+  pour usage local). Preuve CI run `38606180807` (0 FAILED).
+* **Garde** : `CodebaseCucumberShardCoverageTest` (partition + enregistrement
+  `CucumberTaskSpec` + invocation workflow) — tue le « test fantôme » S-269.
 
 == Session 270 — Génération réelle A2 (dogfood) + RENAME Vague 4
 

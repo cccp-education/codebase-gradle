@@ -1,14 +1,17 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 278
-:session: 278
+= Prompt de Reprise — Codebase (Queens N1) — Session 279
+:session: 279
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO + koog)
-:session_precedente: 277 — **KOOG-PIPELINE-DEDUP BS-2 (volet N1) ✅ — EPIC clos** — `codebase-plugin 0.0.18` publié Central (bundle `d107805c`). Re-pin `ws` catalog `0.0.78 → 0.0.92` + version propre `0.0.18` ; bootstrap self-application résolu par split-ref `codebase-gradle-plugin = "0.0.17"`. Adoption capsule + slider livrée (S-200). Compiles VERT, `validatePlugins` VERT, `publishToMavenLocal` VERT, propagation repo1 HTTP 200.
+:session_precedente: 278 — **Éclatement CI en shards parallèles ✅** — `testAll` (19-23 min, double-run) → `unit` + **7 shards BDD** en matrice parallèle. Wall-clock **20m49s → 9m38s** (~2,2×). CI verte run `38606180807` (commit `b2063ce`), couverture 370 scénarios = union actuelle. Rapport `.agents/sessions/278-ci-sharding-parallel-matrix.adoc`.
 
-== Mission Session 278 — à la demande du pilote
+== Mission Session 279 — à la demande du pilote
 
-*Priorité 1 — **KOOG-PIPELINE-DEDUP BS-2** ✅ **TERMINÉ** (S-276 BS-1 + S-277 N1 + S-200 N2).
-Le squelette N1 est publié et adopté par les 2 boroughs N2. Dette self-application résolue par split-ref.
+*Priorité 1 (optionnelle) — **optimiser le chemin critique** : le job `unit` (5m20s,
+  JUnit + setup Docker Ollama) est désormais le goulot (les 7 shards BDD font ~1-1,7 min).
+  Pistes : scinder le unit (p.ex. tests testcontainers pgvector vs tests Ollama vs
+  tests purs) ou retirer `needs: [fast-tests]` des jobs unit/shards (démarrage immédiat).
+  Gain attendu limité (~5 min de mur) — accord pilote.
 
-*Autres items au choix (actionnables sans accord pilote)* :
+*Autres items au choix (actionnables sans accord pilote) :
 * **Bloc C-4** : pollution TOC chunking — a priori traité N2 côté codex S-233
   (`TocNoiseDetector`) ; vérifier qu'aucune US N1 ne reste (a priori non).
 * **EPIC V-FLYWAY** (P2 conditionnel) : seuil 5 migrations (actuellement 4).
@@ -16,19 +19,23 @@ Le squelette N1 est publié et adopté par les 2 boroughs N2. Dette self-applica
   codebase), `academy-gradle` enum SPG/SPD.
 * **EPIC PUB** : tag `v*` (accord pilote).
 
-== Contexte technique (S-276)
+== Contexte technique (S-278)
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25).
-* Version locale **0.0.17** (Central 0.0.17). Conventions **0.0.7**. BOM/catalog **0.0.62**.
-* Self-application : catalog ws `ws.versions.codebase.plugin` → toml local 0.0.17.
-* Pas de source set `functionalTest` — les 54 runners Cucumber vivent dans `test`.
-* Nouveau domaine : `codebase.koog.pipeline` (`PipelineDefinition`, `PipelineGraph`).
-* **EPICs terminés** : CB-PAGE-PROVENANCE 5/5, CDX-OCR-CONTRACTS, CDX-RAG-SOCLE,
-  FT-PIPELINE, SVO, VIBE-HARDENING 1/2, OCR-QUALITY US-4, KOOG-PIPELINE-DEDUP BS-1.
+* Version locale **0.0.18** (Central 0.0.18). Conventions **0.0.7**. BOM/catalog **0.0.92**.
+* Self-application : catalog ws `ws.versions.codebase.plugin` → toml local 0.0.18,
+  split-ref `codebase-gradle-plugin = "0.0.17"` (dernier marker publié).
+* Pas de source set `functionalTest` — les runners Cucumber vivent dans `test`.
+* **CI test.yml** : `fast-tests` (gate PR `testFast`) → `unit` (`test`, JUnit-only,
+  Ollama) ∥ `bdd-shard` (matrice 7 × `cucumberTestShard*`) → `publish` (tag).
+* **`test` est JUnit-only** (`includeEngines("junit-jupiter")`) — le BDD passe par
+  les shards. `testAll`/`testFast`/les ~59 runners EPIC restent (usage local).
+* **Garde** : `codebase.ci.CodebaseCucumberShardCoverageTest` (partition features +
+  enregistrement/invocation des shards).
 
 == Échecs préexistants (orthogonaux)
 
-* 2 × `OcrTaskTest` (drift S-211, stash-confirmés) — à re-vérifier en CI.
+* Aucun identifié à HEAD (CI verte, 370 scénarios shardés).
 
 == Règles absolues
 
@@ -41,6 +48,6 @@ Le squelette N1 est publié et adopté par les 2 boroughs N2. Dette self-applica
 
 == References
 
-* `.agents/sessions/276-koog-pipeline-dedup-bs1.adoc` (rapport S-276)
-* `capsule-gradle/capsule-plugin/.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`
-* `bakery-gradle/bakery-plugin/src/test/kotlin/bakery/BakeryPluginPublicationTest.kt` (patron garde)
+* `.agents/sessions/278-ci-sharding-parallel-matrix.adoc` (rapport S-278)
+* `capsule-gradle/capsule-plugin/.agents/sessions/198-ci-sharding-parallel-matrix.adoc`
+* `slider-gradle/slider-plugin/.agents/sessions/075-ci-sharding-parallel-matrix.adoc`

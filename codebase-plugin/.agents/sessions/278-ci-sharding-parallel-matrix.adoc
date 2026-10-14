@@ -1,0 +1,106 @@
+= Session 278 — Éclatement de la CI `codebase-gradle` en shards parallèles
+:toc: left
+:icons: font
+:sectnums:
+
+*Date* : 2026-10-14
+*Borough* : Queens — codebase-gradle (N1)
+*Type* : infrastructure CI (test-only) — parallélisation du wall-clock
+*Référence* : capsule-gradle S-198 / slider-gradle S-075 (pattern éprouvé)
+
+== Objectif
+
+Éclater le job monolithique `full-tests` (`./gradlew testAll`, ~19-23 min) en une
+matrice de shards parallèles, **sans perte de couverture**, comme pour `capsule` et
+`slider`, afin de réduire le wall-clock CI.
+
+== Reconnaissance — graphe de test réel
+
+`testAll` = `test` + `cucumberTest` (agrégat) + **~59 runners EPIC dédiés**
+(`cucumberTaskSpecs`). Deux constats clefs :
+
+. *Double-run historique confirmé.* Le task `test` (aucun filtre, `useJUnitPlatform`)
+   détecte les `@Suite` Cucumber via la méta-annotation `@Testable` (Gradle inclut
+   toute classe `@Testable`, pas seulement les `*Test`). Preuve : `test` = **10776**
+   vs `testAll` = **10893** (delta 117) — `test` exécute donc déjà la totalité des
+   suites ; les runners dédiés rejouent la quasi-totalité. Le job monolithique
+   double (voire triple) exécute.
+. *Couverture de référence (union actuelle)* = tous les scénarios **hors
+   `@integration`**, **hors `@wip`**, sauf `epic_7`/`epic_8` (features `@wip` mais
+   exécutées par leurs runners dédiés `filter = @epic7`/`@epic8`). Soit **370
+   scénarios** = 381 déclarations − 3 (`epic_2` @wip, sans runner) − 8 (@integration).
+
+*Environnement* :
+
+* **Ollama** : seuls les tests unitaires en ont besoin
+  (`OllamaInstanceScannerTest`/`OllamaLlmProviderTest`, gatés `assumeTrue`). **Aucun
+  step Cucumber ne lit `OLLAMA_TEST_PORT`** → setup Ollama uniquement dans le job unit.
+* **pgvector** : de nombreux steps Cucumber l'utilisent via **testcontainers**
+  (pull `pgvector/pgvector:pg17` à la demande) — le workflow monolithique ne
+  pré-pullait jamais l'image ; aucun setup spécial requis par shard.
+
+== Design
+
+. **7 runners `CucumberShard*Runner`** (`codebase.scenarios`) = partition
+   **exhaustive et disjointe** des 76 features (`@Suite` +
+   `@SelectClasspathResource` + `FILTER_TAGS_PROPERTY_NAME`), à l'image de
+   capsule/slider. Un shard conserve la clause `not @integration` ; `core-misc`
+   conserve `not @integration` **sans** `not @wip` pour préserver `epic_7`/`epic_8`.
+. **`test` JUnit-only** : ajout `includeEngines("junit-jupiter")` → tue le double-run
+   historique ; les shards portent désormais le BDD.
+. **Garde `codebase.ci.CodebaseCucumberShardCoverageTest`** (S-269 « test fantôme ») :
+   partition exhaustive/disjointe des features + chaque runner de shard enregistré
+   (`CucumberTaskSpec`) ET invoqué par le workflow + le job unit exécute `test`.
+. **Workflow** `test.yml` : `unit` (JUnit + Ollama) + `bdd-shard` (matrice 7 jobs) ;
+   `fast-tests` (gate PR) et `publish` conservés.
+
+[cols="2,4"]
+|===
+| Shard | Features (nb)
+
+| `cucumberTestShardEpic9` | EPIC 9 pgvector/walker/query/composite (13)
+| `cucumberTestShardGovernance` | EPIC V-9 gouvernance agentique (12)
+| `cucumberTestShardVibecoding` | EPIC V/V-6/V-8/Z (10)
+| `cucumberTestShardSessionProtocol` | EPIC SP + SVO + SLD-8 + TRAD (9)
+| `cucumberTestShardAgentic` | EPIC Y/W/X/K + subgraph (13)
+| `cucumberTestShardOcrRag` | OCR / RAG / fine-tuning / divers contenu (12)
+| `cucumberTestShardCoreMisc` | hardening / koog / context / experts / L-3 (7)
+|===
+
+== Preuve — CI verte + wall-clock
+
+* **Run `38606180807` (commit `b2063ce`) — CI ENTIÈREMENT VERTE** :
+  * Fast Tests ✓ (4m16s) ;
+  * **Unit Tests ✓** (5m20s) ;
+  * **7 × BDD shards ✓** (1m04s → 1m41s chacun) ;
+  * Publish ignoré (pas de tag).
+* **Couverture prouvée sans perte** : total shards = **370 scénarios** =
+   381 − 3 (epic_2 @wip) − 8 (@integration) — identique à l'union actuelle. Le shard
+   `core-misc` exécute bien `epic_7`/`epic_8` (les `@wip` préservés).
+* **Wall-clock avant/après** : `20m49s` (run `38601405974` : fast 1m08s + full
+   19m38s) → **`9m38s`** (fast 4m16s + max(unit 5m20s, shards) ≈ 5m20s).
+   Gain ≈ **2,2×**. Le job `unit` est désormais le chemin critique.
+
+== Fichiers
+
+* Prod/build : `build.gradle.kts` (7 specs shards + `test` JUnit-only + `testShards`).
+* Runners (7) : `CucumberShard{Epic9,Governance,Vibecoding,SessionProtocol,Agentic,OcrRag,CoreMisc}Runner.kt`.
+* Garde : `src/test/kotlin/codebase/ci/CodebaseCucumberShardCoverageTest.kt`.
+* CI : `.github/workflows/test.yml`.
+
+== Leçons
+
+* Un `test` sans `includeEngines` exécute **toutes** les suites `@Testable` :
+  le « double-run » n'était pas visible dans le graphe Gradle (mêmes features via
+  `test` et les runners dédiés) — il faut le mesurer (`test` 10776 vs `testAll` 10893).
+* Une partition par **fichier de feature** (et non par tag) garantit une couverture
+  exhaustive/disjointe simple à garder ; la seule subtilité est le `@wip` des
+  runners dédiés `epic_7`/`epic_8` (préservé par le shard `core-misc`).
+* `cucumber.features` (propriété) prime sur `@SelectClasspathResource` (warning
+  attendu) — les deux gardent la feature trouvée (chemins fs + classpath).
+
+== Gates locaux (Local = Build, Tests = CI)
+
+`compileKotlin`/`compileTestKotlin` VERT, `validatePlugins` VERT, `tasks --all`
+expose les 7 shards + `testShards`. Zéro bump de version, zéro publication Central,
+zéro secret.

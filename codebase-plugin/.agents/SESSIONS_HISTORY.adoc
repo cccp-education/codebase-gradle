@@ -2,6 +2,22 @@
 :toc: left
 :icons: font
 
+== Session 278 — 2026-10-14 — Éclatement CI en shards parallèles ✅ (test-only)
+
+Mission pilote : réduire le wall-clock CI comme capsule (S-198) / slider (S-075).
+**Recon** : `testAll` = `test` + agrégat + ~59 runners EPIC ; **double-run confirmé**
+(`test` 10776 vs `testAll` 10893 — `test` détecte toutes les `@Suite` via `@Testable`).
+Couverture de référence = 370 scénarios (hors @integration/@wip, sauf epic_7/8 @wip
+exécutés par leurs runners dédiés). **Design** : 7 `CucumberShard*Runner` = partition
+**exhaustive et disjointe** des 76 features (capsule/slider pattern) + **`test` JUnit-only**
+(`includeEngines("junit-jupiter")`) + garde `codebase.ci.CodebaseCucumberShardCoverageTest`
+(S-269) + workflow `test.yml` : `unit` (JUnit + Docker Ollama, seul job à en avoir besoin)
+∥ `bdd-shard` (matrice 7 jobs ; pgvector via testcontainers à la demande). `fast-tests`
+(gate PR) + `publish` conservés. **CI verte run `38606180807` (commit `b2063ce`)** : Fast ✓,
+Unit ✓ 5m20s, 7 × BDD ✓ (1m04s-1m41s), 370 scénarios (core-misc exécute epic_7/8).
+**Wall-clock 20m49s → 9m38s** (~2,2×). Zéro bump/publication/secret. Rapport
+`.agents/sessions/278-ci-sharding-parallel-matrix.adoc`.
+
 == Session 277 — 2026-10-14 — KOOG-PIPELINE-DEDUP BS-2 (volet N1) : codebase-plugin 0.0.18 ✅
 
 Volet N1 de l'adoption (accord pilote BS-2). Re-pin `settings.gradle.kts`

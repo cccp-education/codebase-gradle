@@ -4,6 +4,23 @@
 
 _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux. Pour le backlog à jour détaillé, voir `.agents/BACKLOG.adoc`._
 
+== Synthèse Backlog (Session 278 — 2026-10-14)
+
+**Éclatement CI en shards parallèles ✅** (test-only, pattern capsule S-198 /
+slider S-075) — `testAll` monolithique (19-23 min) remplacé par `unit`
+(JUnit-only + Docker Ollama) ∥ **7 shards BDD** en matrice parallèle
+(`cucumberTestShard{Epic9,Governance,Vibecoding,SessionProtocol,Agentic,OcrRag,CoreMisc}`),
+partition **exhaustive et disjointe** des 76 features. **Double-run historique
+confirmé** (`test` 10776 vs `testAll` 10893) → `test` devient JUnit-only
+(`includeEngines("junit-jupiter")`). Garde `codebase.ci.CodebaseCucumberShardCoverageTest`
+(S-269). **CI verte run `38606180807` (commit `b2063ce`)** — 370 scénarios shardés =
+union actuelle ; `core-misc` préserve `epic_7`/`epic_8` @wip. **Wall-clock
+20m49s → 9m38s** (~2,2×) ; le job `unit` est le nouveau chemin critique.
+Zéro bump, zéro publication, zéro secret. Rapport
+`.agents/sessions/278-ci-sharding-parallel-matrix.adoc`.
+**Reste (gate pilote)** : optimisation du chemin critique (scinder le unit / retirer
+`needs: fast-tests`), EPIC PUB (tag `v*`).
+
 == Synthèse Backlog (Session 276 — 2026-10-14)
 
 **KOOG-PIPELINE-DEDUP BS-1 ✅** — squelette de pipeline koog générique extrait
