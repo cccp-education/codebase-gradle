@@ -53,7 +53,8 @@ lagge d'une version — inhérent au bootstrap d'un plugin auto-appliqué.
 
 * `compileKotlin` / `compileTestKotlin` VERT ; `validatePlugins` VERT ;
   `publishToMavenLocal` VERT.
-* **Preuve CI** : workflow `CI` (run à compléter) + `OCR` (run `38597443742`, ✅ VERT).
+* **Preuve CI** : workflow `CI` **run `38597443728` ✅** (26m18s) + `OCR`
+  **run `38597443742` ✅** (3m35s).
 
 == Commits
 
