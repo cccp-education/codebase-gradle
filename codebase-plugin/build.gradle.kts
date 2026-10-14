@@ -128,6 +128,15 @@ tasks.named<Test>("test") {
     }
     systemProperty("codebase.publishedCatalog.codebaseVersion", ws.versions.codebase.plugin.get())
     systemProperty("codebase.publishedCatalog.bomVersion", ws.versions.workspace.bom.get())
+    // CI only: the standard GitHub runner has 4 vCPU, and the ~1860 JUnit tests
+    // are mostly CPU-bound. Two forks roughly halve the `:test` wall-clock. Kept
+    // off local runs (heterogeneous workstations, shared mavenLocal — Local =
+    // Build). Testcontainers state is per-JVM (`PostgresFixture` object), so each
+    // fork owns its own pgvector container; the two provenance/exposition tests
+    // purge by a closed UUID family, so cross-fork isolation is preserved.
+    if (isCI()) {
+        maxParallelForks = 2
+    }
 }
 
 // ── Ollama-dependent JUnit tests (isolated CI job) ────────────────────────────
