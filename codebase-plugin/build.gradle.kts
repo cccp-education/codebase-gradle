@@ -140,7 +140,7 @@ tasks.register<Test>("unitOllama") {
     description = "Runs the JUnit tests that probe a real Ollama instance (@Tag(\"ollama\"))"
     group = "verification"
     testClassesDirs = sourceSets.test.get().output.classesDirs
-    classpath = sourceSets.test.get().output + configurations.testRuntimeClasspath.get()
+    classpath = sourceSets.test.get().runtimeClasspath
     dependsOn(tasks.named("classes"), tasks.named("testClasses"))
     useJUnitPlatform {
         includeEngines("junit-jupiter")
