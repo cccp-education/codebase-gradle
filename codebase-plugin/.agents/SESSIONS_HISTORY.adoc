@@ -426,3 +426,37 @@ Zéro bump/publication/secret. Rapport `.agents/sessions/bump-catalog-0.0.78.ado
 ** Gates : `compileKotlin`/`compileTestKotlin`/`validatePlugins` VERT,
    `properties` → 0.0.17, POM 0.0.17 + import `workspace-bom 0.0.62`,
    `publishToMavenLocal` VERT. Tests = CI. Zéro bump/publication/secret.
+
+== Session 276 — 2026-10-14 — KOOG-PIPELINE-DEDUP BS-1 : squelette de pipeline koog générique (N1)
+
+* **EPICs** : KOOG-PIPELINE-DEDUP BS-1 (EPIC capsule, réouvert éligible S-195)
+* **Type** : extraction N1 — baby-step DDD/TDD/BDD strict
+* **Livrables** :
+** Domaine `codebase.koog.pipeline` : port `PipelineDefinition<S>` (propose/
+   validate/generate + `isValid`/`isFailed` + `onProposeFailure`/
+   `onGenerateFailure`) + `PipelineGraph<S : Any>` (`execute` séquentiel
+   fail-fast + `asMermaidDiagram`) + factory **`inline reified pipelineGraph`**
+   (koog `strategy`/`node` exigent des paramètres `reified`).
+** Couvre les jumeaux N2 `CapsulePipelineGraph` ≈ `DeckPipelineGraph`
+   (148/142 l.) sans sur-ingénierie (pas de `STAGE/LLM/PROMPT_BUILDER/VALIDATOR`).
+** `PipelineGraphTest` 10 UT + `koog_pipeline_dedup.feature` 4 scénarios
+   `@koog-pipeline` + `KoogPipelineWorld`/`KoogPipelineDefinition`/`KoogPipelineSteps`
+   + `KoogPipelineCucumberRunner` + `cucumberTestKoogPipeline` (47e `CucumberTaskSpec`).
+** **BS-2 (adoption capsule/slider) = gate pilote** : DAG publication
+   `codebase-plugin 0.0.18` → BOM MEMPHIS → adoption N2 (aucune publication faite).
+** Rapport : `.agents/sessions/276-koog-pipeline-dedup-bs1.adoc`.
+* **Fichiers** : `src/main/kotlin/codebase/koog/pipeline/{PipelineDefinition,PipelineGraph}.kt`,
+  `src/test/kotlin/codebase/koog/pipeline/PipelineGraphTest.kt`,
+  `src/test/features/koog_pipeline_dedup.feature`,
+  `src/test/kotlin/codebase/scenarios/KoogPipeline{World,Steps,CucumberRunner}.kt`,
+  `codebase-plugin/build.gradle.kts`, gouvernance (PROMPT_REPRISE/INDEX/HISTORY/BACKLOG/archive).
+* **Leçons** :
+** koog `strategy`/`node` sont `inline reified` → un squelette générique passe
+   par une **factory inline reified** (pas une méthode générique).
+** Un step Cucumber `{string}` appelé **sans guillemets** compile puis échoue à
+   l'exécution (`UndefinedStepException`) : la compilation locale ne le voit
+   pas, seul le run CI le révèle.
+* **Gates** : `compileKotlin`/`compileTestKotlin`/`validatePlugins`/`assemble` VERT,
+   `publishToMavenLocal` VERT (Règle 0). **CI run `38585624839` VERTE** (Fast ✅
+   1m21s, Full ✅ 22m4s, 0 FAILED, 8/8 `@koog-pipeline`, 10/10 `PipelineGraphTest`).
+   Zéro bump BOM, zéro publication Central, zéro secret.

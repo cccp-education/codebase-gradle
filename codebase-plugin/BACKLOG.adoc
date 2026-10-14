@@ -4,6 +4,21 @@
 
 _Ce fichier est le suivi prioritaire des tâches. L'INDEX.adoc est la source de vérité pour les statuts globaux. Pour le backlog à jour détaillé, voir `.agents/BACKLOG.adoc`._
 
+== Synthèse Backlog (Session 276 — 2026-10-14)
+
+**KOOG-PIPELINE-DEDUP BS-1 ✅** — squelette de pipeline koog générique extrait
+dans le N1 `codebase.koog.pipeline` (`PipelineDefinition<S>` port +
+`PipelineGraph<S : Any>` + factory `inline reified pipelineGraph`). Couvre les
+jumeaux N2 capsule `CapsulePipelineGraph` ≈ slider `DeckPipelineGraph`. 10 UT +
+4 scénarios `@koog-pipeline` + runner `cucumberTestKoogPipeline`. **Preuve CI
+run `38585624839` VERTE** (0 FAILED). Zéro publication.
+**Reste (gate pilote)** : **BS-2** (adoption capsule/slider) = publication
+`codebase-plugin 0.0.18` + bump BOM MEMPHIS (Règle 2). DAG exact :
+`.agents/sessions/276-koog-pipeline-dedup-bs1.adoc`. Rapport S-276.
+Autres items actionnables sans accord pilote : bloc C-4 (TOC chunking, a priori
+traité N2 codex), EPIC V-FLYWAY (P2, seuil 5 migrations), arbitrage RENAME-13+,
+EPIC PUB (tag `v*`).
+
 == Synthèse Backlog (Session 273 — 2026-10-02)
 
 *Le backlog détaillé à jour est dans `.agents/BACKLOG.adoc`. Résumé S-273 :*

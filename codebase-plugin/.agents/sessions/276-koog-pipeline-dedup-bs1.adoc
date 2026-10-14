@@ -1,0 +1,170 @@
+= Session 276 — KOOG-PIPELINE-DEDUP BS-1 : squelette de pipeline koog générique (N1)
+:toc:
+:session: 276
+:date: 2026-10-14
+:borough: Queens — codebase-gradle (N1)
+:statut: ✅ TERMINÉ (BS-1 — artefact N1 prêt pour adoption BS-2)
+
+== Mission
+
+Attaquer l'EPIC **KOOG-PIPELINE-DEDUP** (cadrage capsule
+`.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`, statut 🟡 RÉOUVERT éligible
+depuis l'amendement S-195 « factoriser à 2 »), en commençant par son **premier
+baby-step sûr et CI-vert** : **BS-1 — extraction du squelette de pipeline koog
+générique** dans le N1 `codebase.koog.pipeline` + tests unitaires.
+
+*Périmètre strict* : **BS-1 uniquement, dans codebase**. BS-2 (adoption
+capsule/slider) est **hors périmètre** (exige publication Central + bump BOM
+MEMPHIS — accord pilote, Règle 2). Aucune modification de capsule ni slider.
+
+== Constat d'ouverture — l'extraction est pertinente
+
+Relu les 3 graphes :
+
+|===
+| Pipeline | Classe | DAG | Motif
+| codebase (N1) | `codebase.koog.KoogAugmentedContextGraph` | buildContext→classify→plan | **différent** — linéaire, dégradation continue (pas de `FAILED`), nœuds domaine (pgvector/planner)
+| slider (N2) | `slider.pipeline.DeckPipelineGraph` | propose→validate→generate\|finish | jumeau
+| capsule (N2) | `capsule.pipeline.CapsulePipelineGraph` | propose→validate→generate\|finish | jumeau
+|===
+
+`CapsulePipelineGraph` (148 l.) ≈ `DeckPipelineGraph` (142 l.) : même
+`strategy<S,S>(ToolSelectionStrategy.NONE)`, mêmes 3 nœuds + edges
+conditionnels (`validate → generate onCondition { contextValid }` /
+`validate → nodeFinish`), même `execute()` séquentiel fail-fast (try/catch par
+nœud, court-circuit sur `stage == FAILED` puis `!contextValid`), même
+`asMermaidDiagram()` (`runBlocking { graph.asMermaidDiagram() }`). Seuls
+diffèrent : le type d'état, les fonctions de nœud (LLM/prompt/validator), les
+libellés d'erreur et les valeurs d'étape.
+
+*Conclusion : abstraction retenue = port `PipelineDefinition<S>` (les 3
+transformations de nœud + prédicats + mappers d'échec) + squelette générique
+`PipelineGraph<S>` + factory `pipelineGraph`. Couvre les deux jumeaux sans
+sur-ingénierie — pas de paramètres de type `STAGE/LLM/PROMPT_BUILDER/VALIDATOR`
+(l'abstraction 5-paramètres du cadrage aurait été plus lourde).*
+
+== Architecture livrée (N1)
+
+=== `codebase.koog.pipeline.PipelineDefinition<S>` (port)
+
+```kotlin
+interface PipelineDefinition<S> {
+    val name: String
+    fun propose(state: S): S
+    fun validate(state: S): S
+    fun generate(state: S): S
+    fun isValid(state: S): Boolean
+    fun isFailed(state: S): Boolean
+    fun onProposeFailure(state: S, cause: Throwable): S
+    fun onGenerateFailure(state: S, cause: Throwable): S
+}
+```
+
+Toute la connaissance domaine (LLM, prompt, validation, libellés) vit derrière
+ce port. Le squelette ignore capsule/slider.
+
+=== `codebase.koog.pipeline.PipelineGraph<S : Any>` + `pipelineGraph`
+
+* `execute(initial)` — orchestration séquentielle fail-fast : `propose`
+  (try/catch → `onProposeFailure`), court-circuit si `isFailed`, `validate`,
+  court-circuit si `!isValid`, `generate` (try/catch → `onGenerateFailure`).
+* `graph: AIAgentGraphStrategy<S,S>` — topologie koog
+  `strategy<S,S>` + 3 nœuds + 5 edges.
+* `asMermaidDiagram()`.
+* `pipelineGraph(definition)` — **`inline` + `reified S: Any`** : koog's
+  `strategy`/`node` résolvent leur `TypeToken` via des paramètres `reified`
+  (vérifié dans les sources koog : `inline fun <reified Input, reified Output>
+  strategy(...)` / `node(...)`). Une classe générique simple ne pourrait pas
+  appeler ces builders ; la factory inline laisse `S` être inféré au call site
+  d'adoption (ex. `PipelineDefinition<CapsuleState> → S = CapsuleState`).
+
+=== Conventions baby-step
+
+* **DDD/TDD/BDD strict** : RED prouvé par compilation (`Unresolved reference
+  'PipelineDefinition'` + `'pipelineGraph'` × 10) → GREEN (`compileKotlin` +
+  `compileTestKotlin` VERT) → REFACTOR (aucun ; code revu propre).
+* **Cucumber** (convention codebase, `CucumberTaskSpec`) :
+  `koog_pipeline_dedup.feature` 4 scénarios `@koog-pipeline` +
+  `KoogPipelineWorld`/`KoogPipelineDefinition` (in-memory, miroir de la forme
+  `CapsuleState`/`DeckState`) + `KoogPipelineSteps` (préfixés S-088) +
+  `KoogPipelineCucumberRunner` (S-082) + `cucumberTestKoogPipeline`.
+* **English only** : code, identifiants, commentaires, Gherkin, commits.
+
+== Fichiers
+
+* `src/main/kotlin/codebase/koog/pipeline/PipelineDefinition.kt` (nouveau)
+* `src/main/kotlin/codebase/koog/pipeline/PipelineGraph.kt` (nouveau)
+* `src/test/kotlin/codebase/koog/pipeline/PipelineGraphTest.kt` (nouveau — 10 UT)
+* `src/test/features/koog_pipeline_dedup.feature` (nouveau — 4 scénarios)
+* `src/test/kotlin/codebase/scenarios/KoogPipelineWorld.kt` (nouveau)
+* `src/test/kotlin/codebase/scenarios/KoogPipelineSteps.kt` (nouveau)
+* `src/test/kotlin/codebase/scenarios/KoogPipelineCucumberRunner.kt` (nouveau)
+* `codebase-plugin/build.gradle.kts` (modifié — `CucumberTaskSpec("cucumberTestKoogPipeline")`)
+
+== Commits
+
+* `381e61c` — `feat(s276): extract generic N1 koog pipeline skeleton (PipelineDefinition + PipelineGraph)`
+* `8a1a0e7` — `test(s276): @koog-pipeline BDD scenario + dedicated runner`
+* `d94211e` — `fix(s276): quote the koog pipeline stage step argument` (Cucumber `{string}` exige des guillemets)
+
+== Gates
+
+* **Local = Build, Tests = CI** : `compileKotlin` / `compileTestKotlin` VERT,
+  `validatePlugins` VERT, `assemble` VERT, `publishToMavenLocal` VERT (Règle 0).
+  Aucun `test`/`check`/`cucumberTest` local.
+* **Preuve CI run `38585624839` (commit `d94211e`) — VERTE** :
+  * Fast Tests (PR Gate) ✅ 1m21s
+  * Full Test Suite ✅ 22m4s — `BUILD SUCCESSFUL in 17m51s`, **0 FAILED** sur
+    tout le job ; `PipelineGraphTest` **10/10 PASSED** ; `@koog-pipeline`
+    **8/8 PASSED** (4 scénarios × runner agrégé + runner dédié).
+* **Premier run `38583833359`** (commit `8a1a0e7`) : rouge — 6 échecs
+  `UndefinedStepException` (les 3 scénarios à étape `final stage` utilisaient
+  `CONTENT_GENERATED`/`FAILED` **non quotés** alors que le step est
+  `{string}`). Corrigé par guillemets → run vert.
+
+== Leçon
+
+* Un scenario Cucumber dont le step `{string}` est appelé **sans guillemets**
+  compile, s'exécute, et échoue en `UndefinedStepException` **à l'exécution**
+  (invisible en compilation locale). Les tests sont en CI — d'où l'importance
+  du run CI comme unique preuve.
+* koog `strategy`/`node` sont `inline reified` : un squelette générique doit
+  passer par une **factory inline reified**, pas une méthode générique.
+
+== DAG de publication requis pour BS-2 (adoption — en attente d'accord pilote)
+
+BS-1 livre l'artefact **N1 prêt**, mais capsule/slider sont des consommateurs
+**N2** qui résolvent `codebase-plugin` depuis **Maven Central** (et le BOM
+MEMPHIS). L'adoption exige donc, dans l'ordre DAG **N0 → N1 → N2** :
+
+. **N1 — publier `codebase-plugin`** : bump de version (0.0.17 → **0.0.18**)
+   dans le catalog workspace (MEMPHIS `gradle/libs.versions.toml`) puis
+   `publishAggregationToCentralPortal` du module (bundle AUTOMATIC + vérifier
+   propagation repo1 HTTP 200). *Règle 2 : accord pilote requis.*
+. **N0 — bump BOM/catalog MEMPHIS** : entrée `codebase-plugin = 0.0.18` dans
+   le BOM/catalog (0.0.62 → **0.0.63** a minima, ou version courante+1),
+   publication Central, propagation repo1. *Accord pilote requis.*
+. **N2 — adoption capsule + slider** (BS-2, hors périmètre de ce sous-agent) :
+   * **capsule** : aligner les pins catalog/BOM + implémenter
+     `PipelineDefinition<CapsuleState>` (les 3 nœuds `proposeContextNode`/
+     `validateContextNode`/`generateSpeakerNotesNode` déplacés derrière le
+     port, préfixes `ProposeContextFailed:`/`GenerateSpeakerNotesFailed:` dans
+     les mappers), remplacer le corps de `CapsulePipelineGraph` par
+     `pipelineGraph(definition)` en conservant l'API publique
+     (`graph`, `execute`, `asMermaidDiagram`) → zéro régression des 20 UT
+     `CapsulePipelineGraphTest`.
+   * **slider** : idem pour `DeckState` (`ProposeContextFailed:`/
+     `GenerateDeckFailed:`), conserver les 16 UT `DeckPipelineGraphTest`.
+   * Note : capsule/slider ne dépendent pas directement de tout codebase ;
+     l'adoption nécessite que `codebase.koog.pipeline` soit exposé (package
+     public) et que `codebase-plugin` soit sur Central à la version bumpée.
+
+**Aucune publication n'a été effectuée dans cette session.** Le DAG ci-dessus
+est le gate pilote d'ouverture de BS-2.
+
+== Traçabilité
+
+* Cadrage : `capsule-gradle/capsule-plugin/.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`.
+* Sources auditées : `CapsulePipelineGraph.kt` (148 l.), `DeckPipelineGraph.kt`
+  (142 l.), `KoogAugmentedContextGraph.kt` (156 l.).
+* Amendement doctrine : seuil de factorisation 3 → 2 (S-195).

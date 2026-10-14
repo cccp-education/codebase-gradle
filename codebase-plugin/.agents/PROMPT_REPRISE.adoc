@@ -1,32 +1,36 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 274
-:session: 275
-:borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
-:session_precedente: 273 — **Migration conventions 0.0.4→0.0.7 + adoption catalog ws + garde anti-drift** ✅. Codebase était le dernier consumer non migré. `build.gradle.kts` conventions 0.0.7, `version = ws.versions.codebase.plugin.get()`, BOM platform dynamique (`ws.versions.workspace.bom` = 0.0.62), self-application `alias(libs.plugins.codebase)` alignée 0.0.17. Triple split-brain (build 0.0.10 / toml 0.0.11 / projet 0.0.17) **tué**. `CodebasePluginPublicationTest` (4 tests, injection Gradle). `publishToMavenLocal` VERT, POM 0.0.17 + import BOM 0.0.62.
-:session_pre_precedente: 272 — Bloc B (publication N1→N2) ✅ — `codebase-plugin 0.0.17` Central.
+= Prompt de Reprise — Codebase (Queens N1) — Session 277
+:session: 277
+:borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO + koog)
+:session_precedente: 276 — **KOOG-PIPELINE-DEDUP BS-1 ✅** — squelette de pipeline koog générique extrait dans `codebase.koog.pipeline` (`PipelineDefinition<S>` port + `PipelineGraph<S: Any>` + factory `inline reified pipelineGraph`). 10 UT + 4 scénarios `@koog-pipeline` + runner dédié `cucumberTestKoogPipeline`. **Preuve CI run `38585624839` VERTE** (Fast ✅ 1m21s, Full ✅ 22m4s, 0 FAILED, 8/8 `@koog-pipeline`). Zéro publication (BS-2 = gate pilote).
 
-== Mission Session 274 — à la demande du pilote
+== Mission Session 277 — à la demande du pilote
 
-* *EPIC PUB* (accord pilote) : tag `v0.0.17` → publication CI (le repo publie
-  déjà 0.0.17 Central S-272 ; le nettoyage S-273 est local). Un futur bump
-  `0.0.18` distribuera le delta si le pilote le souhaite.
-* *Bloc C-4* : pollution TOC chunking — déjà traité côté codex S-233
-  (`TocNoiseDetector` N2, `doubtful` zéro confiance). Vérifier si une US N1
-  reste nécessaire (a priori non : la détection est N2, zéro re-vectorisation).
-* *A2 — Génération réelle* (LLM metered) : bloqué quota externe (26 comptes
-  Ollama) / accord pilote. Run local non-metered `qwen3:0.6b` @11443 prouvé S-270.
-* *Arbitrage RENAME-13+* : `agent-contracts.afnorCorpus` prod N0 (hors codebase),
-  `academy-gradle` enum SPG/SPD.
-* *EPIC V-FLYWAY* (P2 conditionnel) : seuil 5 migrations (actuellement 4).
+*Priorité 1 — **KOOG-PIPELINE-DEDUP BS-2 (adoption capsule/slider)** : **bloquée
+par un gate pilote** (Règle 2 : publication Maven Central + bump BOM MEMPHIS).
+DAG exact (§ « DAG BS-2 » du rapport S-276) :
+. N1 : bump `codebase-plugin` 0.0.17 → **0.0.18** + `publishAggregationToCentralPortal` (bundle AUTOMATIC) + propagation repo1 HTTP 200.
+. N0 : bump BOM/catalog MEMPHIS (0.0.62 → **0.0.63**) entrée `codebase-plugin = 0.0.18` + publication Central + propagation.
+. N2 : capsule + slider implémentent `PipelineDefinition<CapsuleState|DeckState>` et adoptent `pipelineGraph(...)` (préserver API publique + zéro régression des UT `*PipelineGraphTest`).
+*Si accord pilote non donné* : travailler un item actionnable sans coût externe
+(voir ci-dessous).
 
-== Contexte technique (S-273)
+*Autres items au choix (actionnables sans accord pilote)* :
+* **Bloc C-4** : pollution TOC chunking — a priori traité N2 côté codex S-233
+  (`TocNoiseDetector`) ; vérifier qu'aucune US N1 ne reste (a priori non).
+* **EPIC V-FLYWAY** (P2 conditionnel) : seuil 5 migrations (actuellement 4).
+* **Arbitrage RENAME-13+** : `agent-contracts.afnorCorpus` prod N0 (hors
+  codebase), `academy-gradle` enum SPG/SPD.
+* **EPIC PUB** : tag `v*` (accord pilote).
+
+== Contexte technique (S-276)
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25).
 * Version locale **0.0.17** (Central 0.0.17). Conventions **0.0.7**. BOM/catalog **0.0.62**.
 * Self-application : catalog ws `ws.versions.codebase.plugin` → toml local 0.0.17.
-* Pas de source set `functionalTest` — les 53 runners Cucumber vivent dans `test`.
+* Pas de source set `functionalTest` — les 54 runners Cucumber vivent dans `test`.
+* Nouveau domaine : `codebase.koog.pipeline` (`PipelineDefinition`, `PipelineGraph`).
 * **EPICs terminés** : CB-PAGE-PROVENANCE 5/5, CDX-OCR-CONTRACTS, CDX-RAG-SOCLE,
-  FT-PIPELINE, SVO, VIBE-HARDENING 1/2, OCR-QUALITY US-4.
-* Dette self-application ✅ **CLOSE** (S-273).
+  FT-PIPELINE, SVO, VIBE-HARDENING 1/2, OCR-QUALITY US-4, KOOG-PIPELINE-DEDUP BS-1.
 
 == Échecs préexistants (orthogonaux)
 
@@ -43,6 +47,6 @@
 
 == References
 
-* `.agents/sessions/273-migration-conventions-catalog-garde.adoc` (rapport S-273)
-* `.agents/sessions/272-bloc-b-publication-n1-n2.adoc`
+* `.agents/sessions/276-koog-pipeline-dedup-bs1.adoc` (rapport S-276)
+* `capsule-gradle/capsule-plugin/.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`
 * `bakery-gradle/bakery-plugin/src/test/kotlin/bakery/BakeryPluginPublicationTest.kt` (patron garde)
