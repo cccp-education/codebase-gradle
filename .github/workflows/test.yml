@@ -31,14 +31,51 @@ jobs:
         env:
           CI: "true"
 
-  # ── unit tests (JUnit only) ────────────────────────────────────────────────────
-  # `test` is JUnit-only (build.gradle.kts: `includeEngines("junit-jupiter")`); the
-  # Cucumber suites run in the BDD shards below. Some unit tests probe a real
-  # Ollama instance (`OllamaInstanceScannerTest` / `OllamaLlmProviderTest`, gated by
-  # `assumeTrue(isOllamaReady)`), so the Docker Ollama setup is kept here — and only
-  # here (no Cucumber step reads OLLAMA_TEST_PORT).
+  # ── unit tests (JUnit only, no Ollama) ──────────────────────────────────────────
+  # `test` is JUnit-only (build.gradle.kts: `includeEngines("junit-jupiter")`) and
+  # excludes the `ollama` tag: the handful of unit tests that probe a real Ollama
+  # instance (`@Tag("ollama")`) run in the dedicated `unit-ollama` job below. So this
+  # job pays no Docker image / model setup — only the fast JUnit suite (Docker stays
+  # available on the runner for the pgvector-backed JUnit tests, pulled on demand).
   unit:
     name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    needs: [fast-tests]
+    defaults:
+      run:
+        working-directory: codebase-plugin
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Run unit tests
+        run: ./gradlew test
+        env:
+          CI: "true"
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-unit
+          path: codebase-plugin/build/reports/
+
+  # ── Ollama-dependent unit tests (dedicated Docker setup) ────────────────────────
+  # Only the `@Tag("ollama")` JUnit tests need a live Ollama instance (the Docker
+  # image + lightweight model setup is ~2.5 min). Isolating them here keeps that
+  # cost off the bulk `unit` job, without losing any coverage. The tagged tests stay
+  # `assumeTrue(isOllamaReady)`-guarded, so they skip cleanly if Ollama is absent.
+  unit-ollama:
+    name: Unit Tests (Ollama)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
@@ -115,8 +152,8 @@ jobs:
             docker exec ollama-ci-$port ollama pull qwen3:0.6b
           done
 
-      - name: Run unit tests
-        run: ./gradlew test
+      - name: Run Ollama-dependent unit tests
+        run: ./gradlew unitOllama
         env:
           CI: "true"
           OLLAMA_TEST_PORT: "11466"
@@ -126,7 +163,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reports-unit
+          name: reports-unit-ollama
           path: codebase-plugin/build/reports/
 
   # ── BDD shards (parallel machines) ─────────────────────────────────────────────
@@ -134,8 +171,8 @@ jobs:
   # shards, each on its own runner, in a single JVM (keeps the aggregate's
   # efficiency). Guarded by `codebase.ci.CodebaseCucumberShardCoverageTest`.
   #
-  # No shard needs the Ollama container (only the unit job does). pgvector-backed
-  # scenarios use testcontainers, which pull `pgvector/pgvector:pg17` on demand
+  # No shard needs the Ollama container (only the `unit-ollama` job does).
+  # pgvector-backed scenarios use testcontainers, which pull `pgvector/pgvector:pg17` on demand
   # (Docker is preinstalled on ubuntu-latest) — exactly as the previous monolithic
   # `full-tests` job did.
   bdd-shard:
@@ -193,7 +230,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [fast-tests, unit, bdd-shard]
+    needs: [fast-tests, unit, unit-ollama, bdd-shard]
     defaults:
       run:
         working-directory: codebase-plugin
