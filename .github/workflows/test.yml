@@ -42,7 +42,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    needs: [fast-tests]
+    # Started immediately, without the fast PR gate as a prerequisite: the heavy
+    # jobs run in parallel with it on a main push. Tradeoff: a broken main push
+    # runs every job instead of stopping after the PR gate. The PR gate itself is
+    # unchanged (only the fast job runs on pull_request), and `publish` still
+    # needs every job. Locked by `codebase.ci.CodebaseCiOllamaDecouplingTest`.
     defaults:
       run:
         working-directory: codebase-plugin
@@ -79,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    needs: [fast-tests]
+    # Started immediately in parallel with the fast PR gate (see `unit`).
     defaults:
       run:
         working-directory: codebase-plugin
@@ -180,7 +184,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    needs: [fast-tests]
+    # Started immediately in parallel with the fast PR gate (see `unit`).
     strategy:
       fail-fast: false
       matrix:

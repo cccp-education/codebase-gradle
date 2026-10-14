@@ -80,6 +80,18 @@ class CodebaseCiOllamaDecouplingTest {
     }
 
     @Test
+    fun `the heavy jobs start in parallel and publish still waits for all of them`() {
+        listOf("unit", "unit-ollama", "bdd-shard").forEach { job ->
+            assertThat(jobBlock(job))
+                .describedAs("the %s job must start immediately, not behind the PR gate", job)
+                .doesNotContain("needs: [fast-tests]")
+        }
+        assertThat(jobBlock("publish"))
+            .describedAs("publish must still gate on every job before releasing")
+            .contains("needs: [fast-tests, unit, unit-ollama, bdd-shard]")
+    }
+
+    @Test
     fun `the build script excludes the ollama tag from test and registers unitOllama`() {
         val build = buildScript.readText()
         assertThat(build)
