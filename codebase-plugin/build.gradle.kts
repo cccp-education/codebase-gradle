@@ -218,6 +218,7 @@ val cucumberTaskSpecs = listOf(
     CucumberTaskSpec("cucumberTestCorpusIngest", "Runs Cucumber BDD tests — EPIC CB-FPA-RAG US-3 (corpus chunks loading + doubt policy + ingestion contract + Docs exposure — in-memory fake store) only", "codebase.scenarios.CorpusIngestCucumberRunner"),
     CucumberTaskSpec("cucumberTestAutonomousSession", "Runs Cucumber BDD tests — EPIC SVO-4/5 (autonomous session orchestration — transferred prompt, borough default, D9 bound, brainstorming chain-up — fake loop) only", "codebase.scenarios.AutonomousSessionCucumberRunner"),
     CucumberTaskSpec("cucumberTestPageRetrieval", "Runs Cucumber BDD tests — EPIC CB-PAGE-PROVENANCE US-4 (page provenance ingested with a chunk, retrieval + Docs channel exposure — in-memory fake store) only", "codebase.scenarios.PageRetrievalCucumberRunner"),
+    CucumberTaskSpec("cucumberTestKoogPipeline", "Runs Cucumber BDD tests — EPIC KOOG-PIPELINE-DEDUP BS-1 (generic N1 koog pipeline skeleton — propose/validate/generate orchestration, fail-fast, mermaid topology — in-memory definition) only", "codebase.scenarios.KoogPipelineCucumberRunner"),
 )
 
 val cucumberTasks = cucumberTaskSpecs.map { registerCucumberTask(it) }
