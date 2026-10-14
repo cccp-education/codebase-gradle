@@ -2,6 +2,17 @@
 :toc: left
 :icons: font
 
+== Session 277 — 2026-10-14 — KOOG-PIPELINE-DEDUP BS-2 (volet N1) : codebase-plugin 0.0.18 ✅
+
+Volet N1 de l'adoption (accord pilote BS-2). Re-pin `settings.gradle.kts`
+`ws` catalog `0.0.78 → 0.0.92` (déclare `codebase-plugin = "0.0.18"`) + toml local
+`codebase-plugin 0.0.17 → 0.0.18`. **Blocage bootstrap self-application** : la garde
+S-273 faisait dériver la version propre ET le marker self-appliqué de la même entrée →
+`Plugin ...0.0.18 not found`. Résolu par **split-ref** `codebase-gradle-plugin = "0.0.17"`
+(pattern capsule). `properties` → `0.0.18`. **Central bundle `d107805c-dd8c-4418-b0c1-7cd2f7e8cab5`**
+(AUTOMATIC) ; propagation repo1 HTTP 200. Compiles VERT, `validatePlugins` VERT,
+`publishToMavenLocal` VERT. Rapport `.agents/sessions/277-koog-pipeline-dedup-bs2-codebase-0.0.18.adoc`.
+
 == Session 274 — 2026-10-11 — Re-pin catalog 0.0.62 → 0.0.78 (rollout MEMPHIS)
 
 Maintenance build : `settings.gradle.kts` `workspace-catalog:0.0.62 → 0.0.78`.

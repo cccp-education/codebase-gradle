@@ -32,3 +32,15 @@
 * **Gates** : compile/validatePlugins/assemble/publishToMavenLocal VERT ; **CI run
   `38585624839` VERTE** (Fast ✅ 1m21s, Full ✅ 22m4s, 0 FAILED, 8/8 `@koog-pipeline`).
 * **Rapport** : `.agents/sessions/276-koog-pipeline-dedup-bs1.adoc`.
+
+== S-277 — KOOG-PIPELINE-DEDUP BS-2 (volet N1) : codebase-plugin 0.0.18 ✅ (EPIC clos)
+
+* Re-pin `settings.gradle.kts` `ws` catalog `0.0.78 → 0.0.92` (déclare
+  `codebase-plugin = "0.0.18"`) + toml local `codebase-plugin 0.0.17 → 0.0.18`.
+* **Bootstrap self-application** : version propre et marker plugin partageaient la
+  même entrée → œuf/poule. Résolu par split-ref `codebase-gradle-plugin = "0.0.17"`.
+* `properties` → `0.0.18` ; `validatePlugins` VERT ; `publishToMavenLocal` VERT
+  (jar `codebase/koog/pipeline/*.class`).
+* **Central bundle `d107805c-dd8c-4418-b0c1-7cd2f7e8cab5`** (AUTOMATIC) ; propagation
+  repo1 HTTP 200 (pom + marker).
+* Rapport `.agents/sessions/277-koog-pipeline-dedup-bs2-codebase-0.0.18.adoc`.

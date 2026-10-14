@@ -1,0 +1,66 @@
+= Session 277 — KOOG-PIPELINE-DEDUP BS-2 (volet N1) : codebase-plugin 0.0.18
+:session: 277
+:date: 2026-10-14
+:borough: Queens — codebase-gradle (N1)
+:statut: ✅ TERMINÉ — `codebase-plugin 0.0.18` publié Central (squelette N1 prêt pour l'adoption N2)
+
+== Mission
+
+Décision pilote d'exécution : **BS-2 de KOOG-PIPELINE-DEDUP** — rendre le squelette
+N1 `codebase.koog.pipeline` (BS-1 S-276) **résolvable depuis Maven Central** à la
+version `0.0.18`, prérequis dur de l'adoption capsule + slider. Publication Central
+autorisée par le pilote.
+
+== Ordre DAG (structural)
+
+La garde `CodebasePluginPublicationTest` impose que la version propre de codebase
+**dérive du catalogue workspace publié** (`ws.versions.codebase.plugin`). Publier
+`0.0.18` exige donc qu'un catalogue MEMPHIS déclare `codebase-plugin = "0.0.18"` →
+**N0 MEMPHIS d'abord** (S-295, `0.0.92`), puis re-pin `ws` ici.
+
+== Livrable
+
+* `settings.gradle.kts` : pin `ws` `education.cccp:workspace-catalog:0.0.78 → 0.0.92`.
+* `gradle/libs.versions.toml` : `codebase-plugin = "0.0.18"` (version propre ==
+  catalogue) + **nouvelle entrée** `codebase-gradle-plugin = "0.0.17"` ; `[plugins].codebase`
+  `version.ref` basculé sur `codebase-gradle-plugin`.
+* `build.gradle.kts` : commentaire MEM-CAT aligné.
+* `./gradlew properties` → `version: 0.0.18`.
+
+=== Blocage découvert — bootstrap self-application (œuf/poule)
+
+La migration S-273 avait fait dériver **la version propre** ET **le marker du plugin
+self-appliqué** de la **même** entrée toml (`codebase-plugin`). Bumper la version
+propre à `0.0.18` faisait donc résoudre `education.cccp.codebase:0.0.18` **avant
+publication** → `Plugin [id: 'education.cccp.codebase', version: '0.0.18'] was not
+found`.
+
+**Résolution** (pattern capsule : `codebase` lib vs `codebase-gradle-plugin` marker) :
+découpler les deux via `codebase-gradle-plugin = "0.0.17"` (dernier marker publié).
+La garde ne lit que l'entrée `codebase-plugin` → reste VERTE. La self-application
+lagge d'une version — inhérent au bootstrap d'un plugin auto-appliqué.
+
+== Publication
+
+* `publishToMavenLocal` VERT — `codebase-plugin-0.0.18.jar` contient
+  `codebase/koog/pipeline/{PipelineDefinition,PipelineGraph,PipelineGraphKt}.class` ;
+  marker `education.cccp.codebase.gradle.plugin:0.0.18` produit.
+* Central bundle **`d107805c-dd8c-4418-b0c1-7cd2f7e8cab5`** (AUTOMATIC).
+* Propagation repo1 HTTP 200 : `codebase-plugin/0.0.18/…pom` +
+  `codebase/education.cccp.codebase.gradle.plugin/0.0.18/…pom`.
+
+== Gates (Local = Build, Tests = CI)
+
+* `compileKotlin` / `compileTestKotlin` VERT ; `validatePlugins` VERT ;
+  `publishToMavenLocal` VERT.
+* **Preuve CI** : workflow `CI` (run à compléter) + `OCR` (run `38597443742`, ✅ VERT).
+
+== Commits
+
+* `f5f1817` — `chore(s277): codebase-plugin 0.0.18 — re-pin ws catalog 0.0.92 + bootstrap split-ref`
+
+== Traçabilité
+
+* Cadrage : `capsule-gradle/capsule-plugin/.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`.
+* BS-1 : `.agents/sessions/276-koog-pipeline-dedup-bs1.adoc`.
+* Mission : prompt d'ouverture S-277 (BS-2, accord pilote).
