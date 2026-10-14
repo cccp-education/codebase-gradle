@@ -112,6 +112,12 @@ tasks.named("validatePlugins").configure { dependsOn("jar") }
 // checkout — pattern bakery S-243 / graphify D5-RACE). The *published* catalog
 // versions resolved by Gradle (`ws.*`) are injected into the test JVM.
 tasks.named<Test>("test") {
+    // The unit task is JUnit-only: the Cucumber suites are driven exclusively by
+    // their dedicated `cucumberTest*` tasks (and, in CI, by the shards of
+    // `.github/workflows/test.yml`). Without this engine restriction, Gradle's
+    // `@Testable` detection also runs every `@Suite` runner from `test` — the
+    // historical double-run (unit `test` + the aggregate/dedicated Cucumber tasks).
+    useJUnitPlatform { includeEngines("junit-jupiter") }
     systemProperty("codebase.publishedCatalog.codebaseVersion", ws.versions.codebase.plugin.get())
     systemProperty("codebase.publishedCatalog.bomVersion", ws.versions.workspace.bom.get())
 }
@@ -222,6 +228,69 @@ val cucumberTaskSpecs = listOf(
 )
 
 val cucumberTasks = cucumberTaskSpecs.map { registerCucumberTask(it) }
+
+// ── CI shards (parallel `.github/workflows/test.yml`) ─────────────────────────
+// The monolithic `testAll` (unit `test` + aggregate `cucumberTest` + every
+// dedicated EPIC runner, double-running shared features) is split in CI into an
+// exhaustive, disjoint feature partition, each shard on its own runner.
+// Exhaustiveness/disjointness are guarded by
+// `codebase.ci.CodebaseCucumberShardCoverageTest`.
+//
+// Registered in a SEPARATE list (never `cucumberTaskSpecs`) so that `testAll`
+// and the `testFast` PR gate keep their current shape. Each shard keeps the
+// one-JVM/aggregate efficiency (no per-feature bootstrap).
+val cucumberShardSpecs = listOf(
+    CucumberTaskSpec(
+        "cucumberTestShardEpic9",
+        "CI shard — EPIC 9 (pgvector container, embeddings, walker, indexation, query, composite context)",
+        "codebase.scenarios.CucumberShardEpic9Runner",
+        30,
+    ),
+    CucumberTaskSpec(
+        "cucumberTestShardGovernance",
+        "CI shard — EPIC V-9 (agentic governance compilation)",
+        "codebase.scenarios.CucumberShardGovernanceRunner",
+        30,
+    ),
+    CucumberTaskSpec(
+        "cucumberTestShardVibecoding",
+        "CI shard — EPIC V/V-6/V-8/Z (vibecoding, Ollama pool, session repo, dashboard, autofocus)",
+        "codebase.scenarios.CucumberShardVibecodingRunner",
+        30,
+    ),
+    CucumberTaskSpec(
+        "cucumberTestShardSessionProtocol",
+        "CI shard — EPIC SP (+ SVO autonomous session, SLD-8 bridge, translation)",
+        "codebase.scenarios.CucumberShardSessionProtocolRunner",
+        30,
+    ),
+    CucumberTaskSpec(
+        "cucumberTestShardAgentic",
+        "CI shard — EPIC Y/W/X/K (agentic literature compiler, task discovery, multi-step, subgraph)",
+        "codebase.scenarios.CucumberShardAgenticRunner",
+        30,
+    ),
+    CucumberTaskSpec(
+        "cucumberTestShardOcrRag",
+        "CI shard — OCR / RAG socle / fine-tuning / anonymization / benchmark / quality / blog",
+        "codebase.scenarios.CucumberShardOcrRagRunner",
+        30,
+    ),
+    CucumberTaskSpec(
+        "cucumberTestShardCoreMisc",
+        "CI shard — vibecoding hardening, koog pipeline, context prep, expert dispatcher/exposure, L-3",
+        "codebase.scenarios.CucumberShardCoreMiscRunner",
+        30,
+    ),
+)
+
+val cucumberShardTasks = cucumberShardSpecs.map { registerCucumberTask(it) }
+
+tasks.register("testShards") {
+    description = "Runs every CI BDD shard (exhaustive, disjoint parallel partition)"
+    group = "verification"
+    dependsOn(cucumberShardTasks)
+}
 
 tasks.register("testAll") {
     description = "Runs all tests (JUnit5 + Cucumber BDD)"
