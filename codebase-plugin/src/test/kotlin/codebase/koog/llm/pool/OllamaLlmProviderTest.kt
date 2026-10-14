@@ -6,6 +6,7 @@ import contracts.llmpool.QuotaConfig
 import contracts.llmpool.ResetPolicy
 import contracts.llmpool.RotationStrategy
 import org.junit.jupiter.api.Assumptions.assumeTrue
+import org.junit.jupiter.api.Tag
 import java.net.HttpURLConnection
 import java.net.URI
 import kotlin.test.*
@@ -48,6 +49,7 @@ class OllamaLlmProviderTest {
         assertIs<LlmProvider>(provider)
     }
 
+    @Tag("ollama")
     @Test
     fun `OllamaLlmProvider should build OllamaChatModel lazily on first call`() {
         val instance = LlmInstance("a", "http://localhost:$ciPort", ciModel, quota = defaultQuota)
@@ -66,6 +68,7 @@ class OllamaLlmProviderTest {
         }
     }
 
+    @Tag("ollama")
     @Test
     fun `OllamaLlmProvider should rotate through pool instances on ModelNotFoundException`() {
         val instances = listOf(ciPort, ciPort + 1).map { port ->
@@ -133,6 +136,7 @@ class OllamaLlmProviderTest {
         assertNotSame(modelA, modelB, "Different baseUrls should have separate cache entries")
     }
 
+    @Tag("ollama")
     @Test
     fun `OllamaLlmProvider should rotate on quota exceeded using adapter`() {
         val instanceA = LlmInstance(

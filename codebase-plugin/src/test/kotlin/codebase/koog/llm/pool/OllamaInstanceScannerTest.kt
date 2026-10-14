@@ -2,6 +2,7 @@ package codebase.koog.llm.pool
 
 import contracts.llmpool.LlmInstance
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIf
 import kotlin.test.assertEquals
@@ -80,6 +81,7 @@ class OllamaInstanceScannerTest {
         assertEquals(listOf(11437, 11438, 11439), OllamaInstanceScanner.parsePorts("11437,11438,11439"))
     }
 
+    @Tag("ollama")
     @EnabledIf("isOllamaReady")
     @Test
     fun `scan integration probes real Ollama on CI port`() {

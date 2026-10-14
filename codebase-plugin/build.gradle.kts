@@ -117,9 +117,40 @@ tasks.named<Test>("test") {
     // `.github/workflows/test.yml`). Without this engine restriction, Gradle's
     // `@Testable` detection also runs every `@Suite` runner from `test` — the
     // historical double-run (unit `test` + the aggregate/dedicated Cucumber tasks).
-    useJUnitPlatform { includeEngines("junit-jupiter") }
+    //
+    // The `ollama` tag isolates the handful of JUnit tests that probe a real
+    // Ollama instance over HTTP (`@Tag("ollama")`); they run in the dedicated
+    // `unitOllama` task / CI `unit-ollama` job, so the plain `unit` job no longer
+    // pays the Docker image + model setup for the whole JUnit suite.
+    useJUnitPlatform {
+        includeEngines("junit-jupiter")
+        excludeTags("ollama")
+    }
     systemProperty("codebase.publishedCatalog.codebaseVersion", ws.versions.codebase.plugin.get())
     systemProperty("codebase.publishedCatalog.bomVersion", ws.versions.workspace.bom.get())
+}
+
+// ── Ollama-dependent JUnit tests (isolated CI job) ────────────────────────────
+// Only a handful of unit tests need a live Ollama instance (`@Tag("ollama")`,
+// gated by `assumeTrue(isOllamaReady)` / `@EnabledIf`). They are pulled out of the
+// fast `test` task into `unitOllama`, which the CI runs on its own machine with
+// the Docker Ollama setup — so the bulk of the JUnit suite no longer waits on
+// that setup. Outside CI (no live Ollama) the tagged tests skip cleanly.
+tasks.register<Test>("unitOllama") {
+    description = "Runs the JUnit tests that probe a real Ollama instance (@Tag(\"ollama\"))"
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().output + configurations.testRuntimeClasspath.get()
+    dependsOn(tasks.named("classes"), tasks.named("testClasses"))
+    useJUnitPlatform {
+        includeEngines("junit-jupiter")
+        includeTags("ollama")
+    }
+    systemProperty("codebase.publishedCatalog.codebaseVersion", ws.versions.codebase.plugin.get())
+    systemProperty("codebase.publishedCatalog.bomVersion", ws.versions.workspace.bom.get())
+    maxHeapSize = "1g"
+    timeout.set(Duration.ofMinutes(15))
+    outputs.upToDateWhen { false }
 }
 
 data class CucumberTaskSpec(
@@ -293,9 +324,9 @@ tasks.register("testShards") {
 }
 
 tasks.register("testAll") {
-    description = "Runs all tests (JUnit5 + Cucumber BDD)"
+    description = "Runs all tests (JUnit5 + Ollama JUnit + Cucumber BDD)"
     group = "verification"
-    dependsOn(tasks.test, cucumberTasks)
+    dependsOn(tasks.test, tasks.named("unitOllama"), cucumberTasks)
 }
 
 tasks.register("testEpics") {
