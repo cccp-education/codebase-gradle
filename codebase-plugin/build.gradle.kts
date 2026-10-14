@@ -6,7 +6,7 @@ fun isCI() = System.getenv("CI") == "true"
 
 group = "education.cccp"
 // MEM-CAT — version propre dérivée du catalog workspace publié (pin unique
-// settings `ws`). Remplace le littéral dupliqué (0.0.17) — garde
+// settings `ws`). Remplace le littéral dupliqué (0.0.18) — garde
 // `CodebasePluginPublicationTest`.
 version =
     ws.versions.codebase.plugin

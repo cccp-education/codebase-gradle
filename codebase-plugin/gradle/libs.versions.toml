@@ -2,14 +2,19 @@
 # Self-application (dogfooding) — the version the plugin applies to itself.
 # MUST equal build.gradle.kts `version` (real HEAD) + the published catalog.
 # Guarded by CodebasePluginPublicationTest (anti-drift, S-273).
-codebase-plugin = "0.0.17"
+codebase-plugin = "0.0.18"
+# Self-application (build-time dogfooding) plugin version — bootstrap: the
+# `education.cccp.codebase` marker must already exist on Central to configure
+# the build that produces `codebase-plugin` itself. Pinned to the last
+# published release; the artifact self-version above carries the new version.
+codebase-gradle-plugin = "0.0.17"
 koog = "1.0.0"
 kotlin = "2.4.10"
 graphify = "0.0.5"
 
 [libraries]
 # BOM — the platform pin is dynamic in build.gradle.kts (ws.versions.workspace.bom,
-# catalog ws 0.0.62) ; the stale literal entry (0.0.50) is removed to avoid a
+# catalog ws 0.0.92) ; the stale literal entry (0.0.50) is removed to avoid a
 # duplicate source of truth (piège #13, guard CodebasePluginPublicationTest).
 
 # External deps — versions explicites pour propagation POM transitive
@@ -85,4 +90,4 @@ arrow = [
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 publish = { id = "com.gradle.plugin-publish", version = "2.1.0" }
-codebase = { id = "education.cccp.codebase", version.ref = "codebase-plugin" }
+codebase = { id = "education.cccp.codebase", version.ref = "codebase-gradle-plugin" }

@@ -34,14 +34,14 @@ dependencyResolutionManagement {
 }
 
 // ── MEM-CAT — Catalog workspace publié (MEMPHIS) : pin unique par borough (D4) ──
-// education.cccp:workspace-catalog:0.0.62 — source de vérité des versions
+// education.cccp:workspace-catalog:0.0.92 — source de vérité des versions
 // cross-borough. Le borough ne bump que ce pin ; la version propre et le BOM
 // platform viennent de ws.* (garde `CodebasePluginPublicationTest`). Pattern
 // bakery (MEM-CAT-3), dernier consumer non migré (rollout S-022 ABIDJAN).
 dependencyResolutionManagement {
     versionCatalogs {
         create("ws") {
-            from("education.cccp:workspace-catalog:0.0.78")
+            from("education.cccp:workspace-catalog:0.0.92")
         }
     }
 }
