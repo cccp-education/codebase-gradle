@@ -996,6 +996,61 @@ un borough en exprime le besoin.
 
 '''
 
+== 🟡 EPIC CB-I18N-SAFETY — Validation de sortie LLM partagée (N1) (CADRÉ S-077, revue i18n S-263)
+
+*Source* : revue externe `foundry/public/bakery-gradle/bakery-plugin/.agents/i18n_review.adoc`
+(S-263) ; mesure cheroliv.com S-077 (`language-refusal` 124, `wrong-script` 35,
+`leaked-sentinel` 0 mais placeholder menaçant).
+
+*Constat* : codebase est le hub LLM (N1) mais **ne valide pas la sortie** du
+modèle : langue cible ≠ langue source, phrase de refus, placeholder `__` non
+restitué, sortie tronquée/vide. Aujourd'hui chaque N2 (bakery, document, site)
+découvre ces défauts trop tard — ou jamais : 124 refus LLM ont été publiés sur
+cheroliv.com. Le besoin est transverse (≥ 5 boroughs), donc la factorisation
+« seuil à 2 » s'applique.
+
+*Boundary* : codebase possède le **wrapper pur** (Gradle-free, aucune dépendance
+Gradle) ; les N2 l'appellent dans leurs adapters. Le contrat N0
+`PreserveRule`/`TranslatableRegion` vient de MEMPHIS (`MEM-I18N-PRESERVE`).
+
+*DAG* : `MEM-I18N-PRESERVE → CB-I18N-SAFETY → DOC-I18N-OUTPUT / BKY-I18N-OUTPUT`.
+
+[cols="1,4,1,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CB-SAFE-1
+| **`TranslationSafetyWrapper`** (domaine pur) — verdict sealed
+  `Safe`/`Rejected(reason)` : langue source détectée = cible, marqueurs de refus
+  LLM, placeholder non restitué, sortie vide/tronquée, règle `PreserveRule`
+  violée ; aucun logging Gradle, aucune I/O
+| 3
+| 🟡 À FAIRE
+
+| CB-SAFE-2
+| **Câblage `LlmTranslator` (TRAD)** — le wrapper s'applique à chaque réponse ;
+  un `Rejected` devient `TranslationResult.Failure` (le fallback silencieux
+  FR de S-052/S-063 reste interdit)
+| 2
+| 🟡 À FAIRE
+
+| CB-SAFE-3
+| **Résilience partagée** — politique de retry borné + dégradation explicite
+  (jamais de faux `TRANSLATED`) réutilisable par bakery/document/plantuml ;
+  le candidat `LLM-RESILIENCE` capsule reste capsule-scoped (S-162)
+| 2
+| 🟡 À FAIRE
+
+| CB-SAFE-4
+| **Preuve** — unit (refus, langue, placeholder, troncature, preserve) + BDD
+  `@translation-safety` + adoption prouvée par au moins un N2 (document ou site)
+| 1
+| 🟡 À FAIRE
+|===
+
+*Total* : 4 US ~8 pts. *Dépend de* : `EPIC TRAD` (✅), `MEM-I18N-PRESERVE` (N0).
+*Doc* : `.agents/i18n_review.adoc` (S-263), `CADRAGE_EPIC_GBL_010_ARBRE_TRADUCTION_SITE.adoc`.
+
 == EPIC PUB — Publication Maven Central + Plugin Portal
 
 _Source : configuration/EPIC_PUB.adoc (Session 096)_
