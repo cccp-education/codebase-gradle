@@ -41,8 +41,8 @@ r2dbc-postgresql = { module = "org.postgresql:r2dbc-postgresql", version = "1.0.
 r2dbc-pool = { module = "io.r2dbc:r2dbc-pool", version = "1.0.2.RELEASE" }
 r2dbc-spi = { module = "io.r2dbc:r2dbc-spi", version = "1.0.0.RELEASE" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.7.3" }
-arrow-core = { module = "io.arrow-kt:arrow-core", version = "2.2.2" }
-arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines", version = "2.2.2" }
+arrow-core = { module = "io.arrow-kt:arrow-core", version = "2.3.0" }
+arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines", version = "2.3.0" }
 koog-agents = { module = "ai.koog:koog-agents", version = "1.0.0" }
 assertj-core = { module = "org.assertj:assertj-core", version = "3.25.3" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.14.3" }
