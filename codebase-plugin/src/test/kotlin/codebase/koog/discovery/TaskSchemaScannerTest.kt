@@ -8,7 +8,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class TaskSchemaScannerTest {
-
     @Test
     fun `scanAll discovers all CodebasePlugin tasks`() {
         val project = ProjectBuilder.builder().build()
@@ -16,16 +15,28 @@ class TaskSchemaScannerTest {
         val scanner = TaskSchemaScanner(project)
 
         val schemas = scanner.scanAll()
-        val pluginTaskNames = setOf(
-            "collectFromCodebase", "collectCompositeContext", "ocrDocument", "ocrIngest",
-            "generateAugmentedPlan", "vibecode", "sessionProtocolDaemon", "ingestGovernance",
-            "vibecodingDashboard", "qualityGate", "endSessionBlog",
-            "generateCompositeContext", "exposeExperts"
-        )
+        val pluginTaskNames =
+            setOf(
+                "collectFromCodebase",
+                "collectCompositeContext",
+                "ocrDocument",
+                "ocrIngest",
+                "generateAugmentedPlan",
+                "vibecode",
+                "sessionProtocolDaemon",
+                "ingestGovernance",
+                "vibecodingDashboard",
+                "qualityGate",
+                "endSessionBlog",
+                "generateCompositeContext",
+                "exposeExperts",
+            )
 
         val discoveredNames = schemas.map { it.name }.toSet()
-        assertTrue(pluginTaskNames.all { it in discoveredNames },
-            "Missing plugin tasks: ${pluginTaskNames - discoveredNames}")
+        assertTrue(
+            pluginTaskNames.all { it in discoveredNames },
+            "Missing plugin tasks: ${pluginTaskNames - discoveredNames}",
+        )
     }
 
     @Test

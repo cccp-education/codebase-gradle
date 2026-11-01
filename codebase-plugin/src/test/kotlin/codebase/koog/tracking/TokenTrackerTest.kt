@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class TokenTrackerTest {
-
     @Test
     fun `trackPrompt tracks estimated tokens and increments totalCalls`() {
         val tracker = TokenTracker()
@@ -80,11 +79,12 @@ class TokenTrackerTest {
     fun `trackPromptAndCompletion wraps block functionally`() {
         val tracker = TokenTracker()
         var called = false
-        val result = tracker.trackPromptAndCompletion("input") { input ->
-            called = true
-            assertEquals("input", input)
-            "output-$input"
-        }
+        val result =
+            tracker.trackPromptAndCompletion("input") { input ->
+                called = true
+                assertEquals("input", input)
+                "output-$input"
+            }
         assertTrue(called)
         assertEquals("output-input", result)
     }

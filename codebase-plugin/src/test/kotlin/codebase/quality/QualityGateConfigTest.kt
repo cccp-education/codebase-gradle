@@ -6,7 +6,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class QualityGateConfigTest {
-
     @Test
     fun `default config has sensible values`() {
         val config = QualityGateConfig()
@@ -20,14 +19,15 @@ class QualityGateConfigTest {
 
     @Test
     fun `custom config overrides all defaults`() {
-        val config = QualityGateConfig(
-            minAcceptableScore = 0.80,
-            maxRetries = 2,
-            enableSentimentCheck = false,
-            enableOffTopicCheck = true,
-            enablePiiCheck = true,
-            retryFeedbackPrefix = "CORRECTION: "
-        )
+        val config =
+            QualityGateConfig(
+                minAcceptableScore = 0.80,
+                maxRetries = 2,
+                enableSentimentCheck = false,
+                enableOffTopicCheck = true,
+                enablePiiCheck = true,
+                retryFeedbackPrefix = "CORRECTION: ",
+            )
         assertEquals(0.80, config.minAcceptableScore)
         assertEquals(2, config.maxRetries)
         assertFalse(config.enableSentimentCheck)

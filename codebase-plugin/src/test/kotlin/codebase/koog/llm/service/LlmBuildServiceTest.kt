@@ -24,10 +24,12 @@ import kotlin.test.assertNotNull
  * without a Gradle scope.
  */
 class LlmBuildServiceTest {
-
     @AfterEach
     fun resetResolver() {
-        LlmProviderResolver.scannerFactory = { codebase.koog.llm.pool.OllamaInstanceScanner() }
+        LlmProviderResolver.scannerFactory = {
+            codebase.koog.llm.pool
+                .OllamaInstanceScanner()
+        }
         LlmProviderResolver.environmentReader = { EnvironmentReader { System.getenv(it) } }
     }
 

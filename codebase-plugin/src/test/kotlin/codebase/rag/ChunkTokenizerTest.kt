@@ -1,10 +1,10 @@
 package codebase.rag
 
 import org.junit.jupiter.api.Test
-import kotlin.test.*
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ChunkTokenizerTest {
-
     @Test
     fun `splitIntoSegments should return one segment for short string`() {
         val text = "Hello world, this is a test."
@@ -17,13 +17,14 @@ class ChunkTokenizerTest {
 
     @Test
     fun `splitIntoSegments should split by blank lines`() {
-        val text = """
+        val text =
+            """
             |First paragraph here.
             |
             |Second paragraph goes here.
             |
             |Third paragraph is this one.
-        """.trimMargin()
+            """.trimMargin()
 
         val segments = ChunkTokenizer.splitIntoSegments(text)
 
@@ -35,13 +36,14 @@ class ChunkTokenizerTest {
 
     @Test
     fun `splitIntoSegments should handle multiple blank lines as single separator`() {
-        val text = """
+        val text =
+            """
             |Part one
             |
             |
             |
             |Part two
-        """.trimMargin()
+            """.trimMargin()
 
         val segments = ChunkTokenizer.splitIntoSegments(text)
 
@@ -83,9 +85,10 @@ class ChunkTokenizerTest {
 
     @Test
     fun `splitIntoSentenceLevelChunks should split large content into multiple chunks`() {
-        val paragraph = "This is a paragraph with enough text to exceed token limits. " +
-            "We need quite some characters to make each paragraph substantial. " +
-            "Adding more content to fill up the token budget for this test case."
+        val paragraph =
+            "This is a paragraph with enough text to exceed token limits. " +
+                "We need quite some characters to make each paragraph substantial. " +
+                "Adding more content to fill up the token budget for this test case."
         val text = List(10) { paragraph }.joinToString("\n\n")
 
         val chunks = ChunkTokenizer.splitIntoSentenceLevelChunks(text, maxTokens = 50, overlapTokens = 10)
@@ -111,11 +114,12 @@ class ChunkTokenizerTest {
         val p3 = "Third paragraph making sure we have three distinct segments to chunk properly."
         val text = "$p1\n\n$p2\n\n$p3"
 
-        val chunks = ChunkTokenizer.splitIntoSentenceLevelChunks(
-            text,
-            maxTokens = ChunkTokenizer.estimateTokenCount("$p1\n\n$p2") - 1,
-            overlapTokens = 0
-        )
+        val chunks =
+            ChunkTokenizer.splitIntoSentenceLevelChunks(
+                text,
+                maxTokens = ChunkTokenizer.estimateTokenCount("$p1\n\n$p2") - 1,
+                overlapTokens = 0,
+            )
 
         assertTrue(chunks.size >= 2, "should produce at least 2 chunks, got ${chunks.size}")
     }

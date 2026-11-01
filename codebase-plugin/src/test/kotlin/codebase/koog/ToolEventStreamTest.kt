@@ -10,7 +10,6 @@ import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 
 class ToolEventStreamTest {
-
     private val mapper = jacksonObjectMapper()
 
     @Test
@@ -96,6 +95,7 @@ class ToolEventStreamTest {
 
         val line = out.toString(StandardCharsets.UTF_8).trim()
         val event: Map<String, Any> = mapper.readValue(line)
+
         @Suppress("UNCHECKED_CAST")
         val data = event["data"] as Map<String, String>
         assertTrue(data["result"]!!.length <= 500)
@@ -148,7 +148,12 @@ class ToolEventStreamTest {
         stream.progress(1, 3, "Step 1/3")
         stream.error(2, "Boom")
 
-        val lines = out.toString(StandardCharsets.UTF_8).trim().lines().filter { it.isNotBlank() }
+        val lines =
+            out
+                .toString(StandardCharsets.UTF_8)
+                .trim()
+                .lines()
+                .filter { it.isNotBlank() }
         assertEquals(5, lines.size)
 
         val types = lines.map { mapper.readValue<Map<String, Any>>(it)["type"] }
@@ -164,7 +169,12 @@ class ToolEventStreamTest {
         stream.currentSessionId = "second"
         stream.thinking(0, "Session 2")
 
-        val lines = out.toString(StandardCharsets.UTF_8).trim().lines().filter { it.isNotBlank() }
+        val lines =
+            out
+                .toString(StandardCharsets.UTF_8)
+                .trim()
+                .lines()
+                .filter { it.isNotBlank() }
         assertEquals(2, lines.size)
 
         val e1: Map<String, Any> = mapper.readValue(lines[0])

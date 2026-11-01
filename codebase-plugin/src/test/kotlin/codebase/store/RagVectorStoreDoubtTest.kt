@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test
  * `RagVectorStoreTest` embedding pipeline).
  */
 class RagVectorStoreDoubtTest {
-
     @Test
     fun `ingestWithDoubt exists as a method`() {
         val store = RagVectorStore()
@@ -51,32 +50,34 @@ class RagVectorStoreDoubtTest {
 
     @Test
     fun `RetrieveResult exposes doubt fields with backward compatible defaults`() {
-        val result = RetrieveResult(
-            chunkId = 1L,
-            chunkIndex = 0,
-            chunkText = "test chunk",
-            sectionPath = "Chapter 1",
-            headingLevel = 1,
-            sourceDocument = "test-doc",
-            similarity = 0.95
-        )
+        val result =
+            RetrieveResult(
+                chunkId = 1L,
+                chunkIndex = 0,
+                chunkText = "test chunk",
+                sectionPath = "Chapter 1",
+                headingLevel = 1,
+                sourceDocument = "test-doc",
+                similarity = 0.95,
+            )
         assertEquals(DoubtMetadata.MAX_CONFIDENCE, result.confidence)
         assertFalse(result.doubtful)
     }
 
     @Test
     fun `RetrieveResult carries doubt metadata when provided`() {
-        val result = RetrieveResult(
-            chunkId = 2L,
-            chunkIndex = 3,
-            chunkText = "shaky chunk",
-            sectionPath = "Chapter 2",
-            headingLevel = 2,
-            sourceDocument = "illisible",
-            similarity = 0.5,
-            confidence = 0.2,
-            doubtful = true
-        )
+        val result =
+            RetrieveResult(
+                chunkId = 2L,
+                chunkIndex = 3,
+                chunkText = "shaky chunk",
+                sectionPath = "Chapter 2",
+                headingLevel = 2,
+                sourceDocument = "illisible",
+                similarity = 0.5,
+                confidence = 0.2,
+                doubtful = true,
+            )
         assertEquals(0.2, result.confidence)
         assertTrue(result.doubtful)
     }

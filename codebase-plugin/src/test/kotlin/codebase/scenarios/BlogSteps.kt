@@ -13,8 +13,9 @@ import java.nio.file.Files
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class BlogSteps(private val world: BlogWorld) {
-
+class BlogSteps(
+    private val world: BlogWorld,
+) {
     @Before("@epic12")
     fun before() {
         world.reset()
@@ -37,7 +38,8 @@ class BlogSteps(private val world: BlogWorld) {
         val foundryDir = File(world.tmpDir, "foundry")
         val sessionFile = File(foundryDir, "$relativePath/042-test.adoc")
         sessionFile.parentFile.mkdirs()
-        sessionFile.writeText("""
+        sessionFile.writeText(
+            """
 = Session 042 — EPIC 7 Pipeline LLM — TDD complet
 :docdate: 2026-06-15
 
@@ -54,7 +56,9 @@ Projet test-borough — N2 pipeline LLM.
 
 == Prochaine Session
 - EPIC 7.3 — Pipeline error recovery
-""".trimIndent(), Charsets.UTF_8)
+            """.trimIndent(),
+            Charsets.UTF_8,
+        )
     }
 
     @When("le BlogArticleExtractor extrait les sessions")
@@ -88,19 +92,23 @@ Projet test-borough — N2 pipeline LLM.
     }
 
     @Given("1 session extraite {string} du borough {string}")
-    fun `article extracted manually`(sessionNumber: String, borough: String) {
-        world.extractedArticles = listOf(
-            BlogArticleData(
-                sessionNumber = sessionNumber,
-                sessionTitle = "Test Session $sessionNumber",
-                sessionDate = "2026-06-15",
-                boroughName = borough,
-                context = "Contexte de la session de test.",
-                achievements = "=== Feature X\nImplementation, 5/5 PASS",
-                testResults = "- 5/5 JUnit5 PASS",
-                nextSession = "EPIC 2"
+    fun `article extracted manually`(
+        sessionNumber: String,
+        borough: String,
+    ) {
+        world.extractedArticles =
+            listOf(
+                BlogArticleData(
+                    sessionNumber = sessionNumber,
+                    sessionTitle = "Test Session $sessionNumber",
+                    sessionDate = "2026-06-15",
+                    boroughName = borough,
+                    context = "Contexte de la session de test.",
+                    achievements = "=== Feature X\nImplementation, 5/5 PASS",
+                    testResults = "- 5/5 JUnit5 PASS",
+                    nextSession = "EPIC 2",
+                ),
             )
-        )
     }
 
     @When("le BlogArticleRenderer génère l'article dans le dossier blog")
@@ -137,7 +145,10 @@ Projet test-borough — N2 pipeline LLM.
     }
 
     @Given("{int} sessions dans {string} boroughs differents")
-    fun `sessions in boroughs`(sessionCount: Int, boroughCountStr: String) {
+    fun `sessions in boroughs`(
+        sessionCount: Int,
+        boroughCountStr: String,
+    ) {
         val boroughCount = boroughCountStr.toInt()
         val foundryDir = File(world.tmpDir, "foundry")
         val boroughs = (1..boroughCount).map { "borough-$it" }
@@ -151,7 +162,8 @@ Projet test-borough — N2 pipeline LLM.
             val sessionsPerBorough = sessionCount / boroughCount
             for (i in 1..sessionsPerBorough) {
                 val num = sessionNum.toString().padStart(3, '0')
-                sessionsDir.resolve("${num}-session-$borough.adoc").writeText("""
+                sessionsDir.resolve("$num-session-$borough.adoc").writeText(
+                    """
 = Session $num — Test $borough
 :docdate: 2026-06-${(10 + i).toString().padStart(2, '0')}
 
@@ -167,7 +179,9 @@ Done, ${i * 2}/${i * 2} PASS.
 
 == Prochaine Session
 US-${i + 1}
-""".trimIndent(), Charsets.UTF_8)
+                    """.trimIndent(),
+                    Charsets.UTF_8,
+                )
                 sessionNum++
             }
         }

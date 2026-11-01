@@ -10,7 +10,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class TaskDiscoveryRegistrarTest {
-
     @Test
     fun `registerAll should skip non-allowlisted tasks deny-by-default`() {
         val project = ProjectBuilder.builder().build()
@@ -23,9 +22,10 @@ class TaskDiscoveryRegistrarTest {
         registrar.registerAll()
 
         val schemas = scanner.scanAll()
-        val allowlistedSchemas = schemas.filter { schema ->
-            runCatching { TaskDiscoveryRegistrar.validateTaskName(schema.name) }.isSuccess
-        }
+        val allowlistedSchemas =
+            schemas.filter { schema ->
+                runCatching { TaskDiscoveryRegistrar.validateTaskName(schema.name) }.isSuccess
+            }
         val gradleTools = registry.toolNames().filter { it.startsWith("gradle_") }
         assertEquals(allowlistedSchemas.size, gradleTools.size)
         if (allowlistedSchemas.isNotEmpty()) {
@@ -50,9 +50,10 @@ class TaskDiscoveryRegistrarTest {
         registrar.registerAll()
 
         val schemas = scanner.scanAll()
-        val allowlisted = schemas.count { schema ->
-            runCatching { TaskDiscoveryRegistrar.validateTaskName(schema.name) }.isSuccess
-        }
+        val allowlisted =
+            schemas.count { schema ->
+                runCatching { TaskDiscoveryRegistrar.validateTaskName(schema.name) }.isSuccess
+            }
         assertEquals(allowlisted, registrar.registeredCount())
     }
 
@@ -68,9 +69,10 @@ class TaskDiscoveryRegistrarTest {
         registrar.registerAll()
 
         val schemas = scanner.scanAll()
-        val allowlisted = schemas.count { schema ->
-            runCatching { TaskDiscoveryRegistrar.validateTaskName(schema.name) }.isSuccess
-        }
+        val allowlisted =
+            schemas.count { schema ->
+                runCatching { TaskDiscoveryRegistrar.validateTaskName(schema.name) }.isSuccess
+            }
         assertEquals(allowlisted, registrar.registeredCount())
     }
 
@@ -88,7 +90,10 @@ class TaskDiscoveryRegistrarTest {
         gradleTools.forEach { toolName ->
             val taskName = toolName.removePrefix("gradle_")
             runCatching { TaskDiscoveryRegistrar.validateTaskName(taskName) }
-                .onFailure { org.junit.jupiter.api.fail("$toolName registered but $taskName not allowlisted") }
+                .onFailure {
+                    org.junit.jupiter.api
+                        .fail("$toolName registered but $taskName not allowlisted")
+                }
         }
     }
 

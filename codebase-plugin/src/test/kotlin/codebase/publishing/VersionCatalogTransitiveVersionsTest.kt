@@ -1,12 +1,10 @@
 package codebase.publishing
 
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Test
 import java.io.File
 
 class VersionCatalogTransitiveVersionsTest {
-
     private val tomlFile: File by lazy {
         val projectDir = File(System.getProperty("user.dir"))
         val pluginDir = if (projectDir.name == "codebase-plugin") projectDir else projectDir.resolve("codebase-plugin")
@@ -15,14 +13,15 @@ class VersionCatalogTransitiveVersionsTest {
 
     private val tomlContent: String by lazy { tomlFile.readText() }
 
-    private val transitiveArtifacts = listOf(
-        "agent-contracts",
-        "codebase-contracts",
-        "llm-pool-contracts",
-        "opencode-session-contracts",
-        "i18n-contracts",
-        "ocr-contracts",
-    )
+    private val transitiveArtifacts =
+        listOf(
+            "agent-contracts",
+            "codebase-contracts",
+            "llm-pool-contracts",
+            "opencode-session-contracts",
+            "i18n-contracts",
+            "ocr-contracts",
+        )
 
     @Test
     fun `version catalog file exists`() {
@@ -35,14 +34,14 @@ class VersionCatalogTransitiveVersionsTest {
             val matchingLines = tomlContent.lines().filter { it.contains(artifact) && it.contains("education.cccp") }
             assertTrue(
                 matchingLines.isNotEmpty(),
-                "Artifact '$artifact' not found in libs.versions.toml."
+                "Artifact '$artifact' not found in libs.versions.toml.",
             )
             for (line in matchingLines) {
                 assertTrue(
                     line.contains("version"),
                     "Artifact '$artifact' must have an explicit version in libs.versions.toml. " +
                         "Without it, the POM publishes the dependency without <version>, breaking transitive consumers. " +
-                        "Line: $line"
+                        "Line: $line",
                 )
             }
         }

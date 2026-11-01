@@ -6,10 +6,10 @@ import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.gradle.testfixtures.ProjectBuilder
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 /**
  * Step Definitions Cucumber pour le DashboardTask Gradle (@epic_v_8).
@@ -17,8 +17,9 @@ import org.junit.jupiter.api.Assertions.assertThrows
  * Pattern PicoContainer standardisé — le world est injecté par constructeur
  * et partagé entre VibecodingSteps et DashboardSteps via le même World class.
  */
-class DashboardSteps(private val world: VibecodingWorld) {
-
+class DashboardSteps(
+    private val world: VibecodingWorld,
+) {
     // ── Given ──
 
     @Given("the codebase plugin is applied to a Gradle project")
@@ -47,9 +48,10 @@ class DashboardSteps(private val world: VibecodingWorld) {
         val task = project.tasks.findByName(taskName) as? DashboardTask
         assertNotNull(task, "Task '$taskName' should be a DashboardTask")
 
-        world.dashboardException = assertThrows(IllegalStateException::class.java) {
-            task.executeDashboard()
-        }
+        world.dashboardException =
+            assertThrows(IllegalStateException::class.java) {
+                task.executeDashboard()
+            }
     }
 
     // ── Then ──
@@ -66,8 +68,10 @@ class DashboardSteps(private val world: VibecodingWorld) {
         val task = world.foundTask
         assertNotNull(task, "Task must be found")
         val desc = task.description ?: ""
-        assertTrue(desc.contains(expectedFragment, ignoreCase = true),
-            "Description should contain '$expectedFragment', got: '$desc'")
+        assertTrue(
+            desc.contains(expectedFragment, ignoreCase = true),
+            "Description should contain '$expectedFragment', got: '$desc'",
+        )
     }
 
     @Then("a vibecoding dashboard IllegalStateException is thrown")
@@ -78,7 +82,9 @@ class DashboardSteps(private val world: VibecodingWorld) {
     @Then("the vibecoding dashboard error contains {string}")
     fun `dashboard error contains`(expected: String) {
         val msg = world.dashboardException?.message
-        assertTrue(msg != null && msg.contains(expected, ignoreCase = true),
-            "Error should contain '$expected', got: $msg")
+        assertTrue(
+            msg != null && msg.contains(expected, ignoreCase = true),
+            "Error should contain '$expected', got: $msg",
+        )
     }
 }

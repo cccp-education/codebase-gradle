@@ -24,16 +24,19 @@ class SessionProtocolServerWorld {
         val stdin = ByteArrayInputStream(inputLines.joinToString("\n").toByteArray(StandardCharsets.UTF_8))
         val stdout = ByteArrayOutputStream()
 
-        server = SessionProtocolServer(
-            workspaceRoot = workspaceRoot,
-            toolRegistry = toolRegistry,
-            llmProvider = llmProvider
-        )
+        server =
+            SessionProtocolServer(
+                workspaceRoot = workspaceRoot,
+                toolRegistry = toolRegistry,
+                llmProvider = llmProvider,
+            )
         server!!.run(stdin, stdout)
 
-        outputLines = stdout.toString(StandardCharsets.UTF_8)
-            .lines()
-            .filter { it.isNotBlank() }
-            .toList()
+        outputLines =
+            stdout
+                .toString(StandardCharsets.UTF_8)
+                .lines()
+                .filter { it.isNotBlank() }
+                .toList()
     }
 }

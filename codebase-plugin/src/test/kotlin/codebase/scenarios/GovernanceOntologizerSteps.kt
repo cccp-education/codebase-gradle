@@ -7,8 +7,9 @@ import io.cucumber.java.en.When
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class GovernanceOntologizerSteps(private val world: GovernanceOntologizerWorld) {
-
+class GovernanceOntologizerSteps(
+    private val world: GovernanceOntologizerWorld,
+) {
     @Before("@epic_v_9_7")
     fun reset() {
         world.reset()

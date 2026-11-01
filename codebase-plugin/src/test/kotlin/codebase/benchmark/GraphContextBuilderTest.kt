@@ -11,7 +11,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class GraphContextBuilderTest {
-
     private fun buildThreeNodeTwoEdgeModel(): GraphModel {
         val nodeA = GraphNode(id = "A", label = "NodeA", type = "file", community = "core")
         val nodeB = GraphNode(id = "B", label = "NodeB", type = "class", community = "core")
@@ -122,13 +121,14 @@ class GraphContextBuilderTest {
     @Test
     fun `Jackson round-trip with metadata Map`() {
         val mapper = ObjectMapper().registerKotlinModule()
-        val node = GraphNode(
-            id = "M1",
-            label = "NodeWithMeta",
-            type = "document",
-            community = "docs",
-            metadata = mapOf("key1" to "value1", "key2" to 42)
-        )
+        val node =
+            GraphNode(
+                id = "M1",
+                label = "NodeWithMeta",
+                type = "document",
+                community = "docs",
+                metadata = mapOf("key1" to "value1", "key2" to 42),
+            )
         val model = GraphModel(nodes = listOf(node), edges = emptyList())
 
         val json = mapper.writeValueAsString(model)
@@ -139,9 +139,12 @@ class GraphContextBuilderTest {
     }
 
     @Test
-    fun `load from existing file returns GraphModel`(@TempDir tempDir: File) {
+    fun `load from existing file returns GraphModel`(
+        @TempDir tempDir: File,
+    ) {
         val graphFile = File(tempDir, "graph.json")
-        graphFile.writeText("""
+        graphFile.writeText(
+            """
             {
                 "nodes": [
                     {"id": "N1", "label": "Node1", "type": "file", "community": "main"}
@@ -150,7 +153,8 @@ class GraphContextBuilderTest {
                     {"source": "N1", "target": "N2", "type": "link"}
                 ]
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val model = GraphContextBuilder.load(graphFile)
         assertEquals(1, model.nodes.size)

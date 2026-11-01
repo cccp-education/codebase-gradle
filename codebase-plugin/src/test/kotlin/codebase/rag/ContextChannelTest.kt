@@ -4,11 +4,9 @@ import contracts.context.ChannelType
 import contracts.context.ContextChannel
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ContextChannelTest {
-
     @Test
     fun `sealed class has all four channel types`() {
         val all = ContextChannel.all()

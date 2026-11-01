@@ -1,15 +1,16 @@
 package codebase.koog.agentic
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class AgenticChunkerTest {
-
     private val chunker = AgenticChunker()
 
     @Test
     fun `should chunk a rule from AGENT adoc`() {
-        val content = """
+        val content =
+            """
             = AGENT.adoc — Directives Agent
             :date: 2026-05-19
 
@@ -18,7 +19,7 @@ class AgenticChunkerTest {
             === Git
 
             **INTERDICTION FORMELLE** de commit/push/merge sans permission explicite de l'utilisateur.
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "AGENT.adoc")
 
@@ -34,7 +35,8 @@ class AgenticChunkerTest {
 
     @Test
     fun `should chunk a concept from section header`() {
-        val content = """
+        val content =
+            """
             = TAXONOMIE_WORKSPACE — Ontologie
             :date: 2026-05-18
 
@@ -42,7 +44,7 @@ class AgenticChunkerTest {
 
             . *Le verbe dit pourquoi, le complement dit quoi* — `generateContentPlan` vs `collectFromCorpus`.
                La taxonomie encode l'intention. Zero ambiguite.
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "TAXONOMIE_WORKSPACE.adoc")
 
@@ -55,7 +57,8 @@ class AgenticChunkerTest {
 
     @Test
     fun `should chunk a procedure from numbered steps`() {
-        val content = """
+        val content =
+            """
             = SESSION_CHECKLIST.adoc
 
             == Hook d'Ouverture
@@ -64,7 +67,7 @@ class AgenticChunkerTest {
             . Lire INDEX.adoc — roadmap
             . Verifier git status
             . Verifier que le build compile
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "SESSION_CHECKLIST.adoc")
 
@@ -78,14 +81,15 @@ class AgenticChunkerTest {
 
     @Test
     fun `should chunk metadata from document header`() {
-        val content = """
+        val content =
+            """
             = INDEX — Codebase Gradle
             :toc:
             :date: 2026-06-11
             :session-en-cours: 092
 
             _Derniere mise a jour_ : 2026-06-11 (Session 091)
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "INDEX.adoc")
 
@@ -98,7 +102,8 @@ class AgenticChunkerTest {
 
     @Test
     fun `should chunk a constraint from technical limit`() {
-        val content = """
+        val content =
+            """
             = AGENT.adoc
 
             == Contexte
@@ -106,7 +111,7 @@ class AgenticChunkerTest {
             * **1 fichier a la fois** : Modifier un seul fichier avant de passer au suivant
             * **Contexte leger** : Maximum 50k tokens EAGER (~3000 lignes)
             * **Regle d'or** : Mieux vaut 5 sessions de 20 minutes qu'une session de 2 heures
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "AGENT.adoc")
 
@@ -119,11 +124,12 @@ class AgenticChunkerTest {
 
     @Test
     fun `should assign correct domain from source file path`() {
-        val content = """
+        val content =
+            """
             = AGENT.adoc — Codebase
             == Regles
             **INTERDICTION** de commit sans permission.
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "codebase-plugin/AGENT.adoc")
 
@@ -133,11 +139,12 @@ class AgenticChunkerTest {
 
     @Test
     fun `should assign correct DAG level from content patterns`() {
-        val content = """
+        val content =
+            """
             = AGENT.adoc
             == Projet
             **Nom** : codebase-gradle — Proprietaire du fine-tuning LLM, N1.
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "AGENT.adoc")
 
@@ -147,10 +154,11 @@ class AgenticChunkerTest {
 
     @Test
     fun `should assign correct circle from content patterns`() {
-        val content = """
+        val content =
+            """
             = AGENT.adoc
             Ce projet vit dans `foundry/codebase-gradle/` → *cercle 4 (public, Apache 2.0)*.
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "AGENT.adoc")
 
@@ -160,10 +168,11 @@ class AgenticChunkerTest {
 
     @Test
     fun `should generate SHA-256 checksum for each chunk`() {
-        val content = """
+        val content =
+            """
             = AGENT.adoc
             **INTERDICTION FORMELLE** de commit sans permission.
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "AGENT.adoc")
 
@@ -175,13 +184,14 @@ class AgenticChunkerTest {
 
     @Test
     fun `should generate unique id per chunk`() {
-        val content = """
+        val content =
+            """
             = AGENT.adoc
             == Regle 1
             **INTERDICTION** A.
             == Regle 2
             **INTERDICTION** B.
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "AGENT.adoc")
 
@@ -203,10 +213,11 @@ class AgenticChunkerTest {
 
     @Test
     fun `should extract verb INTERDIRE from interdiction patterns`() {
-        val content = """
+        val content =
+            """
             **INTERDICTION FORMELLE** de commit/push/merge sans permission.
             **NE JAMAIS** lancer de tests sans permission.
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "AGENT.adoc")
 
@@ -217,10 +228,11 @@ class AgenticChunkerTest {
 
     @Test
     fun `should extract verb GENERER from generation patterns`() {
-        val content = """
+        val content =
+            """
             == Pipeline
             La tache `generateContentPlan` produit le scenario global de contenu.
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "BACKLOG.adoc")
 
@@ -230,10 +242,11 @@ class AgenticChunkerTest {
 
     @Test
     fun `should extract verb COLLECTER from collection patterns`() {
-        val content = """
+        val content =
+            """
             == Acquisition
             La tache `collectFromCorpus` importe les donnees du referentiel.
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "BACKLOG.adoc")
 
@@ -243,10 +256,11 @@ class AgenticChunkerTest {
 
     @Test
     fun `should extract verb TRANSFORMER from transformation patterns`() {
-        val content = """
+        val content =
+            """
             == Conversion
             La tache `transformToPdf` convertit l'AsciiDoc en PDF.
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "BACKLOG.adoc")
 
@@ -256,10 +270,11 @@ class AgenticChunkerTest {
 
     @Test
     fun `should extract verb DEPLOYER from deployment patterns`() {
-        val content = """
+        val content =
+            """
             == Publication
             La tache `deployToGhPages` publie le site statique.
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "BACKLOG.adoc")
 
@@ -269,11 +284,12 @@ class AgenticChunkerTest {
 
     @Test
     fun `should assign weight 1_0 for CRITIQUE or BLOQUANT keywords`() {
-        val content = """
+        val content =
+            """
             **CRITIQUE** : Cette regle est absolue.
             **BLOQUANT** : Ne pas ignorer.
             Simple remarque.
-        """.trimIndent()
+            """.trimIndent()
 
         val chunks = chunker.chunk(content, sourceFile = "AGENT.adoc")
 

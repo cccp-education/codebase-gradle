@@ -20,14 +20,17 @@ import kotlin.test.assertTrue
  * the in-memory [PageRetrievalFakeRagStore]. The Docs channel scenario
  * drives the real `CompositeContextBuilder` (US-3 exposition).
  */
-class PageRetrievalSteps(private val world: PageRetrievalWorld) {
-
+class PageRetrievalSteps(
+    private val world: PageRetrievalWorld,
+) {
     @Given("a page retrieval world is initialized")
     fun `page retrieval world initialized`() {
         assertNotNull(world, "PageRetrievalWorld should be instantiated by PicoContainer")
     }
 
-    @Given("a page chunk with content {string} and section path {string} and heading level {int} and source document {string} and page {int} is stored in the RAG")
+    @Given(
+        "a page chunk with content {string} and section path {string} and heading level {int} and source document {string} and page {int} is stored in the RAG",
+    )
     fun `page chunk with single page stored`(
         content: String,
         sectionPath: String,
@@ -38,7 +41,9 @@ class PageRetrievalSteps(private val world: PageRetrievalWorld) {
         world.storeChunk(content, sectionPath, headingLevel, sourceDocument, listOf(page))
     }
 
-    @Given("a page chunk with content {string} and section path {string} and heading level {int} and source document {string} and pages {string} is stored in the RAG")
+    @Given(
+        "a page chunk with content {string} and section path {string} and heading level {int} and source document {string} and pages {string} is stored in the RAG",
+    )
     fun `page chunk with multiple pages stored`(
         content: String,
         sectionPath: String,
@@ -108,8 +113,9 @@ class PageRetrievalSteps(private val world: PageRetrievalWorld) {
         assertFalse(docs.contains("pages="), "Expected no 'pages=' fragment, got: $docs")
     }
 
-    private fun String.splitToInts(): List<Int> = split(",")
-        .map { it.trim() }
-        .filter { it.isNotBlank() }
-        .map { it.toInt() }
+    private fun String.splitToInts(): List<Int> =
+        split(",")
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .map { it.toInt() }
 }

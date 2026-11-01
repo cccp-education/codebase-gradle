@@ -9,7 +9,6 @@ import codebase.koog.agentic.ValidationResult
 import java.security.MessageDigest
 
 class ChunkValidatorWorld {
-
     private val chunker = codebase.koog.agentic.AgenticChunker()
     val validator = ChunkValidator()
 
@@ -22,7 +21,10 @@ class ChunkValidatorWorld {
     var sourceFile: String? = null
     var chunk: AgenticChunk? = null
 
-    fun extractAndValidate(sourceFile: String, content: String) {
+    fun extractAndValidate(
+        sourceFile: String,
+        content: String,
+    ) {
         val chunks = chunker.chunk(content, sourceFile)
         extractedResults = chunks.map { validator.validate(it) }
     }
@@ -48,20 +50,21 @@ class ChunkValidatorWorld {
         dagLevel: DagLevel? = DagLevel.N1,
         circle: Int? = 4,
         weight: Double = 1.0,
-        checksum: String = sha256(content)
-    ): AgenticChunk = AgenticChunk(
-        id = id,
-        sourceFile = sourceFile,
-        sourceLines = sourceLines,
-        chunkType = chunkType,
-        content = content,
-        verb = verb,
-        domain = domain,
-        dagLevel = dagLevel,
-        circle = circle,
-        weight = weight,
-        checksum = checksum
-    )
+        checksum: String = sha256(content),
+    ): AgenticChunk =
+        AgenticChunk(
+            id = id,
+            sourceFile = sourceFile,
+            sourceLines = sourceLines,
+            chunkType = chunkType,
+            content = content,
+            verb = verb,
+            domain = domain,
+            dagLevel = dagLevel,
+            circle = circle,
+            weight = weight,
+            checksum = checksum,
+        )
 
     fun reset() {
         extractedResults = emptyList()

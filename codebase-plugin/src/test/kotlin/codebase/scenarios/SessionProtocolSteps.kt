@@ -5,13 +5,14 @@ import codebase.koog.llm.LlmProvider
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 import java.io.File
 import java.nio.file.Files
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
-class SessionProtocolSteps(private val world: SessionProtocolWorld) {
-
+class SessionProtocolSteps(
+    private val world: SessionProtocolWorld,
+) {
     @Given("a SessionProtocolTask is configured with FakeLlmProvider")
     fun `configure with fake LLM`() {
         world.llmProvider = FakeLlmProvider()
@@ -19,40 +20,50 @@ class SessionProtocolSteps(private val world: SessionProtocolWorld) {
 
     @Given("a SessionProtocolTask is configured with ThrowingLlmProvider")
     fun `configure with throwing LLM`() {
-        world.llmProvider = object : LlmProvider {
-            override suspend fun call(prompt: String): String {
-                throw RuntimeException("Simulated LLM failure for Cucumber test")
+        world.llmProvider =
+            object : LlmProvider {
+                override suspend fun call(prompt: String): String = throw RuntimeException("Simulated LLM failure for Cucumber test")
             }
-        }
     }
 
     @Given("an AgentContext JSON file with eagerRules {string}")
     fun `create context file`(eagerRules: String) {
         val dir = Files.createTempDirectory("sp-context").toFile()
         val file = File(dir, "agent-context.json")
-        file.writeText("""
+        file.writeText(
+            """
             {
                 "eagerRules": "$eagerRules",
                 "ragChunks": [],
                 "graphRelations": "",
                 "backlogItems": []
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         world.contextFile = file
     }
 
     @When("I send prompt {string} with maxActions {int}")
-    fun `send prompt with maxActions`(prompt: String, maxActions: Int) {
+    fun `send prompt with maxActions`(
+        prompt: String,
+        maxActions: Int,
+    ) {
         world.executeProtocol(prompt = prompt, maxActions = maxActions)
     }
 
     @When("I send prompt {string} with sessionId {string}")
-    fun `send prompt with sessionId`(prompt: String, sessionId: String) {
+    fun `send prompt with sessionId`(
+        prompt: String,
+        sessionId: String,
+    ) {
         world.executeProtocol(prompt = prompt, sessionId = sessionId)
     }
 
     @When("I send prompt {string} with model {string}")
-    fun `send prompt with model`(prompt: String, model: String) {
+    fun `send prompt with model`(
+        prompt: String,
+        model: String,
+    ) {
         world.executeProtocol(prompt = prompt, model = model)
     }
 

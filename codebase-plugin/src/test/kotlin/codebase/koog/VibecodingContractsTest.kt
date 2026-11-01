@@ -1,9 +1,9 @@
 package codebase.koog
 
-import contracts.agent.Plan
 import codebase.koog.state.VibecodingState
 import contracts.agent.Epic
 import contracts.agent.GradleTask
+import contracts.agent.Plan
 import contracts.agent.UserStory
 import contracts.context.ChannelBudget
 import contracts.context.CompositeContext
@@ -19,7 +19,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class VibecodingContractsTest {
-
     // ── VibecodingState ──
 
     @Test
@@ -85,8 +84,20 @@ class VibecodingContractsTest {
         assertEquals("MVP", plan.title)
         assertEquals(1, plan.epics.size)
         assertEquals("EPIC-1", plan.epics[0].name)
-        assertEquals("Write tests", plan.epics[0].userStories[0].tasks[0].description)
-        assertEquals(":test", plan.epics[0].userStories[0].tasks[0].gradleTask)
+        assertEquals(
+            "Write tests",
+            plan.epics[0]
+                .userStories[0]
+                .tasks[0]
+                .description,
+        )
+        assertEquals(
+            ":test",
+            plan.epics[0]
+                .userStories[0]
+                .tasks[0]
+                .gradleTask,
+        )
         assertEquals(5, plan.totalPoints)
         assertEquals("2", plan.estimatedSessions)
     }
@@ -126,7 +137,7 @@ class VibecodingContractsTest {
         val eagerContent = budgeted[0].content.trimEnd('\n')
         assertTrue(
             eagerContent.length <= longContent.length,
-            "Eager content (${eagerContent.length}) should be <= original ($longContent)"
+            "Eager content (${eagerContent.length}) should be <= original ($longContent)",
         )
         assertEquals(5, budgeted.size)
     }
@@ -149,7 +160,7 @@ class VibecodingContractsTest {
                 budgetRag = 0.5,
                 budgetGraphify = 0.5,
                 budgetDocs = 0.5,
-                budgetOverhead = 0.0
+                budgetOverhead = 0.0,
             )
         }
     }
@@ -174,7 +185,7 @@ class VibecodingContractsTest {
                 budgetRag = 0.5,
                 budgetGraphify = 0.0,
                 budgetDocs = 0.0,
-                budgetResource = 0.0
+                budgetResource = 0.0,
             )
         }
     }
@@ -228,10 +239,16 @@ class VibecodingContractsTest {
     @Test
     fun `ToolRegistry execute write_file dryRun`() {
         val registry = ToolRegistry()
-        val result = registry.execute("write_file", mapOf(
-            "path" to "test.txt",
-            "content" to "hello"
-        ), "/tmp/test-workspace", dryRun = true)
+        val result =
+            registry.execute(
+                "write_file",
+                mapOf(
+                    "path" to "test.txt",
+                    "content" to "hello",
+                ),
+                "/tmp/test-workspace",
+                dryRun = true,
+            )
         assertTrue(result.startsWith("DRY RUN:"))
     }
 
@@ -240,7 +257,8 @@ class VibecodingContractsTest {
         val registry = ToolRegistry()
         try {
             registry.execute("read_file", mapOf("path" to "nonexistent.txt"), "/tmp/test-workspace")
-        } catch (_: Exception) { }
+        } catch (_: Exception) {
+        }
         val entries = registry.auditEntries()
         assertTrue(entries.isNotEmpty())
         assertEquals("read_file", entries[0].tool)
@@ -251,7 +269,8 @@ class VibecodingContractsTest {
         val registry = ToolRegistry()
         try {
             registry.execute("read_file", mapOf("path" to "any.txt"), "/tmp/test-workspace")
-        } catch (_: Exception) { }
+        } catch (_: Exception) {
+        }
         assertTrue(registry.auditEntries().isNotEmpty())
         registry.clearAudit()
         assertTrue(registry.auditEntries().isEmpty())

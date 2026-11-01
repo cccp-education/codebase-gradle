@@ -6,8 +6,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class BenchmarkReportExporterTest {
-
-    private val sampleJson = """
+    private val sampleJson =
+        """
         {
             "scenario": "spatial-perception-v1",
             "channels": ["EAGER", "RAG", "GRAPHIFY"],
@@ -43,7 +43,7 @@ class BenchmarkReportExporterTest {
                 }
             ]
         }
-    """.trimIndent()
+        """.trimIndent()
 
     @Test
     fun `parseObject with valid JSON 1 threshold 3 crossings`() {
@@ -70,7 +70,8 @@ class BenchmarkReportExporterTest {
 
     @Test
     fun `parseObject with empty channels and single threshold`() {
-        val json = """
+        val json =
+            """
             {
                 "scenario": "baseline-brute",
                 "channels": [],
@@ -84,7 +85,7 @@ class BenchmarkReportExporterTest {
                     }
                 ]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val report = BenchmarkReportExporter.parseObject(json)
 
@@ -97,7 +98,8 @@ class BenchmarkReportExporterTest {
 
     @Test
     fun `parseObject ignores unknown JSON keys`() {
-        val json = """
+        val json =
+            """
             {
                 "scenario": "test",
                 "unknownField": "should-be-ignored",
@@ -113,7 +115,7 @@ class BenchmarkReportExporterTest {
                     }
                 ]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val report = BenchmarkReportExporter.parseObject(json)
 
@@ -144,14 +146,15 @@ class BenchmarkReportExporterTest {
 
     @Test
     fun `exportAsciiDoc uses scenarioId when scenario field is empty`() {
-        val jsonWithoutScenario = """
+        val jsonWithoutScenario =
+            """
             {
                 "scenario": "",
                 "channels": [],
                 "summary": "",
                 "results": []
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val result = BenchmarkReportExporter.exportAsciiDoc(jsonWithoutScenario, "custom-scenario-id")
 
@@ -170,7 +173,8 @@ class BenchmarkReportExporterTest {
 
     @Test
     fun `exportAsciiDoc shows no crossings message when empty`() {
-        val jsonNoCrossings = """
+        val jsonNoCrossings =
+            """
             {
                 "scenario": "clean-run",
                 "channels": ["RAG"],
@@ -184,7 +188,7 @@ class BenchmarkReportExporterTest {
                     }
                 ]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val result = BenchmarkReportExporter.exportAsciiDoc(jsonNoCrossings, "id")
 

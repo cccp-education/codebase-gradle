@@ -1,12 +1,12 @@
 package codebase.scenarios
 
 import codebase.infrastructure.PostgresFixture
-import contracts.context.CompositeContextConfig
 import codebase.rag.ChunkTokenizer
 import codebase.rag.CompositeContextBuilder
 import codebase.rag.EmbeddingPipeline
 import codebase.rag.OpencodeInjector
 import codebase.rag.VectorStore
+import contracts.context.CompositeContextConfig
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -17,7 +17,6 @@ import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PrepareContextUnitTest {
-
     private val log = LoggerFactory.getLogger(PrepareContextUnitTest::class.java)
     private val store = VectorStore(PostgresFixture.jdbcUrl, PostgresFixture.username, PostgresFixture.password)
     private val pipeline = EmbeddingPipeline(store)
@@ -32,14 +31,19 @@ class PrepareContextUnitTest {
         }
     }
 
-    fun setupBoroughDir(dir: File, boroughName: String) {
+    fun setupBoroughDir(
+        dir: File,
+        boroughName: String,
+    ) {
         File(dir, ".agents").mkdirs()
         File(dir, ".agents/INDEX.adoc").writeText("= INDEX $boroughName\n== Roadmap\nEPIC 1 DONE\nEPIC 2 TODO\n")
         File(dir, "PROMPT_REPRISE.adoc").writeText("= PROMPT_REPRISE $boroughName\nMission: build tests\n")
     }
 
     @Test
-    fun `buildScoped produces non-empty context for known borough`(@TempDir tempDir: File) {
+    fun `buildScoped produces non-empty context for known borough`(
+        @TempDir tempDir: File,
+    ) {
         setupBoroughDir(tempDir, "test-borough")
         val config = CompositeContextConfig()
         val builder = CompositeContextBuilder(tempDir, store, pipeline, config)
@@ -51,7 +55,9 @@ class PrepareContextUnitTest {
     }
 
     @Test
-    fun `OpencodeInjector formats all three sections`(@TempDir tempDir: File) {
+    fun `OpencodeInjector formats all three sections`(
+        @TempDir tempDir: File,
+    ) {
         setupBoroughDir(tempDir, "test-borough")
         val config = CompositeContextConfig()
         val builder = CompositeContextBuilder(tempDir, store, pipeline, config)
@@ -66,7 +72,9 @@ class PrepareContextUnitTest {
     }
 
     @Test
-    fun `injectToFile writes valid context file`(@TempDir tempDir: File) {
+    fun `injectToFile writes valid context file`(
+        @TempDir tempDir: File,
+    ) {
         setupBoroughDir(tempDir, "test-borough")
         val config = CompositeContextConfig()
         val builder = CompositeContextBuilder(tempDir, store, pipeline, config)
@@ -85,7 +93,9 @@ class PrepareContextUnitTest {
     }
 
     @Test
-    fun `RAG section contains similarity scores from vector query`(@TempDir tempDir: File) {
+    fun `RAG section contains similarity scores from vector query`(
+        @TempDir tempDir: File,
+    ) {
         setupBoroughDir(tempDir, "test-borough")
         val config = CompositeContextConfig()
         val builder = CompositeContextBuilder(tempDir, store, pipeline, config)
@@ -96,7 +106,9 @@ class PrepareContextUnitTest {
     }
 
     @Test
-    fun `AssembleWorkspaceContext aggregates multiple context files`(@TempDir tempDir: File) {
+    fun `AssembleWorkspaceContext aggregates multiple context files`(
+        @TempDir tempDir: File,
+    ) {
         val boroughA = File(tempDir, "borough-a").apply { mkdirs() }
         val boroughB = File(tempDir, "borough-b").apply { mkdirs() }
         setupBoroughDir(boroughA, "borough-a")
@@ -143,15 +155,21 @@ class PrepareContextUnitTest {
         log.info("Indexed {} documents, {} chunks embedded", docCount, records.size)
     }
 
-    private fun assembleContexts(parentDir: File, output: File) {
-        val contextFiles = parentDir.listFiles { it.isDirectory }
-            ?.sortedBy { it.name }
-            ?.flatMap { boroughDir ->
-                val ctxDir = boroughDir.resolve("build/context")
-                if (!ctxDir.isDirectory) return@flatMap emptyList()
-                ctxDir.listFiles { it.isFile && it.name.endsWith(".context.txt") }
-                    ?.map { boroughDir.name to it } ?: emptyList()
-            } ?: emptyList()
+    private fun assembleContexts(
+        parentDir: File,
+        output: File,
+    ) {
+        val contextFiles =
+            parentDir
+                .listFiles { it.isDirectory }
+                ?.sortedBy { it.name }
+                ?.flatMap { boroughDir ->
+                    val ctxDir = boroughDir.resolve("build/context")
+                    if (!ctxDir.isDirectory) return@flatMap emptyList()
+                    ctxDir
+                        .listFiles { it.isFile && it.name.endsWith(".context.txt") }
+                        ?.map { boroughDir.name to it } ?: emptyList()
+                } ?: emptyList()
 
         val sb = StringBuilder()
         sb.appendLine("= CONTEXTE WORKSPACE AUGMENTE")

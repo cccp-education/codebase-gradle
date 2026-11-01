@@ -35,17 +35,18 @@ import org.junit.platform.suite.api.Suite
 @SelectClasspathResource("features/epic_12_blog_narration.feature")
 @ConfigurationParameter(
     key = FEATURES_PROPERTY_NAME,
-    value = "src/test/features/ocr.feature,src/test/features/page_retrieval.feature," +
-        "src/test/features/codebase_rag_socle.feature,src/test/features/codebase_corpus_ingest.feature," +
-        "src/test/features/codebase_doubt_quality.feature,src/test/features/codebase_ocr_contracts.feature," +
-        "src/test/features/codebase_finetuning.feature,src/test/features/epic_2_anonymization_expert.feature," +
-        "src/test/features/epic_4_benchmark_perception.feature,src/test/features/epic_6_quality_gate.feature," +
-        "src/test/features/epic_10_stimulus_cascade.feature,src/test/features/epic_12_blog_narration.feature"
+    value =
+        "src/test/features/ocr.feature,src/test/features/page_retrieval.feature," +
+            "src/test/features/codebase_rag_socle.feature,src/test/features/codebase_corpus_ingest.feature," +
+            "src/test/features/codebase_doubt_quality.feature,src/test/features/codebase_ocr_contracts.feature," +
+            "src/test/features/codebase_finetuning.feature,src/test/features/epic_2_anonymization_expert.feature," +
+            "src/test/features/epic_4_benchmark_perception.feature,src/test/features/epic_6_quality_gate.feature," +
+            "src/test/features/epic_10_stimulus_cascade.feature,src/test/features/epic_12_blog_narration.feature",
 )
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "codebase.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-shard-ocr-rag.html, json:build/reports/cucumber-shard-ocr-rag.json"
+    value = "pretty, html:build/reports/cucumber-shard-ocr-rag.html, json:build/reports/cucumber-shard-ocr-rag.json",
 )
 @ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @wip and not @integration")
 class CucumberShardOcrRagRunner

@@ -7,18 +7,21 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ScanAgentTest {
-
     private val scanAgent = ScanAgent()
 
     @Test
-    fun `scan returns empty list for empty directory`(@TempDir tempDir: File) {
+    fun `scan returns empty list for empty directory`(
+        @TempDir tempDir: File,
+    ) {
         val result = scanAgent.scan(tempDir)
 
         assertTrue(result.isEmpty())
     }
 
     @Test
-    fun `scan finds adoc files at root level`(@TempDir tempDir: File) {
+    fun `scan finds adoc files at root level`(
+        @TempDir tempDir: File,
+    ) {
         File(tempDir, "AGENT.adoc").writeText("= Agent\n")
         File(tempDir, "BACKLOG.adoc").writeText("= Backlog\n")
 
@@ -30,7 +33,9 @@ class ScanAgentTest {
     }
 
     @Test
-    fun `scan recursively finds all adoc files in agents directory`(@TempDir tempDir: File) {
+    fun `scan recursively finds all adoc files in agents directory`(
+        @TempDir tempDir: File,
+    ) {
         File(tempDir, "AGENT.adoc").writeText("= Agent\n")
         val agentsDir = File(tempDir, ".agents").apply { mkdirs() }
         File(agentsDir, "INDEX.adoc").writeText("= Index\n")
@@ -48,7 +53,9 @@ class ScanAgentTest {
     }
 
     @Test
-    fun `scan finds adoc files in subproject directories`(@TempDir tempDir: File) {
+    fun `scan finds adoc files in subproject directories`(
+        @TempDir tempDir: File,
+    ) {
         val subproject = File(tempDir, "codebase-plugin").apply { mkdirs() }
         File(subproject, "AGENT.adoc").writeText("= Sub Agent\n")
         File(subproject, "BACKLOG.adoc").writeText("= Sub Backlog\n")
@@ -65,7 +72,9 @@ class ScanAgentTest {
     }
 
     @Test
-    fun `scan ignores build and git directories`(@TempDir tempDir: File) {
+    fun `scan ignores build and git directories`(
+        @TempDir tempDir: File,
+    ) {
         File(tempDir, "AGENT.adoc").writeText("= Agent\n")
         val buildDir = File(tempDir, "build").apply { mkdirs() }
         File(buildDir, "generated.adoc").writeText("= Generated\n")
@@ -80,7 +89,9 @@ class ScanAgentTest {
     }
 
     @Test
-    fun `scan reads file content correctly`(@TempDir tempDir: File) {
+    fun `scan reads file content correctly`(
+        @TempDir tempDir: File,
+    ) {
         val content = "= Agent\n\n* NE DOIT JAMAIS committer\n"
         File(tempDir, "AGENT.adoc").writeText(content)
 
@@ -91,7 +102,9 @@ class ScanAgentTest {
     }
 
     @Test
-    fun `scan ignores non-adoc files`(@TempDir tempDir: File) {
+    fun `scan ignores non-adoc files`(
+        @TempDir tempDir: File,
+    ) {
         File(tempDir, "AGENT.adoc").writeText("= Agent\n")
         File(tempDir, "config.yml").writeText("key: value\n")
         File(tempDir, "README.md").writeText("# README\n")
@@ -103,7 +116,9 @@ class ScanAgentTest {
     }
 
     @Test
-    fun `scan of subproject with nested agents sessions finds all adoc recursively`(@TempDir tempDir: File) {
+    fun `scan of subproject with nested agents sessions finds all adoc recursively`(
+        @TempDir tempDir: File,
+    ) {
         val sub = File(tempDir, "my-plugin").apply { mkdirs() }
         File(sub, "AGENT.adoc").writeText("= Agent\n")
         val agentsDir = File(sub, ".agents").apply { mkdirs() }

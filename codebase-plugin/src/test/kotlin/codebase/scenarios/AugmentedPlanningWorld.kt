@@ -1,7 +1,7 @@
 package codebase.scenarios
 
-import codebase.koog.state.AugmentedState
 import codebase.koog.KoogAugmentedContextGraph
+import codebase.koog.state.AugmentedState
 import java.io.File
 
 /**
@@ -17,7 +17,6 @@ import java.io.File
  * L-3 : introduit pour les tests Cucumber du pipeline KoogAugmentedContextGraph.
  */
 class AugmentedPlanningWorld {
-
     val workspaceRoot: File = File("/tmp/augmented-planning-test").also { it.mkdirs() }
     var intention: String = ""
     var resultState: AugmentedState? = null

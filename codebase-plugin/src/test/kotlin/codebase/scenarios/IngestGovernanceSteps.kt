@@ -1,7 +1,6 @@
 package codebase.scenarios
 
 import codebase.koog.agentic.AgenticChunk
-import codebase.koog.agentic.AgenticGradleTaskRegistrar
 import codebase.koog.agentic.ChunkValidationError
 import codebase.koog.agentic.ChunkValidationErrorType
 import codebase.koog.agentic.ChunkValidator
@@ -15,8 +14,9 @@ import io.cucumber.java.en.When
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class IngestGovernanceSteps(private val world: IngestGovernanceWorld) {
-
+class IngestGovernanceSteps(
+    private val world: IngestGovernanceWorld,
+) {
     @Before("@epic_v_9_8,@epic_v_9_10")
     fun reset() {
         world.reset()
@@ -32,7 +32,10 @@ class IngestGovernanceSteps(private val world: IngestGovernanceWorld) {
     }
 
     @Given("a temporary project with governance file {string}")
-    fun `temporary project with governance file`(sourceFile: String, content: String) {
+    fun `temporary project with governance file`(
+        sourceFile: String,
+        content: String,
+    ) {
         world.writeFile(sourceFile, content.trimIndent())
     }
 
@@ -49,15 +52,21 @@ class IngestGovernanceSteps(private val world: IngestGovernanceWorld) {
     @Then("the ingestion report has chunks invalid equal to {int}")
     fun `ingestion report has chunks invalid equal to`(expected: Int) {
         val report = world.lastReport ?: error("No ingestion report")
-        assertEquals(expected, report.chunksInvalid,
-            "Expected chunksInvalid=$expected, got ${report.chunksInvalid}")
+        assertEquals(
+            expected,
+            report.chunksInvalid,
+            "Expected chunksInvalid=$expected, got ${report.chunksInvalid}",
+        )
     }
 
     @Then("the ingestion report has validation errors count equal to {int}")
     fun `ingestion report has validation errors count equal to`(expected: Int) {
         val report = world.lastReport ?: error("No ingestion report")
-        assertEquals(expected, report.validationErrors.size,
-            "Expected validationErrors count=$expected, got ${report.validationErrors.size}")
+        assertEquals(
+            expected,
+            report.validationErrors.size,
+            "Expected validationErrors count=$expected, got ${report.validationErrors.size}",
+        )
     }
 
     @Then("the ingestion report has sections added")
@@ -83,36 +92,42 @@ class IngestGovernanceSteps(private val world: IngestGovernanceWorld) {
     }
 
     @Then("the ingestion report section total is {string} with count greater than {int}")
-    fun `section total greater than`(sectionName: String, min: Int) {
+    fun `section total greater than`(
+        sectionName: String,
+        min: Int,
+    ) {
         world.assertSectionTotalGreaterThan(sectionName, min)
     }
 
     @Given("the ingestGovernance task uses a validator that rejects all chunks as MISSING_CONTENT")
     fun `validator rejects all chunks as missing content`() {
-        world.chunkValidator = object : ChunkValidator() {
-            override fun validate(chunk: AgenticChunk): ValidationResult {
-                return ValidationResult(
-                    valid = false,
-                    errors = listOf(
-                        ChunkValidationError(
-                            sourceFile = chunk.sourceFile,
-                            sourceLines = chunk.sourceLines,
-                            lineStart = null,
-                            lineEnd = null,
-                            errorType = ChunkValidationErrorType.MISSING_CONTENT,
-                            message = "rejected by scenario validator"
-                        )
+        world.chunkValidator =
+            object : ChunkValidator() {
+                override fun validate(chunk: AgenticChunk): ValidationResult =
+                    ValidationResult(
+                        valid = false,
+                        errors =
+                            listOf(
+                                ChunkValidationError(
+                                    sourceFile = chunk.sourceFile,
+                                    sourceLines = chunk.sourceLines,
+                                    lineStart = null,
+                                    lineEnd = null,
+                                    errorType = ChunkValidationErrorType.MISSING_CONTENT,
+                                    message = "rejected by scenario validator",
+                                ),
+                            ),
                     )
-                )
             }
-        }
     }
 
     @Then("the output JSON matches the validation error type summary for {string}")
     fun `output json matches validation error type summary`(typeName: String) {
         val json = world.outputJson()
         val summaryRegex = Regex("\"validationErrorsByType\"\\s*:\\s*\\{[^}]*\"$typeName\"\\s*:\\s*\\d+")
-        assertTrue(summaryRegex.containsMatchIn(json),
-            "JSON should summarize errors for type $typeName")
+        assertTrue(
+            summaryRegex.containsMatchIn(json),
+            "JSON should summarize errors for type $typeName",
+        )
     }
 }

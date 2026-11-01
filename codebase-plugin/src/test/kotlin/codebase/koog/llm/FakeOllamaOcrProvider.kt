@@ -11,16 +11,17 @@ class FakeOllamaOcrProvider : VisionProvider {
         mimeType: String,
         language: String,
         model: String,
-        maxTokens: Int
+        maxTokens: Int,
     ): String {
         log.info("[FakeOllamaOcr] Returning fake OCR for mimeType={}, size={}bytes, model={}", mimeType, imageBytes.size, model)
         val encodedPreview = Base64.getEncoder().encodeToString(imageBytes.take(16).toByteArray())
-        val langLabel = when (language.lowercase()) {
-            "fr" -> "Titre Principal"
-            "en" -> "Main Title"
-            "de" -> "Haupttitel"
-            else -> "Title"
-        }
+        val langLabel =
+            when (language.lowercase()) {
+                "fr" -> "Titre Principal"
+                "en" -> "Main Title"
+                "de" -> "Haupttitel"
+                else -> "Title"
+            }
         return """
             = $langLabel
             // OCR par FakeOllamaOcrProvider (test)
@@ -47,6 +48,6 @@ class FakeOllamaOcrProvider : VisionProvider {
             | Valeur 1  | Valeur 2
             | Valeur 3  | Valeur 4
             |===
-        """.trimIndent()
+            """.trimIndent()
     }
 }

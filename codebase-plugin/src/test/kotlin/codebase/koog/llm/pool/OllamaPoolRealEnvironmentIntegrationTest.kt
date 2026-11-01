@@ -31,11 +31,9 @@ import kotlin.test.assertTrue
  * Outside that environment (CI, fresh checkout) every test skips cleanly.
  */
 class OllamaPoolRealEnvironmentIntegrationTest {
-
     private val authorizedRange = 11437..11465
 
-    private fun rangeScanRequested(): Boolean =
-        System.getenv("OLLAMA_RANGE_SCAN")?.equals("true", ignoreCase = true) == true
+    private fun rangeScanRequested(): Boolean = System.getenv("OLLAMA_RANGE_SCAN")?.equals("true", ignoreCase = true) == true
 
     @Test
     fun `scan discovers live instances across the authorized range`() {
@@ -45,18 +43,18 @@ class OllamaPoolRealEnvironmentIntegrationTest {
 
         assertTrue(
             instances.isNotEmpty(),
-            "Expected at least one live Ollama instance in $authorizedRange"
+            "Expected at least one live Ollama instance in $authorizedRange",
         )
 
         val ports = instances.map { extractPort(it.baseUrl) }
         assertTrue(
             ports.all { it in authorizedRange },
-            "Discovered ports must stay within $authorizedRange but got $ports"
+            "Discovered ports must stay within $authorizedRange but got $ports",
         )
         assertEquals(
             ports.size,
             ports.toSet().size,
-            "Each live port must appear once, got $ports"
+            "Each live port must appear once, got $ports",
         )
     }
 
@@ -73,10 +71,9 @@ class OllamaPoolRealEnvironmentIntegrationTest {
 
         assertTrue(
             response.isNotBlank(),
-            "Real pool call must return a non-blank completion"
+            "Real pool call must return a non-blank completion",
         )
     }
 
-    private fun extractPort(baseUrl: String): Int =
-        baseUrl.removePrefix("http://localhost:").toInt()
+    private fun extractPort(baseUrl: String): Int = baseUrl.removePrefix("http://localhost:").toInt()
 }

@@ -1,31 +1,35 @@
 package codebase.koog.expert
 
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 
 class ExpertExposureContractsTest {
-
     @Test
     fun `ExpertExposureManifest holds domain registrations with Ollama endpoints`() {
-        val entries = listOf(
-            ExpertExposureEntry(
-                domain = ExpertDomain("kotlin", "Kotlin, Gradle, JVM ecosystem"),
-                modelName = "gpt-oss:120b-cloud",
-                baseUrl = "http://localhost:11454",
-                timeoutSeconds = 120
-            ),
-            ExpertExposureEntry(
-                domain = ExpertDomain("docs", "Documentation, AsciiDoc, technical writing"),
-                modelName = "gpt-oss:120b-cloud",
-                baseUrl = "http://localhost:11455",
-                timeoutSeconds = 90
+        val entries =
+            listOf(
+                ExpertExposureEntry(
+                    domain = ExpertDomain("kotlin", "Kotlin, Gradle, JVM ecosystem"),
+                    modelName = "gpt-oss:120b-cloud",
+                    baseUrl = "http://localhost:11454",
+                    timeoutSeconds = 120,
+                ),
+                ExpertExposureEntry(
+                    domain = ExpertDomain("docs", "Documentation, AsciiDoc, technical writing"),
+                    modelName = "gpt-oss:120b-cloud",
+                    baseUrl = "http://localhost:11455",
+                    timeoutSeconds = 90,
+                ),
             )
-        )
-        val manifest = ExpertExposureManifest(
-            version = "1.0",
-            generatedAt = "2026-06-16T10:00:00Z",
-            experts = entries
-        )
+        val manifest =
+            ExpertExposureManifest(
+                version = "1.0",
+                generatedAt = "2026-06-16T10:00:00Z",
+                experts = entries,
+            )
 
         assertEquals("1.0", manifest.version)
         assertEquals(2, manifest.experts.size)
@@ -37,11 +41,12 @@ class ExpertExposureContractsTest {
 
     @Test
     fun `ExpertExposureManifest empty experts list`() {
-        val manifest = ExpertExposureManifest(
-            version = "1.0",
-            generatedAt = "2026-06-16T10:00:00Z",
-            experts = emptyList()
-        )
+        val manifest =
+            ExpertExposureManifest(
+                version = "1.0",
+                generatedAt = "2026-06-16T10:00:00Z",
+                experts = emptyList(),
+            )
 
         assertTrue(manifest.experts.isEmpty())
         assertEquals("1.0", manifest.version)
@@ -49,24 +54,27 @@ class ExpertExposureContractsTest {
 
     @Test
     fun `ExpertExposureEntry equality`() {
-        val a = ExpertExposureEntry(
-            domain = ExpertDomain("kotlin", "Kotlin"),
-            modelName = "gpt-oss:120b-cloud",
-            baseUrl = "http://localhost:11456",
-            timeoutSeconds = 120
-        )
-        val b = ExpertExposureEntry(
-            domain = ExpertDomain("kotlin", "Kotlin"),
-            modelName = "gpt-oss:120b-cloud",
-            baseUrl = "http://localhost:11456",
-            timeoutSeconds = 120
-        )
-        val c = ExpertExposureEntry(
-            domain = ExpertDomain("docs", "Docs"),
-            modelName = "gpt-oss:120b-cloud",
-            baseUrl = "http://localhost:11457",
-            timeoutSeconds = 90
-        )
+        val a =
+            ExpertExposureEntry(
+                domain = ExpertDomain("kotlin", "Kotlin"),
+                modelName = "gpt-oss:120b-cloud",
+                baseUrl = "http://localhost:11456",
+                timeoutSeconds = 120,
+            )
+        val b =
+            ExpertExposureEntry(
+                domain = ExpertDomain("kotlin", "Kotlin"),
+                modelName = "gpt-oss:120b-cloud",
+                baseUrl = "http://localhost:11456",
+                timeoutSeconds = 120,
+            )
+        val c =
+            ExpertExposureEntry(
+                domain = ExpertDomain("docs", "Docs"),
+                modelName = "gpt-oss:120b-cloud",
+                baseUrl = "http://localhost:11457",
+                timeoutSeconds = 90,
+            )
 
         assertEquals(a, b)
         assertEquals(a.hashCode(), b.hashCode())
@@ -75,12 +83,13 @@ class ExpertExposureContractsTest {
 
     @Test
     fun `ExpertExposureConfig holds exposure settings`() {
-        val config = ExpertExposureConfig(
-            domains = listOf("kotlin", "docs"),
-            outputFormat = "json",
-            anonymizeEndpoints = true,
-            outputFile = "build/experts/exposure-manifest.json"
-        )
+        val config =
+            ExpertExposureConfig(
+                domains = listOf("kotlin", "docs"),
+                outputFormat = "json",
+                anonymizeEndpoints = true,
+                outputFile = "build/experts/exposure-manifest.json",
+            )
 
         assertEquals(listOf("kotlin", "docs"), config.domains)
         assertEquals("json", config.outputFormat)
@@ -100,12 +109,13 @@ class ExpertExposureContractsTest {
 
     @Test
     fun `ExpertExposureConfig with all domains exposes everything`() {
-        val config = ExpertExposureConfig(
-            domains = emptyList(),
-            outputFormat = "yaml",
-            anonymizeEndpoints = false,
-            outputFile = "build/experts/manifest.yaml"
-        )
+        val config =
+            ExpertExposureConfig(
+                domains = emptyList(),
+                outputFormat = "yaml",
+                anonymizeEndpoints = false,
+                outputFile = "build/experts/manifest.yaml",
+            )
 
         assertTrue(config.domains.isEmpty())
         assertEquals("yaml", config.outputFormat)
@@ -114,12 +124,13 @@ class ExpertExposureContractsTest {
 
     @Test
     fun `ExpertExposureEntry from ExpertRegistration mapping`() {
-        val reg = ExpertRegistration(
-            domain = ExpertDomain("kotlin", "Kotlin, Gradle, JVM ecosystem"),
-            modelName = "gpt-oss:120b-cloud",
-            baseUrl = "http://localhost:11458",
-            timeoutSeconds = 120
-        )
+        val reg =
+            ExpertRegistration(
+                domain = ExpertDomain("kotlin", "Kotlin, Gradle, JVM ecosystem"),
+                modelName = "gpt-oss:120b-cloud",
+                baseUrl = "http://localhost:11458",
+                timeoutSeconds = 120,
+            )
 
         val entry = ExpertExposureEntry.from(reg)
 
@@ -131,12 +142,13 @@ class ExpertExposureContractsTest {
 
     @Test
     fun `ExpertExposureEntry anonymized hides baseUrl`() {
-        val entry = ExpertExposureEntry(
-            domain = ExpertDomain("kotlin", "Kotlin"),
-            modelName = "gpt-oss:120b-cloud",
-            baseUrl = "http://localhost:11459",
-            timeoutSeconds = 120
-        )
+        val entry =
+            ExpertExposureEntry(
+                domain = ExpertDomain("kotlin", "Kotlin"),
+                modelName = "gpt-oss:120b-cloud",
+                baseUrl = "http://localhost:11459",
+                timeoutSeconds = 120,
+            )
 
         val anonymized = entry.anonymize()
 
@@ -148,25 +160,27 @@ class ExpertExposureContractsTest {
 
     @Test
     fun `ExpertExposureManifest anonymized hides all endpoints`() {
-        val entries = listOf(
-            ExpertExposureEntry(
-                domain = ExpertDomain("kotlin", "Kotlin"),
-                modelName = "gpt-oss:120b-cloud",
-                baseUrl = "http://localhost:11460",
-                timeoutSeconds = 120
-            ),
-            ExpertExposureEntry(
-                domain = ExpertDomain("docs", "Docs"),
-                modelName = "gpt-oss:120b-cloud",
-                baseUrl = "http://192.168.1.100:11438",
-                timeoutSeconds = 90
+        val entries =
+            listOf(
+                ExpertExposureEntry(
+                    domain = ExpertDomain("kotlin", "Kotlin"),
+                    modelName = "gpt-oss:120b-cloud",
+                    baseUrl = "http://localhost:11460",
+                    timeoutSeconds = 120,
+                ),
+                ExpertExposureEntry(
+                    domain = ExpertDomain("docs", "Docs"),
+                    modelName = "gpt-oss:120b-cloud",
+                    baseUrl = "http://192.168.1.100:11438",
+                    timeoutSeconds = 90,
+                ),
             )
-        )
-        val manifest = ExpertExposureManifest(
-            version = "1.0",
-            generatedAt = "2026-06-16T10:00:00Z",
-            experts = entries
-        )
+        val manifest =
+            ExpertExposureManifest(
+                version = "1.0",
+                generatedAt = "2026-06-16T10:00:00Z",
+                experts = entries,
+            )
 
         val anonymized = manifest.anonymize()
 

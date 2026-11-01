@@ -10,11 +10,12 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class CodebaseOcrExtensionTest {
-
-    private fun createProject(): Project = ProjectBuilder.builder()
-        .withName("test-ocr")
-        .build()
-        .also { it.pluginManager.apply(CodebasePlugin::class.java) }
+    private fun createProject(): Project =
+        ProjectBuilder
+            .builder()
+            .withName("test-ocr")
+            .build()
+            .also { it.pluginManager.apply(CodebasePlugin::class.java) }
 
     @Test
     fun `extension is registered under name codebaseOcr`() {

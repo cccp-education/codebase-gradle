@@ -1,6 +1,8 @@
 package codebase.scenarios
 
 import codebase.rag.CompositeContextBuilder
+import codebase.rag.EmbeddingPipeline
+import codebase.rag.VectorStore
 import codebase.store.CorpusChunksLoader
 import codebase.store.DoubtPolicy
 import codebase.store.RetrieveResult
@@ -21,8 +23,9 @@ import kotlin.test.assertTrue
  * package (pattern S-088 — RagSocleSteps). Pure BDD: no Gradle task, no
  * network — the corpus file lives in-memory, the store is a fake.
  */
-class CorpusIngestSteps(private val world: CorpusIngestWorld) {
-
+class CorpusIngestSteps(
+    private val world: CorpusIngestWorld,
+) {
     private var corpusFile: File? = null
 
     private fun writeTemp(content: String): File =
@@ -38,17 +41,26 @@ class CorpusIngestSteps(private val world: CorpusIngestWorld) {
     }
 
     @Given("a codex chunks file with {int} chunks, {int} carrying the ILLISIBLE marker")
-    fun `corpus chunks file created`(count: Int, doubtful: Int) {
+    fun `corpus chunks file created`(
+        count: Int,
+        doubtful: Int,
+    ) {
         corpusFile = writeTemp(CorpusFileBuilder.chunksJson(count, doubtful))
     }
 
     @Given("a codex chunks file with clean content {string} and doubtful content {string}")
-    fun `corpus chunks file two chunks`(clean: String, doubtful: String) {
+    fun `corpus chunks file two chunks`(
+        clean: String,
+        doubtful: String,
+    ) {
         corpusFile = writeTemp(CorpusFileBuilder.twoChunksJson(clean, doubtful))
     }
 
     @Given("{int} codex chunks marked for ingestion with {int} doubtful")
-    fun `codex chunks marked for ingestion`(count: Int, doubtful: Int) {
+    fun `codex chunks marked for ingestion`(
+        count: Int,
+        doubtful: Int,
+    ) {
         corpusFile = writeTemp(CorpusFileBuilder.chunksJson(count, doubtful))
         world.markedChunks = DoubtPolicy.mark(CorpusChunksLoader.load(corpusFile!!))
     }
@@ -80,7 +92,10 @@ class CorpusIngestSteps(private val world: CorpusIngestWorld) {
     }
 
     @Then("{int} chunk is doubtful with confidence {double}")
-    fun `chunk doubtful with confidence`(expected: Int, confidence: Double) {
+    fun `chunk doubtful with confidence`(
+        expected: Int,
+        confidence: Double,
+    ) {
         val doubtful = world.markedChunks.filter { it.doubt.doubtful }
         assertEquals(expected, doubtful.size)
         doubtful.forEach { assertEquals(confidence, it.doubt.confidence) }
@@ -99,25 +114,39 @@ class CorpusIngestSteps(private val world: CorpusIngestWorld) {
     }
 
     @And("the store records {int} chunks with {int} doubtful")
-    fun `store records chunks doubtful`(expectedChunks: Int, expectedDoubtful: Int) {
+    fun `store records chunks doubtful`(
+        expectedChunks: Int,
+        expectedDoubtful: Int,
+    ) {
         assertEquals(expectedChunks, world.fakeStore!!.chunkCount)
         assertEquals(expectedDoubtful, world.fakeStore!!.doubtfulCount)
     }
 
     @Given("a rag store stub returning a doubtful result and a confident result for query {string}")
     fun `rag store stub doubt mix`(query: String) {
-        val results = listOf(
-            RetrieveResult(
-                chunkId = 1L, chunkIndex = 0, chunkText = "shaky OCR page",
-                sectionPath = "Chapitre 1", headingLevel = 1,
-                sourceDocument = "book", similarity = 0.8, confidence = 0.2, doubtful = true
-            ),
-            RetrieveResult(
-                chunkId = 2L, chunkIndex = 1, chunkText = "referentiel de competences definition",
-                sectionPath = "Chapitre 2", headingLevel = 1,
-                sourceDocument = "book", similarity = 0.9
+        val results =
+            listOf(
+                RetrieveResult(
+                    chunkId = 1L,
+                    chunkIndex = 0,
+                    chunkText = "shaky OCR page",
+                    sectionPath = "Chapitre 1",
+                    headingLevel = 1,
+                    sourceDocument = "book",
+                    similarity = 0.8,
+                    confidence = 0.2,
+                    doubtful = true,
+                ),
+                RetrieveResult(
+                    chunkId = 2L,
+                    chunkIndex = 1,
+                    chunkText = "referentiel de competences definition",
+                    sectionPath = "Chapitre 2",
+                    headingLevel = 1,
+                    sourceDocument = "book",
+                    similarity = 0.9,
+                ),
             )
-        )
         world.fakeStore = CorpusFakeRagStore()
         world.docsSectionSource = results
     }
@@ -125,15 +154,17 @@ class CorpusIngestSteps(private val world: CorpusIngestWorld) {
     @When("the docs context is loaded for the corpus query {string}")
     fun `docs context corpus query`(query: String) {
         val stub = CorpusStubRagStore(results = world.docsSectionSource!!)
-        val builder = CompositeContextBuilder(
-            workspaceRoot = File(System.getProperty("java.io.tmpdir")),
-            vectorStore = codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy"),
-            embeddingPipeline = codebase.rag.EmbeddingPipeline(
-                codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy")
-            ),
-            config = contracts.context.CompositeContextConfig(),
-            codexStore = stub,
-        )
+        val builder =
+            CompositeContextBuilder(
+                workspaceRoot = File(System.getProperty("java.io.tmpdir")),
+                vectorStore = codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy"),
+                embeddingPipeline =
+                    codebase.rag.EmbeddingPipeline(
+                        codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy"),
+                    ),
+                config = contracts.context.CompositeContextConfig(),
+                codexStore = stub,
+            )
         val composite = builder.build(query)
         world.docsSection = composite.docsSection
     }
@@ -143,19 +174,20 @@ class CorpusIngestSteps(private val world: CorpusIngestWorld) {
         val docs = world.docsSection!!
         assertTrue(
             docs.contains(codebase.store.DoubtExposure.DOUBT_MARKER),
-            "Expected doubtful annotation in docs section, got: $docs"
+            "Expected doubtful annotation in docs section, got: $docs",
         )
     }
 
     @And("the docs section keeps confident chunks unannotated")
     fun `docs section keeps confident unannotated`() {
         val docs = world.docsSection!!
-        val confidentLine = docs.lineSequence().firstOrNull {
-            it.contains("referentiel de competences") && !it.contains(codebase.store.DoubtExposure.DOUBT_MARKER)
-        }
+        val confidentLine =
+            docs.lineSequence().firstOrNull {
+                it.contains("referentiel de competences") && !it.contains(codebase.store.DoubtExposure.DOUBT_MARKER)
+            }
         assertTrue(
             confidentLine != null,
-            "Expected a confident (unannotated) chunk line in docs section, got: $docs"
+            "Expected a confident (unannotated) chunk line in docs section, got: $docs",
         )
     }
 }

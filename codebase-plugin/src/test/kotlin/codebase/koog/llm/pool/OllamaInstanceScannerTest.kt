@@ -16,7 +16,6 @@ import kotlin.test.assertTrue
  * - intégration conditionnelle : ne s'exécute que si Ollama est prêt sur le port CI dédié
  */
 class OllamaInstanceScannerTest {
-
     @Test
     fun `scan returns only live ports`() {
         val livePorts = setOf(11437, 11438, 11440)
@@ -41,16 +40,18 @@ class OllamaInstanceScannerTest {
                 "gpt-oss:120b-cloud",
                 "gemma4:31b-cloud",
                 "gpt-oss:120b-cloud",
-                "gemma4:31b-cloud"
+                "gemma4:31b-cloud",
             ),
-            models
+            models,
         )
     }
 
     @Test
     fun `scan includes gemma4 31b cloud in authorized models`() {
-        assertTrue("gemma4:31b-cloud" in OllamaInstanceScanner.AUTHORIZED_MODELS,
-            "gemma4:31b-cloud must be in the authorized models list")
+        assertTrue(
+            "gemma4:31b-cloud" in OllamaInstanceScanner.AUTHORIZED_MODELS,
+            "gemma4:31b-cloud must be in the authorized models list",
+        )
     }
 
     @Test
@@ -65,10 +66,11 @@ class OllamaInstanceScannerTest {
     @Test
     fun `OLLAMA_POOL_PORTS env var takes priority over port range`() {
         val env = FakeEnvironmentReader(mapOf("OLLAMA_POOL_PORTS" to "11450,11451"))
-        val scanner = OllamaInstanceScanner(
-            FakeInstanceScanner(setOf(11450, 11451, 11437)),
-            environmentReader = env
-        )
+        val scanner =
+            OllamaInstanceScanner(
+                FakeInstanceScanner(setOf(11450, 11451, 11437)),
+                environmentReader = env,
+            )
 
         val instances = runBlocking { scanner.scan() }
 
@@ -104,12 +106,15 @@ class OllamaInstanceScannerTest {
     fun isOllamaReady(): Boolean {
         val ciPort = (System.getenv("OLLAMA_TEST_PORT") ?: "11466").toInt()
         return try {
-            java.net.URI.create("http://localhost:$ciPort/api/tags").toURL().openStream().use { it.read() > 0 }
+            java.net.URI
+                .create("http://localhost:$ciPort/api/tags")
+                .toURL()
+                .openStream()
+                .use { it.read() > 0 }
         } catch (_: Exception) {
             false
         }
     }
 
-    private fun extractPort(instance: LlmInstance): Int =
-        instance.baseUrl.removePrefix("http://localhost:").toInt()
+    private fun extractPort(instance: LlmInstance): Int = instance.baseUrl.removePrefix("http://localhost:").toInt()
 }

@@ -13,7 +13,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class AnonymizationExpertSteps {
-
     private lateinit var currentResult: AnonymizationResult
     private var originalContent: String = ""
 
@@ -28,16 +27,18 @@ class AnonymizationExpertSteps {
         originalContent = file.readText()
 
         val extension = file.extension.lowercase()
-        val format = when (extension) {
-            "yml", "yaml" -> "yaml"
-            "json" -> "json"
-            else -> extension
-        }
+        val format =
+            when (extension) {
+                "yml", "yaml" -> "yaml"
+                "json" -> "json"
+                else -> extension
+            }
 
         val expert = AnonymizationExpertFactory.create()
-        currentResult = expert.anonymizeRequest(
-            AnonymizationRequest(sourcePath = file.absolutePath, content = originalContent, targetFormat = format)
-        )
+        currentResult =
+            expert.anonymizeRequest(
+                AnonymizationRequest(sourcePath = file.absolutePath, content = originalContent, targetFormat = format),
+            )
     }
 
     @Then("the anonymized content does not contain the string {string}")
@@ -55,29 +56,39 @@ class AnonymizationExpertSteps {
     @Then("the anonymization detects at least {int} PII category")
     fun `the anonymization detects at least`(minCategories: Int) {
         assertNotNull(currentResult)
-        assertTrue(currentResult.detectedPiiCategories.size >= minCategories,
-            "Expected >= $minCategories categories, got: ${currentResult.detectedPiiCategories.size}")
+        assertTrue(
+            currentResult.detectedPiiCategories.size >= minCategories,
+            "Expected >= $minCategories categories, got: ${currentResult.detectedPiiCategories.size}",
+        )
     }
 
     @Then("the anonymization detects the category {string}")
     fun `the anonymization detects the category`(expectedCategory: String) {
         assertNotNull(currentResult)
-        assertTrue(expectedCategory in currentResult.detectedPiiCategories,
-            "Category '$expectedCategory' not detected. Detected: ${currentResult.detectedPiiCategories}")
+        assertTrue(
+            expectedCategory in currentResult.detectedPiiCategories,
+            "Category '$expectedCategory' not detected. Detected: ${currentResult.detectedPiiCategories}",
+        )
     }
 
     @Then("the confidence score is above {double}")
     fun `the confidence score is above`(threshold: Double) {
         assertNotNull(currentResult)
-        assertTrue(currentResult.confidenceScore > threshold,
-            "Confidence ${currentResult.confidenceScore} <= $threshold")
+        assertTrue(
+            currentResult.confidenceScore > threshold,
+            "Confidence ${currentResult.confidenceScore} <= $threshold",
+        )
     }
 
     @Then("the confidence score is {double}")
     fun `the confidence score is`(expectedConfidence: Double) {
         assertNotNull(currentResult)
-        assertEquals(expectedConfidence, currentResult.confidenceScore, 0.01,
-            "Expected confidence: $expectedConfidence, actual: ${currentResult.confidenceScore}")
+        assertEquals(
+            expectedConfidence,
+            currentResult.confidenceScore,
+            0.01,
+            "Expected confidence: $expectedConfidence, actual: ${currentResult.confidenceScore}",
+        )
     }
 
     @Then("the result contains a non-empty summary")
@@ -89,14 +100,20 @@ class AnonymizationExpertSteps {
     @Then("the anonymized content is identical to the original content")
     fun `the anonymized content is identical to the original content`() {
         assertNotNull(currentResult)
-        assertEquals(originalContent.trim(), currentResult.anonymizedContent.trim(),
-            "Content was modified but no PII should have been detected")
+        assertEquals(
+            originalContent.trim(),
+            currentResult.anonymizedContent.trim(),
+            "Content was modified but no PII should have been detected",
+        )
     }
 
     @Then("the number of replacements is {int}")
     fun `the number of replacements is`(expectedCount: Int) {
         assertNotNull(currentResult)
-        assertEquals(expectedCount, currentResult.replacedCount,
-            "Expected replacements: $expectedCount, actual: ${currentResult.replacedCount}")
+        assertEquals(
+            expectedCount,
+            currentResult.replacedCount,
+            "Expected replacements: $expectedCount, actual: ${currentResult.replacedCount}",
+        )
     }
 }

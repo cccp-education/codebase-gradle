@@ -4,12 +4,13 @@ import codebase.koog.llm.FakeLlmProvider
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import kotlin.test.assertEquals
 
-class GovernanceFallbackSteps(private val world: GovernanceFallbackWorld) {
-
+class GovernanceFallbackSteps(
+    private val world: GovernanceFallbackWorld,
+) {
     @Given("a project workspace with AGENT.adoc containing {string}")
     fun `workspace with agent adoc`(content: String) {
         world.newWorkspace()
@@ -33,7 +34,7 @@ class GovernanceFallbackSteps(private val world: GovernanceFallbackWorld) {
             * [ ] Open item V-LOCAL-4
             * [x] Done item V-LOCAL-2
             * [ ] Other item
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -64,7 +65,7 @@ class GovernanceFallbackSteps(private val world: GovernanceFallbackWorld) {
         assertNotNull(ctx, "AgentContext should be auto-loaded (fallback)")
         assertTrue(
             ctx.eagerRules.contains(expected),
-            "Expected '$expected' in eagerRules, got: ${ctx.eagerRules.take(200)}"
+            "Expected '$expected' in eagerRules, got: ${ctx.eagerRules.take(200)}",
         )
     }
 
@@ -74,7 +75,7 @@ class GovernanceFallbackSteps(private val world: GovernanceFallbackWorld) {
         assertNotNull(ctx, "AgentContext should be auto-loaded (fallback)")
         assertTrue(
             ctx.backlogItems.any { it.contains(expected) },
-            "Expected backlog item '$expected', got: ${ctx.backlogItems}"
+            "Expected backlog item '$expected', got: ${ctx.backlogItems}",
         )
     }
 
@@ -90,7 +91,7 @@ class GovernanceFallbackSteps(private val world: GovernanceFallbackWorld) {
         assertNotNull(world.responseContent, "Response content should not be null")
         assertTrue(
             world.responseContent.contains("COMPLETED"),
-            "Expected COMPLETED status, got: ${world.responseContent.take(200)}"
+            "Expected COMPLETED status, got: ${world.responseContent.take(200)}",
         )
     }
 }

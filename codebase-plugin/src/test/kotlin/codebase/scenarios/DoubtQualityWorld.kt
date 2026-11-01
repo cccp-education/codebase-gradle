@@ -20,7 +20,6 @@ import codebase.store.RetrieveResult
  * scenario via the `@Given` init step).
  */
 class DoubtQualityWorld {
-
     var doubt: DoubtMetadata? = null
     var doubtfulChunk: DoubtfulChunk? = null
     var doubtSchema: List<String>? = null
@@ -38,8 +37,13 @@ class DoubtQualityWorld {
 class DoubtStubRagStore(
     private val results: List<RetrieveResult> = emptyList(),
 ) : RagVectorStore() {
+    override fun searchBlocking(
+        query: String,
+        topK: Int,
+    ): List<RetrieveResult> = results
 
-    override fun searchBlocking(query: String, topK: Int): List<RetrieveResult> = results
-
-    override fun searchWithDoubtBlocking(query: String, topK: Int): List<RetrieveResult> = results
+    override fun searchWithDoubtBlocking(
+        query: String,
+        topK: Int,
+    ): List<RetrieveResult> = results
 }

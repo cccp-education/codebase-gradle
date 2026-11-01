@@ -6,8 +6,6 @@ class ThrowingVisionProvider : VisionProvider {
         mimeType: String,
         language: String,
         model: String,
-        maxTokens: Int
-    ): String {
-        throw IllegalStateException("Gemini API quota exceeded — simulated failure for fallback test")
-    }
+        maxTokens: Int,
+    ): String = throw IllegalStateException("Gemini API quota exceeded — simulated failure for fallback test")
 }

@@ -2,12 +2,9 @@ package codebase.benchmark
 
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class BenchmarkFixturesTest {
-
     @Test
     fun `samples has 7 entries`() {
         assertEquals(7, BenchmarkFixtures.samples.size)

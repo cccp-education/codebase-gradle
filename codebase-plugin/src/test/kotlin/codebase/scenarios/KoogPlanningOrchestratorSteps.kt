@@ -15,8 +15,9 @@ import kotlin.test.assertTrue
  * bakery-gradle, readme-gradle : le World est injecté par constructeur.
  * PicoContainer crée une nouvelle instance par scénario → pas de @Before reset.
  */
-class KoogPlanningOrchestratorSteps(private val world: KoogPlanningOrchestratorWorld) {
-
+class KoogPlanningOrchestratorSteps(
+    private val world: KoogPlanningOrchestratorWorld,
+) {
     // ── Given ──
 
     @Given("a KoogPlanningOrchestrator is instantiated")
@@ -36,10 +37,11 @@ class KoogPlanningOrchestratorSteps(private val world: KoogPlanningOrchestratorW
     fun `execute planning pipeline`(intention: String) {
         world.intention = intention
 
-        val initialState = AugmentedState(
-            intention = intention,
-            workspaceRoot = world.workspaceRoot.absolutePath
-        )
+        val initialState =
+            AugmentedState(
+                intention = intention,
+                workspaceRoot = world.workspaceRoot.absolutePath,
+            )
 
         world.resultState = world.orchestrator.execute(initialState)
         assertNotNull(world.resultState, "Result state should never be null")
@@ -49,10 +51,11 @@ class KoogPlanningOrchestratorSteps(private val world: KoogPlanningOrchestratorW
     fun `plan a feature`(intention: String) {
         world.intention = intention
 
-        val initialState = AugmentedState(
-            intention = intention,
-            workspaceRoot = world.workspaceRoot.absolutePath
-        )
+        val initialState =
+            AugmentedState(
+                intention = intention,
+                workspaceRoot = world.workspaceRoot.absolutePath,
+            )
 
         world.resultState = world.orchestrator.planFeature(initialState)
         assertNotNull(world.resultState, "Result state should never be null")
@@ -62,10 +65,11 @@ class KoogPlanningOrchestratorSteps(private val world: KoogPlanningOrchestratorW
     fun `plan an architecture`(intention: String) {
         world.intention = intention
 
-        val initialState = AugmentedState(
-            intention = intention,
-            workspaceRoot = world.workspaceRoot.absolutePath
-        )
+        val initialState =
+            AugmentedState(
+                intention = intention,
+                workspaceRoot = world.workspaceRoot.absolutePath,
+            )
 
         world.resultState = world.orchestrator.planArchitecture(initialState)
         assertNotNull(world.resultState, "Result state should never be null")
@@ -75,10 +79,11 @@ class KoogPlanningOrchestratorSteps(private val world: KoogPlanningOrchestratorW
     fun `plan a refactor`(intention: String) {
         world.intention = intention
 
-        val initialState = AugmentedState(
-            intention = intention,
-            workspaceRoot = world.workspaceRoot.absolutePath
-        )
+        val initialState =
+            AugmentedState(
+                intention = intention,
+                workspaceRoot = world.workspaceRoot.absolutePath,
+            )
 
         world.resultState = world.orchestrator.planRefactor(initialState)
         assertNotNull(world.resultState, "Result state should never be null")
@@ -88,10 +93,11 @@ class KoogPlanningOrchestratorSteps(private val world: KoogPlanningOrchestratorW
     fun `plan documentation`(intention: String) {
         world.intention = intention
 
-        val initialState = AugmentedState(
-            intention = intention,
-            workspaceRoot = world.workspaceRoot.absolutePath
-        )
+        val initialState =
+            AugmentedState(
+                intention = intention,
+                workspaceRoot = world.workspaceRoot.absolutePath,
+            )
 
         world.resultState = world.orchestrator.planDocumentation(initialState)
         assertNotNull(world.resultState, "Result state should never be null")
@@ -110,7 +116,7 @@ class KoogPlanningOrchestratorSteps(private val world: KoogPlanningOrchestratorW
         assertNotNull(world.resultState, "Result state should exist")
         assertTrue(
             classification == expected,
-            "Expected classification '$expected', got '$classification'"
+            "Expected classification '$expected', got '$classification'",
         )
     }
 
@@ -120,7 +126,7 @@ class KoogPlanningOrchestratorSteps(private val world: KoogPlanningOrchestratorW
         assertNotNull(world.resultState, "Result state should exist")
         assertTrue(
             intention?.startsWith(prefix) == true,
-            "Intention should start with '$prefix', got '$intention'"
+            "Intention should start with '$prefix', got '$intention'",
         )
     }
 
@@ -139,7 +145,7 @@ class KoogPlanningOrchestratorSteps(private val world: KoogPlanningOrchestratorW
         assertNotNull(world.resultState, "Result state should exist")
         assertTrue(
             world.resultState!!.intention.contains(world.intention),
-            "Intention should be preserved — expected to contain '${world.intention}', got '${world.resultState!!.intention}'"
+            "Intention should be preserved — expected to contain '${world.intention}', got '${world.resultState!!.intention}'",
         )
     }
 }

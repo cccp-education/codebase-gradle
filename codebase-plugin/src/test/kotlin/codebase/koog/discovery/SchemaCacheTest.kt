@@ -8,11 +8,17 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class SchemaCacheTest {
-
-    private fun projectWithTasks() = ProjectBuilder.builder().build().also { project ->
-        project.tasks.register("buildTask") { it.group = "build"; it.description = "Builds" }
-        project.tasks.register("testTask") { it.group = "verification"; it.description = "Tests" }
-    }
+    private fun projectWithTasks() =
+        ProjectBuilder.builder().build().also { project ->
+            project.tasks.register("buildTask") {
+                it.group = "build"
+                it.description = "Builds"
+            }
+            project.tasks.register("testTask") {
+                it.group = "verification"
+                it.description = "Tests"
+            }
+        }
 
     @Test
     fun `first access should scan and cache schemas`() {

@@ -8,9 +8,10 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class AssembleWorkspaceContextTaskTest {
-
     @Test
-    fun `task aggregates context files from multiple boroughs`(@TempDir tempDir: File) {
+    fun `task aggregates context files from multiple boroughs`(
+        @TempDir tempDir: File,
+    ) {
         // Create borough directories with context files
         val boroughA = File(tempDir, "borough-a")
         boroughA.mkdirs()
@@ -44,7 +45,9 @@ class AssembleWorkspaceContextTaskTest {
     }
 
     @Test
-    fun `task handles empty foundry with no context files`(@TempDir tempDir: File) {
+    fun `task handles empty foundry with no context files`(
+        @TempDir tempDir: File,
+    ) {
         val emptyDir = File(tempDir, "empty-borough")
         emptyDir.mkdirs()
 
@@ -66,7 +69,9 @@ class AssembleWorkspaceContextTaskTest {
     }
 
     @Test
-    fun `task ignores dirs without build context subdirectory`(@TempDir tempDir: File) {
+    fun `task ignores dirs without build context subdirectory`(
+        @TempDir tempDir: File,
+    ) {
         File(tempDir, "no-context-dir").mkdirs()
 
         val outputFile = File(tempDir, "output.txt")
@@ -85,7 +90,9 @@ class AssembleWorkspaceContextTaskTest {
     }
 
     @Test
-    fun `task ignores non-context-txt files in context dir`(@TempDir tempDir: File) {
+    fun `task ignores non-context-txt files in context dir`(
+        @TempDir tempDir: File,
+    ) {
         val boroughA = File(tempDir, "borough-a")
         boroughA.mkdirs()
         val ctxDirA = File(boroughA, "build/context")
@@ -122,7 +129,9 @@ class AssembleWorkspaceContextTaskTest {
     }
 
     @Test
-    fun `task creates output parent directories`(@TempDir tempDir: File) {
+    fun `task creates output parent directories`(
+        @TempDir tempDir: File,
+    ) {
         val boroughA = File(tempDir, "borough-a")
         boroughA.mkdirs()
         val ctxDirA = File(boroughA, "build/context")

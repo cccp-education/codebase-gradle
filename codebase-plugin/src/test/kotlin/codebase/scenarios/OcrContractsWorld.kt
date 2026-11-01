@@ -17,7 +17,6 @@ import java.io.File
  * scenario via the `@Given` init step).
  */
 class OcrContractsWorld {
-
     val visionStub = StubVisionProvider()
     var ocrResult: contracts.ocr.OcrResult? = null
     var engine: contracts.ocr.OcrEngine? = null
@@ -34,9 +33,8 @@ class OcrContractsWorld {
  * (pattern `RecordingVisionProvider` + FIFO `FakeFineTuningLlm`).
  */
 class StubVisionProvider(
-    responses: List<String> = listOf("= Structured Output")
+    responses: List<String> = listOf("= Structured Output"),
 ) : VisionProvider {
-
     private val queue = ArrayDeque(responses)
 
     fun resetQueue(responses: List<String>) {
@@ -58,7 +56,7 @@ class StubVisionProvider(
         mimeType: String,
         language: String,
         model: String,
-        maxTokens: Int
+        maxTokens: Int,
     ): String {
         callCount++
         lastImageBytes = imageBytes

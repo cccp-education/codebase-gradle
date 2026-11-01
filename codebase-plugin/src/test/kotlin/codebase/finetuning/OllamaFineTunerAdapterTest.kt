@@ -20,27 +20,29 @@ import java.nio.file.Path
  * avec dataset original préservé — pas de crash.
  */
 class OllamaFineTunerAdapterTest {
-
     @TempDir
     lateinit var tmpDir: Path
 
-    private val request = FineTuningRequest(
-        baseModel = "gpt-oss:120b-cloud",
-        dataset = listOf("docs/referential/**/*.adoc"),
-        outputModelName = "expert-coding",
-        corpusRatio = 0.10
-    )
+    private val request =
+        FineTuningRequest(
+            baseModel = "gpt-oss:120b-cloud",
+            dataset = listOf("docs/referential/**/*.adoc"),
+            outputModelName = "expert-coding",
+            corpusRatio = 0.10,
+        )
 
     @Test
     fun `fineTune returns Success when Ollama create and push succeed`() {
-        val client = StubOllamaRegistryClient(
-            createResponse = RegistryResponse.ok(),
-            pushResponse = RegistryResponse.ok()
-        )
-        val adapter = OllamaFineTunerAdapter(
-            registryClient = client,
-            ggufOutputDir = tmpDir
-        )
+        val client =
+            StubOllamaRegistryClient(
+                createResponse = RegistryResponse.ok(),
+                pushResponse = RegistryResponse.ok(),
+            )
+        val adapter =
+            OllamaFineTunerAdapter(
+                registryClient = client,
+                ggufOutputDir = tmpDir,
+            )
 
         val result = adapter.fineTune(request)
 
@@ -55,14 +57,16 @@ class OllamaFineTunerAdapterTest {
 
     @Test
     fun `fineTune returns Failure when Ollama create fails HTTP 500`() {
-        val client = StubOllamaRegistryClient(
-            createResponse = RegistryResponse.fail(500, "internal error"),
-            pushResponse = RegistryResponse.ok()
-        )
-        val adapter = OllamaFineTunerAdapter(
-            registryClient = client,
-            ggufOutputDir = tmpDir
-        )
+        val client =
+            StubOllamaRegistryClient(
+                createResponse = RegistryResponse.fail(500, "internal error"),
+                pushResponse = RegistryResponse.ok(),
+            )
+        val adapter =
+            OllamaFineTunerAdapter(
+                registryClient = client,
+                ggufOutputDir = tmpDir,
+            )
 
         val result = adapter.fineTune(request)
 
@@ -75,14 +79,16 @@ class OllamaFineTunerAdapterTest {
 
     @Test
     fun `fineTune returns Failure when Ollama push fails HTTP 404`() {
-        val client = StubOllamaRegistryClient(
-            createResponse = RegistryResponse.ok(),
-            pushResponse = RegistryResponse.fail(404, "registry not found")
-        )
-        val adapter = OllamaFineTunerAdapter(
-            registryClient = client,
-            ggufOutputDir = tmpDir
-        )
+        val client =
+            StubOllamaRegistryClient(
+                createResponse = RegistryResponse.ok(),
+                pushResponse = RegistryResponse.fail(404, "registry not found"),
+            )
+        val adapter =
+            OllamaFineTunerAdapter(
+                registryClient = client,
+                ggufOutputDir = tmpDir,
+            )
 
         val result = adapter.fineTune(request)
 
@@ -96,10 +102,11 @@ class OllamaFineTunerAdapterTest {
     @Test
     fun `fineTune returns Failure when registryClient throws`() {
         val client = StubOllamaRegistryClient(throwOnCall = true)
-        val adapter = OllamaFineTunerAdapter(
-            registryClient = client,
-            ggufOutputDir = tmpDir
-        )
+        val adapter =
+            OllamaFineTunerAdapter(
+                registryClient = client,
+                ggufOutputDir = tmpDir,
+            )
 
         val result = adapter.fineTune(request)
 
@@ -111,17 +118,18 @@ class OllamaFineTunerAdapterTest {
     @Test
     fun `adapter implements FineTuningPipeline`() {
         val client = StubOllamaRegistryClient()
-        val adapter = OllamaFineTunerAdapter(
-            registryClient = client,
-            ggufOutputDir = tmpDir
-        )
+        val adapter =
+            OllamaFineTunerAdapter(
+                registryClient = client,
+                ggufOutputDir = tmpDir,
+            )
         assertTrue(adapter is FineTuningPipeline)
     }
 
     private class StubOllamaRegistryClient(
         private val createResponse: RegistryResponse = RegistryResponse.ok(),
         private val pushResponse: RegistryResponse = RegistryResponse.ok(),
-        private val throwOnCall: Boolean = false
+        private val throwOnCall: Boolean = false,
     ) : OllamaRegistryClient {
         var createCalled: Boolean = false
             private set

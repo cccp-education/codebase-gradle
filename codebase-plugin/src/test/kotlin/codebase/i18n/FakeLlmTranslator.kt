@@ -14,7 +14,6 @@ import contracts.i18n.TranslationService
  * Capture les requêtes reçues dans [requestsReceived] pour vérifications Cucumber.
  */
 class FakeLlmTranslator : TranslationService {
-
     val requestsReceived = mutableListOf<TranslationRequest>()
 
     private val resultQueue: MutableList<TranslationResult> = mutableListOf()

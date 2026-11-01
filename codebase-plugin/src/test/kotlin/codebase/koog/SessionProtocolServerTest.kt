@@ -2,10 +2,9 @@ package codebase.koog
 
 import codebase.koog.llm.FakeLlmProvider
 import codebase.koog.llm.LlmProvider
-import contracts.session.SessionStatus
-import contracts.vibecoding.registry.ToolRegistry
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import contracts.vibecoding.registry.ToolRegistry
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -18,19 +17,21 @@ import java.nio.file.Path
 import java.util.UUID
 
 class SessionProtocolServerTest {
-
     @Test
-    fun `single prompt produces single response`(@TempDir tempDir: Path) {
+    fun `single prompt produces single response`(
+        @TempDir tempDir: Path,
+    ) {
         val promptJson = """{"sessionId":"550e8400-e29b-41d4-a716-446655440000","prompt":"Add dark mode toggle","maxActions":3}"""
 
         val stdin = ByteArrayInputStream("$promptJson\n\n".toByteArray(StandardCharsets.UTF_8))
         val stdout = ByteArrayOutputStream()
 
-        val server = SessionProtocolServer(
-            workspaceRoot = tempDir.toString(),
-            toolRegistry = ToolRegistry(),
-            llmProvider = FakeLlmProvider()
-        )
+        val server =
+            SessionProtocolServer(
+                workspaceRoot = tempDir.toString(),
+                toolRegistry = ToolRegistry(),
+                llmProvider = FakeLlmProvider(),
+            )
         server.run(stdin, stdout)
 
         val output = stdout.toString(StandardCharsets.UTF_8).trim()
@@ -43,7 +44,9 @@ class SessionProtocolServerTest {
     }
 
     @Test
-    fun `multiple prompts produce multiple responses`(@TempDir tempDir: Path) {
+    fun `multiple prompts produce multiple responses`(
+        @TempDir tempDir: Path,
+    ) {
         val prompt1 = """{"sessionId":"11111111-1111-1111-1111-111111111111","prompt":"Fix typo","maxActions":2}"""
         val prompt2 = """{"sessionId":"22222222-2222-2222-2222-222222222222","prompt":"Add test","maxActions":2}"""
         val input = "$prompt1\n$prompt2\n\n"
@@ -51,11 +54,12 @@ class SessionProtocolServerTest {
         val stdin = ByteArrayInputStream(input.toByteArray(StandardCharsets.UTF_8))
         val stdout = ByteArrayOutputStream()
 
-        val server = SessionProtocolServer(
-            workspaceRoot = tempDir.toString(),
-            toolRegistry = ToolRegistry(),
-            llmProvider = FakeLlmProvider()
-        )
+        val server =
+            SessionProtocolServer(
+                workspaceRoot = tempDir.toString(),
+                toolRegistry = ToolRegistry(),
+                llmProvider = FakeLlmProvider(),
+            )
         server.run(stdin, stdout)
 
         val output = stdout.toString(StandardCharsets.UTF_8).trim()
@@ -71,17 +75,20 @@ class SessionProtocolServerTest {
     }
 
     @Test
-    fun `generates sessionId when not provided`(@TempDir tempDir: Path) {
+    fun `generates sessionId when not provided`(
+        @TempDir tempDir: Path,
+    ) {
         val promptJson = """{"prompt":"Generate ID for me","maxActions":1}"""
 
         val stdin = ByteArrayInputStream("$promptJson\n\n".toByteArray(StandardCharsets.UTF_8))
         val stdout = ByteArrayOutputStream()
 
-        val server = SessionProtocolServer(
-            workspaceRoot = tempDir.toString(),
-            toolRegistry = ToolRegistry(),
-            llmProvider = FakeLlmProvider()
-        )
+        val server =
+            SessionProtocolServer(
+                workspaceRoot = tempDir.toString(),
+                toolRegistry = ToolRegistry(),
+                llmProvider = FakeLlmProvider(),
+            )
         server.run(stdin, stdout)
 
         val output = stdout.toString(StandardCharsets.UTF_8).trim()
@@ -94,7 +101,9 @@ class SessionProtocolServerTest {
     }
 
     @Test
-    fun `writes error response and continues on next prompt`(@TempDir tempDir: Path) {
+    fun `writes error response and continues on next prompt`(
+        @TempDir tempDir: Path,
+    ) {
         val failingPrompt = """{"sessionId":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","prompt":"This should fail","maxActions":1}"""
         val okPrompt = """{"sessionId":"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb","prompt":"This should succeed","maxActions":2}"""
         val input = "$failingPrompt\n$okPrompt\n\n"
@@ -102,20 +111,22 @@ class SessionProtocolServerTest {
         val stdin = ByteArrayInputStream(input.toByteArray(StandardCharsets.UTF_8))
         val stdout = ByteArrayOutputStream()
 
-        val throwingProvider = object : LlmProvider {
-            override suspend fun call(prompt: String): String {
-                if (prompt.contains("fail")) {
-                    throw RuntimeException("Simulated LLM failure")
+        val throwingProvider =
+            object : LlmProvider {
+                override suspend fun call(prompt: String): String {
+                    if (prompt.contains("fail")) {
+                        throw RuntimeException("Simulated LLM failure")
+                    }
+                    return """{"intention":"$prompt","classification":"FEATURE","executedTasks":[],"finished":true}"""
                 }
-                return """{"intention":"$prompt","classification":"FEATURE","executedTasks":[],"finished":true}"""
             }
-        }
 
-        val server = SessionProtocolServer(
-            workspaceRoot = tempDir.toString(),
-            toolRegistry = ToolRegistry(),
-            llmProvider = throwingProvider
-        )
+        val server =
+            SessionProtocolServer(
+                workspaceRoot = tempDir.toString(),
+                toolRegistry = ToolRegistry(),
+                llmProvider = throwingProvider,
+            )
         server.run(stdin, stdout)
 
         val output = stdout.toString(StandardCharsets.UTF_8).trim()
@@ -133,15 +144,18 @@ class SessionProtocolServerTest {
     }
 
     @Test
-    fun `empty stdin returns immediately without output`(@TempDir tempDir: Path) {
+    fun `empty stdin returns immediately without output`(
+        @TempDir tempDir: Path,
+    ) {
         val stdin = ByteArrayInputStream("\n".toByteArray(StandardCharsets.UTF_8))
         val stdout = ByteArrayOutputStream()
 
-        val server = SessionProtocolServer(
-            workspaceRoot = tempDir.toString(),
-            toolRegistry = ToolRegistry(),
-            llmProvider = FakeLlmProvider()
-        )
+        val server =
+            SessionProtocolServer(
+                workspaceRoot = tempDir.toString(),
+                toolRegistry = ToolRegistry(),
+                llmProvider = FakeLlmProvider(),
+            )
         server.run(stdin, stdout)
 
         val output = stdout.toString(StandardCharsets.UTF_8).trim()
@@ -149,7 +163,9 @@ class SessionProtocolServerTest {
     }
 
     @Test
-    fun `auto-loads governance context when no context provided`(@TempDir tempDir: Path) {
+    fun `auto-loads governance context when no context provided`(
+        @TempDir tempDir: Path,
+    ) {
         val agentFile = tempDir.resolve("AGENT.adoc").toFile()
         agentFile.writeText("= Server Agent Rules\n\nRule 99: server governance loaded\n")
 
@@ -157,16 +173,19 @@ class SessionProtocolServerTest {
         val stdin = ByteArrayInputStream("$promptJson\n\n".toByteArray(StandardCharsets.UTF_8))
         val stdout = ByteArrayOutputStream()
 
-        val server = SessionProtocolServer(
-            workspaceRoot = tempDir.toString(),
-            toolRegistry = ToolRegistry(),
-            llmProvider = FakeLlmProvider()
-        )
+        val server =
+            SessionProtocolServer(
+                workspaceRoot = tempDir.toString(),
+                toolRegistry = ToolRegistry(),
+                llmProvider = FakeLlmProvider(),
+            )
         server.run(stdin, stdout)
 
         val ctx = server.lastAgentContext
         assertNotNull(ctx, "Server should auto-load governance context")
-        assertTrue(ctx!!.eagerRules.contains("Rule 99: server governance loaded"),
-            "Governance context should contain AGENT.adoc rules")
+        assertTrue(
+            ctx!!.eagerRules.contains("Rule 99: server governance loaded"),
+            "Governance context should contain AGENT.adoc rules",
+        )
     }
 }

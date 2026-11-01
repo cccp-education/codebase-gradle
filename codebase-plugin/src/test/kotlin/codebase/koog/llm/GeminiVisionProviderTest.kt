@@ -13,7 +13,6 @@ import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
 class GeminiVisionProviderTest {
-
     @Test
     fun `should generate synthetic test image`() {
         val image = createSyntheticImage("Hello World OCR Test")
@@ -21,7 +20,10 @@ class GeminiVisionProviderTest {
 
         assertThat(pngBytes).isNotEmpty()
         assertThat(pngBytes.copyOfRange(0, 4)).containsExactly(
-            0x89.toByte(), 'P'.code.toByte(), 'N'.code.toByte(), 'G'.code.toByte()
+            0x89.toByte(),
+            'P'.code.toByte(),
+            'N'.code.toByte(),
+            'G'.code.toByte(),
         )
     }
 
@@ -37,16 +39,18 @@ class GeminiVisionProviderTest {
     }
 
     @Test
-    fun `should fail with clear error when GEMINI_API_KEY not set`() = runTest {
-        val config = GeminiConfig(envVar = "GEMINI_API_KEY_NONEXISTENT_TEST_12345")
-        val provider = GeminiVisionProvider(config)
-        val imageBytes = toPngBytes(createSyntheticImage("test"))
+    fun `should fail with clear error when GEMINI_API_KEY not set`() =
+        runTest {
+            val config = GeminiConfig(envVar = "GEMINI_API_KEY_NONEXISTENT_TEST_12345")
+            val provider = GeminiVisionProvider(config)
+            val imageBytes = toPngBytes(createSyntheticImage("test"))
 
-        val exception = assertThrows<IllegalStateException> {
-            provider.processImage(imageBytes, "image/png", "fr", "gemini-2.5-flash", 100)
+            val exception =
+                assertThrows<IllegalStateException> {
+                    provider.processImage(imageBytes, "image/png", "fr", "gemini-2.5-flash", 100)
+                }
+            assertThat(exception.message).contains("GEMINI_API_KEY_NONEXISTENT_TEST_12345")
         }
-        assertThat(exception.message).contains("GEMINI_API_KEY_NONEXISTENT_TEST_12345")
-    }
 
     @Test
     fun `should accept various language and model parameters`() {

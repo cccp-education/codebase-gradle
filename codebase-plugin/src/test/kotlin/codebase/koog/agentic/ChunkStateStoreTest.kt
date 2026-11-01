@@ -9,21 +9,27 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ChunkStateStoreTest {
-
     @Test
-    fun `load returns null when state file does not exist`(@TempDir tempDir: File) {
+    fun `load returns null when state file does not exist`(
+        @TempDir tempDir: File,
+    ) {
         val store = JsonChunkStateStore(File(tempDir, "chunk-state.json"))
 
         assertNull(store.load())
     }
 
     @Test
-    fun `save and load round trip preserves chunk snapshot entries`(@TempDir tempDir: File) {
+    fun `save and load round trip preserves chunk snapshot entries`(
+        @TempDir tempDir: File,
+    ) {
         val store = JsonChunkStateStore(File(tempDir, "chunk-state.json"))
-        val snapshot = ChunkSnapshot(listOf(
-            ChunkSnapshotEntry("id-a", "AGENT.adoc", "5-10", "checksum-a"),
-            ChunkSnapshotEntry("id-b", "BACKLOG.adoc", "1-3", "checksum-b")
-        ))
+        val snapshot =
+            ChunkSnapshot(
+                listOf(
+                    ChunkSnapshotEntry("id-a", "AGENT.adoc", "5-10", "checksum-a"),
+                    ChunkSnapshotEntry("id-b", "BACKLOG.adoc", "1-3", "checksum-b"),
+                ),
+            )
 
         store.save(snapshot)
         val loaded = store.load()
@@ -32,12 +38,17 @@ class ChunkStateStoreTest {
     }
 
     @Test
-    fun `save creates the state file`(@TempDir tempDir: File) {
+    fun `save creates the state file`(
+        @TempDir tempDir: File,
+    ) {
         val stateFile = File(tempDir, "chunk-state.json")
         val store = JsonChunkStateStore(stateFile)
-        val snapshot = ChunkSnapshot(listOf(
-            ChunkSnapshotEntry("id-a", "AGENT.adoc", "5-10", "checksum-a")
-        ))
+        val snapshot =
+            ChunkSnapshot(
+                listOf(
+                    ChunkSnapshotEntry("id-a", "AGENT.adoc", "5-10", "checksum-a"),
+                ),
+            )
 
         store.save(snapshot)
 
@@ -50,7 +61,9 @@ class ChunkStateStoreTest {
     }
 
     @Test
-    fun `load returns null when state file is empty`(@TempDir tempDir: File) {
+    fun `load returns null when state file is empty`(
+        @TempDir tempDir: File,
+    ) {
         val stateFile = File(tempDir, "chunk-state.json").apply { writeText("") }
         val store = JsonChunkStateStore(stateFile)
 
@@ -58,7 +71,9 @@ class ChunkStateStoreTest {
     }
 
     @Test
-    fun `load returns null when state file is invalid json`(@TempDir tempDir: File) {
+    fun `load returns null when state file is invalid json`(
+        @TempDir tempDir: File,
+    ) {
         val stateFile = File(tempDir, "chunk-state.json").apply { writeText("{not json") }
         val store = JsonChunkStateStore(stateFile)
 
@@ -66,7 +81,9 @@ class ChunkStateStoreTest {
     }
 
     @Test
-    fun `clear removes the state file if it exists`(@TempDir tempDir: File) {
+    fun `clear removes the state file if it exists`(
+        @TempDir tempDir: File,
+    ) {
         val stateFile = File(tempDir, "chunk-state.json")
         val store = JsonChunkStateStore(stateFile)
         store.save(ChunkSnapshot(listOf(ChunkSnapshotEntry("id-a", "AGENT.adoc", "5-10", "checksum-a"))))
@@ -78,18 +95,25 @@ class ChunkStateStoreTest {
     }
 
     @Test
-    fun `clear does not fail when state file does not exist`(@TempDir tempDir: File) {
+    fun `clear does not fail when state file does not exist`(
+        @TempDir tempDir: File,
+    ) {
         val store = JsonChunkStateStore(File(tempDir, "chunk-state.json"))
 
         store.clear()
     }
 
     @Test
-    fun `round trip preserves source lines with dash and colon`(@TempDir tempDir: File) {
+    fun `round trip preserves source lines with dash and colon`(
+        @TempDir tempDir: File,
+    ) {
         val store = JsonChunkStateStore(File(tempDir, "chunk-state.json"))
-        val snapshot = ChunkSnapshot(listOf(
-            ChunkSnapshotEntry("id-x", "path/with/dash/file.adoc", "42-48", "checksum-x")
-        ))
+        val snapshot =
+            ChunkSnapshot(
+                listOf(
+                    ChunkSnapshotEntry("id-x", "path/with/dash/file.adoc", "42-48", "checksum-x"),
+                ),
+            )
 
         store.save(snapshot)
         val loaded = store.load()

@@ -6,7 +6,6 @@ import codebase.koog.agentic.AgenticIngestor
 import codebase.koog.agentic.IngestionReport
 
 class AgenticIngestorWorld {
-
     companion object {
         private var sharedConnectionFactory: io.r2dbc.spi.ConnectionFactory? = null
         private var sharedRepository: AgenticChunkRepository? = null
@@ -14,13 +13,15 @@ class AgenticIngestorWorld {
         @Synchronized
         fun ensureStarted() {
             if (sharedConnectionFactory == null) {
-                val config = io.r2dbc.postgresql.PostgresqlConnectionConfiguration.builder()
-                    .host(PostgresFixture.host)
-                    .port(PostgresFixture.port)
-                    .database(PostgresFixture.databaseName)
-                    .username(PostgresFixture.username)
-                    .password(PostgresFixture.password)
-                    .build()
+                val config =
+                    io.r2dbc.postgresql.PostgresqlConnectionConfiguration
+                        .builder()
+                        .host(PostgresFixture.host)
+                        .port(PostgresFixture.port)
+                        .database(PostgresFixture.databaseName)
+                        .username(PostgresFixture.username)
+                        .password(PostgresFixture.password)
+                        .build()
                 sharedConnectionFactory = io.r2dbc.postgresql.PostgresqlConnectionFactory(config)
                 sharedRepository = AgenticChunkRepository(sharedConnectionFactory!!)
             }

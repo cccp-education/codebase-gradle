@@ -11,9 +11,10 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class CodebaseGovernanceExtensionTest {
-
     @Test
-    fun `extension is registered by plugin with defaults`(@TempDir tempDir: File) {
+    fun `extension is registered by plugin with defaults`(
+        @TempDir tempDir: File,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         project.plugins.apply(CodebasePlugin::class.java)
 
@@ -26,7 +27,9 @@ class CodebaseGovernanceExtensionTest {
     }
 
     @Test
-    fun `extension toConfig returns DDD model`(@TempDir tempDir: File) {
+    fun `extension toConfig returns DDD model`(
+        @TempDir tempDir: File,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         project.plugins.apply(CodebasePlugin::class.java)
 
@@ -44,7 +47,9 @@ class CodebaseGovernanceExtensionTest {
     }
 
     @Test
-    fun `ingestGovernance task wires governanceConfig from extension`(@TempDir tempDir: File) {
+    fun `ingestGovernance task wires governanceConfig from extension`(
+        @TempDir tempDir: File,
+    ) {
         File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
 
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
@@ -62,7 +67,9 @@ class CodebaseGovernanceExtensionTest {
     }
 
     @Test
-    fun `CLI property overrides extension default`(@TempDir tempDir: File) {
+    fun `CLI property overrides extension default`(
+        @TempDir tempDir: File,
+    ) {
         File(tempDir, "AGENT.adoc").writeText("= Agent\n\n* NE DOIT JAMAIS leak de secrets\n")
         File(tempDir, "gradle.properties").writeText("codebase.governance.strictValidation=true")
 

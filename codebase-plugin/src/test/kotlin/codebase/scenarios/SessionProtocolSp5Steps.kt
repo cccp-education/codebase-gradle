@@ -7,8 +7,9 @@ import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import kotlin.test.assertTrue
 
-class SessionProtocolSp5Steps(private val world: SessionProtocolSp5World) {
-
+class SessionProtocolSp5Steps(
+    private val world: SessionProtocolSp5World,
+) {
     @Given("an SP-5 SessionProtocolTask with event stream enabled")
     fun `setup task with event stream`() {
         world.eventOutput.reset()
@@ -29,15 +30,19 @@ class SessionProtocolSp5Steps(private val world: SessionProtocolSp5World) {
     }
 
     @When("I SP-5 execute action {string} with prompt {string}")
-    fun `execute action with prompt`(action: String, prompt: String) {
+    fun `execute action with prompt`(
+        action: String,
+        prompt: String,
+    ) {
         world.executeAction(action = action, prompt = prompt)
     }
 
     @When("I SP-5 send {int} prompts through the server")
     fun `send prompts through server`(count: Int) {
-        val prompts = (1..count).map { i ->
-            """{"sessionId":"00000000-0000-0000-0000-${i.toString().padStart(12, '0')}","prompt":"Server prompt $i","maxActions":2}"""
-        }
+        val prompts =
+            (1..count).map { i ->
+                """{"sessionId":"00000000-0000-0000-0000-${i.toString().padStart(12, '0')}","prompt":"Server prompt $i","maxActions":2}"""
+            }
         world.runServer(prompts)
     }
 

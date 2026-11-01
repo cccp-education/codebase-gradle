@@ -19,7 +19,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class OcrSteps {
-
     private val log = LoggerFactory.getLogger(OcrSteps::class.java)
     private var tmpDir: File? = null
     private var lastOutputPath: File? = null
@@ -29,7 +28,10 @@ class OcrSteps {
     private lateinit var baseName: String
 
     @Given("an OCR test file {string} with text {string}")
-    fun createOcrTestFile(filename: String, text: String) {
+    fun createOcrTestFile(
+        filename: String,
+        text: String,
+    ) {
         tmpDir = Files.createTempDirectory("ocr-cucumber").toFile()
         val file = File(tmpDir, filename)
         file.writeText(text, Charsets.UTF_8)
@@ -51,14 +53,19 @@ class OcrSteps {
     fun ocrInEnglish(filename: String) = ocr(filename, "en", "asciidoc")
 
     @When("I OCR {string} in French with format {string}")
-    fun ocrWithFormat(filename: String, format: String) = ocr(filename, "fr", format)
+    fun ocrWithFormat(
+        filename: String,
+        format: String,
+    ) = ocr(filename, "fr", format)
 
     @When("I check for task {string}")
     fun checkForTask(taskName: String) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tmpDir!!)
-            .withName("lookup")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tmpDir!!)
+                .withName("lookup")
+                .build()
         project.pluginManager.apply(CodebasePlugin::class.java)
         foundTask = project.tasks.findByName(taskName) as? OcrTask
         foundGroup = foundTask?.group
@@ -71,14 +78,20 @@ class OcrSteps {
     }
 
     @Then("the OCR result for {string} contains {string}")
-    fun ocrResultContains(expectedBase: String, text: String) {
+    fun ocrResultContains(
+        expectedBase: String,
+        text: String,
+    ) {
         val file = resolveOutputFile(expectedBase)
         val content = file.readText(Charsets.UTF_8)
         assertTrue(content.contains(text), "Expected '$text' in OCR output. Got:\n$content")
     }
 
     @Then("the OCR result for {string} ends with {string}")
-    fun ocrResultEndsWith(expectedBase: String, suffix: String) {
+    fun ocrResultEndsWith(
+        expectedBase: String,
+        suffix: String,
+    ) {
         val file = resolveOutputFile(expectedBase)
         assertTrue(file.name.endsWith(suffix), "Expected suffix '$suffix': ${file.name}")
     }
@@ -95,17 +108,25 @@ class OcrSteps {
     }
 
     @Then("task {string} should be in group {string}")
-    fun taskShouldBeInGroup(taskName: String, group: String) {
+    fun taskShouldBeInGroup(
+        taskName: String,
+        group: String,
+    ) {
         assertNotNull(foundTask, "Task '$taskName' should exist")
         assertEquals(group, foundGroup, "Task group mismatch")
     }
 
     @When("I OCR {string} with provider {string}")
-    fun ocrWithProvider(filename: String, provider: String) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tmpDir!!)
-            .withName("ocr-provider")
-            .build()
+    fun ocrWithProvider(
+        filename: String,
+        provider: String,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tmpDir!!)
+                .withName("ocr-provider")
+                .build()
         project.pluginManager.apply(CodebasePlugin::class.java)
 
         val inputFile = File(tmpDir, filename)
@@ -136,16 +157,25 @@ class OcrSteps {
         }
 
         val ext = ".adoc"
-        lastOutputPath = project.layout.buildDirectory.dir("ocr").get().asFile
-            .resolve("${inputFile.nameWithoutExtension}_ocr$ext")
+        lastOutputPath =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
+                .resolve("${inputFile.nameWithoutExtension}_ocr$ext")
     }
 
     @When("I OCR {string} with provider {string} and Gemini fails")
-    fun ocrWithProviderAndGeminiFails(filename: String, provider: String) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tmpDir!!)
-            .withName("ocr-gemini-fail")
-            .build()
+    fun ocrWithProviderAndGeminiFails(
+        filename: String,
+        provider: String,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tmpDir!!)
+                .withName("ocr-gemini-fail")
+                .build()
         project.pluginManager.apply(CodebasePlugin::class.java)
 
         val inputFile = File(tmpDir, filename)
@@ -160,16 +190,25 @@ class OcrSteps {
         task.executeOcr()
 
         val ext = ".adoc"
-        lastOutputPath = project.layout.buildDirectory.dir("ocr").get().asFile
-            .resolve("${inputFile.nameWithoutExtension}_ocr$ext")
+        lastOutputPath =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
+                .resolve("${inputFile.nameWithoutExtension}_ocr$ext")
     }
 
     @When("I OCR {string} with provider {string} and Gemini and Ollama fail")
-    fun ocrWithProviderAndGeminiAndOllamaFail(filename: String, provider: String) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tmpDir!!)
-            .withName("ocr-tess-fb")
-            .build()
+    fun ocrWithProviderAndGeminiAndOllamaFail(
+        filename: String,
+        provider: String,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tmpDir!!)
+                .withName("ocr-tess-fb")
+                .build()
         project.pluginManager.apply(CodebasePlugin::class.java)
 
         val inputFile = File(tmpDir, filename)
@@ -188,8 +227,12 @@ class OcrSteps {
         }
 
         val ext = ".adoc"
-        lastOutputPath = project.layout.buildDirectory.dir("ocr").get().asFile
-            .resolve("${inputFile.nameWithoutExtension}_ocr$ext")
+        lastOutputPath =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
+                .resolve("${inputFile.nameWithoutExtension}_ocr$ext")
     }
 
     // ── OCR-3 : Batch inputDir ─────────────────────────────────────────
@@ -198,7 +241,10 @@ class OcrSteps {
     private var lastError: Exception? = null
 
     @Given("an OCR test directory {string} with files:")
-    fun createOcrTestDirectory(dirName: String, table: io.cucumber.datatable.DataTable) {
+    fun createOcrTestDirectory(
+        dirName: String,
+        table: io.cucumber.datatable.DataTable,
+    ) {
         tmpDir = Files.createTempDirectory("ocr-cucumber").toFile()
         val dir = File(tmpDir, dirName)
         dir.mkdirs()
@@ -218,10 +264,12 @@ class OcrSteps {
 
     @When("I OCR the directory {string} in French")
     fun ocrDirectoryInFrench(dirName: String) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tmpDir!!)
-            .withName("ocr-batch")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tmpDir!!)
+                .withName("ocr-batch")
+                .build()
         project.pluginManager.apply(CodebasePlugin::class.java)
 
         val task = project.tasks.getByName("ocrDocument") as OcrTask
@@ -233,18 +281,27 @@ class OcrSteps {
 
         try {
             task.executeOcr()
-            batchOutputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+            batchOutputDir =
+                project.layout.buildDirectory
+                    .dir("ocr")
+                    .get()
+                    .asFile
         } catch (e: Exception) {
             lastError = e
         }
     }
 
     @When("I OCR file {string} with directory {string} in French")
-    fun ocrFileWithDirectory(filename: String, dirName: String) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tmpDir!!)
-            .withName("ocr-mixed")
-            .build()
+    fun ocrFileWithDirectory(
+        filename: String,
+        dirName: String,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tmpDir!!)
+                .withName("ocr-mixed")
+                .build()
         project.pluginManager.apply(CodebasePlugin::class.java)
 
         val task = project.tasks.getByName("ocrDocument") as OcrTask
@@ -256,7 +313,11 @@ class OcrSteps {
         task.outputFormat.set("asciidoc")
 
         task.executeOcr()
-        batchOutputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        batchOutputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
     }
 
     @Then("the OCR result for {string} does not exist")
@@ -268,16 +329,20 @@ class OcrSteps {
     @Then("an error is raised with message containing {string}")
     fun errorRaisedWithMessage(expectedText: String) {
         assertNotNull(lastError, "Expected an error to be raised")
-        assertTrue(lastError!!.message!!.contains(expectedText),
-            "Error message should contain '$expectedText'. Got: ${lastError!!.message}")
+        assertTrue(
+            lastError!!.message!!.contains(expectedText),
+            "Error message should contain '$expectedText'. Got: ${lastError!!.message}",
+        )
     }
 
     @When("I OCR {string} in French with anonymization enabled")
     fun ocrInFrenchWithAnonymization(filename: String) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tmpDir!!)
-            .withName("ocr-anonymize")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tmpDir!!)
+                .withName("ocr-anonymize")
+                .build()
         project.pluginManager.apply(CodebasePlugin::class.java)
 
         val inputFile = File(tmpDir, filename)
@@ -289,12 +354,19 @@ class OcrSteps {
         task.anonymizeOutput.set(true)
         task.executeOcr()
 
-        lastOutputPath = project.layout.buildDirectory.dir("ocr").get().asFile
-            .resolve("${inputFile.nameWithoutExtension}_ocr.adoc")
+        lastOutputPath =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
+                .resolve("${inputFile.nameWithoutExtension}_ocr.adoc")
     }
 
     @Then("the OCR result for {string} does not contain {string}")
-    fun ocrResultDoesNotContain(expectedBase: String, text: String) {
+    fun ocrResultDoesNotContain(
+        expectedBase: String,
+        text: String,
+    ) {
         val file = resolveOutputFile(expectedBase)
         val content = file.readText(Charsets.UTF_8)
         assertTrue(!content.contains(text), "OCR output should NOT contain '$text'. Got:\n$content")
@@ -304,8 +376,9 @@ class OcrSteps {
 
     @Then("the OCR metrics report exists")
     fun ocrMetricsReportExists() {
-        val reportFile = batchOutputDir?.parentFile?.resolve("reports/ocr/ocr-metrics.adoc")
-            ?: lastOutputPath?.parentFile?.parentFile?.resolve("reports/ocr/ocr-metrics.adoc")
+        val reportFile =
+            batchOutputDir?.parentFile?.resolve("reports/ocr/ocr-metrics.adoc")
+                ?: lastOutputPath?.parentFile?.parentFile?.resolve("reports/ocr/ocr-metrics.adoc")
         assertNotNull(reportFile, "Cannot resolve metrics report path")
         assertTrue(reportFile.exists(), "OCR metrics report should exist: ${reportFile.absolutePath}")
         metricsReportPath = reportFile
@@ -323,11 +396,17 @@ class OcrSteps {
         tmpDir?.deleteRecursively()
     }
 
-    private fun ocr(filename: String, language: String, format: String) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tmpDir!!)
-            .withName("ocr-exec")
-            .build()
+    private fun ocr(
+        filename: String,
+        language: String,
+        format: String,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tmpDir!!)
+                .withName("ocr-exec")
+                .build()
         project.pluginManager.apply(CodebasePlugin::class.java)
 
         val inputFile = File(tmpDir, filename)
@@ -338,12 +417,17 @@ class OcrSteps {
         task.outputFormat.set(format)
         task.executeOcr()
 
-        val ext = when (format) {
-            "markdown" -> ".md"
-            "text" -> ".txt"
-            else -> ".adoc"
-        }
-        lastOutputPath = project.layout.buildDirectory.dir("ocr").get().asFile
-            .resolve("${inputFile.nameWithoutExtension}_ocr$ext")
+        val ext =
+            when (format) {
+                "markdown" -> ".md"
+                "text" -> ".txt"
+                else -> ".adoc"
+            }
+        lastOutputPath =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
+                .resolve("${inputFile.nameWithoutExtension}_ocr$ext")
     }
 }

@@ -15,74 +15,79 @@ import org.junit.jupiter.api.assertThrows
  * non-blank, corpusRatio 0.0..1.0 default 0.10.
  */
 class FineTuningPipelineTest {
-
     @Test
     fun `FineTuningRequest defaults corpusRatio to 0_10`() {
-        val request = FineTuningRequest(
-            baseModel = "gpt-oss:120b-cloud",
-            dataset = listOf("docs/referential/**/*.adoc"),
-            outputModelName = "expert-coding"
-        )
+        val request =
+            FineTuningRequest(
+                baseModel = "gpt-oss:120b-cloud",
+                dataset = listOf("docs/referential/**/*.adoc"),
+                outputModelName = "expert-coding",
+            )
         assertEquals(0.10, request.corpusRatio, 1e-9)
     }
 
     @Test
     fun `FineTuningRequest rejects blank baseModel`() {
-        val ex = assertThrows<IllegalArgumentException> {
-            FineTuningRequest(
-                baseModel = "  ",
-                dataset = listOf("docs/**/*.adoc"),
-                outputModelName = "expert-coding"
-            )
-        }
+        val ex =
+            assertThrows<IllegalArgumentException> {
+                FineTuningRequest(
+                    baseModel = "  ",
+                    dataset = listOf("docs/**/*.adoc"),
+                    outputModelName = "expert-coding",
+                )
+            }
         assertTrue(ex.message!!.contains("baseModel"))
     }
 
     @Test
     fun `FineTuningRequest rejects empty dataset`() {
-        val ex = assertThrows<IllegalArgumentException> {
-            FineTuningRequest(
-                baseModel = "gpt-oss:120b-cloud",
-                dataset = emptyList(),
-                outputModelName = "expert-coding"
-            )
-        }
+        val ex =
+            assertThrows<IllegalArgumentException> {
+                FineTuningRequest(
+                    baseModel = "gpt-oss:120b-cloud",
+                    dataset = emptyList(),
+                    outputModelName = "expert-coding",
+                )
+            }
         assertTrue(ex.message!!.contains("dataset"))
     }
 
     @Test
     fun `FineTuningRequest rejects blank outputModelName`() {
-        val ex = assertThrows<IllegalArgumentException> {
-            FineTuningRequest(
-                baseModel = "gpt-oss:120b-cloud",
-                dataset = listOf("docs/**/*.adoc"),
-                outputModelName = ""
-            )
-        }
+        val ex =
+            assertThrows<IllegalArgumentException> {
+                FineTuningRequest(
+                    baseModel = "gpt-oss:120b-cloud",
+                    dataset = listOf("docs/**/*.adoc"),
+                    outputModelName = "",
+                )
+            }
         assertTrue(ex.message!!.contains("outputModelName"))
     }
 
     @Test
     fun `FineTuningRequest rejects corpusRatio out of range`() {
-        val ex = assertThrows<IllegalArgumentException> {
-            FineTuningRequest(
-                baseModel = "gpt-oss:120b-cloud",
-                dataset = listOf("docs/**/*.adoc"),
-                outputModelName = "expert-coding",
-                corpusRatio = 1.5
-            )
-        }
+        val ex =
+            assertThrows<IllegalArgumentException> {
+                FineTuningRequest(
+                    baseModel = "gpt-oss:120b-cloud",
+                    dataset = listOf("docs/**/*.adoc"),
+                    outputModelName = "expert-coding",
+                    corpusRatio = 1.5,
+                )
+            }
         assertTrue(ex.message!!.contains("corpusRatio"))
     }
 
     @Test
     fun `FineTuningResult Success holds outputModelName and ggufPath`() {
-        val result = FineTuningResult.Success(
-            outputModelName = "expert-coding",
-            ggufPath = "/tmp/expert-coding.gguf",
-            iterations = 3,
-            validationScore = 0.82
-        )
+        val result =
+            FineTuningResult.Success(
+                outputModelName = "expert-coding",
+                ggufPath = "/tmp/expert-coding.gguf",
+                iterations = 3,
+                validationScore = 0.82,
+            )
         assertEquals("expert-coding", result.outputModelName)
         assertEquals("/tmp/expert-coding.gguf", result.ggufPath)
         assertEquals(3, result.iterations)
@@ -93,10 +98,11 @@ class FineTuningPipelineTest {
 
     @Test
     fun `FineTuningResult Failure holds reason and preserves original dataset`() {
-        val result = FineTuningResult.Failure(
-            reason = "Ollama unavailable",
-            originalDataset = listOf("docs/**/*.adoc")
-        )
+        val result =
+            FineTuningResult.Failure(
+                reason = "Ollama unavailable",
+                originalDataset = listOf("docs/**/*.adoc"),
+            )
         assertEquals("Ollama unavailable", result.reason)
         assertEquals(listOf("docs/**/*.adoc"), result.originalDataset)
         assertTrue(result.isFailure)
@@ -105,19 +111,21 @@ class FineTuningPipelineTest {
 
     @Test
     fun `FakeFineTuner returns Success for valid request`() {
-        val fake = FakeFineTuner(
-            FineTuningResult.Success(
-                outputModelName = "expert-coding",
-                ggufPath = "/tmp/expert-coding.gguf",
-                iterations = 1,
-                validationScore = 0.9
+        val fake =
+            FakeFineTuner(
+                FineTuningResult.Success(
+                    outputModelName = "expert-coding",
+                    ggufPath = "/tmp/expert-coding.gguf",
+                    iterations = 1,
+                    validationScore = 0.9,
+                ),
             )
-        )
-        val request = FineTuningRequest(
-            baseModel = "gpt-oss:120b-cloud",
-            dataset = listOf("docs/**/*.adoc"),
-            outputModelName = "expert-coding"
-        )
+        val request =
+            FineTuningRequest(
+                baseModel = "gpt-oss:120b-cloud",
+                dataset = listOf("docs/**/*.adoc"),
+                outputModelName = "expert-coding",
+            )
         val result = fake.fineTune(request)
         assertTrue(result is FineTuningResult.Success)
         assertEquals("expert-coding", (result as FineTuningResult.Success).outputModelName)
@@ -126,11 +134,12 @@ class FineTuningPipelineTest {
     @Test
     fun `FakeFineTuner captures last request for unit-test assertions`() {
         val fake = FakeFineTuner(FineTuningResult.Failure("no-op", emptyList()))
-        val request = FineTuningRequest(
-            baseModel = "gemma4:31b-cloud",
-            dataset = listOf("docs/framework/**/*.adoc"),
-            outputModelName = "expert-content"
-        )
+        val request =
+            FineTuningRequest(
+                baseModel = "gemma4:31b-cloud",
+                dataset = listOf("docs/framework/**/*.adoc"),
+                outputModelName = "expert-content",
+            )
         fake.fineTune(request)
         assertEquals(request, fake.lastRequest)
         assertEquals(1, fake.callCount)
@@ -139,11 +148,12 @@ class FineTuningPipelineTest {
     @Test
     fun `FakeFineTuner throws when no result configured`() {
         val fake = FakeFineTuner()
-        val request = FineTuningRequest(
-            baseModel = "gpt-oss:120b-cloud",
-            dataset = listOf("docs/**/*.adoc"),
-            outputModelName = "expert-coding"
-        )
+        val request =
+            FineTuningRequest(
+                baseModel = "gpt-oss:120b-cloud",
+                dataset = listOf("docs/**/*.adoc"),
+                outputModelName = "expert-coding",
+            )
         assertThrows<IllegalStateException> { fake.fineTune(request) }
     }
 
@@ -154,11 +164,12 @@ class FineTuningPipelineTest {
         val second = FineTuningResult.Failure("boom", listOf("docs/**/*.adoc"))
         fake.enqueueResult(first)
         fake.enqueueResult(second)
-        val request = FineTuningRequest(
-            baseModel = "gpt-oss:120b-cloud",
-            dataset = listOf("docs/**/*.adoc"),
-            outputModelName = "expert-coding"
-        )
+        val request =
+            FineTuningRequest(
+                baseModel = "gpt-oss:120b-cloud",
+                dataset = listOf("docs/**/*.adoc"),
+                outputModelName = "expert-coding",
+            )
         assertEquals(first, fake.fineTune(request))
         assertEquals(second, fake.fineTune(request))
         assertEquals(2, fake.callCount)

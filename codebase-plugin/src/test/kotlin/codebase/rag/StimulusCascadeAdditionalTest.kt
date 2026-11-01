@@ -11,7 +11,6 @@ import kotlin.test.assertTrue
  * Tests additionnels pour StimulusCascade — couvre parseSections, parseRoutingResponse, sha256, archiveReport.
  */
 class StimulusCascadeAdditionalTest {
-
     private val cascade = StimulusCascade(dryRun = true)
 
     @Test
@@ -24,7 +23,8 @@ class StimulusCascadeAdditionalTest {
 
     @Test
     fun `parseSections with multiple level-2 headings`() {
-        val text = """
+        val text =
+            """
             = Document Principal
             == Section Architecture
             Contenu sur l'architecture DAG N0-N3
@@ -34,7 +34,7 @@ class StimulusCascadeAdditionalTest {
             
             == Section Produit
             Business model et roadmap
-        """.trimIndent()
+            """.trimIndent()
 
         val sections = cascade.parseSections(text)
 
@@ -50,14 +50,15 @@ class StimulusCascadeAdditionalTest {
 
     @Test
     fun `parseSections extracts content between headings`() {
-        val text = """
+        val text =
+            """
             == Premier
             Contenu du premier bloc
             sur plusieurs lignes
             
             == Deuxieme
             Contenu du deuxieme
-        """.trimIndent()
+            """.trimIndent()
 
         val sections = cascade.parseSections(text)
 
@@ -68,11 +69,12 @@ class StimulusCascadeAdditionalTest {
 
     @Test
     fun `parseSections with heading equals sign prefix strips it`() {
-        val text = """
+        val text =
+            """
             = Main Title
             == Cle Architecture
             Le contenu sur l'architecture.
-        """.trimIndent()
+            """.trimIndent()
 
         val sections = cascade.parseSections(text)
         assertEquals(1, sections.size)
@@ -124,11 +126,12 @@ class StimulusCascadeAdditionalTest {
     @Test
     fun `parseRoutingResponse strips markdown code fences around JSON`() {
         val section = StimulusCascade.ParsedSection("S5", "Test", "content")
-        val raw = """
+        val raw =
+            """
             ```json
             {"targetDocument": "WORKSPACE_VISION", "suggestedSection": "== Test", "rationale": "test"}
             ```
-        """.trimIndent()
+            """.trimIndent()
 
         val result = cascade.parseRoutingResponse(section, raw)
 
@@ -181,20 +184,32 @@ class StimulusCascadeAdditionalTest {
     }
 
     @Test
-    fun `archiveReport creates directory and files`(@TempDir tempDir: File) {
+    fun `archiveReport creates directory and files`(
+        @TempDir tempDir: File,
+    ) {
         val reporter = StimulusCascade(dryRun = true, workspaceRoot = tempDir.absolutePath)
 
-        val record = DilutionRecord(
-            sectionId = "S1", sectionTitle = "Architecture", content = "content",
-            classification = ContentClassification.VISION, confidence = 0.9,
-            dilutionTarget = DilutionTarget(TargetDocument.WORKSPACE_VISION, "== Test", "ok"),
-            classificationRationale = "Vision", timestamp = LocalDateTime.of(2026, 5, 28, 16, 0)
-        )
-        val report = StimulusCascadeReport(
-            source = "Brain dump", sourceHash = "abc123",
-            sections = listOf(record), visionCount = 1, opinionCount = 0, dilutedCount = 1,
-            timestamp = LocalDateTime.of(2026, 5, 28, 16, 0)
-        )
+        val record =
+            DilutionRecord(
+                sectionId = "S1",
+                sectionTitle = "Architecture",
+                content = "content",
+                classification = ContentClassification.VISION,
+                confidence = 0.9,
+                dilutionTarget = DilutionTarget(TargetDocument.WORKSPACE_VISION, "== Test", "ok"),
+                classificationRationale = "Vision",
+                timestamp = LocalDateTime.of(2026, 5, 28, 16, 0),
+            )
+        val report =
+            StimulusCascadeReport(
+                source = "Brain dump",
+                sourceHash = "abc123",
+                sections = listOf(record),
+                visionCount = 1,
+                opinionCount = 0,
+                dilutedCount = 1,
+                timestamp = LocalDateTime.of(2026, 5, 28, 16, 0),
+            )
 
         val archivePath = reporter.archiveReport(report)
 

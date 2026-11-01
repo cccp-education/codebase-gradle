@@ -1,13 +1,12 @@
 package codebase.publishing
 
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Assertions.assertFalse
 import java.io.File
 
 class PublishedPomCharacterizationTest {
-
     companion object {
         private const val GROUP_PATH = "education/cccp"
         private const val ARTIFACT = "codebase-plugin"
@@ -22,7 +21,7 @@ class PublishedPomCharacterizationTest {
     private fun pomContent(): String {
         assumeTrue(
             pomFile.exists(),
-            "Published POM not found at ${pomFile.absolutePath} — skipping (run ./gradlew publishToMavenLocal to enable this guard). CI has no local ~/.m2 repository."
+            "Published POM not found at ${pomFile.absolutePath} — skipping (run ./gradlew publishToMavenLocal to enable this guard). CI has no local ~/.m2 repository.",
         )
         return pomFile.readText()
     }
@@ -32,7 +31,7 @@ class PublishedPomCharacterizationTest {
         val pom = pomContent()
         assertTrue(
             pom.contains("education.cccp") && pom.contains("ocr-contracts"),
-            "POM must declare education.cccp:ocr-contracts (N0 OCR boundary port, EPIC CDX-OCR-CONTRACTS US-3)."
+            "POM must declare education.cccp:ocr-contracts (N0 OCR boundary port, EPIC CDX-OCR-CONTRACTS US-3).",
         )
     }
 
@@ -41,7 +40,7 @@ class PublishedPomCharacterizationTest {
         val pom = pomContent()
         assertFalse(
             pom.contains("<artifactId>codex-plugin</artifactId>"),
-            "POM must NOT declare codex-plugin anymore — N1->N2 inversion is dead (EPIC CDX-RAG-SOCLE RAG-4 FINAL, S-104/S-201)."
+            "POM must NOT declare codex-plugin anymore — N1->N2 inversion is dead (EPIC CDX-RAG-SOCLE RAG-4 FINAL, S-104/S-201).",
         )
     }
 }

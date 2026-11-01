@@ -1,13 +1,12 @@
 package codebase.rag
 
-import codebase.graph.GraphifyContextProvider
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import contracts.context.CompositeContextConfig
 import graphify.model.GraphCommunity
 import graphify.model.GraphEdge
 import graphify.model.GraphModel
 import graphify.model.GraphNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import contracts.context.CompositeContextConfig
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -22,7 +21,6 @@ import java.io.File
  * fallback when the file is absent.
  */
 class CompositeContextBuilderGraphifyTest {
-
     @TempDir
     lateinit var tempDir: File
 

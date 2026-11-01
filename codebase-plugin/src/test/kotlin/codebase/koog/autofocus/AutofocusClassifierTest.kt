@@ -4,11 +4,9 @@ import codebase.koog.llm.LlmProvider
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class AutofocusClassifierTest {
-
     @Test
     fun `classifySync detects compilation error as IMPLEMENTATION`() {
         val result = AutofocusClassifier.classifySync("fix compilation error in VibecodingGraph.kt")
@@ -137,92 +135,108 @@ class AutofocusClassifierTest {
 
     @Test
     fun `classifySync uses buildOutput for classification`() {
-        val result = AutofocusClassifier.classifySync(
-            intention = "something went wrong",
-            buildOutput = "BUILD FAILED in 3s"
-        )
+        val result =
+            AutofocusClassifier.classifySync(
+                intention = "something went wrong",
+                buildOutput = "BUILD FAILED in 3s",
+            )
         assertEquals(AutofocusLevel.IMPLEMENTATION, result)
     }
 
     @Test
     fun `classifySync buildOutput BUILD FAILED takes priority over roadmap intention`() {
-        val result = AutofocusClassifier.classifySync(
-            intention = "what is the roadmap for EPIC Z?",
-            buildOutput = "BUILD FAILED in 3s"
-        )
+        val result =
+            AutofocusClassifier.classifySync(
+                intention = "what is the roadmap for EPIC Z?",
+                buildOutput = "BUILD FAILED in 3s",
+            )
         assertEquals(AutofocusLevel.IMPLEMENTATION, result)
     }
 
     @Test
-    fun `classify with LLM fallback returns MODULE for unknown intention`() = runBlocking {
-        val fakeLlm = LlmProvider { "module" }
-        val result = AutofocusClassifier.classify(
-            intention = "some random task",
-            llmProvider = fakeLlm
-        )
-        assertEquals(AutofocusLevel.MODULE, result)
-    }
-
-    @Test
-    fun `classify with LLM fallback returns BIG_PICTURE when LLM says big-picture`() = runBlocking {
-        val fakeLlm = LlmProvider { "big-picture" }
-        val result = AutofocusClassifier.classify(
-            intention = "unknown strategic question",
-            llmProvider = fakeLlm
-        )
-        assertEquals(AutofocusLevel.BIG_PICTURE, result)
-    }
-
-    @Test
-    fun `classify with LLM fallback returns ARCHITECTURE when LLM says architecture`() = runBlocking {
-        val fakeLlm = LlmProvider { "architecture" }
-        val result = AutofocusClassifier.classify(
-            intention = "unknown dependency question",
-            llmProvider = fakeLlm
-        )
-        assertEquals(AutofocusLevel.ARCHITECTURE, result)
-    }
-
-    @Test
-    fun `classify with LLM fallback returns IMPLEMENTATION when LLM says implementation`() = runBlocking {
-        val fakeLlm = LlmProvider { "implementation" }
-        val result = AutofocusClassifier.classify(
-            intention = "unknown code question",
-            llmProvider = fakeLlm
-        )
-        assertEquals(AutofocusLevel.IMPLEMENTATION, result)
-    }
-
-    @Test
-    fun `classify skips LLM when heuristic matches`() = runBlocking {
-        var llmCalled = false
-        val fakeLlm = LlmProvider {
-            llmCalled = true
-            "big-picture"
+    fun `classify with LLM fallback returns MODULE for unknown intention`() =
+        runBlocking {
+            val fakeLlm = LlmProvider { "module" }
+            val result =
+                AutofocusClassifier.classify(
+                    intention = "some random task",
+                    llmProvider = fakeLlm,
+                )
+            assertEquals(AutofocusLevel.MODULE, result)
         }
-        val result = AutofocusClassifier.classify(
-            intention = "fix compilation error",
-            llmProvider = fakeLlm
-        )
-        assertEquals(AutofocusLevel.IMPLEMENTATION, result)
-        assertEquals(false, llmCalled)
-    }
 
     @Test
-    fun `classify with buildOutput triggers heuristic before LLM`() = runBlocking {
-        var llmCalled = false
-        val fakeLlm = LlmProvider {
-            llmCalled = true
-            "module"
+    fun `classify with LLM fallback returns BIG_PICTURE when LLM says big-picture`() =
+        runBlocking {
+            val fakeLlm = LlmProvider { "big-picture" }
+            val result =
+                AutofocusClassifier.classify(
+                    intention = "unknown strategic question",
+                    llmProvider = fakeLlm,
+                )
+            assertEquals(AutofocusLevel.BIG_PICTURE, result)
         }
-        val result = AutofocusClassifier.classify(
-            intention = "something",
-            buildOutput = "BUILD FAILED",
-            llmProvider = fakeLlm
-        )
-        assertEquals(AutofocusLevel.IMPLEMENTATION, result)
-        assertEquals(false, llmCalled)
-    }
+
+    @Test
+    fun `classify with LLM fallback returns ARCHITECTURE when LLM says architecture`() =
+        runBlocking {
+            val fakeLlm = LlmProvider { "architecture" }
+            val result =
+                AutofocusClassifier.classify(
+                    intention = "unknown dependency question",
+                    llmProvider = fakeLlm,
+                )
+            assertEquals(AutofocusLevel.ARCHITECTURE, result)
+        }
+
+    @Test
+    fun `classify with LLM fallback returns IMPLEMENTATION when LLM says implementation`() =
+        runBlocking {
+            val fakeLlm = LlmProvider { "implementation" }
+            val result =
+                AutofocusClassifier.classify(
+                    intention = "unknown code question",
+                    llmProvider = fakeLlm,
+                )
+            assertEquals(AutofocusLevel.IMPLEMENTATION, result)
+        }
+
+    @Test
+    fun `classify skips LLM when heuristic matches`() =
+        runBlocking {
+            var llmCalled = false
+            val fakeLlm =
+                LlmProvider {
+                    llmCalled = true
+                    "big-picture"
+                }
+            val result =
+                AutofocusClassifier.classify(
+                    intention = "fix compilation error",
+                    llmProvider = fakeLlm,
+                )
+            assertEquals(AutofocusLevel.IMPLEMENTATION, result)
+            assertEquals(false, llmCalled)
+        }
+
+    @Test
+    fun `classify with buildOutput triggers heuristic before LLM`() =
+        runBlocking {
+            var llmCalled = false
+            val fakeLlm =
+                LlmProvider {
+                    llmCalled = true
+                    "module"
+                }
+            val result =
+                AutofocusClassifier.classify(
+                    intention = "something",
+                    buildOutput = "BUILD FAILED",
+                    llmProvider = fakeLlm,
+                )
+            assertEquals(AutofocusLevel.IMPLEMENTATION, result)
+            assertEquals(false, llmCalled)
+        }
 
     @Test
     fun `classifySync is case insensitive`() {

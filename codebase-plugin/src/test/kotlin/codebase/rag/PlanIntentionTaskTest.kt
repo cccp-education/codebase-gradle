@@ -8,9 +8,10 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class PlanIntentionTaskTest {
-
     @Test
-    fun `task executes and produces output without pgvector`(@TempDir tempDir: File) {
+    fun `task executes and produces output without pgvector`(
+        @TempDir tempDir: File,
+    ) {
         val outputFile = File(tempDir, "plan-output.txt")
 
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
@@ -30,7 +31,9 @@ class PlanIntentionTaskTest {
     }
 
     @Test
-    fun `task produces output for complex intention without pgvector`(@TempDir tempDir: File) {
+    fun `task produces output for complex intention without pgvector`(
+        @TempDir tempDir: File,
+    ) {
         val outputFile = File(tempDir, "complex-plan.txt")
 
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
@@ -50,7 +53,9 @@ class PlanIntentionTaskTest {
     }
 
     @Test
-    fun `task uses default ragQuestion when not set`(@TempDir tempDir: File) {
+    fun `task uses default ragQuestion when not set`(
+        @TempDir tempDir: File,
+    ) {
         val outputFile = File(tempDir, "default-rag.txt")
 
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
@@ -68,7 +73,9 @@ class PlanIntentionTaskTest {
     }
 
     @Test
-    fun `task shows error in output when plan is null`(@TempDir tempDir: File) {
+    fun `task shows error in output when plan is null`(
+        @TempDir tempDir: File,
+    ) {
         val outputFile = File(tempDir, "error-plan.txt")
 
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()

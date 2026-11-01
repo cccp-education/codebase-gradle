@@ -3,12 +3,14 @@ package codebase.koog.expert
 import codebase.koog.llm.FakeLlmProvider
 import codebase.koog.llm.LlmProvider
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class DispatcherAgentTest {
-
     private val kotlinDomain = ExpertDomain("kotlin", "Kotlin, Gradle, JVM ecosystem")
     private val docsDomain = ExpertDomain("docs", "Documentation, AsciiDoc, technical writing")
     private val generalDomain = ExpertDomain("general", "Generalist fallback")
@@ -21,11 +23,13 @@ class DispatcherAgentTest {
     @BeforeEach
     fun setUp() {
         registry = ExpertRegistry()
-        registry.registerAll(listOf(
-            ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11449", 120),
-            ExpertRegistration(docsDomain, "gpt-oss:120b-cloud", "http://localhost:11450", 90),
-            ExpertRegistration(generalDomain, "gpt-oss:120b-cloud", "http://localhost:11451", 60)
-        ))
+        registry.registerAll(
+            listOf(
+                ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11449", 120),
+                ExpertRegistration(docsDomain, "gpt-oss:120b-cloud", "http://localhost:11450", 90),
+                ExpertRegistration(generalDomain, "gpt-oss:120b-cloud", "http://localhost:11451", 60),
+            ),
+        )
 
         fakeKotlinAgent = FakeExpertAgent(kotlinDomain, "Kotlin expert output for {domain}")
         fakeDocsAgent = FakeExpertAgent(docsDomain, "Docs expert output for {domain}")
@@ -33,8 +37,8 @@ class DispatcherAgentTest {
         fakeDispatcherLlm = FakeLlmProvider()
     }
 
-    private fun createDispatcher(llm: LlmProvider = fakeDispatcherLlm): DispatcherAgent {
-        return DispatcherAgent(
+    private fun createDispatcher(llm: LlmProvider = fakeDispatcherLlm): DispatcherAgent =
+        DispatcherAgent(
             dispatcherLlm = llm,
             expertRegistry = registry,
             expertAgentFactory = { reg ->
@@ -43,9 +47,8 @@ class DispatcherAgentTest {
                     "docs" -> fakeDocsAgent
                     else -> FakeExpertAgent(reg.domain)
                 }
-            }
+            },
         )
-    }
 
     @Test
     fun `splitJsonArray parses single object`() {
@@ -108,112 +111,124 @@ class DispatcherAgentTest {
     }
 
     @Test
-    fun `decomposition with valid JSON dispatches to experts`() = runTest {
-        val decompositionJson = """
-            [
-                {"id":"sub-1","domainName":"kotlin","subtaskType":"code_generation","prompt":"Write a plugin","expectedOutputFormat":"kotlin","validationCriteria":["compiles"],"priority":1},
-                {"id":"sub-2","domainName":"docs","subtaskType":"documentation","prompt":"Write README","expectedOutputFormat":"asciidoc","validationCriteria":["complete"],"priority":2}
-            ]
-        """.trimIndent()
-        fakeDispatcherLlm.nextResponse = decompositionJson
+    fun `decomposition with valid JSON dispatches to experts`() =
+        runTest {
+            val decompositionJson =
+                """
+                [
+                    {"id":"sub-1","domainName":"kotlin","subtaskType":"code_generation","prompt":"Write a plugin","expectedOutputFormat":"kotlin","validationCriteria":["compiles"],"priority":1},
+                    {"id":"sub-2","domainName":"docs","subtaskType":"documentation","prompt":"Write README","expectedOutputFormat":"asciidoc","validationCriteria":["complete"],"priority":2}
+                ]
+                """.trimIndent()
+            fakeDispatcherLlm.nextResponse = decompositionJson
 
-        val dispatcher = createDispatcher()
-        val result = dispatcher.execute("task-001", "Build a Gradle plugin with documentation")
+            val dispatcher = createDispatcher()
+            val result = dispatcher.execute("task-001", "Build a Gradle plugin with documentation")
 
-        assertEquals("task-001", result.taskId)
-        assertEquals(2, result.decomposition.subtasks.size)
-        assertEquals(2, result.expertResponses.size)
-        assertTrue(result.expertResponses.all { it.validationPassed })
-        assertEquals(1, fakeKotlinAgent.callCount)
-        assertEquals(1, fakeDocsAgent.callCount)
-    }
-
-    @Test
-    fun `decomposition with invalid JSON falls back to single subtask`() = runTest {
-        fakeDispatcherLlm.nextResponse = "not valid json at all"
-
-        val dispatcher = createDispatcher()
-        val result = dispatcher.execute("task-002", "Some task")
-
-        assertEquals(1, result.decomposition.subtasks.size)
-        assertEquals("kotlin", result.decomposition.subtasks[0].domainName)
-        assertEquals(1, result.expertResponses.size)
-    }
+            assertEquals("task-001", result.taskId)
+            assertEquals(2, result.decomposition.subtasks.size)
+            assertEquals(2, result.expertResponses.size)
+            assertTrue(result.expertResponses.all { it.validationPassed })
+            assertEquals(1, fakeKotlinAgent.callCount)
+            assertEquals(1, fakeDocsAgent.callCount)
+        }
 
     @Test
-    fun `dispatch to unregistered domain returns error`() = runTest {
-        val decompositionJson = """
-            [
-                {"id":"sub-1","domainName":"unknown_domain","subtaskType":"analysis","prompt":"Analyze","expectedOutputFormat":"text","validationCriteria":[],"priority":1}
-            ]
-        """.trimIndent()
-        fakeDispatcherLlm.nextResponse = decompositionJson
+    fun `decomposition with invalid JSON falls back to single subtask`() =
+        runTest {
+            fakeDispatcherLlm.nextResponse = "not valid json at all"
 
-        val dispatcher = createDispatcher()
-        val result = dispatcher.execute("task-003", "Analyze something")
+            val dispatcher = createDispatcher()
+            val result = dispatcher.execute("task-002", "Some task")
 
-        assertEquals(1, result.expertResponses.size)
-        val response = result.expertResponses[0]
-        assertFalse(response.validationPassed)
-        assertTrue(response.error!!.contains("No expert registered"))
-    }
+            assertEquals(1, result.decomposition.subtasks.size)
+            assertEquals("kotlin", result.decomposition.subtasks[0].domainName)
+            assertEquals(1, result.expertResponses.size)
+        }
 
     @Test
-    fun `synthesis when all experts succeed`() = runTest {
-        val decompositionJson = """
-            [
-                {"id":"sub-1","domainName":"kotlin","subtaskType":"code_generation","prompt":"Write code","expectedOutputFormat":"kotlin","validationCriteria":["compiles"],"priority":1}
-            ]
-        """.trimIndent()
-        fakeDispatcherLlm.nextResponse = decompositionJson
+    fun `dispatch to unregistered domain returns error`() =
+        runTest {
+            val decompositionJson =
+                """
+                [
+                    {"id":"sub-1","domainName":"unknown_domain","subtaskType":"analysis","prompt":"Analyze","expectedOutputFormat":"text","validationCriteria":[],"priority":1}
+                ]
+                """.trimIndent()
+            fakeDispatcherLlm.nextResponse = decompositionJson
 
-        val dispatcher = createDispatcher()
-        val result = dispatcher.execute("task-004", "Write code")
+            val dispatcher = createDispatcher()
+            val result = dispatcher.execute("task-003", "Analyze something")
 
-        assertTrue(result.synthesis.isNotBlank())
-        assertEquals(2, fakeDispatcherLlm.promptsReceived.size)
-    }
+            assertEquals(1, result.expertResponses.size)
+            val response = result.expertResponses[0]
+            assertFalse(response.validationPassed)
+            assertTrue(response.error!!.contains("No expert registered"))
+        }
 
     @Test
-    fun `synthesis when all experts fail`() = runTest {
-        val decompositionJson = """
-            [
-                {"id":"sub-1","domainName":"unknown","subtaskType":"analysis","prompt":"Analyze","expectedOutputFormat":"text","validationCriteria":[],"priority":1}
-            ]
-        """.trimIndent()
-        fakeDispatcherLlm.nextResponse = decompositionJson
+    fun `synthesis when all experts succeed`() =
+        runTest {
+            val decompositionJson =
+                """
+                [
+                    {"id":"sub-1","domainName":"kotlin","subtaskType":"code_generation","prompt":"Write code","expectedOutputFormat":"kotlin","validationCriteria":["compiles"],"priority":1}
+                ]
+                """.trimIndent()
+            fakeDispatcherLlm.nextResponse = decompositionJson
 
-        val dispatcher = createDispatcher()
-        val result = dispatcher.execute("task-005", "Analyze")
+            val dispatcher = createDispatcher()
+            val result = dispatcher.execute("task-004", "Write code")
 
-        assertTrue(result.synthesis.contains("failed"))
-        assertTrue(result.synthesis.contains("all"))
-    }
+            assertTrue(result.synthesis.isNotBlank())
+            assertEquals(2, fakeDispatcherLlm.promptsReceived.size)
+        }
+
+    @Test
+    fun `synthesis when all experts fail`() =
+        runTest {
+            val decompositionJson =
+                """
+                [
+                    {"id":"sub-1","domainName":"unknown","subtaskType":"analysis","prompt":"Analyze","expectedOutputFormat":"text","validationCriteria":[],"priority":1}
+                ]
+                """.trimIndent()
+            fakeDispatcherLlm.nextResponse = decompositionJson
+
+            val dispatcher = createDispatcher()
+            val result = dispatcher.execute("task-005", "Analyze")
+
+            assertTrue(result.synthesis.contains("failed"))
+            assertTrue(result.synthesis.contains("all"))
+        }
 
     @Test
     fun `DispatcherSubtask has correct defaults`() {
-        val subtask = DispatcherSubtask(
-            id = "sub-1",
-            domainName = "kotlin",
-            subtaskType = "code_generation",
-            prompt = "test",
-            expectedOutputFormat = "kotlin",
-            validationCriteria = emptyList()
-        )
+        val subtask =
+            DispatcherSubtask(
+                id = "sub-1",
+                domainName = "kotlin",
+                subtaskType = "code_generation",
+                prompt = "test",
+                expectedOutputFormat = "kotlin",
+                validationCriteria = emptyList(),
+            )
         assertEquals(1, subtask.priority)
     }
 
     @Test
     fun `DispatcherDecomposition holds all fields`() {
-        val subtasks = listOf(
-            DispatcherSubtask("sub-1", "kotlin", "code", "test", "kotlin", emptyList())
-        )
-        val decomposition = DispatcherDecomposition(
-            taskId = "task-001",
-            originalPrompt = "Build plugin",
-            subtasks = subtasks,
-            reasoning = "Single domain task"
-        )
+        val subtasks =
+            listOf(
+                DispatcherSubtask("sub-1", "kotlin", "code", "test", "kotlin", emptyList()),
+            )
+        val decomposition =
+            DispatcherDecomposition(
+                taskId = "task-001",
+                originalPrompt = "Build plugin",
+                subtasks = subtasks,
+                reasoning = "Single domain task",
+            )
 
         assertEquals("task-001", decomposition.taskId)
         assertEquals("Build plugin", decomposition.originalPrompt)

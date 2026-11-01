@@ -6,11 +6,16 @@ import io.r2dbc.postgresql.PostgresqlConnectionConfiguration
 import io.r2dbc.postgresql.PostgresqlConnectionFactory
 import kotlinx.coroutines.runBlocking
 import org.gradle.testfixtures.ProjectBuilder
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
-import java.nio.file.Files
 
 /**
  * Tests unitaires pour VibecodingTask — tâche Gradle de vibecoding.
@@ -19,7 +24,6 @@ import java.nio.file.Files
  * propriétés) sans exécuter le pipeline complet.
  */
 class VibecodingTaskTest {
-
     @Test
     fun `task should be registered with correct group and description`() {
         val project = ProjectBuilder.builder().build()
@@ -43,11 +47,13 @@ class VibecodingTaskTest {
     @Test
     fun `task should accept custom property values`() {
         val project = ProjectBuilder.builder().build()
-        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
-            it.intention.set("Fix typo in README")
-            it.dryRun.set(true)
-            it.maxActions.set(5)
-        }.get()
+        val task =
+            project.tasks
+                .register("vibecode", VibecodingTask::class.java) {
+                    it.intention.set("Fix typo in README")
+                    it.dryRun.set(true)
+                    it.maxActions.set(5)
+                }.get()
 
         assertEquals("Fix typo in README", task.intention.get())
         assertTrue(task.dryRun.get())
@@ -73,9 +79,11 @@ class VibecodingTaskTest {
     @Test
     fun `task should accept resume option`() {
         val project = ProjectBuilder.builder().build()
-        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
-            it.resume.set("session-abc123")
-        }.get()
+        val task =
+            project.tasks
+                .register("vibecode", VibecodingTask::class.java) {
+                    it.resume.set("session-abc123")
+                }.get()
 
         assertEquals("session-abc123", task.resume.get())
     }
@@ -83,9 +91,11 @@ class VibecodingTaskTest {
     @Test
     fun `task should accept custom session timeout`() {
         val project = ProjectBuilder.builder().build()
-        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
-            it.sessionTimeoutSeconds.set(60)
-        }.get()
+        val task =
+            project.tasks
+                .register("vibecode", VibecodingTask::class.java) {
+                    it.sessionTimeoutSeconds.set(60)
+                }.get()
 
         assertEquals(60, task.sessionTimeoutSeconds.get())
     }
@@ -105,11 +115,13 @@ class VibecodingTaskTest {
     @Test
     fun `execute with dryRun should not fail`() {
         val project = ProjectBuilder.builder().build()
-        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
-            it.intention.set("Test dry run")
-            it.dryRun.set(true)
-            it.maxActions.set(2)
-        }.get()
+        val task =
+            project.tasks
+                .register("vibecode", VibecodingTask::class.java) {
+                    it.intention.set("Test dry run")
+                    it.dryRun.set(true)
+                    it.maxActions.set(2)
+                }.get()
 
         // La tâche ne doit pas lever d'exception en dryRun
         assertDoesNotThrow {
@@ -118,16 +130,22 @@ class VibecodingTaskTest {
     }
 
     @Test
-    fun `execution should create audit directory`(@TempDir tempDir: File) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir)
-            .build()
-        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
-            it.intention.set("Test audit")
-            it.dryRun.set(true)
-            it.maxActions.set(1)
-            it.workspaceRoot.set(tempDir)
-        }.get()
+    fun `execution should create audit directory`(
+        @TempDir tempDir: File,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir)
+                .build()
+        val task =
+            project.tasks
+                .register("vibecode", VibecodingTask::class.java) {
+                    it.intention.set("Test audit")
+                    it.dryRun.set(true)
+                    it.maxActions.set(1)
+                    it.workspaceRoot.set(tempDir)
+                }.get()
 
         task.executeVibecoding()
 
@@ -153,11 +171,13 @@ class VibecodingTaskTest {
     @Test
     fun `execute should not crash when connectionFactory is null`() {
         val project = ProjectBuilder.builder().build()
-        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
-            it.intention.set("Test no CF crash")
-            it.dryRun.set(true)
-            it.maxActions.set(1)
-        }.get()
+        val task =
+            project.tasks
+                .register("vibecode", VibecodingTask::class.java) {
+                    it.intention.set("Test no CF crash")
+                    it.dryRun.set(true)
+                    it.maxActions.set(1)
+                }.get()
 
         // Null par défaut — le path normal doit survivre
         assertNull(task.connectionFactory)
@@ -167,11 +187,13 @@ class VibecodingTaskTest {
     @Test
     fun `list_tasks tool should be registered after executeVibecoding`() {
         val project = ProjectBuilder.builder().build()
-        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
-            it.intention.set("list tasks test")
-            it.dryRun.set(true)
-            it.maxActions.set(1)
-        }.get()
+        val task =
+            project.tasks
+                .register("vibecode", VibecodingTask::class.java) {
+                    it.intention.set("list tasks test")
+                    it.dryRun.set(true)
+                    it.maxActions.set(1)
+                }.get()
         task.executeVibecoding()
 
         val result = task.toolRegistry.execute("list_tasks", emptyMap(), "/tmp", dryRun = false)
@@ -182,15 +204,22 @@ class VibecodingTaskTest {
     @Test
     fun `list_tasks with group filter should return matching tasks`() {
         val project = ProjectBuilder.builder().build()
-        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
-            it.intention.set("list tasks group filter")
-            it.dryRun.set(true)
-            it.maxActions.set(1)
-        }.get()
+        val task =
+            project.tasks
+                .register("vibecode", VibecodingTask::class.java) {
+                    it.intention.set("list tasks group filter")
+                    it.dryRun.set(true)
+                    it.maxActions.set(1)
+                }.get()
         task.executeVibecoding()
 
-        val result = task.toolRegistry.execute("list_tasks",
-            mapOf("group" to "generate"), "/tmp", dryRun = false)
+        val result =
+            task.toolRegistry.execute(
+                "list_tasks",
+                mapOf("group" to "generate"),
+                "/tmp",
+                dryRun = false,
+            )
         assertTrue(result.contains("gradle_vibecode"), "Should match generate group")
         assertTrue(result.contains("generate"), "Should show group name")
     }
@@ -198,11 +227,13 @@ class VibecodingTaskTest {
     @Test
     fun `list_tasks dryRun should not execute`() {
         val project = ProjectBuilder.builder().build()
-        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
-            it.intention.set("list tasks dryRun")
-            it.dryRun.set(true)
-            it.maxActions.set(1)
-        }.get()
+        val task =
+            project.tasks
+                .register("vibecode", VibecodingTask::class.java) {
+                    it.intention.set("list tasks dryRun")
+                    it.dryRun.set(true)
+                    it.maxActions.set(1)
+                }.get()
         task.executeVibecoding()
 
         val result = task.toolRegistry.execute("list_tasks", emptyMap(), "/tmp", dryRun = true)
@@ -210,16 +241,22 @@ class VibecodingTaskTest {
     }
 
     @Test
-    fun `audit file should contain valid JSONL`(@TempDir tempDir: File) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir)
-            .build()
-        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
-            it.intention.set("Test JSONL")
-            it.dryRun.set(true)
-            it.maxActions.set(2)
-            it.workspaceRoot.set(tempDir)
-        }.get()
+    fun `audit file should contain valid JSONL`(
+        @TempDir tempDir: File,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir)
+                .build()
+        val task =
+            project.tasks
+                .register("vibecode", VibecodingTask::class.java) {
+                    it.intention.set("Test JSONL")
+                    it.dryRun.set(true)
+                    it.maxActions.set(2)
+                    it.workspaceRoot.set(tempDir)
+                }.get()
 
         task.executeVibecoding()
 
@@ -231,39 +268,48 @@ class VibecodingTaskTest {
             assertTrue(line.contains("\"timestamp\""))
             assertTrue(line.contains("\"dryRun\""))
         }
-        assertTrue(lines.any { it.contains("\"intention\"") },
-            "At least one audit line must contain the session intention")
+        assertTrue(
+            lines.any { it.contains("\"intention\"") },
+            "At least one audit line must contain the session intention",
+        )
     }
 
     @Test
-    fun `V-9_14 governance hook auto-activated blocks git push via exec_shell`(@TempDir tempDir: File) {
+    fun `V-9_14 governance hook auto-activated blocks git push via exec_shell`(
+        @TempDir tempDir: File,
+    ) {
         File(tempDir, "AGENT.adoc").writeText(
             """
             = Agent
 
             * NE DOIT JAMAIS git push sans permission explicite.
-            """.trimIndent()
+            """.trimIndent(),
         )
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir)
-            .build()
-        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
-            it.intention.set("V-9.14 auto-activation test")
-            it.dryRun.set(true)
-            it.maxActions.set(1)
-            it.workspaceRoot.set(tempDir)
-        }.get()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir)
+                .build()
+        val task =
+            project.tasks
+                .register("vibecode", VibecodingTask::class.java) {
+                    it.intention.set("V-9.14 auto-activation test")
+                    it.dryRun.set(true)
+                    it.maxActions.set(1)
+                    it.workspaceRoot.set(tempDir)
+                }.get()
 
         task.executeVibecoding()
 
-        val exception = assertThrows(SecurityException::class.java) {
-            task.toolRegistry.execute(
-                "exec_shell",
-                mapOf("command" to "git push origin main"),
-                tempDir.absolutePath
-            )
-        }
+        val exception =
+            assertThrows(SecurityException::class.java) {
+                task.toolRegistry.execute(
+                    "exec_shell",
+                    mapOf("command" to "git push origin main"),
+                    tempDir.absolutePath,
+                )
+            }
         assertTrue(exception.message!!.contains("ENFORCEMENT BLOCKED [exec_shell]"))
         assertTrue(exception.message!!.contains("git push", ignoreCase = true))
     }
@@ -276,13 +322,15 @@ class VibecodingTaskTest {
         @org.junit.jupiter.api.BeforeAll
         @JvmStatic
         fun startContainer() {
-            val config = PostgresqlConnectionConfiguration.builder()
-                .host(PostgresFixture.host)
-                .port(PostgresFixture.port)
-                .database(PostgresFixture.databaseName)
-                .username(PostgresFixture.username)
-                .password(PostgresFixture.password)
-                .build()
+            val config =
+                PostgresqlConnectionConfiguration
+                    .builder()
+                    .host(PostgresFixture.host)
+                    .port(PostgresFixture.port)
+                    .database(PostgresFixture.databaseName)
+                    .username(PostgresFixture.username)
+                    .password(PostgresFixture.password)
+                    .build()
             connectionFactory = PostgresqlConnectionFactory(config)
             runBlocking { sessionRepo = SessionRepository(connectionFactory!!) }
             runBlocking { sessionRepo?.initSchema() }
@@ -294,17 +342,21 @@ class VibecodingTaskTest {
 
     @Test
     fun `e2e — VibecodingTask with real DB should persist session via ConnectionFactory injection`(
-        @TempDir tempDir: File
+        @TempDir tempDir: File,
     ) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir)
-            .build()
-        val task = project.tasks.register("vibecode", VibecodingTask::class.java) {
-            it.intention.set("E2E test session persistence")
-            it.dryRun.set(true)
-            it.maxActions.set(2)
-            it.workspaceRoot.set(tempDir)
-        }.get()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir)
+                .build()
+        val task =
+            project.tasks
+                .register("vibecode", VibecodingTask::class.java) {
+                    it.intention.set("E2E test session persistence")
+                    it.dryRun.set(true)
+                    it.maxActions.set(2)
+                    it.workspaceRoot.set(tempDir)
+                }.get()
 
         // Inject le ConnectionFactory Testcontainers
         task.connectionFactory = connectionFactory

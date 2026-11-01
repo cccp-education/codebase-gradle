@@ -9,24 +9,29 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ExpertExposureTaskTest {
-
     private val kotlinDomain = ExpertDomain("kotlin", "Kotlin, Gradle, JVM ecosystem")
     private val docsDomain = ExpertDomain("docs", "Documentation, AsciiDoc, technical writing")
     private val generalDomain = ExpertDomain("general", "Generalist fallback")
 
     @Test
-    fun `task generates manifest from registry`(@TempDir tempDir: Path) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("exposure-test")
-            .build()
+    fun `task generates manifest from registry`(
+        @TempDir tempDir: Path,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("exposure-test")
+                .build()
         project.pluginManager.apply("java-base")
 
         val registry = ExpertRegistry()
-        registry.registerAll(listOf(
-            ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11440", 120),
-            ExpertRegistration(docsDomain, "gpt-oss:120b-cloud", "http://localhost:11441", 90)
-        ))
+        registry.registerAll(
+            listOf(
+                ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11440", 120),
+                ExpertRegistration(docsDomain, "gpt-oss:120b-cloud", "http://localhost:11441", 90),
+            ),
+        )
 
         val task = project.tasks.register("exposeExperts", ExpertExposureTask::class.java).get()
         task.expertRegistry = registry
@@ -35,7 +40,11 @@ class ExpertExposureTaskTest {
 
         task.executeExposure()
 
-        val outputFile = project.layout.buildDirectory.file("experts/exposure-manifest.json").get().asFile
+        val outputFile =
+            project.layout.buildDirectory
+                .file("experts/exposure-manifest.json")
+                .get()
+                .asFile
         assertTrue(outputFile.exists(), "Output file should exist: ${outputFile.absolutePath}")
         val content = outputFile.readText()
         assertTrue(content.contains("gpt-oss:120b-cloud"))
@@ -45,11 +54,15 @@ class ExpertExposureTaskTest {
     }
 
     @Test
-    fun `task anonymizes endpoints when configured`(@TempDir tempDir: Path) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("exposure-anon")
-            .build()
+    fun `task anonymizes endpoints when configured`(
+        @TempDir tempDir: Path,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("exposure-anon")
+                .build()
         project.pluginManager.apply("java-base")
 
         val registry = ExpertRegistry()
@@ -62,7 +75,11 @@ class ExpertExposureTaskTest {
 
         task.executeExposure()
 
-        val outputFile = project.layout.buildDirectory.file("experts/exposure-manifest.json").get().asFile
+        val outputFile =
+            project.layout.buildDirectory
+                .file("experts/exposure-manifest.json")
+                .get()
+                .asFile
         val content = outputFile.readText()
         assertTrue(content.contains("***anonymized***"))
         assertTrue(content.contains("gpt-oss:120b-cloud"))
@@ -70,19 +87,25 @@ class ExpertExposureTaskTest {
     }
 
     @Test
-    fun `task filters by domains`(@TempDir tempDir: Path) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("exposure-filter")
-            .build()
+    fun `task filters by domains`(
+        @TempDir tempDir: Path,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("exposure-filter")
+                .build()
         project.pluginManager.apply("java-base")
 
         val registry = ExpertRegistry()
-        registry.registerAll(listOf(
-            ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11444", 120),
-            ExpertRegistration(docsDomain, "gpt-oss:120b-cloud", "http://localhost:11445", 90),
-            ExpertRegistration(generalDomain, "gpt-oss:120b-cloud", "http://localhost:11446", 60)
-        ))
+        registry.registerAll(
+            listOf(
+                ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud", "http://localhost:11444", 120),
+                ExpertRegistration(docsDomain, "gpt-oss:120b-cloud", "http://localhost:11445", 90),
+                ExpertRegistration(generalDomain, "gpt-oss:120b-cloud", "http://localhost:11446", 60),
+            ),
+        )
 
         val task = project.tasks.register("exposeExperts", ExpertExposureTask::class.java).get()
         task.expertRegistry = registry
@@ -92,7 +115,11 @@ class ExpertExposureTaskTest {
 
         task.executeExposure()
 
-        val outputFile = project.layout.buildDirectory.file("experts/exposure-manifest.json").get().asFile
+        val outputFile =
+            project.layout.buildDirectory
+                .file("experts/exposure-manifest.json")
+                .get()
+                .asFile
         val content = outputFile.readText()
         assertTrue(content.contains("kotlin"))
         assertTrue(content.contains("docs"))
@@ -100,11 +127,15 @@ class ExpertExposureTaskTest {
     }
 
     @Test
-    fun `task empty registry produces empty manifest`(@TempDir tempDir: Path) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("exposure-empty")
-            .build()
+    fun `task empty registry produces empty manifest`(
+        @TempDir tempDir: Path,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("exposure-empty")
+                .build()
         project.pluginManager.apply("java-base")
 
         val registry = ExpertRegistry()
@@ -116,18 +147,26 @@ class ExpertExposureTaskTest {
 
         task.executeExposure()
 
-        val outputFile = project.layout.buildDirectory.file("experts/exposure-manifest.json").get().asFile
+        val outputFile =
+            project.layout.buildDirectory
+                .file("experts/exposure-manifest.json")
+                .get()
+                .asFile
         val content = outputFile.readText()
         assertTrue(content.contains("\"experts\""))
         assertTrue(content.contains("[]"))
     }
 
     @Test
-    fun `task output is valid JSON`(@TempDir tempDir: Path) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("exposure-json")
-            .build()
+    fun `task output is valid JSON`(
+        @TempDir tempDir: Path,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("exposure-json")
+                .build()
         project.pluginManager.apply("java-base")
 
         val registry = ExpertRegistry()
@@ -140,7 +179,11 @@ class ExpertExposureTaskTest {
 
         task.executeExposure()
 
-        val outputFile = project.layout.buildDirectory.file("experts/exposure-manifest.json").get().asFile
+        val outputFile =
+            project.layout.buildDirectory
+                .file("experts/exposure-manifest.json")
+                .get()
+                .asFile
         val content = outputFile.readText()
         assertTrue(content.startsWith("{"), "Should start with {")
         assertTrue(content.trimEnd().endsWith("}"), "Should end with }")

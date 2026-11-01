@@ -24,7 +24,6 @@ import kotlin.text.Charsets.UTF_8
  * missing property is an explicit error, never a silent green.
  */
 class CodebasePluginPublicationTest {
-
     private val pluginDir = File(System.getProperty("user.dir"))
 
     private fun publishedCodebaseVersion(): String = requireProperty(CODEBASE_VERSION_PROPERTY)
@@ -66,7 +65,8 @@ class CodebasePluginPublicationTest {
         val buildScript = pluginDir.resolve("build.gradle.kts").readText(UTF_8)
 
         assertTrue(
-            buildScript.withoutWhitespace()
+            buildScript
+                .withoutWhitespace()
                 .contains("platform(\"education.cccp:workspace-bom:\${ws.versions.workspace.bom.get()}\")"),
             "build.gradle.kts must pin the workspace-bom platform dynamically from ws.versions.workspace.bom (no stale literal, piège #13)",
         )
@@ -79,13 +79,14 @@ class CodebasePluginPublicationTest {
     @Test
     fun `plugin group and id are stable for publication`() {
         val buildScript = pluginDir.resolve("build.gradle.kts").readText(UTF_8)
-        val pluginId = pluginDir
-            .resolve("gradle/libs.versions.toml")
-            .readText(UTF_8)
-            .lineSequence()
-            .first { it.contains("id = \"education.cccp.codebase\"") }
-            .substringAfter("id = \"")
-            .substringBefore("\"")
+        val pluginId =
+            pluginDir
+                .resolve("gradle/libs.versions.toml")
+                .readText(UTF_8)
+                .lineSequence()
+                .first { it.contains("id = \"education.cccp.codebase\"") }
+                .substringAfter("id = \"")
+                .substringBefore("\"")
 
         assertTrue(buildScript.contains("group = \"education.cccp\""))
         assertEquals("education.cccp.codebase", pluginId)

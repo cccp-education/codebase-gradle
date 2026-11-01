@@ -7,7 +7,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class AutofocusLevelTest {
-
     @Test
     fun `BIG_PICTURE has highest token budget`() {
         val budgets = AutofocusLevel.entries.map { it.tokenBudget }
@@ -28,7 +27,7 @@ class AutofocusLevelTest {
         for (i in 0 until levels.size - 1) {
             assertTrue(
                 levels[i].tokenBudget > levels[i + 1].tokenBudget,
-                "${levels[i].name} (${levels[i].tokenBudget}) should be > ${levels[i + 1].name} (${levels[i + 1].tokenBudget})"
+                "${levels[i].name} (${levels[i].tokenBudget}) should be > ${levels[i + 1].name} (${levels[i + 1].tokenBudget})",
             )
         }
     }

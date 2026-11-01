@@ -14,15 +14,20 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class EpicV911Steps(private val world: EpicV911World) {
-
+class EpicV911Steps(
+    private val world: EpicV911World,
+) {
     @Before("@epic_v_9_11")
     fun reset() {
         world.reset()
     }
 
     @Given("a governance chunk of type {string} with verb {string} and content")
-    fun `governance chunk with type verb and content`(chunkType: String, verb: String, content: String) {
+    fun `governance chunk with type verb and content`(
+        chunkType: String,
+        verb: String,
+        content: String,
+    ) {
         val type = ChunkType.valueOf(chunkType)
         val v = if (verb == "null") null else TaxonomyVerb.valueOf(verb)
         world.lastChunk = world.buildChunk(type, v, content)
@@ -35,7 +40,10 @@ class EpicV911Steps(private val world: EpicV911World) {
     }
 
     @When("I execute the artifact on tool {string} with command {string}")
-    fun `execute artifact on tool with command`(toolName: String, command: String) {
+    fun `execute artifact on tool with command`(
+        toolName: String,
+        command: String,
+    ) {
         val executable = world.lastExecutable ?: error("No executable artifact set")
         world.lastExecutionResult = executable.execute(toolName, mapOf("command" to command))
     }
@@ -60,7 +68,7 @@ class EpicV911Steps(private val world: EpicV911World) {
         assertNotNull(result.reason)
         assertTrue(
             result.reason.contains(keyword, ignoreCase = true),
-            "Reason should mention '$keyword', got: ${result.reason}"
+            "Reason should mention '$keyword', got: ${result.reason}",
         )
     }
 
@@ -78,7 +86,10 @@ class EpicV911Steps(private val world: EpicV911World) {
     }
 
     @Then("the constraint payload has max tokens {int} and max lines {int}")
-    fun `constraint payload has bounds`(expectedTokens: Int, expectedLines: Int) {
+    fun `constraint payload has bounds`(
+        expectedTokens: Int,
+        expectedLines: Int,
+    ) {
         val executable = world.lastExecutable ?: error("No executable artifact")
         assertTrue(executable.payload is ArtifactPayload.ConstraintPayload)
         assertEquals(expectedTokens, executable.payload.maxTokens)
@@ -86,7 +97,10 @@ class EpicV911Steps(private val world: EpicV911World) {
     }
 
     @Then("the metadata payload has key {string} and value {string}")
-    fun `metadata payload has key and value`(expectedKey: String, expectedValue: String) {
+    fun `metadata payload has key and value`(
+        expectedKey: String,
+        expectedValue: String,
+    ) {
         val executable = world.lastExecutable ?: error("No executable artifact")
         assertTrue(executable.payload is ArtifactPayload.MetadataPayload)
         val payload = executable.payload
@@ -101,7 +115,7 @@ class EpicV911Steps(private val world: EpicV911World) {
         val payload = executable.payload
         assertTrue(
             payload.promptText.contains(keyword, ignoreCase = true),
-            "Prompt text should contain '$keyword', got: ${payload.promptText}"
+            "Prompt text should contain '$keyword', got: ${payload.promptText}",
         )
     }
 
@@ -110,7 +124,7 @@ class EpicV911Steps(private val world: EpicV911World) {
         val chunk = world.lastChunk ?: error("No chunk set")
         assertTrue(
             AgenticCompiler().shouldCompile(chunk),
-            "Chunk should be considered compilable"
+            "Chunk should be considered compilable",
         )
     }
 }

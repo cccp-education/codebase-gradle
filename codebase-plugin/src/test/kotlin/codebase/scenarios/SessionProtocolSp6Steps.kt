@@ -7,8 +7,9 @@ import io.cucumber.java.en.When
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class SessionProtocolSp6Steps(private val world: SessionProtocolSp6World) {
-
+class SessionProtocolSp6Steps(
+    private val world: SessionProtocolSp6World,
+) {
     @Given("an SP-6 SessionProtocolTask with live context injector enabled")
     fun `setup task with live context injector`() {
         world.llmPromptReceived = ""
@@ -20,22 +21,32 @@ class SessionProtocolSp6Steps(private val world: SessionProtocolSp6World) {
     fun `create context file with rules and backlog`() {
         world.createContextFile(
             eagerRules = "Rule 1: No commits without permission\nRule 2: Always compile before test",
-            backlogItems = listOf("EPIC SP-6: LiveContextInjector", "EPIC OCR: Pipeline OCR batch")
+            backlogItems = listOf("EPIC SP-6: LiveContextInjector", "EPIC OCR: Pipeline OCR batch"),
         )
     }
 
     @When("I SP-6 execute action {string} with prompt {string}")
-    fun `execute action with prompt`(action: String, prompt: String) {
+    fun `execute action with prompt`(
+        action: String,
+        prompt: String,
+    ) {
         world.executeAction(action = action, prompt = prompt)
     }
 
     @When("I SP-6 execute action {string} with prompt {string} and context file")
-    fun `execute action with prompt and context file`(action: String, prompt: String) {
+    fun `execute action with prompt and context file`(
+        action: String,
+        prompt: String,
+    ) {
         world.executeAction(action = action, prompt = prompt, useContextFile = true)
     }
 
     @When("I SP-6 execute action {string} with prompt {string} and maxActions {int}")
-    fun `execute action with prompt and maxActions`(action: String, prompt: String, maxActions: Int) {
+    fun `execute action with prompt and maxActions`(
+        action: String,
+        prompt: String,
+        maxActions: Int,
+    ) {
         world.executeAction(action = action, prompt = prompt, maxActions = maxActions)
     }
 
@@ -44,7 +55,7 @@ class SessionProtocolSp6Steps(private val world: SessionProtocolSp6World) {
         assertNotNull(world.llmPromptReceived, "LLM prompt should have been captured")
         assertTrue(
             world.llmPromptReceived.contains("[LIVE_CONTEXT]"),
-            "Prompt should contain [LIVE_CONTEXT] section. Prompt: ${world.llmPromptReceived.take(500)}"
+            "Prompt should contain [LIVE_CONTEXT] section. Prompt: ${world.llmPromptReceived.take(500)}",
         )
     }
 
@@ -52,7 +63,7 @@ class SessionProtocolSp6Steps(private val world: SessionProtocolSp6World) {
     fun `prompt contains intention`(intention: String) {
         assertTrue(
             world.llmPromptReceived.contains("Intention: $intention"),
-            "Prompt should contain intention '$intention'. Prompt: ${world.llmPromptReceived.take(500)}"
+            "Prompt should contain intention '$intention'. Prompt: ${world.llmPromptReceived.take(500)}",
         )
     }
 
@@ -60,7 +71,7 @@ class SessionProtocolSp6Steps(private val world: SessionProtocolSp6World) {
     fun `prompt contains iteration metadata`() {
         assertTrue(
             world.llmPromptReceived.contains("Iteration:"),
-            "Prompt should contain iteration metadata. Prompt: ${world.llmPromptReceived.take(500)}"
+            "Prompt should contain iteration metadata. Prompt: ${world.llmPromptReceived.take(500)}",
         )
     }
 
@@ -68,7 +79,7 @@ class SessionProtocolSp6Steps(private val world: SessionProtocolSp6World) {
     fun `prompt contains static context section`() {
         assertTrue(
             world.llmPromptReceived.contains("[STATIC_CONTEXT]"),
-            "Prompt should contain [STATIC_CONTEXT] section. Prompt: ${world.llmPromptReceived.take(500)}"
+            "Prompt should contain [STATIC_CONTEXT] section. Prompt: ${world.llmPromptReceived.take(500)}",
         )
     }
 
@@ -76,7 +87,7 @@ class SessionProtocolSp6Steps(private val world: SessionProtocolSp6World) {
     fun `prompt contains eager rules`() {
         assertTrue(
             world.llmPromptReceived.contains("Rule 1: No commits without permission"),
-            "Prompt should contain eager rules. Prompt: ${world.llmPromptReceived.take(500)}"
+            "Prompt should contain eager rules. Prompt: ${world.llmPromptReceived.take(500)}",
         )
     }
 
@@ -84,7 +95,7 @@ class SessionProtocolSp6Steps(private val world: SessionProtocolSp6World) {
     fun `prompt contains backlog items`() {
         assertTrue(
             world.llmPromptReceived.contains("EPIC SP-6: LiveContextInjector"),
-            "Prompt should contain backlog items. Prompt: ${world.llmPromptReceived.take(500)}"
+            "Prompt should contain backlog items. Prompt: ${world.llmPromptReceived.take(500)}",
         )
     }
 
@@ -92,7 +103,7 @@ class SessionProtocolSp6Steps(private val world: SessionProtocolSp6World) {
     fun `prompt contains tool call history`() {
         assertTrue(
             world.llmPromptReceived.contains("Tool call history"),
-            "Prompt should contain tool call history. Prompt: ${world.llmPromptReceived.take(500)}"
+            "Prompt should contain tool call history. Prompt: ${world.llmPromptReceived.take(500)}",
         )
     }
 

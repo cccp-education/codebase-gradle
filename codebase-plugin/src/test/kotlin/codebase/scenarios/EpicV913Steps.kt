@@ -12,11 +12,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class EpicV913Steps {
-
     private lateinit var tempDir: Path
     private var report: IngestionReport? = null
     private var registry: ToolRegistry? = null
@@ -29,16 +27,21 @@ class EpicV913Steps {
     }
 
     @Given("a governed file {string} containing")
-    fun `governed file with content`(fileName: String, content: String) {
+    fun `governed file with content`(
+        fileName: String,
+        content: String,
+    ) {
         tempDir.resolve(fileName).toFile().writeText(content.trimIndent())
     }
 
     @Given("I run ingestGovernance on it")
     fun `ingest the governance file`() {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
-        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
-            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
-        }.get()
+        val task =
+            project.tasks
+                .register("ingestGovernance", IngestGovernanceTask::class.java) {
+                    it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+                }.get()
 
         task.executeIngest()
 
@@ -54,25 +57,36 @@ class EpicV913Steps {
     }
 
     @Then("ToolRegistry blocks {string} with command {string}")
-    fun `tool registry blocks shell command`(toolName: String, command: String) {
+    fun `tool registry blocks shell command`(
+        toolName: String,
+        command: String,
+    ) {
         val r = registry ?: error("No ToolRegistry")
-        val exception = assertFailsWith<SecurityException> {
-            r.execute(toolName, mapOf("command" to command), workspaceRoot = tempDir.toString())
-        }
+        val exception =
+            assertFailsWith<SecurityException> {
+                r.execute(toolName, mapOf("command" to command), workspaceRoot = tempDir.toString())
+            }
         assertTrue(exception.message!!.contains("ENFORCEMENT BLOCKED [$toolName]"))
     }
 
     @Then("ToolRegistry blocks {string} with task {string}")
-    fun `tool registry blocks gradle task`(toolName: String, task: String) {
+    fun `tool registry blocks gradle task`(
+        toolName: String,
+        task: String,
+    ) {
         val r = registry ?: error("No ToolRegistry")
-        val exception = assertFailsWith<SecurityException> {
-            r.execute(toolName, mapOf("task" to task), workspaceRoot = tempDir.toString())
-        }
+        val exception =
+            assertFailsWith<SecurityException> {
+                r.execute(toolName, mapOf("task" to task), workspaceRoot = tempDir.toString())
+            }
         assertTrue(exception.message!!.contains("ENFORCEMENT BLOCKED [$toolName]"))
     }
 
     @Then("ToolRegistry allows {string} with command {string}")
-    fun `tool registry allows shell command`(toolName: String, command: String) {
+    fun `tool registry allows shell command`(
+        toolName: String,
+        command: String,
+    ) {
         val r = registry ?: error("No ToolRegistry")
         r.registerHandler(toolName) { _, _, _ -> "ok" }
         val result = r.execute(toolName, mapOf("command" to command), workspaceRoot = tempDir.toString())
@@ -80,7 +94,10 @@ class EpicV913Steps {
     }
 
     @Then("ToolRegistry allows {string} with task {string}")
-    fun `tool registry allows gradle task`(toolName: String, task: String) {
+    fun `tool registry allows gradle task`(
+        toolName: String,
+        task: String,
+    ) {
         val r = registry ?: error("No ToolRegistry")
         r.registerHandler(toolName) { _, _, _ -> "ok" }
         val result = r.execute(toolName, mapOf("task" to task), workspaceRoot = tempDir.toString())

@@ -15,8 +15,9 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class RollbackStrategySteps(private val world: RollbackStrategyWorld) {
-
+class RollbackStrategySteps(
+    private val world: RollbackStrategyWorld,
+) {
     @Before("@epic_x_4")
     fun reset() {
         world.reset()
@@ -33,17 +34,25 @@ class RollbackStrategySteps(private val world: RollbackStrategyWorld) {
     }
 
     @Given("a VibecodingState with retryCount {int} and maxRetries {int}")
-    fun `state with retries`(retryCount: Int, maxRetries: Int) {
-        world.state = VibecodingState(
-            intention = "test",
-            workspaceRoot = world.workspaceRoot,
-            retryCount = retryCount,
-            maxRetries = maxRetries
-        )
+    fun `state with retries`(
+        retryCount: Int,
+        maxRetries: Int,
+    ) {
+        world.state =
+            VibecodingState(
+                intention = "test",
+                workspaceRoot = world.workspaceRoot,
+                retryCount = retryCount,
+                maxRetries = maxRetries,
+            )
     }
 
     @Given("a VibecodingPlan with strategy {word} and step {string} task {string}")
-    fun `plan with strategy and step`(strategyName: String, description: String, gradleTask: String) {
+    fun `plan with strategy and step`(
+        strategyName: String,
+        description: String,
+        gradleTask: String,
+    ) {
         val strategy = RollbackStrategy.valueOf(strategyName)
         val step = VibecodingStep(description, gradleTask, "BUILD SUCCESSFUL")
         world.plan = VibecodingPlan(listOf(step), rollbackStrategy = strategy)

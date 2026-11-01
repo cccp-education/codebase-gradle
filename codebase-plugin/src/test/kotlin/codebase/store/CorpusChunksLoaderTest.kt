@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
 
 /**
  * EPIC corpus-ingest US-1 (CB-FPA-RAG historic id) — corpus chunks file loading (pure DDD, no
@@ -13,7 +12,6 @@ import java.io.File
  * maps the JSON array into typed chunks for the ingestion run.
  */
 class CorpusChunksLoaderTest {
-
     @TempDir
     lateinit var tmp: java.nio.file.Path
 
@@ -41,7 +39,7 @@ class CorpusChunksLoaderTest {
                 "license": "PROPRIETARY"
               }
             ]
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         val chunks = CorpusChunksLoader.load(file)
@@ -76,7 +74,7 @@ class CorpusChunksLoaderTest {
                 "license": "PROPRIETARY"
               }
             ]
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         val marked = DoubtPolicy.mark(CorpusChunksLoader.load(file))

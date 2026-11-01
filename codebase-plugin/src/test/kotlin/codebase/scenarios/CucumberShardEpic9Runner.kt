@@ -39,18 +39,19 @@ import org.junit.platform.suite.api.Suite
 @SelectClasspathResource("features/9_14_vision_opinion.feature")
 @ConfigurationParameter(
     key = FEATURES_PROPERTY_NAME,
-    value = "src/test/features/9_1_pgvector_container.feature,src/test/features/9_2_3_dataset_embeddings.feature," +
-        "src/test/features/9_3_4_workspace_walker_adoc.feature,src/test/features/9_5_indexation_metadata.feature," +
-        "src/test/features/9_6_indexation_yaml_json.feature,src/test/features/9_7_batch_validation.feature," +
-        "src/test/features/9_8_vector_query.feature,src/test/features/9_9_filtered_query.feature," +
-        "src/test/features/9_10_composite_context.feature,src/test/features/9_11_opencode_injector.feature," +
-        "src/test/features/9_12_augment_opencode.feature,src/test/features/9_13_pertinence_benchmark.feature," +
-        "src/test/features/9_14_vision_opinion.feature"
+    value =
+        "src/test/features/9_1_pgvector_container.feature,src/test/features/9_2_3_dataset_embeddings.feature," +
+            "src/test/features/9_3_4_workspace_walker_adoc.feature,src/test/features/9_5_indexation_metadata.feature," +
+            "src/test/features/9_6_indexation_yaml_json.feature,src/test/features/9_7_batch_validation.feature," +
+            "src/test/features/9_8_vector_query.feature,src/test/features/9_9_filtered_query.feature," +
+            "src/test/features/9_10_composite_context.feature,src/test/features/9_11_opencode_injector.feature," +
+            "src/test/features/9_12_augment_opencode.feature,src/test/features/9_13_pertinence_benchmark.feature," +
+            "src/test/features/9_14_vision_opinion.feature",
 )
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "codebase.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-shard-epic9.html, json:build/reports/cucumber-shard-epic9.json"
+    value = "pretty, html:build/reports/cucumber-shard-epic9.html, json:build/reports/cucumber-shard-epic9.json",
 )
 @ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @wip and not @integration")
 class CucumberShardEpic9Runner

@@ -13,13 +13,12 @@ import org.junit.jupiter.api.Test
  * excluded) so the LLM never cites shaky OCR text unknowingly.
  */
 class DoubtExposureTest {
-
     private fun result(
         id: Long,
         text: String,
         similarity: Double = 0.9,
         confidence: Double = 1.0,
-        doubtful: Boolean = false
+        doubtful: Boolean = false,
     ) = RetrieveResult(
         chunkId = id,
         chunkIndex = 0,
@@ -29,7 +28,7 @@ class DoubtExposureTest {
         sourceDocument = "doc",
         similarity = similarity,
         confidence = confidence,
-        doubtful = doubtful
+        doubtful = doubtful,
     )
 
     @Test
@@ -53,10 +52,11 @@ class DoubtExposureTest {
 
     @Test
     fun `doubtful chunks can be excluded entirely`() {
-        val results = listOf(
-            result(1, "clean text"),
-            result(2, "shaky text", confidence = 0.2, doubtful = true)
-        )
+        val results =
+            listOf(
+                result(1, "clean text"),
+                result(2, "shaky text", confidence = 0.2, doubtful = true),
+            )
         val lines = DoubtExposure.expose(results, excludeDoubtful = true)
         assertEquals(1, lines.size)
         assertTrue(lines[0].contains("clean text"))
@@ -64,11 +64,12 @@ class DoubtExposureTest {
 
     @Test
     fun `exclusion keeps confident chunks in similarity order`() {
-        val results = listOf(
-            result(1, "shaky", confidence = 0.1, doubtful = true, similarity = 0.99),
-            result(2, "second", similarity = 0.8),
-            result(3, "third", similarity = 0.6)
-        )
+        val results =
+            listOf(
+                result(1, "shaky", confidence = 0.1, doubtful = true, similarity = 0.99),
+                result(2, "second", similarity = 0.8),
+                result(3, "third", similarity = 0.6),
+            )
         val lines = DoubtExposure.expose(results, excludeDoubtful = true)
         assertEquals(2, lines.size)
         assertTrue(lines[0].contains("second"))

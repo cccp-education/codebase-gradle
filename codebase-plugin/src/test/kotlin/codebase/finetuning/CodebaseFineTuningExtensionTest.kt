@@ -2,13 +2,11 @@ package codebase.finetuning
 
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Test
-import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class CodebaseFineTuningExtensionTest {
-
     @Test
     fun `extension is registered under name fineTuning`() {
         val project = ProjectBuilder.builder().build()
@@ -131,7 +129,8 @@ class CodebaseFineTuningExtensionTest {
         ext.dataset.set(listOf("docs/**/*.adoc"))
         ext.outputModelName.set("expert-x")
 
-        org.junit.jupiter.api.assertThrows<IllegalArgumentException> { ext.toRequest() }
+        org.junit.jupiter.api
+            .assertThrows<IllegalArgumentException> { ext.toRequest() }
     }
 
     @Test
@@ -142,7 +141,8 @@ class CodebaseFineTuningExtensionTest {
         ext.baseModel.set("gpt-oss:120b-cloud")
         ext.dataset.set(listOf("docs/**/*.adoc"))
 
-        org.junit.jupiter.api.assertThrows<IllegalArgumentException> { ext.toRequest() }
+        org.junit.jupiter.api
+            .assertThrows<IllegalArgumentException> { ext.toRequest() }
     }
 
     @Test
@@ -153,6 +153,7 @@ class CodebaseFineTuningExtensionTest {
         ext.baseModel.set("gpt-oss:120b-cloud")
         ext.outputModelName.set("expert-x")
 
-        org.junit.jupiter.api.assertThrows<IllegalArgumentException> { ext.toRequest() }
+        org.junit.jupiter.api
+            .assertThrows<IllegalArgumentException> { ext.toRequest() }
     }
 }

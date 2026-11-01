@@ -6,20 +6,21 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class QualityGateTest {
-
-    private val sentinel: QualityGate = QualityGate(
-        sentimentAnalyzer = DeterministicSentimentAnalyzer(),
-        offTopicDetector = DeterministicOffTopicDetector(),
-        piiDetector = DeterministicPiiResidualDetector(),
-        config = QualityGateConfig()
-    )
+    private val sentinel: QualityGate =
+        QualityGate(
+            sentimentAnalyzer = DeterministicSentimentAnalyzer(),
+            offTopicDetector = DeterministicOffTopicDetector(),
+            piiDetector = DeterministicPiiResidualDetector(),
+            config = QualityGateConfig(),
+        )
 
     @Test
     fun `clean CODING output passes all checks`() {
-        val result = sentinel.evaluate(
-            "class UserRepository { fun findByName(name: String): User = em.createQuery(...).singleResult }",
-            Domain.CODING
-        )
+        val result =
+            sentinel.evaluate(
+                "class UserRepository { fun findByName(name: String): User = em.createQuery(...).singleResult }",
+                Domain.CODING,
+            )
         assertEquals(QualityVerdict.PASS, result.overallVerdict)
         assertEquals(3, result.results.size)
         assertTrue(result.results.all { it.verdict == QualityVerdict.PASS })
@@ -28,20 +29,22 @@ class QualityGateTest {
 
     @Test
     fun `clean CONTENT output passes all checks`() {
-        val result = sentinel.evaluate(
-            "Objectif : structurer le guide de publication via une relecture éditoriale.",
-            Domain.CONTENT
-        )
+        val result =
+            sentinel.evaluate(
+                "Objectif : structurer le guide de publication via une relecture éditoriale.",
+                Domain.CONTENT,
+            )
         assertEquals(QualityVerdict.PASS, result.overallVerdict)
         assertTrue(result.passed)
     }
 
     @Test
     fun `output with PII fails overall`() {
-        val result = sentinel.evaluate(
-            "Contact admin@example.com, token=ghp_1234567890abcdefghijkl",
-            Domain.CODING
-        )
+        val result =
+            sentinel.evaluate(
+                "Contact admin@example.com, token=ghp_1234567890abcdefghijkl",
+                Domain.CODING,
+            )
         assertEquals(QualityVerdict.FAIL, result.overallVerdict)
         assertFalse(result.passed)
         assertTrue(result.failingChecks.isNotEmpty())
@@ -49,19 +52,21 @@ class QualityGateTest {
 
     @Test
     fun `output with negative sentiment combined with off-topic fails`() {
-        val result = sentinel.evaluate(
-            "C'est nul, horrible, un désastre. La recette du gâteau est ratée.",
-            Domain.CODING
-        )
+        val result =
+            sentinel.evaluate(
+                "C'est nul, horrible, un désastre. La recette du gâteau est ratée.",
+                Domain.CODING,
+            )
         assertTrue(result.overallVerdict.severity >= QualityVerdict.NEEDS_FIX.severity)
     }
 
     @Test
     fun `failingChecks only contains non-PASS results`() {
-        val result = sentinel.evaluate(
-            "token=ghp_test1234 val x = 42 password=secret",
-            Domain.CODING
-        )
+        val result =
+            sentinel.evaluate(
+                "token=ghp_test1234 val x = 42 password=secret",
+                Domain.CODING,
+            )
         assertTrue(result.failingChecks.all { it.verdict != QualityVerdict.PASS })
         assertTrue(result.failingChecks.any { it.checkerName == "pii-residual" })
     }
@@ -76,12 +81,13 @@ class QualityGateTest {
     @Test
     fun `config can disable individual checks`() {
         val config = QualityGateConfig(enableSentimentCheck = false)
-        val gate = QualityGate(
-            sentimentAnalyzer = DeterministicSentimentAnalyzer(),
-            offTopicDetector = DeterministicOffTopicDetector(),
-            piiDetector = DeterministicPiiResidualDetector(),
-            config = config
-        )
+        val gate =
+            QualityGate(
+                sentimentAnalyzer = DeterministicSentimentAnalyzer(),
+                offTopicDetector = DeterministicOffTopicDetector(),
+                piiDetector = DeterministicPiiResidualDetector(),
+                config = config,
+            )
         val result = gate.evaluate("C'est nul et horrible", Domain.CODING)
         assertEquals(2, result.results.size)
         assertTrue(result.results.none { it.checkerName == "sentiment" })
@@ -89,10 +95,11 @@ class QualityGateTest {
 
     @Test
     fun `feedback message includes failing check details`() {
-        val result = sentinel.evaluate(
-            "admin@talaria.school password=secret123!",
-            Domain.CODING
-        )
+        val result =
+            sentinel.evaluate(
+                "admin@talaria.school password=secret123!",
+                Domain.CODING,
+            )
         val feedback = sentinel.buildFeedback(result)
         assertTrue(feedback.contains("QUALITY_GATE"))
         assertTrue(feedback.contains("pii"))

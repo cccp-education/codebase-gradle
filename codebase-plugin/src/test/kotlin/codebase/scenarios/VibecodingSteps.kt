@@ -1,21 +1,21 @@
 package codebase.scenarios
 
+import codebase.koog.VibecodingGraph
 import codebase.koog.llm.FakeLlmProvider
 import codebase.koog.session.SessionRecord
+import codebase.koog.state.VibecodingState
 import contracts.agent.Epic
 import contracts.agent.Plan
-import contracts.agent.GradleTask as PlanTask
 import contracts.agent.UserStory
-import codebase.koog.state.VibecodingState
-import codebase.koog.VibecodingGraph
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import java.time.Instant
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assertions.assertEquals
-import java.time.Instant
+import contracts.agent.GradleTask as PlanTask
 
 /**
  * Step Definitions Cucumber pour le pipeline VibecodingGraph.
@@ -24,8 +24,9 @@ import java.time.Instant
  * Toutes les étapes sont préfixées "vibecoding" pour éviter les conflits
  * avec les autres step classes (Cucumber interdit les doublons dans un même runner).
  */
-class VibecodingSteps(private val world: VibecodingWorld) {
-
+class VibecodingSteps(
+    private val world: VibecodingWorld,
+) {
     // ── Given ──
 
     @Given("a VibecodingGraph is instantiated without augmented graph")
@@ -43,31 +44,39 @@ class VibecodingSteps(private val world: VibecodingWorld) {
     // ── When ──
 
     @When("I execute vibecoding with intention {string} and dryRun {word}")
-    fun `execute vibecoding with dryRun`(intention: String, dryRunFlag: String) {
+    fun `execute vibecoding with dryRun`(
+        intention: String,
+        dryRunFlag: String,
+    ) {
         world.intention = intention
         world.dryRun = dryRunFlag.toBooleanStrictOrNull() ?: false
 
-        val state = VibecodingState(
-            intention = intention,
-            workspaceRoot = "/tmp",
-            dryRun = world.dryRun,
-            maxActions = world.maxActions
-        )
+        val state =
+            VibecodingState(
+                intention = intention,
+                workspaceRoot = "/tmp",
+                dryRun = world.dryRun,
+                maxActions = world.maxActions,
+            )
 
         world.resultState = world.graph.execute(state)
         assertNotNull(world.resultState, "Result state should never be null")
     }
 
     @When("I execute vibecoding with intention {string} and maxActions {int}")
-    fun `execute vibecoding with maxActions`(intention: String, maxActions: Int) {
+    fun `execute vibecoding with maxActions`(
+        intention: String,
+        maxActions: Int,
+    ) {
         world.intention = intention
         world.maxActions = maxActions
 
-        val state = VibecodingState(
-            intention = intention,
-            workspaceRoot = "/tmp",
-            maxActions = maxActions
-        )
+        val state =
+            VibecodingState(
+                intention = intention,
+                workspaceRoot = "/tmp",
+                maxActions = maxActions,
+            )
 
         world.resultState = world.graph.execute(state)
         assertNotNull(world.resultState, "Result state should never be null")
@@ -77,10 +86,11 @@ class VibecodingSteps(private val world: VibecodingWorld) {
     fun `execute vibecoding simple`(intention: String) {
         world.intention = intention
 
-        val state = VibecodingState(
-            intention = intention,
-            workspaceRoot = "/tmp"
-        )
+        val state =
+            VibecodingState(
+                intention = intention,
+                workspaceRoot = "/tmp",
+            )
 
         world.resultState = world.graph.execute(state)
         assertNotNull(world.resultState, "Result state should never be null")
@@ -106,14 +116,18 @@ class VibecodingSteps(private val world: VibecodingWorld) {
 
     @Then("vibecoding had no error")
     fun `vibecoding no error occurred`() {
-        assertTrue(world.resultState?.error == null,
-            "No error should occur: ${world.resultState?.error}")
+        assertTrue(
+            world.resultState?.error == null,
+            "No error should occur: ${world.resultState?.error}",
+        )
     }
 
     @Then("the vibecoding intention {string} is preserved in the result state")
     fun `vibecoding intention is preserved`(expected: String) {
-        assertTrue(world.resultState?.intention == expected,
-            "Intention should be '$expected' but was '${world.resultState?.intention}'")
+        assertTrue(
+            world.resultState?.intention == expected,
+            "Intention should be '$expected' but was '${world.resultState?.intention}'",
+        )
     }
 
     @Then("the vibecoding result state iteration is at most {int}")
@@ -126,20 +140,28 @@ class VibecodingSteps(private val world: VibecodingWorld) {
     fun `vibecoding result state is finished or final`() {
         val state = world.resultState
         assertTrue(state != null, "Result state should not be null")
-        assertTrue(state.isFinal || state.finished,
-            "State should be finished or final (isFinal=${state.isFinal}, finished=${state.finished}, iteration=${state.iteration})")
+        assertTrue(
+            state.isFinal || state.finished,
+            "State should be finished or final (isFinal=${state.isFinal}, finished=${state.finished}, iteration=${state.iteration})",
+        )
     }
 
     @Then("the vibecoding classification is {string}")
     fun `vibecoding classification is`(expected: String) {
         val state = world.resultState
         assertTrue(state != null, "Result state should not be null")
-        assertTrue(state.classification == expected,
-            "Classification should be '$expected' but was '${state.classification}'")
+        assertTrue(
+            state.classification == expected,
+            "Classification should be '$expected' but was '${state.classification}'",
+        )
     }
 
     @Then("the vibecoding diagram contains {string} and {string} and {string}")
-    fun `vibecoding diagram contains nodes`(node1: String, node2: String, node3: String) {
+    fun `vibecoding diagram contains nodes`(
+        node1: String,
+        node2: String,
+        node3: String,
+    ) {
         val diagram = world.mermaidDiagram
         assertTrue(diagram.contains(node1), "Mermaid missing '$node1'")
         assertTrue(diagram.contains(node2), "Mermaid missing '$node2'")
@@ -156,13 +178,14 @@ class VibecodingSteps(private val world: VibecodingWorld) {
 
     @When("I attempt vibecoding path traversal outside workspace root {string}")
     fun `attempt path traversal outside workspace`(workspaceRoot: String) {
-        world.securityException = assertThrows(SecurityException::class.java) {
-            world.graph.toolRegistry.execute(
-                toolName = "read_file",
-                arguments = mapOf("path" to "../../../etc/passwd"),
-                workspaceRoot = workspaceRoot
-            )
-        }
+        world.securityException =
+            assertThrows(SecurityException::class.java) {
+                world.graph.toolRegistry.execute(
+                    toolName = "read_file",
+                    arguments = mapOf("path" to "../../../etc/passwd"),
+                    workspaceRoot = workspaceRoot,
+                )
+            }
     }
 
     @Then("a vibecoding SecurityException is thrown")
@@ -178,7 +201,7 @@ class VibecodingSteps(private val world: VibecodingWorld) {
         assertNotNull(anyError, "No error found in securityException nor resultState")
         assertTrue(
             anyError.contains(expected, ignoreCase = true),
-            "Error should contain '$expected', got: $anyError"
+            "Error should contain '$expected', got: $anyError",
         )
     }
 
@@ -197,51 +220,60 @@ class VibecodingSteps(private val world: VibecodingWorld) {
                 written += chunk
             }
         }
-        world.securityException = assertThrows(SecurityException::class.java) {
-            world.graph.toolRegistry.execute(
-                toolName = "read_file",
-                arguments = mapOf("path" to largeFile.absolutePath),
-                workspaceRoot = workspaceRoot
-            )
-        }
+        world.securityException =
+            assertThrows(SecurityException::class.java) {
+                world.graph.toolRegistry.execute(
+                    toolName = "read_file",
+                    arguments = mapOf("path" to largeFile.absolutePath),
+                    workspaceRoot = workspaceRoot,
+                )
+            }
     }
 
     // ── @epic_v_4 : Intégration ──
 
     @When("I execute vibecoding with a {int}-task plan and maxActions {int} in dryRun")
-    fun `execute vibecoding with multi task plan`(taskCount: Int, maxActions: Int) {
-        val tasks = (1..taskCount).map { i ->
-            PlanTask(
-                description = "Task $i: verify build",
-                gradleTask = "tasks"
-            )
-        }
-        val fakePlan = Plan(
-            title = "test-plan",
-            epics = listOf(
-                Epic(
-                    name = "EPIC-1",
-                    description = "Test epic",
-                    points = taskCount,
-                    userStories = listOf(
-                        UserStory(
-                            description = "US-1",
-                            tasks = tasks
-                        )
-                    )
+    fun `execute vibecoding with multi task plan`(
+        taskCount: Int,
+        maxActions: Int,
+    ) {
+        val tasks =
+            (1..taskCount).map { i ->
+                PlanTask(
+                    description = "Task $i: verify build",
+                    gradleTask = "tasks",
                 )
-            ),
-            totalPoints = taskCount,
-            estimatedSessions = "1"
-        )
-        val state = VibecodingState(
-            intention = "Execute ${taskCount}-task plan",
-            workspaceRoot = "/tmp",
-            dryRun = true,
-            maxActions = maxActions,
-            plan = fakePlan,
-            planJson = "{}"
-        )
+            }
+        val fakePlan =
+            Plan(
+                title = "test-plan",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "EPIC-1",
+                            description = "Test epic",
+                            points = taskCount,
+                            userStories =
+                                listOf(
+                                    UserStory(
+                                        description = "US-1",
+                                        tasks = tasks,
+                                    ),
+                                ),
+                        ),
+                    ),
+                totalPoints = taskCount,
+                estimatedSessions = "1",
+            )
+        val state =
+            VibecodingState(
+                intention = "Execute $taskCount-task plan",
+                workspaceRoot = "/tmp",
+                dryRun = true,
+                maxActions = maxActions,
+                plan = fakePlan,
+                planJson = "{}",
+            )
         world.resultState = world.graph.execute(state)
     }
 
@@ -249,8 +281,11 @@ class VibecodingSteps(private val world: VibecodingWorld) {
     fun `vibecoding tasks executed count`(expected: Int) {
         val state = world.resultState
         assertNotNull(state, "Result state must not be null")
-        assertEquals(expected, state.executedTasks.size,
-            "Expected $expected executed tasks, got ${state.executedTasks.size}: ${state.executedTasks}")
+        assertEquals(
+            expected,
+            state.executedTasks.size,
+            "Expected $expected executed tasks, got ${state.executedTasks.size}: ${state.executedTasks}",
+        )
     }
 
     // ── @epic_v_5 : Cablage LLM (Gemini fake) + TokenTracker ──
@@ -258,11 +293,12 @@ class VibecodingSteps(private val world: VibecodingWorld) {
     @When("the LLM receives a prompt containing {string}")
     fun `llm receives prompt`(promptContent: String) {
         // Exécution avec intention, sans plan → le LLM décide
-        val state = VibecodingState(
-            intention = promptContent,
-            workspaceRoot = "/tmp",
-            maxActions = 3
-        )
+        val state =
+            VibecodingState(
+                intention = promptContent,
+                workspaceRoot = "/tmp",
+                maxActions = 3,
+            )
         world.resultState = world.graph.execute(state)
     }
 
@@ -272,11 +308,11 @@ class VibecodingSteps(private val world: VibecodingWorld) {
         assertNotNull(state, "Result state must not be null")
         assertTrue(
             state.lastToolResult.contains("LLM decided"),
-            "LLM should have decided: lastToolResult='${state.lastToolResult}'"
+            "LLM should have decided: lastToolResult='${state.lastToolResult}'",
         )
         assertTrue(
             world.fakeLlmProvider?.promptsReceived?.isNotEmpty() == true,
-            "LLM should have received at least 1 prompt"
+            "LLM should have received at least 1 prompt",
         )
     }
 
@@ -284,11 +320,11 @@ class VibecodingSteps(private val world: VibecodingWorld) {
     fun `tracking records prompt tokens`() {
         assertTrue(
             world.tokenTracker.promptTokens > 0,
-            "TokenTracker should have recorded >0 prompt tokens, got ${world.tokenTracker.promptTokens}"
+            "TokenTracker should have recorded >0 prompt tokens, got ${world.tokenTracker.promptTokens}",
         )
         assertTrue(
             world.tokenTracker.totalCalls > 0,
-            "TokenTracker should have recorded >0 calls, got ${world.tokenTracker.totalCalls}"
+            "TokenTracker should have recorded >0 calls, got ${world.tokenTracker.totalCalls}",
         )
     }
 
@@ -308,60 +344,86 @@ class VibecodingSteps(private val world: VibecodingWorld) {
     }
 
     @When("I execute vibecoding with a {int}-task failing plan and maxRetries {int}")
-    fun `execute vibecoding with failing plan and maxRetries`(taskCount: Int, maxRetries: Int) {
-        val tasks = (1..taskCount).map { i ->
-            PlanTask(
-                description = "Task $i: will fail",
-                gradleTask = "nonexistentTask${i}"  // tâche Gradle qui n'existe pas → échec
+    fun `execute vibecoding with failing plan and maxRetries`(
+        taskCount: Int,
+        maxRetries: Int,
+    ) {
+        val tasks =
+            (1..taskCount).map { i ->
+                PlanTask(
+                    description = "Task $i: will fail",
+                    gradleTask = "nonexistentTask$i", // tâche Gradle qui n'existe pas → échec
+                )
+            }
+        val fakePlan =
+            Plan(
+                title = "failing-plan",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "FAIL",
+                            description = "Failing epic",
+                            points = 1,
+                            userStories =
+                                listOf(
+                                    UserStory(description = "US-fail", tasks = tasks),
+                                ),
+                        ),
+                    ),
+                totalPoints = 1,
+                estimatedSessions = "1",
             )
-        }
-        val fakePlan = Plan(
-            title = "failing-plan",
-            epics = listOf(
-                Epic(name = "FAIL", description = "Failing epic", points = 1, userStories = listOf(
-                    UserStory(description = "US-fail", tasks = tasks)
-                ))
-            ),
-            totalPoints = 1,
-            estimatedSessions = "1"
-        )
-        val state = VibecodingState(
-            intention = "Execute failing plan with retries",
-            workspaceRoot = "/tmp",
-            maxActions = 10,
-            maxRetries = maxRetries,
-            plan = fakePlan,
-            planJson = "{}"
-        )
+        val state =
+            VibecodingState(
+                intention = "Execute failing plan with retries",
+                workspaceRoot = "/tmp",
+                maxActions = 10,
+                maxRetries = maxRetries,
+                plan = fakePlan,
+                planJson = "{}",
+            )
         world.resultState = world.graph.execute(state)
     }
 
     @When("I execute vibecoding with a {int}-task plan already timed out and maxRetries {int}")
-    fun `execute vibecoding with timed out plan`(taskCount: Int, maxRetries: Int) {
+    fun `execute vibecoding with timed out plan`(
+        taskCount: Int,
+        maxRetries: Int,
+    ) {
         val nowMs = System.currentTimeMillis()
-        val tasks = (1..taskCount).map { i ->
-            PlanTask(description = "Task $i", gradleTask = "tasks")
-        }
-        val fakePlan = Plan(
-            title = "timeout-plan",
-            epics = listOf(
-                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
-                    UserStory(description = "US1", tasks = tasks)
-                ))
-            ),
-            totalPoints = 1,
-            estimatedSessions = "1"
-        )
-        val state = VibecodingState(
-            intention = "Already timed out",
-            workspaceRoot = "/tmp",
-            sessionTimeoutSeconds = 1,
-            sessionStartTimeMs = nowMs - 2000,  // 2s en retard
-            maxActions = 100,
-            maxRetries = maxRetries,
-            plan = fakePlan,
-            planJson = "{}"
-        )
+        val tasks =
+            (1..taskCount).map { i ->
+                PlanTask(description = "Task $i", gradleTask = "tasks")
+            }
+        val fakePlan =
+            Plan(
+                title = "timeout-plan",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "E1",
+                            description = "test",
+                            points = 1,
+                            userStories =
+                                listOf(
+                                    UserStory(description = "US1", tasks = tasks),
+                                ),
+                        ),
+                    ),
+                totalPoints = 1,
+                estimatedSessions = "1",
+            )
+        val state =
+            VibecodingState(
+                intention = "Already timed out",
+                workspaceRoot = "/tmp",
+                sessionTimeoutSeconds = 1,
+                sessionStartTimeMs = nowMs - 2000, // 2s en retard
+                maxActions = 100,
+                maxRetries = maxRetries,
+                plan = fakePlan,
+                planJson = "{}",
+            )
         world.resultState = world.graph.execute(state)
     }
 
@@ -396,49 +458,59 @@ class VibecodingSteps(private val world: VibecodingWorld) {
     // ── @epic_v_7 : Resume Session ──
 
     @Given("a SessionRecord with id {string} and intention {string} and maxActions {int}")
-    fun `session record with id intention maxActions`(id: String, intention: String, maxActions: Int) {
-        world.sessionRecord = SessionRecord(
-            id = id,
-            parentSessionId = null,
-            workspaceRoot = "/tmp/test-resume",
-            intention = intention,
-            dryRun = false,
-            maxActions = maxActions,
-            classification = "simple",
-            planJson = null,
-            promptTokens = 100L,
-            completionTokens = 50L,
-            cost = 0.0,
-            error = null,
-            finished = false,
-            iterationCount = 5,
-            confidentialityLevel = "INTERNAL",
-            createdAt = Instant.now().minusSeconds(60),
-            updatedAt = Instant.now()
-        )
+    fun `session record with id intention maxActions`(
+        id: String,
+        intention: String,
+        maxActions: Int,
+    ) {
+        world.sessionRecord =
+            SessionRecord(
+                id = id,
+                parentSessionId = null,
+                workspaceRoot = "/tmp/test-resume",
+                intention = intention,
+                dryRun = false,
+                maxActions = maxActions,
+                classification = "simple",
+                planJson = null,
+                promptTokens = 100L,
+                completionTokens = 50L,
+                cost = 0.0,
+                error = null,
+                finished = false,
+                iterationCount = 5,
+                confidentialityLevel = "INTERNAL",
+                createdAt = Instant.now().minusSeconds(60),
+                updatedAt = Instant.now(),
+            )
     }
 
     @Given("a SessionRecord with id {string} and intention {string} and maxActions {int} and finished true")
-    fun `session record with id intention maxActions finished`(id: String, intention: String, maxActions: Int) {
-        world.sessionRecord = SessionRecord(
-            id = id,
-            parentSessionId = null,
-            workspaceRoot = "/tmp",
-            intention = intention,
-            dryRun = false,
-            maxActions = maxActions,
-            classification = "done",
-            planJson = null,
-            promptTokens = 100L,
-            completionTokens = 50L,
-            cost = 0.0,
-            error = null,
-            finished = true,
-            iterationCount = 10,
-            confidentialityLevel = "INTERNAL",
-            createdAt = Instant.now().minusSeconds(300),
-            updatedAt = Instant.now()
-        )
+    fun `session record with id intention maxActions finished`(
+        id: String,
+        intention: String,
+        maxActions: Int,
+    ) {
+        world.sessionRecord =
+            SessionRecord(
+                id = id,
+                parentSessionId = null,
+                workspaceRoot = "/tmp",
+                intention = intention,
+                dryRun = false,
+                maxActions = maxActions,
+                classification = "done",
+                planJson = null,
+                promptTokens = 100L,
+                completionTokens = 50L,
+                cost = 0.0,
+                error = null,
+                finished = true,
+                iterationCount = 10,
+                confidentialityLevel = "INTERNAL",
+                createdAt = Instant.now().minusSeconds(300),
+                updatedAt = Instant.now(),
+            )
     }
 
     @When("the vibecoding graph resumes that session")
@@ -450,13 +522,20 @@ class VibecodingSteps(private val world: VibecodingWorld) {
     }
 
     @Then("the resumed vibecoding intention contains {string} and {string}")
-    fun `resumed intention contains sessionId and intention`(sessionId: String, intention: String) {
+    fun `resumed intention contains sessionId and intention`(
+        sessionId: String,
+        intention: String,
+    ) {
         val state = world.resumedState
         assertNotNull(state, "Resumed state must not be null")
-        assertTrue(state.intention.contains(sessionId),
-            "Intention should contain session ID '$sessionId', got '${state.intention}'")
-        assertTrue(state.intention.contains(intention),
-            "Intention should contain original intention '$intention', got '${state.intention}'")
+        assertTrue(
+            state.intention.contains(sessionId),
+            "Intention should contain session ID '$sessionId', got '${state.intention}'",
+        )
+        assertTrue(
+            state.intention.contains(intention),
+            "Intention should contain original intention '$intention', got '${state.intention}'",
+        )
     }
 
     @Then("the resumed vibecoding workspace root is {string}")
@@ -484,7 +563,9 @@ class VibecodingSteps(private val world: VibecodingWorld) {
     fun `resumed state is final`() {
         val state = world.resumedState
         assertNotNull(state)
-        assertTrue(state.isFinal || state.finished,
-            "Resumed state should be final (isFinal=${state.isFinal}, finished=${state.finished})")
+        assertTrue(
+            state.isFinal || state.finished,
+            "Resumed state should be final (isFinal=${state.isFinal}, finished=${state.finished})",
+        )
     }
 }

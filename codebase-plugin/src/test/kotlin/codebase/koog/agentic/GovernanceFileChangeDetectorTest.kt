@@ -1,21 +1,21 @@
 package codebase.koog.agentic
 
-import org.junit.jupiter.api.io.TempDir
-import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class GovernanceFileChangeDetectorTest {
-
     private val detector = GovernanceFileChangeDetector()
 
     @Test
     fun `diff returns all current files as added when previous snapshot is empty`() {
-        val current = GovernanceFileSnapshot(listOf(
-            scanned("AGENT.adoc", "= Agent\n"),
-            scanned(".agents/INDEX.adoc", "= Index\n")
-        ))
+        val current =
+            GovernanceFileSnapshot(
+                listOf(
+                    scanned("AGENT.adoc", "= Agent\n"),
+                    scanned(".agents/INDEX.adoc", "= Index\n"),
+                ),
+            )
 
         val diff = detector.diff(GovernanceFileSnapshot.empty(), current)
 
@@ -27,14 +27,20 @@ class GovernanceFileChangeDetectorTest {
 
     @Test
     fun `diff marks unchanged files when checksum matches`() {
-        val previous = GovernanceFileSnapshot(listOf(
-            scanned("AGENT.adoc", "= Agent\n"),
-            scanned("BACKLOG.adoc", "= Backlog\n")
-        ))
-        val current = GovernanceFileSnapshot(listOf(
-            scanned("AGENT.adoc", "= Agent\n"),
-            scanned("BACKLOG.adoc", "= Backlog\n")
-        ))
+        val previous =
+            GovernanceFileSnapshot(
+                listOf(
+                    scanned("AGENT.adoc", "= Agent\n"),
+                    scanned("BACKLOG.adoc", "= Backlog\n"),
+                ),
+            )
+        val current =
+            GovernanceFileSnapshot(
+                listOf(
+                    scanned("AGENT.adoc", "= Agent\n"),
+                    scanned("BACKLOG.adoc", "= Backlog\n"),
+                ),
+            )
 
         val diff = detector.diff(previous, current)
 
@@ -46,12 +52,18 @@ class GovernanceFileChangeDetectorTest {
 
     @Test
     fun `diff detects modified files when checksum differs`() {
-        val previous = GovernanceFileSnapshot(listOf(
-            scanned("AGENT.adoc", "= Agent\n")
-        ))
-        val current = GovernanceFileSnapshot(listOf(
-            scanned("AGENT.adoc", "= Agent\n\n* NE DOIT JAMAIS committer\n")
-        ))
+        val previous =
+            GovernanceFileSnapshot(
+                listOf(
+                    scanned("AGENT.adoc", "= Agent\n"),
+                ),
+            )
+        val current =
+            GovernanceFileSnapshot(
+                listOf(
+                    scanned("AGENT.adoc", "= Agent\n\n* NE DOIT JAMAIS committer\n"),
+                ),
+            )
 
         val diff = detector.diff(previous, current)
 
@@ -63,13 +75,19 @@ class GovernanceFileChangeDetectorTest {
 
     @Test
     fun `diff detects removed files present in previous but not in current`() {
-        val previous = GovernanceFileSnapshot(listOf(
-            scanned("AGENT.adoc", "= Agent\n"),
-            scanned("BACKLOG.adoc", "= Backlog\n")
-        ))
-        val current = GovernanceFileSnapshot(listOf(
-            scanned("AGENT.adoc", "= Agent\n")
-        ))
+        val previous =
+            GovernanceFileSnapshot(
+                listOf(
+                    scanned("AGENT.adoc", "= Agent\n"),
+                    scanned("BACKLOG.adoc", "= Backlog\n"),
+                ),
+            )
+        val current =
+            GovernanceFileSnapshot(
+                listOf(
+                    scanned("AGENT.adoc", "= Agent\n"),
+                ),
+            )
 
         val diff = detector.diff(previous, current)
 
@@ -81,16 +99,22 @@ class GovernanceFileChangeDetectorTest {
 
     @Test
     fun `diff detects mixed added modified removed and unchanged files`() {
-        val previous = GovernanceFileSnapshot(listOf(
-            scanned("AGENT.adoc", "= Agent\n"),
-            scanned("BACKLOG.adoc", "= Backlog\n"),
-            scanned("TODO.adoc", "= Todo\n")
-        ))
-        val current = GovernanceFileSnapshot(listOf(
-            scanned("AGENT.adoc", "= Agent\n"),
-            scanned("BACKLOG.adoc", "= Backlog updated\n"),
-            scanned("INDEX.adoc", "= Index\n")
-        ))
+        val previous =
+            GovernanceFileSnapshot(
+                listOf(
+                    scanned("AGENT.adoc", "= Agent\n"),
+                    scanned("BACKLOG.adoc", "= Backlog\n"),
+                    scanned("TODO.adoc", "= Todo\n"),
+                ),
+            )
+        val current =
+            GovernanceFileSnapshot(
+                listOf(
+                    scanned("AGENT.adoc", "= Agent\n"),
+                    scanned("BACKLOG.adoc", "= Backlog updated\n"),
+                    scanned("INDEX.adoc", "= Index\n"),
+                ),
+            )
 
         val diff = detector.diff(previous, current)
 
@@ -102,9 +126,12 @@ class GovernanceFileChangeDetectorTest {
 
     @Test
     fun `diff with empty current returns all previous files as removed`() {
-        val previous = GovernanceFileSnapshot(listOf(
-            scanned("AGENT.adoc", "= Agent\n")
-        ))
+        val previous =
+            GovernanceFileSnapshot(
+                listOf(
+                    scanned("AGENT.adoc", "= Agent\n"),
+                ),
+            )
 
         val diff = detector.diff(previous, GovernanceFileSnapshot.empty())
 
@@ -126,23 +153,31 @@ class GovernanceFileChangeDetectorTest {
 
     @Test
     fun `diff provides paths to ingest as added plus modified`() {
-        val previous = GovernanceFileSnapshot(listOf(
-            scanned("AGENT.adoc", "= Agent\n"),
-            scanned("BACKLOG.adoc", "= Backlog\n")
-        ))
-        val current = GovernanceFileSnapshot(listOf(
-            scanned("AGENT.adoc", "= Agent\n"),
-            scanned("BACKLOG.adoc", "= Backlog updated\n"),
-            scanned("INDEX.adoc", "= Index\n")
-        ))
+        val previous =
+            GovernanceFileSnapshot(
+                listOf(
+                    scanned("AGENT.adoc", "= Agent\n"),
+                    scanned("BACKLOG.adoc", "= Backlog\n"),
+                ),
+            )
+        val current =
+            GovernanceFileSnapshot(
+                listOf(
+                    scanned("AGENT.adoc", "= Agent\n"),
+                    scanned("BACKLOG.adoc", "= Backlog updated\n"),
+                    scanned("INDEX.adoc", "= Index\n"),
+                ),
+            )
 
         val diff = detector.diff(previous, current)
 
         assertEquals(listOf("BACKLOG.adoc", "INDEX.adoc").sorted(), diff.pathsToIngest().sorted())
     }
 
-    private fun scanned(path: String, content: String): ScannedFileEntry =
-        ScannedFileEntry(path, sha256(content))
+    private fun scanned(
+        path: String,
+        content: String,
+    ): ScannedFileEntry = ScannedFileEntry(path, sha256(content))
 
     private fun sha256(input: String): String {
         val digest = java.security.MessageDigest.getInstance("SHA-256")

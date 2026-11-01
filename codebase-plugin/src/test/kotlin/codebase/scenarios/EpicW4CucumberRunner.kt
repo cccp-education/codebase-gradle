@@ -15,7 +15,7 @@ import org.junit.platform.suite.api.Suite
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "codebase.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-epic-w4.html, json:build/reports/cucumber-epic-w4.json"
+    value = "pretty, html:build/reports/cucumber-epic-w4.html, json:build/reports/cucumber-epic-w4.json",
 )
 @ConfigurationParameter(key = FEATURES_PROPERTY_NAME, value = "src/test/features")
 @ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "@epic_w_4")

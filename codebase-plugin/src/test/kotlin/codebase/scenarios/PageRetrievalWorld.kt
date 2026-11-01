@@ -1,6 +1,8 @@
 package codebase.scenarios
 
 import codebase.rag.CompositeContextBuilder
+import codebase.rag.EmbeddingPipeline
+import codebase.rag.VectorStore
 import codebase.store.DocumentChunk
 import codebase.store.DoubtfulChunk
 import codebase.store.RagVectorStore
@@ -22,7 +24,6 @@ import java.io.File
  * `CorpusIngestWorld`).
  */
 class PageRetrievalWorld {
-
     var fakeStore: PageRetrievalFakeRagStore = PageRetrievalFakeRagStore()
     var lastResults: List<RetrieveResult>? = null
     var docsSection: String? = null
@@ -39,15 +40,16 @@ class PageRetrievalWorld {
         sourceDocument: String,
         pages: List<Int>?,
     ) {
-        val chunk = DocumentChunk(
-            id = "chk-page-${sourceDocument}-${content.hashCode().toUInt()}",
-            sourceDocument = sourceDocument,
-            sectionPath = sectionPath,
-            headingLevel = headingLevel,
-            content = content,
-            license = "Apache-2.0",
-            pages = pages ?: emptyList(),
-        )
+        val chunk =
+            DocumentChunk(
+                id = "chk-page-$sourceDocument-${content.hashCode().toUInt()}",
+                sourceDocument = sourceDocument,
+                sectionPath = sectionPath,
+                headingLevel = headingLevel,
+                content = content,
+                license = "Apache-2.0",
+                pages = pages ?: emptyList(),
+            )
         fakeStore.record(DoubtfulChunk(chunk = chunk))
     }
 
@@ -57,15 +59,17 @@ class PageRetrievalWorld {
     }
 
     fun loadPageDocsContext(query: String) {
-        val builder = CompositeContextBuilder(
-            workspaceRoot = File(System.getProperty("java.io.tmpdir")),
-            vectorStore = codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy"),
-            embeddingPipeline = codebase.rag.EmbeddingPipeline(
-                codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy")
-            ),
-            config = contracts.context.CompositeContextConfig(),
-            codexStore = fakeStore,
-        )
+        val builder =
+            CompositeContextBuilder(
+                workspaceRoot = File(System.getProperty("java.io.tmpdir")),
+                vectorStore = codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy"),
+                embeddingPipeline =
+                    codebase.rag.EmbeddingPipeline(
+                        codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy"),
+                    ),
+                config = contracts.context.CompositeContextConfig(),
+                codexStore = fakeStore,
+            )
         docsSection = builder.build(query).docsSection
     }
 }
@@ -80,7 +84,6 @@ class PageRetrievalWorld {
  * [DocumentChunk.pages] — never a parallel side channel.
  */
 class PageRetrievalFakeRagStore : RagVectorStore() {
-
     private val recorded: MutableList<DoubtfulChunk> = mutableListOf()
 
     fun record(chunk: DoubtfulChunk) {
@@ -89,7 +92,10 @@ class PageRetrievalFakeRagStore : RagVectorStore() {
 
     val recordedChunks: List<DoubtfulChunk> get() = recorded.toList()
 
-    override fun searchBlocking(query: String, topK: Int): List<RetrieveResult> =
+    override fun searchBlocking(
+        query: String,
+        topK: Int,
+    ): List<RetrieveResult> =
         recorded
             .filter { it.chunk.content.contains(query, ignoreCase = true) }
             .mapIndexed { index, doubtful ->
@@ -106,9 +112,10 @@ class PageRetrievalFakeRagStore : RagVectorStore() {
                     doubtful = doubtful.doubt.doubtful,
                     pages = chunk.pages,
                 )
-            }
-            .take(topK)
+            }.take(topK)
 
-    override fun searchWithDoubtBlocking(query: String, topK: Int): List<RetrieveResult> =
-        searchBlocking(query, topK)
+    override fun searchWithDoubtBlocking(
+        query: String,
+        topK: Int,
+    ): List<RetrieveResult> = searchBlocking(query, topK)
 }

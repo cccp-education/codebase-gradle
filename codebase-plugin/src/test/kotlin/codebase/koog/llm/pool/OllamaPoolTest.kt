@@ -4,42 +4,54 @@ import contracts.llmpool.LlmInstance
 import contracts.llmpool.QuotaConfig
 import contracts.llmpool.ResetPolicy
 import contracts.llmpool.RotationStrategy
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class OllamaPoolTest {
-
     companion object {
         /** Ports autorisés — plage 11437→11465 (29 ports) */
         val AUTHORIZED_PORTS = (11437..11465).toList()
 
         /** 2 modèles autorisés, cyclés sur les 29 ports */
-        val AUTHORIZED_MODELS = listOf(
-            "gpt-oss:120b-cloud",
-            "gemma4:31b-cloud"
-        )
+        val AUTHORIZED_MODELS =
+            listOf(
+                "gpt-oss:120b-cloud",
+                "gemma4:31b-cloud",
+            )
 
         /** Pool complet : 29 instances, chaque port reçoit un modèle cyclé */
-        fun fullPool(limit: Long = 10, threshold: Int = 50): OllamaPool {
-            val instances = AUTHORIZED_PORTS.mapIndexed { i, port ->
-                val model = AUTHORIZED_MODELS[i % AUTHORIZED_MODELS.size]
-                LlmInstance(
-                    id = "ollama-$port",
-                    baseUrl = "http://localhost:$port",
-                    model = model,
-                    quota = QuotaConfig(limitValue = limit, thresholdPercent = threshold, resetPolicy = ResetPolicy.NEVER)
-                )
-            }
+        fun fullPool(
+            limit: Long = 10,
+            threshold: Int = 50,
+        ): OllamaPool {
+            val instances =
+                AUTHORIZED_PORTS.mapIndexed { i, port ->
+                    val model = AUTHORIZED_MODELS[i % AUTHORIZED_MODELS.size]
+                    LlmInstance(
+                        id = "ollama-$port",
+                        baseUrl = "http://localhost:$port",
+                        model = model,
+                        quota = QuotaConfig(limitValue = limit, thresholdPercent = threshold, resetPolicy = ResetPolicy.NEVER),
+                    )
+                }
             return OllamaPool(instances, rotationStrategy = RotationStrategy.ROUND_ROBIN)
         }
     }
 
-    private fun instance(id: String, port: Int, limit: Long = 10, threshold: Int = 50) =
-        LlmInstance(
-            id = id,
-            baseUrl = "http://localhost:$port",
-            model = "gpt-oss:120b-cloud",
-            quota = QuotaConfig(limitValue = limit, thresholdPercent = threshold, resetPolicy = ResetPolicy.NEVER)
-        )
+    private fun instance(
+        id: String,
+        port: Int,
+        limit: Long = 10,
+        threshold: Int = 50,
+    ) = LlmInstance(
+        id = id,
+        baseUrl = "http://localhost:$port",
+        model = "gpt-oss:120b-cloud",
+        quota = QuotaConfig(limitValue = limit, thresholdPercent = threshold, resetPolicy = ResetPolicy.NEVER),
+    )
 
     @Test
     fun `nextInstance should return the only instance when pool size is 1`() {
@@ -52,10 +64,11 @@ class OllamaPoolTest {
 
     @Test
     fun `nextInstance should rotate ROUND_ROBIN between two instances`() {
-        val pool = OllamaPool(
-            listOf(instance("a", 11437), instance("b", 11438)),
-            rotationStrategy = RotationStrategy.ROUND_ROBIN
-        )
+        val pool =
+            OllamaPool(
+                listOf(instance("a", 11437), instance("b", 11438)),
+                rotationStrategy = RotationStrategy.ROUND_ROBIN,
+            )
         assertEquals("a", pool.nextInstance().id)
         assertEquals("b", pool.nextInstance().id)
         assertEquals("a", pool.nextInstance().id)
@@ -63,10 +76,11 @@ class OllamaPoolTest {
 
     @Test
     fun `nextInstance should pick LEAST_USED instance`() {
-        val pool = OllamaPool(
-            listOf(instance("a", 11437), instance("b", 11438)),
-            rotationStrategy = RotationStrategy.LEAST_USED
-        )
+        val pool =
+            OllamaPool(
+                listOf(instance("a", 11437), instance("b", 11438)),
+                rotationStrategy = RotationStrategy.LEAST_USED,
+            )
         // First call — both at 0, picks first
         assertEquals("a", pool.nextInstance().id)
         // Second call — a=1, b=0 → picks b
@@ -77,18 +91,19 @@ class OllamaPoolTest {
 
     @Test
     fun `nextInstance should skip instance when quota exceeded`() {
-        val pool = OllamaPool(
-            listOf(
-                instance("a", 11437, limit = 5, threshold = 50),  // 50% de 5 = 2
-                instance("b", 11438, limit = 100, threshold = 80)  // 80% de 100 = 80
-            ),
-            rotationStrategy = RotationStrategy.ROUND_ROBIN
-        )
+        val pool =
+            OllamaPool(
+                listOf(
+                    instance("a", 11437, limit = 5, threshold = 50), // 50% de 5 = 2
+                    instance("b", 11438, limit = 100, threshold = 80), // 80% de 100 = 80
+                ),
+                rotationStrategy = RotationStrategy.ROUND_ROBIN,
+            )
         // Use instance a 3 times → dépassement quota (3 >= 2)
-        repeat(3) { pool.nextInstance() }  // a, b, a → a est utilisée 2 fois
+        repeat(3) { pool.nextInstance() } // a, b, a → a est utilisée 2 fois
         // a est maintenant à 2, pas encore dépassé (threshold=2, 2>=2 → dépassé)
         // Prochain appel devrait skipper a → b
-        val next = pool.nextInstance()  // a=2 dépasse 2 → skip → b
+        val next = pool.nextInstance() // a=2 dépasse 2 → skip → b
         assertEquals("b", next.id)
     }
 
@@ -96,7 +111,7 @@ class OllamaPoolTest {
     fun `isQuotaExceeded should return true when threshold reached`() {
         val inst = instance("a", 11437, limit = 10, threshold = 50)
         val pool = OllamaPool(listOf(inst))
-        repeat(5) { pool.nextInstance() }  // 5 >= 5 → dépassé
+        repeat(5) { pool.nextInstance() } // 5 >= 5 → dépassé
         assertTrue(pool.isQuotaExceeded(inst))
     }
 
@@ -104,7 +119,7 @@ class OllamaPoolTest {
     fun `resetUsage should clear all counters`() {
         val pool = OllamaPool(listOf(instance("a", 11437, limit = 5, threshold = 50)))
         // limit=5, threshold=50% → seuil=2.5→2 (int arrondi)
-        repeat(3) { pool.nextInstance() }  // 3 >= 2 → dépassé
+        repeat(3) { pool.nextInstance() } // 3 >= 2 → dépassé
         assertTrue(pool.isQuotaExceeded(instance("a", 11437, limit = 5, threshold = 50)))
         pool.resetUsage()
         assertFalse(pool.isQuotaExceeded(instance("a", 11437, limit = 5, threshold = 50)))

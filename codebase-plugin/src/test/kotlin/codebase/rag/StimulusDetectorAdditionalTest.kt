@@ -9,23 +9,37 @@ import kotlin.test.assertTrue
  * Tests additionnels pour StimulusDetector — couvre reportAsciiDoc et exportStimuliJson.
  */
 class StimulusDetectorAdditionalTest {
-
     private val detector = StimulusDetector("/tmp/fake-workspace")
 
     @Test
     fun `reportAsciiDoc produces structured report with stale and fresh stimuli`() {
-        val stimuli = listOf(
-            ActiveStimulus(
-                file = StimulusFile("brain-dump-01.adoc", "/ws/brain-dump-01.adoc",
-                    LocalDateTime.of(2026, 5, 28, 10, 0), 2048, 0),
-                ageDays = 0, stale = false
-            ),
-            ActiveStimulus(
-                file = StimulusFile("old-idea.adoc", "/ws/old-idea.adoc",
-                    LocalDateTime.of(2026, 5, 20, 8, 0), 4096, 8),
-                ageDays = 8, stale = true
-            ),
-        )
+        val stimuli =
+            listOf(
+                ActiveStimulus(
+                    file =
+                        StimulusFile(
+                            "brain-dump-01.adoc",
+                            "/ws/brain-dump-01.adoc",
+                            LocalDateTime.of(2026, 5, 28, 10, 0),
+                            2048,
+                            0,
+                        ),
+                    ageDays = 0,
+                    stale = false,
+                ),
+                ActiveStimulus(
+                    file =
+                        StimulusFile(
+                            "old-idea.adoc",
+                            "/ws/old-idea.adoc",
+                            LocalDateTime.of(2026, 5, 20, 8, 0),
+                            4096,
+                            8,
+                        ),
+                    ageDays = 8,
+                    stale = true,
+                ),
+            )
 
         val report = detector.reportAsciiDoc(stimuli)
 
@@ -41,13 +55,21 @@ class StimulusDetectorAdditionalTest {
 
     @Test
     fun `reportAsciiDoc with no stale stimuli shows no stale warning`() {
-        val stimuli = listOf(
-            ActiveStimulus(
-                file = StimulusFile("fresh.adoc", "/ws/fresh.adoc",
-                    LocalDateTime.of(2026, 5, 28, 12, 0), 1024, 0),
-                ageDays = 0, stale = false
-            ),
-        )
+        val stimuli =
+            listOf(
+                ActiveStimulus(
+                    file =
+                        StimulusFile(
+                            "fresh.adoc",
+                            "/ws/fresh.adoc",
+                            LocalDateTime.of(2026, 5, 28, 12, 0),
+                            1024,
+                            0,
+                        ),
+                    ageDays = 0,
+                    stale = false,
+                ),
+            )
 
         val report = detector.reportAsciiDoc(stimuli)
 
@@ -66,13 +88,21 @@ class StimulusDetectorAdditionalTest {
 
     @Test
     fun `exportStimuliJson produces valid JSON with stimuli`() {
-        val stimuli = listOf(
-            ActiveStimulus(
-                file = StimulusFile("brain.adoc", "/ws/brain.adoc",
-                    LocalDateTime.of(2026, 5, 28, 14, 0), 1536, 1),
-                ageDays = 1, stale = false
-            ),
-        )
+        val stimuli =
+            listOf(
+                ActiveStimulus(
+                    file =
+                        StimulusFile(
+                            "brain.adoc",
+                            "/ws/brain.adoc",
+                            LocalDateTime.of(2026, 5, 28, 14, 0),
+                            1536,
+                            1,
+                        ),
+                    ageDays = 1,
+                    stale = false,
+                ),
+            )
 
         val json = detector.exportStimuliJson(stimuli)
 
@@ -86,13 +116,21 @@ class StimulusDetectorAdditionalTest {
 
     @Test
     fun `exportStimuliJson with stale stimulus includes stale flag`() {
-        val stimuli = listOf(
-            ActiveStimulus(
-                file = StimulusFile("stale-dump.adoc", "/ws/stale-dump.adoc",
-                    LocalDateTime.of(2026, 5, 15, 9, 0), 8192, 13),
-                ageDays = 13, stale = true
-            ),
-        )
+        val stimuli =
+            listOf(
+                ActiveStimulus(
+                    file =
+                        StimulusFile(
+                            "stale-dump.adoc",
+                            "/ws/stale-dump.adoc",
+                            LocalDateTime.of(2026, 5, 15, 9, 0),
+                            8192,
+                            13,
+                        ),
+                    ageDays = 13,
+                    stale = true,
+                ),
+            )
 
         val json = detector.exportStimuliJson(stimuli)
 
@@ -115,10 +153,11 @@ class StimulusDetectorAdditionalTest {
 
     @Test
     fun `exportStimuliJson with multiple stimuli uses proper commas`() {
-        val stimuli = listOf(
-            ActiveStimulus(StimulusFile("a.adoc","/a", LocalDateTime.now(),100,0), 0, false),
-            ActiveStimulus(StimulusFile("b.adoc","/b", LocalDateTime.now(),200,0), 0, false),
-        )
+        val stimuli =
+            listOf(
+                ActiveStimulus(StimulusFile("a.adoc", "/a", LocalDateTime.now(), 100, 0), 0, false),
+                ActiveStimulus(StimulusFile("b.adoc", "/b", LocalDateTime.now(), 200, 0), 0, false),
+            )
 
         val json = detector.exportStimuliJson(stimuli)
 

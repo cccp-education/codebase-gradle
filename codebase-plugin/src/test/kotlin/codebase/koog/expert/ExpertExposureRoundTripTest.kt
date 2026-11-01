@@ -8,39 +8,48 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ExpertExposureRoundTripTest {
-
     @Test
     fun `task generates manifest and reader parses it back`() {
         val projectDir = Files.createTempDirectory("epic8-roundtrip").toFile()
         try {
-            val project = ProjectBuilder.builder()
-                .withProjectDir(projectDir)
-                .withName("epic8-roundtrip")
-                .build()
+            val project =
+                ProjectBuilder
+                    .builder()
+                    .withProjectDir(projectDir)
+                    .withName("epic8-roundtrip")
+                    .build()
             project.pluginManager.apply("java-base")
 
-            val registry = ExpertRegistry().apply {
-                registerAll(listOf(
-                    ExpertRegistration(
-                        ExpertDomain("kotlin", "kotlin domain"),
-                        "gpt-oss:120b-cloud",
-                        "http://localhost:11437",
-                        120
-                    ),
-                    ExpertRegistration(
-                        ExpertDomain("docs", "docs domain"),
-                        "qwen3-vl:235b-cloud",
-                        "http://localhost:11438",
-                        90
+            val registry =
+                ExpertRegistry().apply {
+                    registerAll(
+                        listOf(
+                            ExpertRegistration(
+                                ExpertDomain("kotlin", "kotlin domain"),
+                                "gpt-oss:120b-cloud",
+                                "http://localhost:11437",
+                                120,
+                            ),
+                            ExpertRegistration(
+                                ExpertDomain("docs", "docs domain"),
+                                "qwen3-vl:235b-cloud",
+                                "http://localhost:11438",
+                                90,
+                            ),
+                        ),
                     )
-                ))
-            }
+                }
 
-            val task = project.tasks
-                .register("exposeExperts", ExpertExposureTask::class.java).get()
+            val task =
+                project.tasks
+                    .register("exposeExperts", ExpertExposureTask::class.java)
+                    .get()
             task.expertRegistry = registry
-            val manifestFile = project.layout.buildDirectory
-                .file("experts/exposure-manifest.json").get().asFile
+            val manifestFile =
+                project.layout.buildDirectory
+                    .file("experts/exposure-manifest.json")
+                    .get()
+                    .asFile
             task.outputFile.set(project.layout.buildDirectory.file("experts/exposure-manifest.json"))
             task.anonymizeEndpoints.set(false)
 
@@ -66,33 +75,43 @@ class ExpertExposureRoundTripTest {
     fun `task anonymized manifest is readable and hides baseUrl`() {
         val projectDir = Files.createTempDirectory("epic8-anon-roundtrip").toFile()
         try {
-            val project = ProjectBuilder.builder()
-                .withProjectDir(projectDir)
-                .withName("epic8-anon-roundtrip")
-                .build()
+            val project =
+                ProjectBuilder
+                    .builder()
+                    .withProjectDir(projectDir)
+                    .withName("epic8-anon-roundtrip")
+                    .build()
             project.pluginManager.apply("java-base")
 
-            val registry = ExpertRegistry().apply {
-                registerAll(listOf(
-                    ExpertRegistration(
-                        ExpertDomain("docs", "docs domain"),
-                        "qwen3-vl:235b-cloud",
-                        "http://localhost:11438",
-                        90
+            val registry =
+                ExpertRegistry().apply {
+                    registerAll(
+                        listOf(
+                            ExpertRegistration(
+                                ExpertDomain("docs", "docs domain"),
+                                "qwen3-vl:235b-cloud",
+                                "http://localhost:11438",
+                                90,
+                            ),
+                        ),
                     )
-                ))
-            }
+                }
 
-            val task = project.tasks
-                .register("exposeExperts", ExpertExposureTask::class.java).get()
+            val task =
+                project.tasks
+                    .register("exposeExperts", ExpertExposureTask::class.java)
+                    .get()
             task.expertRegistry = registry
             task.outputFile.set(project.layout.buildDirectory.file("experts/exposure-manifest.json"))
             task.anonymizeEndpoints.set(true)
 
             task.executeExposure()
 
-            val manifestFile = project.layout.buildDirectory
-                .file("experts/exposure-manifest.json").get().asFile
+            val manifestFile =
+                project.layout.buildDirectory
+                    .file("experts/exposure-manifest.json")
+                    .get()
+                    .asFile
             val parsed = ExpertManifestReader.read(manifestFile)
 
             val docsEntry = parsed.findByDomain("docs")

@@ -1,15 +1,12 @@
 package codebase.koog.llm.pool
 
-import contracts.llmpool.LlmInstance
 import contracts.llmpool.QuotaConfig
 import contracts.llmpool.ResetPolicy
-import contracts.llmpool.RotationStrategy
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class GeminiPoolFactoryTest {
-
     @Test
     fun `fromEnvVarMapping should build pool from explicit key list`() {
         val keys = listOf("key-AAA", "key-BBB", "key-CCC")
@@ -48,11 +45,12 @@ class GeminiPoolFactoryTest {
 
     @Test
     fun `fromEnvVars should read GEMINI_API_KEY_N from provided env map`() {
-        val env = mapOf(
-            "GEMINI_API_KEY_1" to "env-key-1",
-            "GEMINI_API_KEY_2" to "env-key-2",
-            "GEMINI_API_KEY_3" to "env-key-3"
-        )
+        val env =
+            mapOf(
+                "GEMINI_API_KEY_1" to "env-key-1",
+                "GEMINI_API_KEY_2" to "env-key-2",
+                "GEMINI_API_KEY_3" to "env-key-3",
+            )
         val pool = GeminiPoolFactory.fromEnvVars(env)
         assertEquals(3, pool.size())
         val ids = pool.instances().map { it.id }.toSet()
@@ -63,11 +61,12 @@ class GeminiPoolFactoryTest {
 
     @Test
     fun `fromEnvVars should skip empty or missing keys`() {
-        val env = mapOf(
-            "GEMINI_API_KEY_1" to "env-key-1",
-            "GEMINI_API_KEY_2" to "",
-            "GEMINI_API_KEY_3" to "env-key-3"
-        )
+        val env =
+            mapOf(
+                "GEMINI_API_KEY_1" to "env-key-1",
+                "GEMINI_API_KEY_2" to "",
+                "GEMINI_API_KEY_3" to "env-key-3",
+            )
         val pool = GeminiPoolFactory.fromEnvVars(env)
         assertEquals(2, pool.size())
     }
@@ -80,11 +79,12 @@ class GeminiPoolFactoryTest {
 
     @Test
     fun `fromEnvVars should detect keys in order 1 to N`() {
-        val env = mapOf(
-            "GEMINI_API_KEY_3" to "third",
-            "GEMINI_API_KEY_1" to "first",
-            "GEMINI_API_KEY_2" to "second"
-        )
+        val env =
+            mapOf(
+                "GEMINI_API_KEY_3" to "third",
+                "GEMINI_API_KEY_1" to "first",
+                "GEMINI_API_KEY_2" to "second",
+            )
         val pool = GeminiPoolFactory.fromEnvVars(env)
         val keys = pool.instances().map { it.baseUrl.substringAfter("key=") }
         assertEquals(listOf("first", "second", "third"), keys)

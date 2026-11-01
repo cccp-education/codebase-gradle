@@ -1,7 +1,7 @@
 package codebase.scenarios
 
-import contracts.context.CompositeContext
 import codebase.rag.OpencodeInjector
+import contracts.context.CompositeContext
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.slf4j.LoggerFactory
@@ -9,7 +9,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class OpencodeInjectorSteps {
-
     private val log = LoggerFactory.getLogger(OpencodeInjectorSteps::class.java)
     private val ctx = PgVectorTestContext
 
@@ -34,8 +33,10 @@ class OpencodeInjectorSteps {
     fun `injected output contains header`(header: String) {
         val output = lastInjected
         assertNotNull(output, "Injected output is null")
-        assertTrue(output.contains(header),
-            "Expected header '$header' not found in injected output. Output has: ${output.take(200)}")
+        assertTrue(
+            output.contains(header),
+            "Expected header '$header' not found in injected output. Output has: ${output.take(200)}",
+        )
         log.info("Header '$header' found in injected output")
     }
 
@@ -74,6 +75,9 @@ class OpencodeInjectorSteps {
 object CompositeContextHolder {
     private var composite: CompositeContext? = null
 
-    fun set(ctx: CompositeContext) { composite = ctx }
+    fun set(ctx: CompositeContext) {
+        composite = ctx
+    }
+
     fun get(): CompositeContext? = composite
 }

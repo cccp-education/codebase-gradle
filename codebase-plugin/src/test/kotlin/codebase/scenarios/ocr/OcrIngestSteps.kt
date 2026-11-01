@@ -3,6 +3,7 @@ package codebase.scenarios.ocr
 import codebase.infrastructure.PostgresFixture
 import codebase.ocr.OcrIngestTask
 import codebase.rag.EmbeddingPipeline
+import codebase.rag.QueryResult
 import codebase.rag.VectorStore
 import io.cucumber.java.After
 import io.cucumber.java.Before
@@ -18,7 +19,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class OcrIngestSteps {
-
     private val log = LoggerFactory.getLogger(OcrIngestSteps::class.java)
     private var tmpDir: File? = null
     private var store: VectorStore? = null
@@ -38,7 +38,10 @@ class OcrIngestSteps {
     }
 
     @Given("an OCR output file {string} with content:")
-    fun createOcrOutputFile(filename: String, content: String) {
+    fun createOcrOutputFile(
+        filename: String,
+        content: String,
+    ) {
         tmpDir = Files.createTempDirectory("ocr-ingest-cucumber").toFile()
         val ocrDir = File(tmpDir, "ocr")
         ocrDir.mkdirs()
@@ -61,10 +64,12 @@ class OcrIngestSteps {
 
     @When("I ingest OCR output into pgvector")
     fun ingestOcrOutput() {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tmpDir!!)
-            .withName("ocr-ingest-cucumber")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tmpDir!!)
+                .withName("ocr-ingest-cucumber")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
@@ -109,15 +114,23 @@ class OcrIngestSteps {
     @Then("the RAG query returns at least {int} result")
     fun ragQueryReturnsAtLeastOneResult(minResults: Int) {
         assertNotNull(lastQueryResults, "Query results should not be null")
-        assertTrue(lastQueryResults!!.size >= minResults,
-            "Should return at least $minResults result(s), got ${lastQueryResults!!.size}")
+        assertTrue(
+            lastQueryResults!!.size >= minResults,
+            "Should return at least $minResults result(s), got ${lastQueryResults!!.size}",
+        )
     }
 
     @Then("at least {int} result contains {string} or {string}")
-    fun atLeastOneResultContains(minResults: Int, text1: String, text2: String) {
+    fun atLeastOneResultContains(
+        minResults: Int,
+        text1: String,
+        text2: String,
+    ) {
         assertNotNull(lastQueryResults, "Query results should not be null")
         val matching = lastQueryResults!!.filter { it.text.contains(text1) || it.text.contains(text2) }
-        assertTrue(matching.size >= minResults,
-            "Should have at least $minResults result(s) containing '$text1' or '$text2', got ${matching.size}")
+        assertTrue(
+            matching.size >= minResults,
+            "Should have at least $minResults result(s) containing '$text1' or '$text2', got ${matching.size}",
+        )
     }
 }

@@ -2,7 +2,6 @@ package codebase.scenarios
 
 import codebase.store.RagVectorStore
 import codebase.store.RetrieveResult
-import java.io.File
 
 /**
  * Shared world for `@rag-socle` scenarios (EPIC CDX-RAG-SOCLE US-5).
@@ -17,7 +16,6 @@ import java.io.File
  * scenario via the `@Given` init step).
  */
 class RagSocleWorld {
-
     var store: RagVectorStore? = null
     var retrieveResult: RetrieveResult? = null
     var docsSection: String? = null
@@ -36,13 +34,16 @@ class StubRagStore(
     private val results: List<RetrieveResult> = emptyList(),
     private val failure: Throwable? = null,
 ) : RagVectorStore() {
-
-    override fun searchBlocking(query: String, topK: Int): List<RetrieveResult> {
+    override fun searchBlocking(
+        query: String,
+        topK: Int,
+    ): List<RetrieveResult> {
         failure?.let { throw it }
         return results
     }
 
-    override fun searchWithDoubtBlocking(query: String, topK: Int): List<RetrieveResult> {
-        return searchBlocking(query, topK)
-    }
+    override fun searchWithDoubtBlocking(
+        query: String,
+        topK: Int,
+    ): List<RetrieveResult> = searchBlocking(query, topK)
 }

@@ -9,21 +9,27 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GovernanceStateStoreTest {
-
     @Test
-    fun `load returns null when state file does not exist`(@TempDir tempDir: File) {
+    fun `load returns null when state file does not exist`(
+        @TempDir tempDir: File,
+    ) {
         val store = JsonGovernanceStateStore(File(tempDir, "governance-state.json"))
 
         assertNull(store.load())
     }
 
     @Test
-    fun `save and load round trip preserves snapshot entries`(@TempDir tempDir: File) {
+    fun `save and load round trip preserves snapshot entries`(
+        @TempDir tempDir: File,
+    ) {
         val store = JsonGovernanceStateStore(File(tempDir, "governance-state.json"))
-        val snapshot = GovernanceFileSnapshot(listOf(
-            ScannedFileEntry("AGENT.adoc", "abc123"),
-            ScannedFileEntry(".agents/INDEX.adoc", "def456")
-        ))
+        val snapshot =
+            GovernanceFileSnapshot(
+                listOf(
+                    ScannedFileEntry("AGENT.adoc", "abc123"),
+                    ScannedFileEntry(".agents/INDEX.adoc", "def456"),
+                ),
+            )
 
         store.save(snapshot)
         val loaded = store.load()
@@ -32,12 +38,17 @@ class GovernanceStateStoreTest {
     }
 
     @Test
-    fun `save creates the state file`(@TempDir tempDir: File) {
+    fun `save creates the state file`(
+        @TempDir tempDir: File,
+    ) {
         val stateFile = File(tempDir, "governance-state.json")
         val store = JsonGovernanceStateStore(stateFile)
-        val snapshot = GovernanceFileSnapshot(listOf(
-            ScannedFileEntry("AGENT.adoc", "abc123")
-        ))
+        val snapshot =
+            GovernanceFileSnapshot(
+                listOf(
+                    ScannedFileEntry("AGENT.adoc", "abc123"),
+                ),
+            )
 
         store.save(snapshot)
 
@@ -48,7 +59,9 @@ class GovernanceStateStoreTest {
     }
 
     @Test
-    fun `load returns null when state file is empty`(@TempDir tempDir: File) {
+    fun `load returns null when state file is empty`(
+        @TempDir tempDir: File,
+    ) {
         val stateFile = File(tempDir, "governance-state.json").apply { writeText("") }
         val store = JsonGovernanceStateStore(stateFile)
 
@@ -56,7 +69,9 @@ class GovernanceStateStoreTest {
     }
 
     @Test
-    fun `load returns null when state file is invalid json`(@TempDir tempDir: File) {
+    fun `load returns null when state file is invalid json`(
+        @TempDir tempDir: File,
+    ) {
         val stateFile = File(tempDir, "governance-state.json").apply { writeText("{not json") }
         val store = JsonGovernanceStateStore(stateFile)
 
@@ -64,7 +79,9 @@ class GovernanceStateStoreTest {
     }
 
     @Test
-    fun `clear removes the state file if it exists`(@TempDir tempDir: File) {
+    fun `clear removes the state file if it exists`(
+        @TempDir tempDir: File,
+    ) {
         val stateFile = File(tempDir, "governance-state.json")
         val store = JsonGovernanceStateStore(stateFile)
         store.save(GovernanceFileSnapshot(listOf(ScannedFileEntry("AGENT.adoc", "abc123"))))
@@ -76,7 +93,9 @@ class GovernanceStateStoreTest {
     }
 
     @Test
-    fun `clear does not fail when state file does not exist`(@TempDir tempDir: File) {
+    fun `clear does not fail when state file does not exist`(
+        @TempDir tempDir: File,
+    ) {
         val store = JsonGovernanceStateStore(File(tempDir, "governance-state.json"))
 
         store.clear()

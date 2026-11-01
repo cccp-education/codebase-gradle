@@ -16,8 +16,9 @@ import kotlin.test.assertTrue
  * S-088). Pure BDD: the real `codebase.koog.pipeline` skeleton is driven via
  * the in-memory [KoogPipelineDefinition] — no Gradle task, no network.
  */
-class KoogPipelineSteps(private val world: KoogPipelineWorld) {
-
+class KoogPipelineSteps(
+    private val world: KoogPipelineWorld,
+) {
     @Given("a koog pipeline world is initialized")
     fun `koog pipeline world initialized`() {
         assertNotNull(world, "KoogPipelineWorld should be instantiated by PicoContainer")

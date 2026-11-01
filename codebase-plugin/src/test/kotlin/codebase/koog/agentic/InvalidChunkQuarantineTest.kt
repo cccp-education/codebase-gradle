@@ -7,35 +7,36 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class InvalidChunkQuarantineTest {
-
     @Test
     fun `quarantineIfInvalid stores invalid chunk`() {
         val repository = InMemoryInvalidChunkRepository()
         val quarantine = InvalidChunkQuarantine(repository)
 
-        val chunk = AgenticChunk(
-            id = "bad",
-            sourceFile = "AGENT.adoc",
-            sourceLines = "1-2",
-            chunkType = ChunkType.RULE,
-            content = "x",
-            verb = null,
-            domain = null,
-            dagLevel = null,
-            circle = null,
-            weight = -1.0,
-            checksum = "x-checksum"
-        )
-        val errors = listOf(
-            ChunkValidationError(
+        val chunk =
+            AgenticChunk(
+                id = "bad",
                 sourceFile = "AGENT.adoc",
                 sourceLines = "1-2",
-                lineStart = 1,
-                lineEnd = 2,
-                errorType = ChunkValidationErrorType.NEGATIVE_WEIGHT,
-                message = "weight must not be negative"
+                chunkType = ChunkType.RULE,
+                content = "x",
+                verb = null,
+                domain = null,
+                dagLevel = null,
+                circle = null,
+                weight = -1.0,
+                checksum = "x-checksum",
             )
-        )
+        val errors =
+            listOf(
+                ChunkValidationError(
+                    sourceFile = "AGENT.adoc",
+                    sourceLines = "1-2",
+                    lineStart = 1,
+                    lineEnd = 2,
+                    errorType = ChunkValidationErrorType.NEGATIVE_WEIGHT,
+                    message = "weight must not be negative",
+                ),
+            )
 
         val stored = runBlocking { quarantine.quarantineIfInvalid(chunk, ValidationResult(valid = false, errors = errors)) }
 
@@ -48,19 +49,20 @@ class InvalidChunkQuarantineTest {
         val repository = InMemoryInvalidChunkRepository()
         val quarantine = InvalidChunkQuarantine(repository)
 
-        val chunk = AgenticChunk(
-            id = "ok",
-            sourceFile = "AGENT.adoc",
-            sourceLines = "1-2",
-            chunkType = ChunkType.RULE,
-            content = "valid content",
-            verb = TaxonomyVerb.INTERDIRE,
-            domain = "codebase",
-            dagLevel = DagLevel.N1,
-            circle = 4,
-            weight = 0.8,
-            checksum = sha256("valid content")
-        )
+        val chunk =
+            AgenticChunk(
+                id = "ok",
+                sourceFile = "AGENT.adoc",
+                sourceLines = "1-2",
+                chunkType = ChunkType.RULE,
+                content = "valid content",
+                verb = TaxonomyVerb.INTERDIRE,
+                domain = "codebase",
+                dagLevel = DagLevel.N1,
+                circle = 4,
+                weight = 0.8,
+                checksum = sha256("valid content"),
+            )
 
         val stored = runBlocking { quarantine.quarantineIfInvalid(chunk, ValidationResult(valid = true, errors = emptyList())) }
 
@@ -73,19 +75,20 @@ class InvalidChunkQuarantineTest {
         val repository = InMemoryInvalidChunkRepository()
         val quarantine = InvalidChunkQuarantine(repository)
 
-        val chunk = AgenticChunk(
-            id = "",
-            sourceFile = "",
-            sourceLines = "",
-            chunkType = ChunkType.RULE,
-            content = "",
-            verb = null,
-            domain = null,
-            dagLevel = null,
-            circle = null,
-            weight = -1.0,
-            checksum = ""
-        )
+        val chunk =
+            AgenticChunk(
+                id = "",
+                sourceFile = "",
+                sourceLines = "",
+                chunkType = ChunkType.RULE,
+                content = "",
+                verb = null,
+                domain = null,
+                dagLevel = null,
+                circle = null,
+                weight = -1.0,
+                checksum = "",
+            )
 
         val stored = runBlocking { quarantine.quarantineChunk(chunk) }
 
@@ -98,19 +101,20 @@ class InvalidChunkQuarantineTest {
         val repository = InMemoryInvalidChunkRepository()
         val quarantine = InvalidChunkQuarantine(repository)
 
-        val chunk = AgenticChunk(
-            id = "ok",
-            sourceFile = "AGENT.adoc",
-            sourceLines = "1-2",
-            chunkType = ChunkType.RULE,
-            content = "valid content",
-            verb = TaxonomyVerb.INTERDIRE,
-            domain = "codebase",
-            dagLevel = DagLevel.N1,
-            circle = 4,
-            weight = 0.8,
-            checksum = sha256("valid content")
-        )
+        val chunk =
+            AgenticChunk(
+                id = "ok",
+                sourceFile = "AGENT.adoc",
+                sourceLines = "1-2",
+                chunkType = ChunkType.RULE,
+                content = "valid content",
+                verb = TaxonomyVerb.INTERDIRE,
+                domain = "codebase",
+                dagLevel = DagLevel.N1,
+                circle = 4,
+                weight = 0.8,
+                checksum = sha256("valid content"),
+            )
 
         val stored = runBlocking { quarantine.quarantineChunk(chunk) }
 

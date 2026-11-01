@@ -1,12 +1,11 @@
 package codebase.koog.governance
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import graphify.model.GraphCommunity
 import graphify.model.GraphEdge
 import graphify.model.GraphModel
 import graphify.model.GraphNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import contracts.session.AgentContext
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -16,7 +15,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class GovernanceContextLoaderTest {
-
     private val mapper = ObjectMapper().registerKotlinModule()
 
     private val syntheticGraph =
@@ -38,7 +36,9 @@ class GovernanceContextLoaderTest {
         )
 
     @Test
-    fun `loads AGENT adoc as eager rules`(@TempDir tempDir: File) {
+    fun `loads AGENT adoc as eager rules`(
+        @TempDir tempDir: File,
+    ) {
         File(tempDir, "AGENT.adoc").writeText("= Agent Rules\n\nRule 1\n")
 
         val ctx = GovernanceContextLoader().load(tempDir)
@@ -48,7 +48,9 @@ class GovernanceContextLoaderTest {
     }
 
     @Test
-    fun `loads governance files from first level subproject`(@TempDir tempDir: File) {
+    fun `loads governance files from first level subproject`(
+        @TempDir tempDir: File,
+    ) {
         val subproject = File(tempDir, "codebase-plugin").apply { mkdirs() }
         File(subproject, "AGENT.adoc").writeText("= Sub Agent\n")
         File(subproject, "PROMPT_REPRISE.adoc").writeText("= Reprise\n")
@@ -60,7 +62,9 @@ class GovernanceContextLoaderTest {
     }
 
     @Test
-    fun `extracts backlog items from BACKLOG adoc`(@TempDir tempDir: File) {
+    fun `extracts backlog items from BACKLOG adoc`(
+        @TempDir tempDir: File,
+    ) {
         File(tempDir, "BACKLOG.adoc").writeText(
             """
             = Backlog
@@ -68,7 +72,7 @@ class GovernanceContextLoaderTest {
             * [ ] Open item
             * [x] Done item
             * [-] Other item
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         val ctx = GovernanceContextLoader().load(tempDir)
@@ -79,7 +83,9 @@ class GovernanceContextLoaderTest {
     }
 
     @Test
-    fun `returns empty context when no governance files exist`(@TempDir tempDir: File) {
+    fun `returns empty context when no governance files exist`(
+        @TempDir tempDir: File,
+    ) {
         val ctx = GovernanceContextLoader().load(tempDir)
 
         assertEquals("", ctx.eagerRules)
@@ -99,14 +105,18 @@ class GovernanceContextLoaderTest {
     }
 
     @Test
-    fun `graphRelations is empty when no graph file is provided`(@TempDir tempDir: File) {
+    fun `graphRelations is empty when no graph file is provided`(
+        @TempDir tempDir: File,
+    ) {
         val ctx = GovernanceContextLoader().load(tempDir)
 
         assertEquals("", ctx.graphRelations)
     }
 
     @Test
-    fun `graphRelations contains real subgraph content when graph file is provided`(@TempDir tempDir: File) {
+    fun `graphRelations contains real subgraph content when graph file is provided`(
+        @TempDir tempDir: File,
+    ) {
         val graphFile = tempDir.resolve("graph.json")
         graphFile.writeText(mapper.writeValueAsString(syntheticGraph))
 
@@ -119,14 +129,18 @@ class GovernanceContextLoaderTest {
     }
 
     @Test
-    fun `graphRelations falls back to the missing file message when graph file does not exist`(@TempDir tempDir: File) {
+    fun `graphRelations falls back to the missing file message when graph file does not exist`(
+        @TempDir tempDir: File,
+    ) {
         val ctx = GovernanceContextLoader(graphFile = tempDir.resolve("missing/graph.json")).load(tempDir)
 
         assertEquals("[Graphify] graph.json non trouve dans office/", ctx.graphRelations)
     }
 
     @Test
-    fun `graphRelations falls back to the illisible message when graph file is malformed`(@TempDir tempDir: File) {
+    fun `graphRelations falls back to the illisible message when graph file is malformed`(
+        @TempDir tempDir: File,
+    ) {
         val graphFile = tempDir.resolve("graph.json").apply { writeText("this is not valid json") }
 
         val ctx = GovernanceContextLoader(graphFile = graphFile).load(tempDir)

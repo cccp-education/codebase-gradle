@@ -1,11 +1,13 @@
 package codebase.koog.tracking
 
 import org.gradle.testfixtures.ProjectBuilder
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DashboardTaskTest {
-
     @Test
     fun `task should be registered with correct group and description`() {
         val project = ProjectBuilder.builder().build()
@@ -23,11 +25,14 @@ class DashboardTaskTest {
 
         assertNull(task.connectionFactory)
 
-        val ex = assertThrows(IllegalStateException::class.java) {
-            task.executeDashboard()
-        }
-        assertTrue(ex.message?.contains("ConnectionFactory") == true,
-            "Should mention ConnectionFactory, got: ${ex.message}")
+        val ex =
+            assertThrows(IllegalStateException::class.java) {
+                task.executeDashboard()
+            }
+        assertTrue(
+            ex.message?.contains("ConnectionFactory") == true,
+            "Should mention ConnectionFactory, got: ${ex.message}",
+        )
     }
 
     @Test

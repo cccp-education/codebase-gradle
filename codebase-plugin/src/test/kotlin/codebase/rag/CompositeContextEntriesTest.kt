@@ -15,17 +15,17 @@ import kotlin.test.assertTrue
  *  - the Docs channel meta line of `CompositeContextBuilder`.
  */
 class CompositeContextEntriesTest {
-
-    private val result = RetrieveResult(
-        chunkId = 7L,
-        chunkIndex = 0,
-        chunkText = "referentiel competences",
-        sectionPath = "Chapter 3",
-        headingLevel = 1,
-        sourceDocument = "livre.adoc",
-        similarity = 0.512,
-        pages = listOf(40, 41)
-    )
+    private val result =
+        RetrieveResult(
+            chunkId = 7L,
+            chunkIndex = 0,
+            chunkText = "referentiel competences",
+            sectionPath = "Chapter 3",
+            headingLevel = 1,
+            sourceDocument = "livre.adoc",
+            similarity = 0.512,
+            pages = listOf(40, 41),
+        )
 
     @Test
     fun `codex entry exposes pages when present`() {

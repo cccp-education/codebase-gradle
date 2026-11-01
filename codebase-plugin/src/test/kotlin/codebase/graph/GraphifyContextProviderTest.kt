@@ -1,11 +1,11 @@
 package codebase.graph
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import graphify.model.GraphCommunity
 import graphify.model.GraphEdge
 import graphify.model.GraphModel
 import graphify.model.GraphNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -21,7 +21,6 @@ import java.io.File
  * Methodology: DDD/TDD baby steps — RED (unresolved reference) → GREEN.
  */
 class GraphifyContextProviderTest {
-
     @TempDir
     lateinit var tempDir: File
 

@@ -16,14 +16,14 @@ import contracts.llmpool.RotationStrategy
  * - PicoContainer crée une nouvelle instance par scénario
  */
 class PoolWorld {
-
     /** Modèles autorisés — identiques à OllamaPoolTest */
     companion object {
         val AUTHORIZED_PORTS = (11437..11465).toList()
-        val AUTHORIZED_MODELS = listOf(
-            "gpt-oss:120b-cloud",
-            "gemma4:31b-cloud"
-        )
+        val AUTHORIZED_MODELS =
+            listOf(
+                "gpt-oss:120b-cloud",
+                "gemma4:31b-cloud",
+            )
     }
 
     /** Le pool Ollama sous test */
@@ -45,33 +45,42 @@ class PoolWorld {
      * @param limit quota limit (default 10)
      * @param threshold pourcentage seuil (default 50)
      */
-    fun setupPool(count: Int, limit: Long = 10, threshold: Int = 50) {
+    fun setupPool(
+        count: Int,
+        limit: Long = 10,
+        threshold: Int = 50,
+    ) {
         val ids = ('a'..'z').take(count).map { it.toString() }
-        poolInstances = ids.mapIndexed { index, id ->
-            val port = AUTHORIZED_PORTS[index % AUTHORIZED_PORTS.size]
-            LlmInstance(
-                id = id,
-                baseUrl = "http://localhost:$port",
-                model = "gpt-oss:120b-cloud",
-                quota = QuotaConfig(limitValue = limit, thresholdPercent = threshold, resetPolicy = ResetPolicy.NEVER)
-            )
-        }
+        poolInstances =
+            ids.mapIndexed { index, id ->
+                val port = AUTHORIZED_PORTS[index % AUTHORIZED_PORTS.size]
+                LlmInstance(
+                    id = id,
+                    baseUrl = "http://localhost:$port",
+                    model = "gpt-oss:120b-cloud",
+                    quota = QuotaConfig(limitValue = limit, thresholdPercent = threshold, resetPolicy = ResetPolicy.NEVER),
+                )
+            }
         pool = OllamaPool(poolInstances, rotationStrategy = RotationStrategy.ROUND_ROBIN)
     }
 
     /**
      * Crée un pool complet 29 ports avec 2 modèles cyclés.
      */
-    fun setupFullPool(limit: Long = 10, threshold: Int = 50) {
-        poolInstances = AUTHORIZED_PORTS.mapIndexed { i, port ->
-            val model = AUTHORIZED_MODELS[i % AUTHORIZED_MODELS.size]
-            LlmInstance(
-                id = "ollama-$port",
-                baseUrl = "http://localhost:$port",
-                model = model,
-                quota = QuotaConfig(limitValue = limit, thresholdPercent = threshold, resetPolicy = ResetPolicy.NEVER)
-            )
-        }
+    fun setupFullPool(
+        limit: Long = 10,
+        threshold: Int = 50,
+    ) {
+        poolInstances =
+            AUTHORIZED_PORTS.mapIndexed { i, port ->
+                val model = AUTHORIZED_MODELS[i % AUTHORIZED_MODELS.size]
+                LlmInstance(
+                    id = "ollama-$port",
+                    baseUrl = "http://localhost:$port",
+                    model = model,
+                    quota = QuotaConfig(limitValue = limit, thresholdPercent = threshold, resetPolicy = ResetPolicy.NEVER),
+                )
+            }
         pool = OllamaPool(poolInstances, rotationStrategy = RotationStrategy.ROUND_ROBIN)
     }
 

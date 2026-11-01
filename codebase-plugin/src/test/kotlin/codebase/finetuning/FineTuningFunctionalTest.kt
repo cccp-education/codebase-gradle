@@ -10,9 +10,10 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class FineTuningFunctionalTest {
-
     @Test
-    fun `DSL block configures all 3 finetuning tasks end-to-end`(@TempDir tempDir: Path) {
+    fun `DSL block configures all 3 finetuning tasks end-to-end`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply(codebase.CodebasePlugin::class.java)
 
@@ -46,7 +47,9 @@ class FineTuningFunctionalTest {
     }
 
     @Test
-    fun `prepareFineTuningDataset executes via DSL extension values`(@TempDir tempDir: Path) {
+    fun `prepareFineTuningDataset executes via DSL extension values`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply(codebase.CodebasePlugin::class.java)
 
@@ -69,7 +72,9 @@ class FineTuningFunctionalTest {
     }
 
     @Test
-    fun `publishExpertToOllama registers fine-tuned expert via DSL extension values`(@TempDir tempDir: Path) {
+    fun `publishExpertToOllama registers fine-tuned expert via DSL extension values`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply(codebase.CodebasePlugin::class.java)
 
@@ -91,6 +96,11 @@ class FineTuningFunctionalTest {
         val resolved = registry.resolveByName("coding")
         assertNotNull(resolved)
         assertEquals("expert-coding", resolved?.modelName)
-        assertTrue(publish.manifestOutput.get().asFile.exists())
+        assertTrue(
+            publish.manifestOutput
+                .get()
+                .asFile
+                .exists(),
+        )
     }
 }

@@ -1,10 +1,10 @@
 package codebase.scenarios
 
-import contracts.context.CompositeContext
-import contracts.context.CompositeContextConfig
 import codebase.rag.CompositeContextBuilder
 import codebase.rag.EmbeddingPipeline
 import codebase.rag.VectorStore
+import contracts.context.CompositeContext
+import contracts.context.CompositeContextConfig
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.slf4j.LoggerFactory
@@ -14,31 +14,42 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class CompositeContextSteps {
-
     private val log = LoggerFactory.getLogger(CompositeContextSteps::class.java)
     private val ctx = PgVectorTestContext
     private var composite: CompositeContext? = null
 
     @When("I build a CompositeContext with the question {string} and budget {int}\\/{int}\\/{int}\\/{int}")
-    fun `build CompositeContext`(question: String, eagerPct: Int, ragPct: Int, graphifyPct: Int, docsPct: Int) {
+    fun `build CompositeContext`(
+        question: String,
+        eagerPct: Int,
+        ragPct: Int,
+        graphifyPct: Int,
+        docsPct: Int,
+    ) {
         val store = VectorStore(ctx.jdbcUrl(), ctx.jdbcUser(), ctx.jdbcPassword())
         val pipeline = EmbeddingPipeline(store)
-        val config = CompositeContextConfig(
-            totalTokenBudget = 8000,
-            budgetEagerLazy = eagerPct / 100.0,
-            budgetRag = ragPct / 100.0,
-            budgetGraphify = graphifyPct / 100.0,
-            budgetDocs = docsPct / 100.0,
-            budgetOverhead = 0.0
-        )
+        val config =
+            CompositeContextConfig(
+                totalTokenBudget = 8000,
+                budgetEagerLazy = eagerPct / 100.0,
+                budgetRag = ragPct / 100.0,
+                budgetGraphify = graphifyPct / 100.0,
+                budgetDocs = docsPct / 100.0,
+                budgetOverhead = 0.0,
+            )
         val workspaceRoot = File(".").absoluteFile.resolve("../../../..").normalize()
 
         val builder = CompositeContextBuilder(workspaceRoot, store, pipeline, config)
         composite = builder.build(question)
         CompositeContextHolder.set(composite!!)
 
-        log.info("CompositeContext built: EAGER={} chars, RAG={} chars, Graphify={} chars, Docs={} chars",
-            composite!!.eagerSection.length, composite!!.ragSection.length, composite!!.graphifySection.length, composite!!.docsSection.length)
+        log.info(
+            "CompositeContext built: EAGER={} chars, RAG={} chars, Graphify={} chars, Docs={} chars",
+            composite!!.eagerSection.length,
+            composite!!.ragSection.length,
+            composite!!.graphifySection.length,
+            composite!!.docsSection.length,
+        )
     }
 
     @Then("the composite context has EAGER, RAG, and Graphify sections")
@@ -52,7 +63,13 @@ class CompositeContextSteps {
     }
 
     @Then("the token budget totals {int} with split {int} EAGER, {int} RAG, {int} Graphify, {int} docs")
-    fun `token budget split`(total: Int, eager: Int, rag: Int, graphify: Int, docs: Int) {
+    fun `token budget split`(
+        total: Int,
+        eager: Int,
+        rag: Int,
+        graphify: Int,
+        docs: Int,
+    ) {
         val c = composite
         assertNotNull(c, "CompositeContext was not built")
         assertEquals(total, c.config.totalTokenBudget, "Total token budget mismatch")
@@ -68,21 +85,33 @@ class CompositeContextSteps {
         val c = composite
         assertNotNull(c, "CompositeContext was not built")
         val chunkCount = c.ragSection.lines().count { it.startsWith("[sim=") }
-        assertTrue(chunkCount >= minChunks,
-            "Expected at least $minChunks RAG chunks, got $chunkCount")
+        assertTrue(
+            chunkCount >= minChunks,
+            "Expected at least $minChunks RAG chunks, got $chunkCount",
+        )
         log.info("RAG section contains $chunkCount chunks (min required: $minChunks)")
     }
 
     @Then("each chunk has a similarity score between {double} and {double}")
-    fun `chunks have valid similarity scores`(min: Double, max: Double) {
+    fun `chunks have valid similarity scores`(
+        min: Double,
+        max: Double,
+    ) {
         val c = composite
         assertNotNull(c, "CompositeContext was not built")
         val simRegex = Regex("""\[sim=(-?\d+\.\d+)\]""")
         c.ragSection.lines().filter { it.startsWith("[sim=") }.forEach { line ->
-            val score = simRegex.find(line)?.groupValues?.get(1)?.toDoubleOrNull()
+            val score =
+                simRegex
+                    .find(line)
+                    ?.groupValues
+                    ?.get(1)
+                    ?.toDoubleOrNull()
             assertNotNull(score, "Missing similarity score in chunk: ${line.take(80)}")
-            assertTrue(score in min..max,
-                "Similarity $score out of range [$min, $max] for chunk: ${line.take(80)}")
+            assertTrue(
+                score in min..max,
+                "Similarity $score out of range [$min, $max] for chunk: ${line.take(80)}",
+            )
         }
         log.info("All RAG chunks have valid similarity scores in [$min, $max]")
     }

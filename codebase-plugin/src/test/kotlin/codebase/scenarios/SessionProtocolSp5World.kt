@@ -6,9 +6,9 @@ import codebase.koog.SessionProtocolTask
 import codebase.koog.ToolEventStream
 import codebase.koog.llm.FakeLlmProvider
 import codebase.koog.llm.LlmProvider
-import contracts.vibecoding.registry.ToolRegistry
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import contracts.vibecoding.registry.ToolRegistry
 import org.gradle.testfixtures.ProjectBuilder
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -33,37 +33,40 @@ class SessionProtocolSp5World {
         sessionId: String = "",
         maxActions: Int = 3,
         model: String = "",
-        failingProvider: Boolean = false
+        failingProvider: Boolean = false,
     ) {
         val projectDir = Files.createTempDirectory("sp5-cucumber").toFile()
         val customResponseFile = Files.createTempFile("sp5-response", ".json").toFile()
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(projectDir)
-            .withName("sp5-test")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(projectDir)
+                .withName("sp5-test")
+                .build()
         project.pluginManager.apply("java-base")
 
-        val task = project.tasks.register("sessionProtocol", SessionProtocolTask::class.java) {
-            it.action.set(action)
-            it.maxActions.set(maxActions)
-            it.responseFile.set(customResponseFile)
-            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
-            if (prompt.isNotBlank()) it.prompt.set(prompt)
-            if (sessionId.isNotBlank()) it.sessionId.set(sessionId)
-            if (model.isNotBlank()) it.model.set(model)
-        }.get()
+        val task =
+            project.tasks
+                .register("sessionProtocol", SessionProtocolTask::class.java) {
+                    it.action.set(action)
+                    it.maxActions.set(maxActions)
+                    it.responseFile.set(customResponseFile)
+                    it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+                    if (prompt.isNotBlank()) it.prompt.set(prompt)
+                    if (sessionId.isNotBlank()) it.sessionId.set(sessionId)
+                    if (model.isNotBlank()) it.model.set(model)
+                }.get()
 
         task.toolRegistry = ToolRegistry()
         task.lifecycleManager = lifecycleManager
         task.eventStream = eventStream
 
         if (useFailingProvider) {
-            task.llmProvider = object : LlmProvider {
-                override suspend fun call(prompt: String): String {
-                    throw RuntimeException("Simulated LLM failure")
+            task.llmProvider =
+                object : LlmProvider {
+                    override suspend fun call(prompt: String): String = throw RuntimeException("Simulated LLM failure")
                 }
-            }
         } else {
             task.llmProvider = FakeLlmProvider()
         }
@@ -84,25 +87,32 @@ class SessionProtocolSp5World {
         val stdin = ByteArrayInputStream(input.toByteArray(StandardCharsets.UTF_8))
         val stdout = ByteArrayOutputStream()
 
-        val server = SessionProtocolServer(
-            workspaceRoot = Files.createTempDirectory("sp5-server").toString(),
-            toolRegistry = ToolRegistry(),
-            llmProvider = FakeLlmProvider(),
-            eventStream = serverEventStream
-        )
+        val server =
+            SessionProtocolServer(
+                workspaceRoot = Files.createTempDirectory("sp5-server").toString(),
+                toolRegistry = ToolRegistry(),
+                llmProvider = FakeLlmProvider(),
+                eventStream = serverEventStream,
+            )
         server.run(stdin, stdout)
     }
 
     fun eventLines(): List<Map<String, Any>> {
         val mapper = jacksonObjectMapper()
-        return eventOutput.toString(StandardCharsets.UTF_8).trim().lines()
+        return eventOutput
+            .toString(StandardCharsets.UTF_8)
+            .trim()
+            .lines()
             .filter { it.isNotBlank() }
             .map { mapper.readValue<Map<String, Any>>(it) }
     }
 
     fun serverEventLines(): List<Map<String, Any>> {
         val mapper = jacksonObjectMapper()
-        return serverOutput.toString(StandardCharsets.UTF_8).trim().lines()
+        return serverOutput
+            .toString(StandardCharsets.UTF_8)
+            .trim()
+            .lines()
             .filter { it.isNotBlank() }
             .map { mapper.readValue<Map<String, Any>>(it) }
     }

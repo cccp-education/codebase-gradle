@@ -24,41 +24,46 @@ class SessionProtocolSp6World {
         sessionId: String = "",
         maxActions: Int = 3,
         model: String = "",
-        useContextFile: Boolean = false
+        useContextFile: Boolean = false,
     ) {
         val projectDir = Files.createTempDirectory("sp6-cucumber").toFile()
         val customResponseFile = Files.createTempFile("sp6-response", ".json").toFile()
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(projectDir)
-            .withName("sp6-test")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(projectDir)
+                .withName("sp6-test")
+                .build()
         project.pluginManager.apply("java-base")
 
-        val task = project.tasks.register("sessionProtocol", SessionProtocolTask::class.java) {
-            it.action.set(action)
-            it.maxActions.set(maxActions)
-            it.responseFile.set(customResponseFile)
-            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
-            if (prompt.isNotBlank()) it.prompt.set(prompt)
-            if (sessionId.isNotBlank()) it.sessionId.set(sessionId)
-            if (model.isNotBlank()) it.model.set(model)
-            if (useContextFile && contextFile != null) {
-                it.contextFile.set(project.layout.projectDirectory.file(contextFile!!.name))
-                contextFile!!.copyTo(File(projectDir, contextFile!!.name), overwrite = true)
-            }
-        }.get()
+        val task =
+            project.tasks
+                .register("sessionProtocol", SessionProtocolTask::class.java) {
+                    it.action.set(action)
+                    it.maxActions.set(maxActions)
+                    it.responseFile.set(customResponseFile)
+                    it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+                    if (prompt.isNotBlank()) it.prompt.set(prompt)
+                    if (sessionId.isNotBlank()) it.sessionId.set(sessionId)
+                    if (model.isNotBlank()) it.model.set(model)
+                    if (useContextFile && contextFile != null) {
+                        it.contextFile.set(project.layout.projectDirectory.file(contextFile!!.name))
+                        contextFile!!.copyTo(File(projectDir, contextFile!!.name), overwrite = true)
+                    }
+                }.get()
 
         task.toolRegistry = ToolRegistry()
         task.lifecycleManager = lifecycleManager
         task.liveContextInjector = LiveContextInjector()
 
-        val capturingProvider = object : codebase.koog.llm.LlmProvider {
-            override suspend fun call(prompt: String): String {
-                llmPromptReceived = prompt
-                return FakeLlmProvider().call(prompt)
+        val capturingProvider =
+            object : codebase.koog.llm.LlmProvider {
+                override suspend fun call(prompt: String): String {
+                    llmPromptReceived = prompt
+                    return FakeLlmProvider().call(prompt)
+                }
             }
-        }
         task.llmProvider = capturingProvider
 
         try {
@@ -72,15 +77,21 @@ class SessionProtocolSp6World {
         }
     }
 
-    fun createContextFile(eagerRules: String, backlogItems: List<String>) {
+    fun createContextFile(
+        eagerRules: String,
+        backlogItems: List<String>,
+    ) {
         val file = Files.createTempFile("sp6-context", ".json").toFile()
-        val context = AgentContext(
-            eagerRules = eagerRules,
-            ragChunks = emptyList(),
-            graphRelations = "",
-            backlogItems = backlogItems
-        )
-        val mapper = com.fasterxml.jackson.databind.ObjectMapper()
+        val context =
+            AgentContext(
+                eagerRules = eagerRules,
+                ragChunks = emptyList(),
+                graphRelations = "",
+                backlogItems = backlogItems,
+            )
+        val mapper =
+            com.fasterxml.jackson.databind
+                .ObjectMapper()
         file.writeText(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(context))
         contextFile = file
     }

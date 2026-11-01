@@ -6,7 +6,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GovernanceSummaryConfigTest {
-
     @Test
     fun `defaults are retro-compatible`() {
         val config = GovernanceSummaryConfig()

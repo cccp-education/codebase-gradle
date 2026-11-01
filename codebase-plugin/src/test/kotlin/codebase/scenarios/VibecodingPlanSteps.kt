@@ -10,8 +10,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class VibecodingPlanSteps(private val world: VibecodingPlanWorld) {
-
+class VibecodingPlanSteps(
+    private val world: VibecodingPlanWorld,
+) {
     @Before("@epic_x_1")
     fun reset() {
         world.reset()
@@ -23,17 +24,31 @@ class VibecodingPlanSteps(private val world: VibecodingPlanWorld) {
     }
 
     @When("I add step {string} with gradle task {string} and expected output {string}")
-    fun `add step`(description: String, gradleTask: String, expectedOutput: String) {
+    fun `add step`(
+        description: String,
+        gradleTask: String,
+        expectedOutput: String,
+    ) {
         world.steps.add(VibecodingStep(description, gradleTask, expectedOutput))
     }
 
     @When("I add step {string} with gradle task {string} expected output {string} and maxRetries {int}")
-    fun `add step with maxRetries`(description: String, gradleTask: String, expectedOutput: String, maxRetries: Int) {
+    fun `add step with maxRetries`(
+        description: String,
+        gradleTask: String,
+        expectedOutput: String,
+        maxRetries: Int,
+    ) {
         world.steps.add(VibecodingStep(description, gradleTask, expectedOutput, maxRetries = maxRetries))
     }
 
     @When("I add step {string} with gradle task {string} expected output {string} and verifyHook {string}")
-    fun `add step with verifyHook`(description: String, gradleTask: String, expectedOutput: String, verifyHook: String) {
+    fun `add step with verifyHook`(
+        description: String,
+        gradleTask: String,
+        expectedOutput: String,
+        verifyHook: String,
+    ) {
         world.steps.add(VibecodingStep(description, gradleTask, expectedOutput, verifyHook = verifyHook))
     }
 
@@ -50,7 +65,10 @@ class VibecodingPlanSteps(private val world: VibecodingPlanWorld) {
     }
 
     @Then("step {int} has description {string}")
-    fun `step N has description`(index: Int, description: String) {
+    fun `step N has description`(
+        index: Int,
+        description: String,
+    ) {
         assertNotNull(world.plan)
         assertEquals(description, world.plan!!.steps[index - 1].description)
     }
@@ -63,7 +81,10 @@ class VibecodingPlanSteps(private val world: VibecodingPlanWorld) {
     }
 
     @Then("step {string} has maxRetries {int}")
-    fun `step has maxRetries`(description: String, maxRetries: Int) {
+    fun `step has maxRetries`(
+        description: String,
+        maxRetries: Int,
+    ) {
         world.build()
         assertNotNull(world.plan)
         val step = world.plan!!.steps.find { it.description == description }
@@ -72,7 +93,10 @@ class VibecodingPlanSteps(private val world: VibecodingPlanWorld) {
     }
 
     @Then("step {string} has verifyHook {string}")
-    fun `step has verifyHook`(description: String, verifyHook: String) {
+    fun `step has verifyHook`(
+        description: String,
+        verifyHook: String,
+    ) {
         world.build()
         assertNotNull(world.plan)
         val step = world.plan!!.steps.find { it.description == description }

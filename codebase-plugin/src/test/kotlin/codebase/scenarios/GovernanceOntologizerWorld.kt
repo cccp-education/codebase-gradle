@@ -2,20 +2,17 @@ package codebase.scenarios
 
 import codebase.koog.agentic.AgenticChunk
 import codebase.koog.agentic.ChunkType
-import codebase.koog.agentic.DagLevel
 import codebase.koog.agentic.GovernanceOntologizer
 import codebase.koog.agentic.GovernanceSection
-import codebase.koog.agentic.TaxonomyVerb
 
 class GovernanceOntologizerWorld {
-
     val ontologizer = GovernanceOntologizer()
 
     var lastChunk: AgenticChunk? = null
     var lastSection: GovernanceSection? = null
 
-    fun buildChunk(sourceFile: String): AgenticChunk {
-        return AgenticChunk(
+    fun buildChunk(sourceFile: String): AgenticChunk =
+        AgenticChunk(
             id = "id-$sourceFile",
             sourceFile = sourceFile,
             sourceLines = "1-3",
@@ -26,9 +23,8 @@ class GovernanceOntologizerWorld {
             dagLevel = null,
             circle = null,
             weight = 0.5,
-            checksum = "checksum-$sourceFile"
+            checksum = "checksum-$sourceFile",
         )
-    }
 
     fun reset() {
         lastChunk = null

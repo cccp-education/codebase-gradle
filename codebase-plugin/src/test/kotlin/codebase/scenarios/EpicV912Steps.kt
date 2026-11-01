@@ -10,13 +10,11 @@ import io.cucumber.java.en.When
 import org.gradle.testfixtures.ProjectBuilder
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import kotlin.test.assertFalse
 
 class EpicV912Steps {
-
     private lateinit var tempDir: Path
     private var report: IngestionReport? = null
     private var executor: AgenticExecutor? = null
@@ -29,16 +27,21 @@ class EpicV912Steps {
     }
 
     @Given("a governance file {string} with content")
-    fun `governance file with content`(fileName: String, content: String) {
+    fun `governance file with content`(
+        fileName: String,
+        content: String,
+    ) {
         tempDir.resolve(fileName).toFile().writeText(content.trimIndent())
     }
 
     @When("I ingest the governance file")
     fun `ingest the governance file`() {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
-        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
-            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
-        }.get()
+        val task =
+            project.tasks
+                .register("ingestGovernance", IngestGovernanceTask::class.java) {
+                    it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+                }.get()
 
         task.executeIngest()
 
@@ -54,7 +57,10 @@ class EpicV912Steps {
     }
 
     @Then("the executor blocks tool {string} with command {string}")
-    fun `executor blocks shell command`(toolName: String, command: String) {
+    fun `executor blocks shell command`(
+        toolName: String,
+        command: String,
+    ) {
         val ex = executor ?: error("No executor")
         val result = ex.check(toolName, mapOf("command" to command))
         assertFalse(result.allowed, "Expected $toolName '$command' to be blocked")
@@ -62,7 +68,10 @@ class EpicV912Steps {
     }
 
     @Then("the executor blocks tool {string} with task {string}")
-    fun `executor blocks gradle task`(toolName: String, task: String) {
+    fun `executor blocks gradle task`(
+        toolName: String,
+        task: String,
+    ) {
         val ex = executor ?: error("No executor")
         val result = ex.check(toolName, mapOf("task" to task))
         assertFalse(result.allowed, "Expected $toolName '$task' to be blocked")
@@ -70,14 +79,20 @@ class EpicV912Steps {
     }
 
     @Then("the executor allows tool {string} with command {string}")
-    fun `executor allows shell command`(toolName: String, command: String) {
+    fun `executor allows shell command`(
+        toolName: String,
+        command: String,
+    ) {
         val ex = executor ?: error("No executor")
         val result = ex.check(toolName, mapOf("command" to command))
         assertTrue(result.allowed, "Expected $toolName '$command' to be allowed")
     }
 
     @Then("the executor allows tool {string} with task {string}")
-    fun `executor allows gradle task`(toolName: String, task: String) {
+    fun `executor allows gradle task`(
+        toolName: String,
+        task: String,
+    ) {
         val ex = executor ?: error("No executor")
         val result = ex.check(toolName, mapOf("task" to task))
         assertTrue(result.allowed, "Expected $toolName '$task' to be allowed")

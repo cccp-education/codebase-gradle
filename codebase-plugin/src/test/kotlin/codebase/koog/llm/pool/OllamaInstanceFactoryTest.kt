@@ -6,7 +6,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class OllamaInstanceFactoryTest {
-
     @Test
     fun `create should build single instance`() {
         val instances = OllamaInstanceFactory.create(11437..11437)
@@ -31,8 +30,11 @@ class OllamaInstanceFactoryTest {
         val instances = OllamaInstanceFactory.create(11437..11439)
 
         for (instance in instances) {
-            assertEquals(instance.id, instance.volumeTag,
-                "volumeTag must match id for SSH volume identity")
+            assertEquals(
+                instance.id,
+                instance.volumeTag,
+                "volumeTag must match id for SSH volume identity",
+            )
         }
     }
 
@@ -40,10 +42,11 @@ class OllamaInstanceFactoryTest {
     fun `create should cycle through all 2 authorized models`() {
         val instances = OllamaInstanceFactory.create(11437..11438)
 
-        val expectedModels = listOf(
-            "gpt-oss:120b-cloud",
-            "gemma4:31b-cloud"
-        )
+        val expectedModels =
+            listOf(
+                "gpt-oss:120b-cloud",
+                "gemma4:31b-cloud",
+            )
         assertEquals(expectedModels, instances.map { it.model })
     }
 
@@ -53,8 +56,11 @@ class OllamaInstanceFactoryTest {
 
         assertEquals(3, instances.size)
         assertEquals("gpt-oss:120b-cloud", instances[0].model)
-        assertEquals("gpt-oss:120b-cloud", instances[2].model,
-            "3rd instance should wrap back to the first authorized model")
+        assertEquals(
+            "gpt-oss:120b-cloud",
+            instances[2].model,
+            "3rd instance should wrap back to the first authorized model",
+        )
     }
 
     @Test
@@ -85,14 +91,17 @@ class OllamaInstanceFactoryTest {
         assertTrue("gemma4:31b-cloud" in models, "gemma4:31b-cloud must be present in the pool")
     }
 
-    private fun expectedInstance(port: Int, id: String, model: String): LlmInstance =
+    private fun expectedInstance(
+        port: Int,
+        id: String,
+        model: String,
+    ): LlmInstance =
         LlmInstance(
             id = id,
             baseUrl = "http://localhost:$port",
             model = model,
-            volumeTag = id
+            volumeTag = id,
         )
 
-    private fun extractPort(instance: LlmInstance): Int =
-        instance.baseUrl.removePrefix("http://localhost:").toInt()
+    private fun extractPort(instance: LlmInstance): Int = instance.baseUrl.removePrefix("http://localhost:").toInt()
 }

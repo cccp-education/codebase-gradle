@@ -17,17 +17,18 @@ import kotlin.test.assertNotNull
  * Scope (US-8.1): codebase only, additive.
  */
 class LlmBuildServiceFunctionalTest {
-
     @Test
     fun `BuildService is registrable via sharedServices`() {
         val project = ProjectBuilder.builder().build()
-        val serviceProvider = project.gradle.sharedServices.registerIfAbsent(
-            "llmBuildService", LlmBuildService::class.java
-        ) { spec ->
-            spec.parameters.model.set("ollama")
-            spec.parameters.ollamaPoolPorts.set("")
-            spec.maxParallelUsages.set(1)
-        }
+        val serviceProvider =
+            project.gradle.sharedServices.registerIfAbsent(
+                "llmBuildService",
+                LlmBuildService::class.java,
+            ) { spec ->
+                spec.parameters.model.set("ollama")
+                spec.parameters.ollamaPoolPorts.set("")
+                spec.maxParallelUsages.set(1)
+            }
 
         assertNotNull(serviceProvider, "sharedServices.registerIfAbsent should return a non-null provider")
     }
@@ -35,13 +36,15 @@ class LlmBuildServiceFunctionalTest {
     @Test
     fun `BuildService provider returns non-null for ollama`() {
         val project = ProjectBuilder.builder().build()
-        val serviceProvider = project.gradle.sharedServices.registerIfAbsent(
-            "llmBuildServiceOllama", LlmBuildService::class.java
-        ) { spec ->
-            spec.parameters.model.set("ollama")
-            spec.parameters.ollamaPoolPorts.set("")
-            spec.maxParallelUsages.set(1)
-        }
+        val serviceProvider =
+            project.gradle.sharedServices.registerIfAbsent(
+                "llmBuildServiceOllama",
+                LlmBuildService::class.java,
+            ) { spec ->
+                spec.parameters.model.set("ollama")
+                spec.parameters.ollamaPoolPorts.set("")
+                spec.maxParallelUsages.set(1)
+            }
 
         val service = serviceProvider.get()
         val provider = service.provider()
@@ -51,13 +54,15 @@ class LlmBuildServiceFunctionalTest {
     @Test
     fun `BuildService provider returns non-null for gemini`() {
         val project = ProjectBuilder.builder().build()
-        val serviceProvider = project.gradle.sharedServices.registerIfAbsent(
-            "llmBuildServiceGemini", LlmBuildService::class.java
-        ) { spec ->
-            spec.parameters.model.set("gemini")
-            spec.parameters.ollamaPoolPorts.set("")
-            spec.maxParallelUsages.set(1)
-        }
+        val serviceProvider =
+            project.gradle.sharedServices.registerIfAbsent(
+                "llmBuildServiceGemini",
+                LlmBuildService::class.java,
+            ) { spec ->
+                spec.parameters.model.set("gemini")
+                spec.parameters.ollamaPoolPorts.set("")
+                spec.maxParallelUsages.set(1)
+            }
 
         val service = serviceProvider.get()
         val provider = service.provider()

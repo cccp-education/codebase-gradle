@@ -4,24 +4,32 @@ import contracts.llmpool.LlmInstance
 import contracts.llmpool.QuotaConfig
 import contracts.llmpool.ResetPolicy
 import contracts.llmpool.RotationStrategy
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class OllamaPoolKeyAdapterTest {
-
-    private fun instance(id: String, port: Int, limit: Long = 10, threshold: Int = 50) =
-        LlmInstance(
-            id = id,
-            baseUrl = "http://localhost:$port",
-            model = "gpt-oss:120b-cloud",
-            quota = QuotaConfig(limitValue = limit, thresholdPercent = threshold, resetPolicy = ResetPolicy.NEVER)
-        )
+    private fun instance(
+        id: String,
+        port: Int,
+        limit: Long = 10,
+        threshold: Int = 50,
+    ) = LlmInstance(
+        id = id,
+        baseUrl = "http://localhost:$port",
+        model = "gpt-oss:120b-cloud",
+        quota = QuotaConfig(limitValue = limit, thresholdPercent = threshold, resetPolicy = ResetPolicy.NEVER),
+    )
 
     @Test
     fun `nextInstance should skip inactive instance`() {
-        val pool = OllamaPool(
-            listOf(instance("a", 11437), instance("b", 11438)),
-            rotationStrategy = RotationStrategy.ROUND_ROBIN
-        )
+        val pool =
+            OllamaPool(
+                listOf(instance("a", 11437), instance("b", 11438)),
+                rotationStrategy = RotationStrategy.ROUND_ROBIN,
+            )
         val adapter = OllamaPoolKeyAdapter(pool)
 
         adapter.markInactiveForTest("a")
@@ -32,10 +40,11 @@ class OllamaPoolKeyAdapterTest {
 
     @Test
     fun `nextInstance should skip quota exceeded instance`() {
-        val pool = OllamaPool(
-            listOf(instance("a", 11437, limit = 2, threshold = 50), instance("b", 11438)),
-            rotationStrategy = RotationStrategy.ROUND_ROBIN
-        )
+        val pool =
+            OllamaPool(
+                listOf(instance("a", 11437, limit = 2, threshold = 50), instance("b", 11438)),
+                rotationStrategy = RotationStrategy.ROUND_ROBIN,
+            )
         val adapter = OllamaPoolKeyAdapter(pool)
 
         repeat(2) { adapter.nextInstance() } // a puis b ; a atteint son seuil
@@ -56,20 +65,22 @@ class OllamaPoolKeyAdapterTest {
 
     @Test
     fun `callWithRotation should rotate on quota exceeded`() {
-        val pool = OllamaPool(
-            listOf(instance("a", 11437), instance("b", 11438)),
-            rotationStrategy = RotationStrategy.ROUND_ROBIN
-        )
+        val pool =
+            OllamaPool(
+                listOf(instance("a", 11437), instance("b", 11438)),
+                rotationStrategy = RotationStrategy.ROUND_ROBIN,
+            )
         val adapter = OllamaPoolKeyAdapter(pool)
         var calls = 0
 
-        val result = adapter.callWithRotation { instance ->
-            calls++
-            if (instance.id == "a") {
-                throw RuntimeException("quota exceeded for ${instance.id}")
+        val result =
+            adapter.callWithRotation { instance ->
+                calls++
+                if (instance.id == "a") {
+                    throw RuntimeException("quota exceeded for ${instance.id}")
+                }
+                "ok-${instance.id}"
             }
-            "ok-${instance.id}"
-        }
 
         assertEquals("ok-b", result)
         assertEquals(2, calls)
@@ -77,20 +88,22 @@ class OllamaPoolKeyAdapterTest {
 
     @Test
     fun `callWithRotation should mark connection refused as inactive and rotate`() {
-        val pool = OllamaPool(
-            listOf(instance("a", 11437), instance("b", 11438)),
-            rotationStrategy = RotationStrategy.ROUND_ROBIN
-        )
+        val pool =
+            OllamaPool(
+                listOf(instance("a", 11437), instance("b", 11438)),
+                rotationStrategy = RotationStrategy.ROUND_ROBIN,
+            )
         val adapter = OllamaPoolKeyAdapter(pool)
         var calls = 0
 
-        val result = adapter.callWithRotation { instance ->
-            calls++
-            if (instance.id == "a") {
-                throw RuntimeException("Connection refused")
+        val result =
+            adapter.callWithRotation { instance ->
+                calls++
+                if (instance.id == "a") {
+                    throw RuntimeException("Connection refused")
+                }
+                "ok-${instance.id}"
             }
-            "ok-${instance.id}"
-        }
 
         assertEquals("ok-b", result)
         assertTrue(adapter.isInactive("a"))
@@ -99,24 +112,26 @@ class OllamaPoolKeyAdapterTest {
 
     @Test
     fun `callWithRotation should rotate on real Ollama Cloud monthly usage limit`() {
-        val pool = OllamaPool(
-            listOf(instance("a", 11437), instance("b", 11439)),
-            rotationStrategy = RotationStrategy.ROUND_ROBIN
-        )
+        val pool =
+            OllamaPool(
+                listOf(instance("a", 11437), instance("b", 11439)),
+                rotationStrategy = RotationStrategy.ROUND_ROBIN,
+            )
         val adapter = OllamaPoolKeyAdapter(pool)
         var calls = 0
 
-        val result = adapter.callWithRotation { instance ->
-            calls++
-            if (instance.id == "a") {
-                throw RuntimeException(
-                    """{"error":"you (test-account) have reached your monthly usage limit, """ +
-                        """upgrade for higher limits: https://ollama.com/upgrade or add usage credits: """ +
-                        """https://ollama.com/settings (ref: 0e1bd4da-2c19-4ad7-b09a-7487ff620ec8)"}"""
-                )
+        val result =
+            adapter.callWithRotation { instance ->
+                calls++
+                if (instance.id == "a") {
+                    throw RuntimeException(
+                        """{"error":"you (test-account) have reached your monthly usage limit, """ +
+                            """upgrade for higher limits: https://ollama.com/upgrade or add usage credits: """ +
+                            """https://ollama.com/settings (ref: 0e1bd4da-2c19-4ad7-b09a-7487ff620ec8)"}""",
+                    )
+                }
+                "ok-${instance.id}"
             }
-            "ok-${instance.id}"
-        }
 
         assertEquals("ok-b", result, "Monthly usage limit must trigger rotation to the next instance")
         assertEquals(2, calls)

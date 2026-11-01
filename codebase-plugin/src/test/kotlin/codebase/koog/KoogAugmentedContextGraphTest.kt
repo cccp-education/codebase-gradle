@@ -9,27 +9,28 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class KoogAugmentedContextGraphTest {
-
     @Test
-    fun `graph includes buildContext classify and plan nodes`() = runBlocking {
-        val graph = KoogAugmentedContextGraph()
+    fun `graph includes buildContext classify and plan nodes`() =
+        runBlocking {
+            val graph = KoogAugmentedContextGraph()
 
-        assertNotNull(graph.graph, "Graph should be created")
-        val mermaid = graph.asMermaidDiagram()
-        assertNotNull(mermaid, "Mermaid diagram should be generated")
-        assertTrue(mermaid.contains("buildContext"), "Mermaid must contain buildContext node")
-        assertTrue(mermaid.contains("classify"), "Mermaid must contain classify node")
-        assertTrue(mermaid.contains("plan"), "Mermaid must contain plan node")
-        assertTrue(mermaid.contains("-->"), "Mermaid must contain graph edges")
-    }
+            assertNotNull(graph.graph, "Graph should be created")
+            val mermaid = graph.asMermaidDiagram()
+            assertNotNull(mermaid, "Mermaid diagram should be generated")
+            assertTrue(mermaid.contains("buildContext"), "Mermaid must contain buildContext node")
+            assertTrue(mermaid.contains("classify"), "Mermaid must contain classify node")
+            assertTrue(mermaid.contains("plan"), "Mermaid must contain plan node")
+            assertTrue(mermaid.contains("-->"), "Mermaid must contain graph edges")
+        }
 
     @Test
     fun `execute state transitions without pgvector does not crash`() {
         val graph = KoogAugmentedContextGraph()
-        val state = AugmentedState(
-            intention = "Add dark mode toggle",
-            workspaceRoot = "/tmp/test-workspace"
-        )
+        val state =
+            AugmentedState(
+                intention = "Add dark mode toggle",
+                workspaceRoot = "/tmp/test-workspace",
+            )
 
         // L-3 : execute() remplace processState()
         // Sans pgvector, buildContext échoue gracieusement — pas de crash
@@ -45,10 +46,11 @@ class KoogAugmentedContextGraphTest {
     @Test
     fun `execute classifies simple intention correctly`() {
         val graph = KoogAugmentedContextGraph()
-        val state = AugmentedState(
-            intention = "Add dark mode toggle",
-            workspaceRoot = "/tmp/test-workspace"
-        )
+        val state =
+            AugmentedState(
+                intention = "Add dark mode toggle",
+                workspaceRoot = "/tmp/test-workspace",
+            )
 
         val resultState = graph.execute(state)
 
@@ -56,17 +58,18 @@ class KoogAugmentedContextGraphTest {
         // Sans pgvector : classification = "simple" (fallback)
         assertTrue(
             resultState.classification == "simple",
-            "Short intention without pgvector should classify as 'simple'"
+            "Short intention without pgvector should classify as 'simple'",
         )
     }
 
     @Test
     fun `execute classifies complex cross-borough intention`() {
         val graph = KoogAugmentedContextGraph()
-        val state = AugmentedState(
-            intention = "Refactor cross-borough DAG N1→N2→N3 pour intégration multi-plugins avec architecture distribuée",
-            workspaceRoot = "/tmp/test-workspace"
-        )
+        val state =
+            AugmentedState(
+                intention = "Refactor cross-borough DAG N1→N2→N3 pour intégration multi-plugins avec architecture distribuée",
+                workspaceRoot = "/tmp/test-workspace",
+            )
 
         val resultState = graph.execute(state)
 
@@ -74,20 +77,21 @@ class KoogAugmentedContextGraphTest {
         // Heuristique : longueur >80 ou mots-clés cross-borough/multi-plugins/architecture → "complexe"
         assertTrue(
             resultState.classification == "complexe",
-            "Long cross-borough intention should classify as 'complexe'"
+            "Long cross-borough intention should classify as 'complexe'",
         )
     }
 
     @Test
     fun `augmented state wraps compositeContext and plan fields`() {
-        val state = AugmentedState(
-            intention = "test",
-            workspaceRoot = "/tmp/test",
-            compositeContext = null,
-            plan = null,
-            planError = null,
-            error = null
-        )
+        val state =
+            AugmentedState(
+                intention = "test",
+                workspaceRoot = "/tmp/test",
+                compositeContext = null,
+                plan = null,
+                planError = null,
+                error = null,
+            )
 
         assertNotNull(state)
         assertEquals("test", state.intention)

@@ -8,33 +8,34 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class AgenticExecutorTest {
-
     private val compiler = AgenticCompiler()
 
     private fun buildExecutable(
         content: String,
         chunkType: ChunkType = ChunkType.RULE,
-        verb: TaxonomyVerb? = TaxonomyVerb.INTERDIRE
+        verb: TaxonomyVerb? = TaxonomyVerb.INTERDIRE,
     ): ExecutableArtifact {
-        val chunk = AgenticChunk(
-            id = "rule-${content.hashCode()}",
-            sourceFile = "AGENT.adoc",
-            sourceLines = "1-5",
-            chunkType = chunkType,
-            content = content,
-            verb = verb,
-            domain = "codebase",
-            dagLevel = DagLevel.N1,
-            circle = 4,
-            weight = 1.0,
-            checksum = "sha256-${content.hashCode()}"
-        )
-        val ontologized = OntologizedChunk(
-            chunk = chunk,
-            taxonomySection = TaxonomySection.PRINCIPES,
-            ontologyConfidence = 0.9,
-            relatedChunkIds = emptyList()
-        )
+        val chunk =
+            AgenticChunk(
+                id = "rule-${content.hashCode()}",
+                sourceFile = "AGENT.adoc",
+                sourceLines = "1-5",
+                chunkType = chunkType,
+                content = content,
+                verb = verb,
+                domain = "codebase",
+                dagLevel = DagLevel.N1,
+                circle = 4,
+                weight = 1.0,
+                checksum = "sha256-${content.hashCode()}",
+            )
+        val ontologized =
+            OntologizedChunk(
+                chunk = chunk,
+                taxonomySection = TaxonomySection.PRINCIPES,
+                ontologyConfidence = 0.9,
+                relatedChunkIds = emptyList(),
+            )
         return compiler.compileExecutable(ontologized)
     }
 
@@ -55,9 +56,10 @@ class AgenticExecutorTest {
 
     @Test
     fun `should block forbidden git push via exec_shell`() {
-        val executor = AgenticExecutor(
-            executables = listOf(buildExecutable("INTERDICTION FORMELLE de git push sans permission."))
-        )
+        val executor =
+            AgenticExecutor(
+                executables = listOf(buildExecutable("INTERDICTION FORMELLE de git push sans permission.")),
+            )
 
         val result = executor.check("exec_shell", mapOf("command" to "git push origin main"))
 
@@ -68,9 +70,10 @@ class AgenticExecutorTest {
 
     @Test
     fun `should allow git push with dry-run exception`() {
-        val executor = AgenticExecutor(
-            executables = listOf(buildExecutable("INTERDICTION FORMELLE de git push sauf avec --dry-run."))
-        )
+        val executor =
+            AgenticExecutor(
+                executables = listOf(buildExecutable("INTERDICTION FORMELLE de git push sauf avec --dry-run.")),
+            )
 
         val result = executor.check("exec_shell", mapOf("command" to "git push --dry-run origin main"))
 
@@ -79,9 +82,10 @@ class AgenticExecutorTest {
 
     @Test
     fun `should allow unrelated tool calls`() {
-        val executor = AgenticExecutor(
-            executables = listOf(buildExecutable("INTERDICTION FORMELLE de git push sans permission."))
-        )
+        val executor =
+            AgenticExecutor(
+                executables = listOf(buildExecutable("INTERDICTION FORMELLE de git push sans permission.")),
+            )
 
         assertTrue(executor.check("exec_gradle", mapOf("task" to "build")).allowed)
         assertTrue(executor.check("exec_shell", mapOf("command" to "ls -la")).allowed)
@@ -89,9 +93,10 @@ class AgenticExecutorTest {
 
     @Test
     fun `should block gradle publish via exec_gradle`() {
-        val executor = AgenticExecutor(
-            executables = listOf(buildExecutable("INTERDICTION FORMELLE de ./gradlew publish sans verification."))
-        )
+        val executor =
+            AgenticExecutor(
+                executables = listOf(buildExecutable("INTERDICTION FORMELLE de ./gradlew publish sans verification.")),
+            )
 
         val result = executor.check("exec_gradle", mapOf("task" to "publish"))
 
@@ -100,9 +105,10 @@ class AgenticExecutorTest {
 
     @Test
     fun `should allow gradle publish with dry-run exception`() {
-        val executor = AgenticExecutor(
-            executables = listOf(buildExecutable("INTERDICTION FORMELLE de ./gradlew publish sauf --dry-run."))
-        )
+        val executor =
+            AgenticExecutor(
+                executables = listOf(buildExecutable("INTERDICTION FORMELLE de ./gradlew publish sauf --dry-run.")),
+            )
 
         val result = executor.check("exec_gradle", mapOf("task" to "publish --dry-run"))
 
@@ -123,11 +129,12 @@ class AgenticExecutorTest {
 
     @Test
     fun `should ignore non hook artifacts`() {
-        val metadata = buildExecutable(
-            content = ":date: 2026-06-23",
-            chunkType = ChunkType.METADATA,
-            verb = null
-        )
+        val metadata =
+            buildExecutable(
+                content = ":date: 2026-06-23",
+                chunkType = ChunkType.METADATA,
+                verb = null,
+            )
         val preHook = buildExecutable("INTERDICTION FORMELLE de git push sans permission.")
         val executor = AgenticExecutor(executables = listOf(metadata, preHook))
 

@@ -9,7 +9,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class KoogPlanningOrchestratorTest {
-
     @Test
     fun `orchestrator can be instantiated`() {
         val orchestrator = KoogPlanningOrchestrator()
@@ -17,12 +16,15 @@ class KoogPlanningOrchestratorTest {
     }
 
     @Test
-    fun `execute returns result state without pgvector`(@TempDir tempDir: File) {
+    fun `execute returns result state without pgvector`(
+        @TempDir tempDir: File,
+    ) {
         val orchestrator = KoogPlanningOrchestrator()
-        val initialState = AugmentedState(
-            intention = "Add unit tests",
-            workspaceRoot = tempDir.absolutePath
-        )
+        val initialState =
+            AugmentedState(
+                intention = "Add unit tests",
+                workspaceRoot = tempDir.absolutePath,
+            )
 
         val result = orchestrator.execute(initialState)
 
@@ -30,19 +32,20 @@ class KoogPlanningOrchestratorTest {
         assertEquals("Add unit tests", result.intention, "Intention should be preserved")
         assertTrue(
             result.error?.contains("BuildContextFailed") == true ||
-            result.error?.contains("ContextBuildPartial") == true ||
-            result.planError?.contains("CompositeContext unavailable") == true,
-            "Should indicate context building failed or partial without pgvector"
+                result.error?.contains("ContextBuildPartial") == true ||
+                result.planError?.contains("CompositeContext unavailable") == true,
+            "Should indicate context building failed or partial without pgvector",
         )
     }
 
     @Test
     fun `planFeature adds FEATURE prefix`() {
         val orchestrator = KoogPlanningOrchestrator()
-        val initialState = AugmentedState(
-            intention = "dark mode toggle",
-            workspaceRoot = "/tmp"
-        )
+        val initialState =
+            AugmentedState(
+                intention = "dark mode toggle",
+                workspaceRoot = "/tmp",
+            )
 
         val result = orchestrator.planFeature(initialState)
 
@@ -53,10 +56,11 @@ class KoogPlanningOrchestratorTest {
     @Test
     fun `planArchitecture adds ARCHITECTURE prefix`() {
         val orchestrator = KoogPlanningOrchestrator()
-        val initialState = AugmentedState(
-            intention = "microservices design",
-            workspaceRoot = "/tmp"
-        )
+        val initialState =
+            AugmentedState(
+                intention = "microservices design",
+                workspaceRoot = "/tmp",
+            )
 
         val result = orchestrator.planArchitecture(initialState)
 
@@ -67,10 +71,11 @@ class KoogPlanningOrchestratorTest {
     @Test
     fun `planRefactor adds REFACTOR prefix`() {
         val orchestrator = KoogPlanningOrchestrator()
-        val initialState = AugmentedState(
-            intention = "extract duplicate code",
-            workspaceRoot = "/tmp"
-        )
+        val initialState =
+            AugmentedState(
+                intention = "extract duplicate code",
+                workspaceRoot = "/tmp",
+            )
 
         val result = orchestrator.planRefactor(initialState)
 
@@ -81,10 +86,11 @@ class KoogPlanningOrchestratorTest {
     @Test
     fun `planDocumentation adds DOCUMENTATION prefix`() {
         val orchestrator = KoogPlanningOrchestrator()
-        val initialState = AugmentedState(
-            intention = "update API docs",
-            workspaceRoot = "/tmp"
-        )
+        val initialState =
+            AugmentedState(
+                intention = "update API docs",
+                workspaceRoot = "/tmp",
+            )
 
         val result = orchestrator.planDocumentation(initialState)
 
@@ -105,23 +111,28 @@ class KoogPlanningOrchestratorTest {
     }
 
     @Test
-    fun `complex intention gets complex classification`(@TempDir tempDir: File) {
+    fun `complex intention gets complex classification`(
+        @TempDir tempDir: File,
+    ) {
         val orchestrator = KoogPlanningOrchestrator()
-        val initialState = AugmentedState(
-            intention = "Refactor cross-borough DAG N1→N2→N3 pour intégration multi-plugins avec architecture distribuée",
-            workspaceRoot = tempDir.absolutePath
-        )
+        val initialState =
+            AugmentedState(
+                intention = "Refactor cross-borough DAG N1→N2→N3 pour intégration multi-plugins avec architecture distribuée",
+                workspaceRoot = tempDir.absolutePath,
+            )
 
         // Simuler un contexte valide pour que la classification fonctionne
-        val stateWithContext = initialState.copy(
-            compositeContext = contracts.context.CompositeContext(
-                eagerSection = "rules",
-                ragSection = "docs",
-                graphifySection = "relations",
-                docsSection = "manuals",
-                config = contracts.context.CompositeContextConfig()
+        val stateWithContext =
+            initialState.copy(
+                compositeContext =
+                    contracts.context.CompositeContext(
+                        eagerSection = "rules",
+                        ragSection = "docs",
+                        graphifySection = "relations",
+                        docsSection = "manuals",
+                        config = contracts.context.CompositeContextConfig(),
+                    ),
             )
-        )
 
         val result = orchestrator.execute(stateWithContext)
 
@@ -129,23 +140,28 @@ class KoogPlanningOrchestratorTest {
     }
 
     @Test
-    fun `simple intention gets simple classification`(@TempDir tempDir: File) {
+    fun `simple intention gets simple classification`(
+        @TempDir tempDir: File,
+    ) {
         val orchestrator = KoogPlanningOrchestrator()
-        val initialState = AugmentedState(
-            intention = "Add dark mode toggle",
-            workspaceRoot = tempDir.absolutePath
-        )
+        val initialState =
+            AugmentedState(
+                intention = "Add dark mode toggle",
+                workspaceRoot = tempDir.absolutePath,
+            )
 
         // Simuler un contexte valide
-        val stateWithContext = initialState.copy(
-            compositeContext = contracts.context.CompositeContext(
-                eagerSection = "rules",
-                ragSection = "docs",
-                graphifySection = "relations",
-                docsSection = "manuals",
-                config = contracts.context.CompositeContextConfig()
+        val stateWithContext =
+            initialState.copy(
+                compositeContext =
+                    contracts.context.CompositeContext(
+                        eagerSection = "rules",
+                        ragSection = "docs",
+                        graphifySection = "relations",
+                        docsSection = "manuals",
+                        config = contracts.context.CompositeContextConfig(),
+                    ),
             )
-        )
 
         val result = orchestrator.execute(stateWithContext)
 

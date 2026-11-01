@@ -8,9 +8,10 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class PrepareContextTaskTest {
-
     @Test
-    fun `task executes and produces output when pgvector is down`(@TempDir tempDir: File) {
+    fun `task executes and produces output when pgvector is down`(
+        @TempDir tempDir: File,
+    ) {
         // Setup borough structure
         val agentsDir = File(tempDir, ".agents")
         agentsDir.mkdirs()
@@ -39,7 +40,9 @@ class PrepareContextTaskTest {
     }
 
     @Test
-    fun `task uses project name from directory when not specified`(@TempDir tempDir: File) {
+    fun `task uses project name from directory when not specified`(
+        @TempDir tempDir: File,
+    ) {
         val agentsDir = File(tempDir, ".agents")
         agentsDir.mkdirs()
         File(agentsDir, "INDEX.adoc").writeText("= INDEX\n== Roadmap\nEPIC 1 DONE\n")
@@ -62,7 +65,9 @@ class PrepareContextTaskTest {
     }
 
     @Test
-    fun `task uses default ragQuestion when not specified`(@TempDir tempDir: File) {
+    fun `task uses default ragQuestion when not specified`(
+        @TempDir tempDir: File,
+    ) {
         val agentsDir = File(tempDir, ".agents")
         agentsDir.mkdirs()
         File(agentsDir, "INDEX.adoc").writeText("= INDEX\n== Status\nOK\n")
@@ -84,7 +89,9 @@ class PrepareContextTaskTest {
     }
 
     @Test
-    fun `task survives empty workspace with no agents dir`(@TempDir tempDir: File) {
+    fun `task survives empty workspace with no agents dir`(
+        @TempDir tempDir: File,
+    ) {
         val outputFile = File(tempDir, "output.txt")
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         val task = project.tasks.register("prepareContext", PrepareContextTask::class.java).get()

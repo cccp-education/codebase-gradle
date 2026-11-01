@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test
  * passages without any re-vectorization.
  */
 class DoubtMetadataTest {
-
     @Test
     fun `DoubtMetadata holds confidence and doubtful flag`() {
         val doubt = DoubtMetadata(confidence = 0.35, doubtful = true)

@@ -557,7 +557,7 @@ class SubgraphExtractorTest {
                   "communities": [],
                   "futureTopLevelField": "ignored"
                 }
-                """.trimIndent()
+                """.trimIndent(),
             )
 
             val result = extractor.loadGraph(graphFile.absolutePath)
@@ -577,7 +577,7 @@ class SubgraphExtractorTest {
                   "edges": [],
                   "communities": []
                 }
-                """.trimIndent()
+                """.trimIndent(),
             )
 
             val result = extractor.loadGraph(graphFile.absolutePath)

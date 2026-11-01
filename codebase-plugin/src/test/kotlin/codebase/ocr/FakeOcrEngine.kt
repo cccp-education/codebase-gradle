@@ -10,8 +10,12 @@ package codebase.ocr
  * sans dépendance à Gemini, au réseau, ni à une clé API.
  */
 class FakeOcrEngine : OcrEngine {
-
-    override fun process(input: String, language: String, model: String, maxTokens: Int): String {
+    override fun process(
+        input: String,
+        language: String,
+        model: String,
+        maxTokens: Int,
+    ): String {
         if (input.isBlank()) return ""
 
         return buildString {

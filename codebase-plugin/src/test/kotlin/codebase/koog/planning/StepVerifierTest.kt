@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class StepVerifierTest {
-
     private val verifier = StepVerifier()
 
     @Test
@@ -23,11 +22,12 @@ class StepVerifierTest {
 
     @Test
     fun `FAILED verdict with retries remaining should retry`() {
-        val state = vibecodingState(
-            lastToolResult = "BUILD FAILED",
-            retryCount = 0,
-            maxRetries = 3
-        )
+        val state =
+            vibecodingState(
+                lastToolResult = "BUILD FAILED",
+                retryCount = 0,
+                maxRetries = 3,
+            )
         val step = VibecodingStep("compile", "build", "BUILD SUCCESSFUL", maxRetries = 3)
         val result = verifier.verifyAndAdapt(state, step)
         assertEquals(1, result.retryCount)
@@ -36,11 +36,12 @@ class StepVerifierTest {
 
     @Test
     fun `FAILED verdict with maxRetries exhausted should set error`() {
-        val state = vibecodingState(
-            lastToolResult = "BUILD FAILED",
-            retryCount = 3,
-            maxRetries = 3
-        )
+        val state =
+            vibecodingState(
+                lastToolResult = "BUILD FAILED",
+                retryCount = 3,
+                maxRetries = 3,
+            )
         val step = VibecodingStep("compile", "build", "BUILD SUCCESSFUL", maxRetries = 3)
         val result = verifier.verifyAndAdapt(state, step)
         assertNotNull(result.error)
@@ -75,11 +76,12 @@ class StepVerifierTest {
 
     @Test
     fun `custom expectedOutput not matching should trigger retry`() {
-        val state = vibecodingState(
-            lastToolResult = "Some random output",
-            retryCount = 0,
-            maxRetries = 3
-        )
+        val state =
+            vibecodingState(
+                lastToolResult = "Some random output",
+                retryCount = 0,
+                maxRetries = 3,
+            )
         val step = VibecodingStep("generateContentPlan", "generateContentPlan", "Content plan generated", maxRetries = 3)
         val result = verifier.verifyAndAdapt(state, step)
         assertEquals(1, result.retryCount)
@@ -90,11 +92,12 @@ class StepVerifierTest {
     fun `FAILED with LLM provider should replan`() {
         val fakeLlm = LlmProvider { "Try ./gradlew compileKotlin instead" }
         val verifierWithLlm = StepVerifier(llmProvider = fakeLlm)
-        val state = vibecodingState(
-            lastToolResult = "BUILD FAILED\ncompilation error",
-            retryCount = 0,
-            maxRetries = 3
-        )
+        val state =
+            vibecodingState(
+                lastToolResult = "BUILD FAILED\ncompilation error",
+                retryCount = 0,
+                maxRetries = 3,
+            )
         val step = VibecodingStep("compile", "build", "BUILD SUCCESSFUL", maxRetries = 3)
         val result = verifierWithLlm.verifyAndAdapt(state, step)
         assertEquals(1, result.retryCount)
@@ -104,11 +107,12 @@ class StepVerifierTest {
 
     @Test
     fun `FAILED without LLM provider should just retry`() {
-        val state = vibecodingState(
-            lastToolResult = "BUILD FAILED",
-            retryCount = 0,
-            maxRetries = 3
-        )
+        val state =
+            vibecodingState(
+                lastToolResult = "BUILD FAILED",
+                retryCount = 0,
+                maxRetries = 3,
+            )
         val step = VibecodingStep("compile", "build", "BUILD SUCCESSFUL", maxRetries = 3)
         val result = verifier.verifyAndAdapt(state, step)
         assertEquals(1, result.retryCount)
@@ -121,37 +125,45 @@ class StepVerifierTest {
 
     @Test
     fun `StepVerifier should timeout when LLM call exceeds llmTimeoutMs`() {
-        val slowLlm = LlmProvider { delay(10_000); "late response" }
-        val verifierWithTimeout = StepVerifier(
-            llmProvider = slowLlm,
-            llmTimeoutMs = 50L
-        )
-        val state = vibecodingState(
-            lastToolResult = "BUILD FAILED",
-            retryCount = 0,
-            maxRetries = 3
-        )
+        val slowLlm =
+            LlmProvider {
+                delay(10_000)
+                "late response"
+            }
+        val verifierWithTimeout =
+            StepVerifier(
+                llmProvider = slowLlm,
+                llmTimeoutMs = 50L,
+            )
+        val state =
+            vibecodingState(
+                lastToolResult = "BUILD FAILED",
+                retryCount = 0,
+                maxRetries = 3,
+            )
         val step = VibecodingStep("compile", "build", "BUILD SUCCESSFUL", maxRetries = 3)
         val result = verifierWithTimeout.verifyAndAdapt(state, step)
         assertNotNull(result.lastToolResult)
         assertTrue(
             result.lastToolResult.contains("LLMTimeout") || result.lastToolResult.contains("Timeout"),
-            "LastToolResult should mention timeout, got: ${result.lastToolResult}"
+            "LastToolResult should mention timeout, got: ${result.lastToolResult}",
         )
     }
 
     @Test
     fun `StepVerifier should succeed when LLM call completes within llmTimeoutMs`() {
         val fastLlm = LlmProvider { "Try ./gradlew compileKotlin" }
-        val verifierWithTimeout = StepVerifier(
-            llmProvider = fastLlm,
-            llmTimeoutMs = 5_000L
-        )
-        val state = vibecodingState(
-            lastToolResult = "BUILD FAILED",
-            retryCount = 0,
-            maxRetries = 3
-        )
+        val verifierWithTimeout =
+            StepVerifier(
+                llmProvider = fastLlm,
+                llmTimeoutMs = 5_000L,
+            )
+        val state =
+            vibecodingState(
+                lastToolResult = "BUILD FAILED",
+                retryCount = 0,
+                maxRetries = 3,
+            )
         val step = VibecodingStep("compile", "build", "BUILD SUCCESSFUL", maxRetries = 3)
         val result = verifierWithTimeout.verifyAndAdapt(state, step)
         assertEquals(1, result.retryCount)
@@ -170,13 +182,13 @@ class StepVerifierTest {
         lastToolResult: String = "",
         retryCount: Int = 0,
         maxRetries: Int = 3,
-        executedTasks: List<String> = emptyList()
+        executedTasks: List<String> = emptyList(),
     ) = VibecodingState(
         intention = "test",
         workspaceRoot = "/tmp",
         lastToolResult = lastToolResult,
         retryCount = retryCount,
         maxRetries = maxRetries,
-        executedTasks = executedTasks
+        executedTasks = executedTasks,
     )
 }

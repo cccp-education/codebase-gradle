@@ -17,40 +17,48 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class AgenticCompilerSteps(private val world: AgenticCompilerWorld) {
-
+class AgenticCompilerSteps(
+    private val world: AgenticCompilerWorld,
+) {
     @Before("@epic_y_4")
     fun resetWorld() {
         world.reset()
     }
 
     @Given("a chunk of type {string} with verb {string} and domain {string}")
-    fun `chunk with type verb domain`(chunkType: String, verb: String, domain: String) {
-        val agenticChunk = AgenticChunk(
-            id = "compiler-test-${chunkType}-${verb}",
-            sourceFile = "AGENT.adoc",
-            sourceLines = "42-48",
-            chunkType = ChunkType.valueOf(chunkType),
-            content = "INTERDICTION FORMELLE de commit sans permission.",
-            verb = TaxonomyVerb.valueOf(verb),
-            domain = domain,
-            dagLevel = DagLevel.N1,
-            circle = 4,
-            weight = 1.0,
-            checksum = "sha256-test"
-        )
-        val ontologized = OntologizedChunk(
-            chunk = agenticChunk,
-            taxonomySection = TaxonomySection.PRINCIPES,
-            ontologyConfidence = 0.9,
-            relatedChunkIds = emptyList()
-        )
+    fun `chunk with type verb domain`(
+        chunkType: String,
+        verb: String,
+        domain: String,
+    ) {
+        val agenticChunk =
+            AgenticChunk(
+                id = "compiler-test-$chunkType-$verb",
+                sourceFile = "AGENT.adoc",
+                sourceLines = "42-48",
+                chunkType = ChunkType.valueOf(chunkType),
+                content = "INTERDICTION FORMELLE de commit sans permission.",
+                verb = TaxonomyVerb.valueOf(verb),
+                domain = domain,
+                dagLevel = DagLevel.N1,
+                circle = 4,
+                weight = 1.0,
+                checksum = "sha256-test",
+            )
+        val ontologized =
+            OntologizedChunk(
+                chunk = agenticChunk,
+                taxonomySection = TaxonomySection.PRINCIPES,
+                ontologyConfidence = 0.9,
+                relatedChunkIds = emptyList(),
+            )
         world.lastCompiledArtifact = world.compiler.compile(ontologized)
     }
 
     @Given("a TAXONOMIE_WORKSPACE document is chunked and ontologized for compilation")
     fun `taxonomy workspace chunked and ontologized for compilation`() {
-        val content = """
+        val content =
+            """
             = TAXONOMIE_WORKSPACE — Ontologie
             :date: 2026-05-18
 
@@ -102,7 +110,7 @@ class AgenticCompilerSteps(private val world: AgenticCompilerWorld) {
 
             . NE DOIT JAMAIS publier sans permission explicite.
             . NE DOIT JAMAIS supprimer les archives de session.
-        """.trimIndent()
+            """.trimIndent()
 
         val chunker = AgenticChunker()
         val chunks = chunker.chunk(content, sourceFile = "TAXONOMIE_WORKSPACE.adoc")
@@ -143,32 +151,43 @@ class AgenticCompilerSteps(private val world: AgenticCompilerWorld) {
     @Then("the compiled artifact confidence is at least {double}")
     fun `artifact confidence at least`(minConfidence: Double) {
         assertNotNull(world.lastCompiledArtifact)
-        assertTrue(world.lastCompiledArtifact!!.confidence >= minConfidence,
-            "Expected confidence >= $minConfidence, got ${world.lastCompiledArtifact!!.confidence}")
+        assertTrue(
+            world.lastCompiledArtifact!!.confidence >= minConfidence,
+            "Expected confidence >= $minConfidence, got ${world.lastCompiledArtifact!!.confidence}",
+        )
     }
 
     @Then("the compiled artifact description contains {string}")
     fun `artifact description contains`(keyword: String) {
         assertNotNull(world.lastCompiledArtifact)
-        assertTrue(world.lastCompiledArtifact!!.description.contains(keyword, ignoreCase = true),
-            "Description should contain '$keyword', got: ${world.lastCompiledArtifact!!.description}")
+        assertTrue(
+            world.lastCompiledArtifact!!.description.contains(keyword, ignoreCase = true),
+            "Description should contain '$keyword', got: ${world.lastCompiledArtifact!!.description}",
+        )
     }
 
     @Then("at least {int} artifacts are compiled")
     fun `at least N artifacts compiled`(minCount: Int) {
-        assertTrue(world.compilationCount >= minCount,
-            "Expected at least $minCount compiled artifacts, got $world.compilationCount")
+        assertTrue(
+            world.compilationCount >= minCount,
+            "Expected at least $minCount compiled artifacts, got $world.compilationCount",
+        )
     }
 
     @Then("the compiled artifacts include type {string}")
     fun `artifacts include type`(expectedType: String) {
         val types = world.compiledArtifacts.map { it.artifactType }.toSet()
-        assertTrue(types.contains(ArtifactType.valueOf(expectedType)),
-            "Compiled artifacts should include $expectedType, got: $types")
+        assertTrue(
+            types.contains(ArtifactType.valueOf(expectedType)),
+            "Compiled artifacts should include $expectedType, got: $types",
+        )
     }
 
     @Then("the compiled artifacts include types {string} and {string}")
-    fun `artifacts include types`(type1: String, type2: String) {
+    fun `artifacts include types`(
+        type1: String,
+        type2: String,
+    ) {
         val types = world.compiledArtifacts.map { it.artifactType }.toSet()
         assertTrue(types.contains(ArtifactType.valueOf(type1)), "Should include $type1")
         assertTrue(types.contains(ArtifactType.valueOf(type2)), "Should include $type2")

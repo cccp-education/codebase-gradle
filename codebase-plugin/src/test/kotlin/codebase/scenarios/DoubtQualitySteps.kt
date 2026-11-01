@@ -1,9 +1,10 @@
 package codebase.scenarios
 
 import codebase.rag.CompositeContextBuilder
+import codebase.rag.EmbeddingPipeline
+import codebase.rag.VectorStore
 import codebase.store.DoubtMetadata
 import codebase.store.DoubtfulChunk
-import codebase.store.RagVectorStore
 import codebase.store.RetrieveResult
 import io.cucumber.java.en.And
 import io.cucumber.java.en.Given
@@ -27,8 +28,9 @@ import kotlin.test.assertTrue
  * `StoreStatements` / `DoubtExposure` domain objects and the real
  * `CompositeContextBuilder` Docs channel backed by a `DoubtStubRagStore`.
  */
-class DoubtQualitySteps(private val world: DoubtQualityWorld) {
-
+class DoubtQualitySteps(
+    private val world: DoubtQualityWorld,
+) {
     @Given("a doubt quality world is initialized")
     fun `doubt quality world initialized`() {
         assertNotNull(world, "DoubtQualityWorld should be instantiated by PicoContainer")
@@ -40,7 +42,10 @@ class DoubtQualitySteps(private val world: DoubtQualityWorld) {
     }
 
     @Given("a doubt metadata with confidence {double} and doubtful {word}")
-    fun `doubt metadata with flag`(confidence: Double, doubtful: String) {
+    fun `doubt metadata with flag`(
+        confidence: Double,
+        doubtful: String,
+    ) {
         world.doubt = DoubtMetadata(confidence = confidence, doubtful = doubtful.toBoolean())
     }
 
@@ -65,17 +70,22 @@ class DoubtQualitySteps(private val world: DoubtQualityWorld) {
     }
 
     @Given("a doubtful chunk with source {string} and confidence {double}")
-    fun `doubtful chunk with source and confidence`(source: String, confidence: Double) {
-        world.doubtfulChunk = DoubtfulChunk(
-            chunk = codebase.store.DocumentChunk(
-                id = "chk-doubt-1",
-                sourceDocument = source,
-                sectionPath = "Chapter 1 > Section 1",
-                headingLevel = 1,
-                content = "Section content for $source"
-            ),
-            doubt = DoubtMetadata.fromConfidence(confidence)
-        )
+    fun `doubtful chunk with source and confidence`(
+        source: String,
+        confidence: Double,
+    ) {
+        world.doubtfulChunk =
+            DoubtfulChunk(
+                chunk =
+                    codebase.store.DocumentChunk(
+                        id = "chk-doubt-1",
+                        sourceDocument = source,
+                        sectionPath = "Chapter 1 > Section 1",
+                        headingLevel = 1,
+                        content = "Section content for $source",
+                    ),
+                doubt = DoubtMetadata.fromConfidence(confidence),
+            )
     }
 
     @Then("the doubtful chunk doubt confidence is {double}")
@@ -105,17 +115,22 @@ class DoubtQualitySteps(private val world: DoubtQualityWorld) {
 
     @Then("the doubt schema alters codex_documents with avg_confidence")
     fun `doubt schema alters documents`() {
-        assertTrue(world.doubtSchema!!.any {
-            it.contains("ALTER TABLE codex_documents ADD COLUMN IF NOT EXISTS avg_confidence")
-        })
+        assertTrue(
+            world.doubtSchema!!.any {
+                it.contains("ALTER TABLE codex_documents ADD COLUMN IF NOT EXISTS avg_confidence")
+            },
+        )
     }
 
     @Then("the doubt schema alters codex_chunks with confidence and doubtful")
     fun `doubt schema alters chunks`() {
-        assertTrue(world.doubtSchema!!.any {
-            it.contains("ALTER TABLE codex_chunks") &&
-                it.contains("confidence") && it.contains("doubtful")
-        })
+        assertTrue(
+            world.doubtSchema!!.any {
+                it.contains("ALTER TABLE codex_chunks") &&
+                    it.contains("confidence") &&
+                    it.contains("doubtful")
+            },
+        )
     }
 
     @Then("the insert chunk with doubt template binds {int} parameters")
@@ -130,14 +145,20 @@ class DoubtQualitySteps(private val world: DoubtQualityWorld) {
 
     @When("the doubt-aware search returns {int} chunks")
     fun `doubt aware search returns`(count: Int) {
-        val results = (1..count).map { i ->
-            RetrieveResult(
-                chunkId = i.toLong(), chunkIndex = i - 1, chunkText = "chunk $i",
-                sectionPath = "Section $i", headingLevel = 1,
-                sourceDocument = "doc.adoc", similarity = 0.9,
-                confidence = 0.95, doubtful = false
-            )
-        }
+        val results =
+            (1..count).map { i ->
+                RetrieveResult(
+                    chunkId = i.toLong(),
+                    chunkIndex = i - 1,
+                    chunkText = "chunk $i",
+                    sectionPath = "Section $i",
+                    headingLevel = 1,
+                    sourceDocument = "doc.adoc",
+                    similarity = 0.9,
+                    confidence = 0.95,
+                    doubtful = false,
+                )
+            }
         world.doubtResults = (world.store as DoubtStubRagStore).searchWithDoubtBlocking("query", topK = count)
         world.doubtResults = results
     }
@@ -154,39 +175,64 @@ class DoubtQualitySteps(private val world: DoubtQualityWorld) {
 
     @Given("a rag store stub returning one doubtful and one confident chunk")
     fun `rag store stub doubtful and confident`() {
-        val confident = RetrieveResult(
-            chunkId = 1L, chunkIndex = 0, chunkText = CONFIDENT_TEXT,
-            sectionPath = "Section 1", headingLevel = 1,
-            sourceDocument = "book.adoc", similarity = 0.9,
-            confidence = 0.95, doubtful = false
-        )
-        val doubtful = RetrieveResult(
-            chunkId = 2L, chunkIndex = 1, chunkText = DOUBTFUL_TEXT,
-            sectionPath = "Section 2", headingLevel = 1,
-            sourceDocument = "scan.adoc", similarity = 0.8,
-            confidence = 0.2, doubtful = true
-        )
+        val confident =
+            RetrieveResult(
+                chunkId = 1L,
+                chunkIndex = 0,
+                chunkText = CONFIDENT_TEXT,
+                sectionPath = "Section 1",
+                headingLevel = 1,
+                sourceDocument = "book.adoc",
+                similarity = 0.9,
+                confidence = 0.95,
+                doubtful = false,
+            )
+        val doubtful =
+            RetrieveResult(
+                chunkId = 2L,
+                chunkIndex = 1,
+                chunkText = DOUBTFUL_TEXT,
+                sectionPath = "Section 2",
+                headingLevel = 1,
+                sourceDocument = "scan.adoc",
+                similarity = 0.8,
+                confidence = 0.2,
+                doubtful = true,
+            )
         world.store = DoubtStubRagStore(listOf(confident, doubtful))
     }
 
     @Given("a rag store stub returning only doubtful chunks")
     fun `rag store stub only doubtful`() {
-        val shaky = RetrieveResult(
-            chunkId = 1L, chunkIndex = 0, chunkText = DOUBTFUL_TEXT,
-            sectionPath = "Section 1", headingLevel = 1,
-            sourceDocument = "scan.adoc", similarity = 0.9,
-            confidence = 0.1, doubtful = true
-        )
+        val shaky =
+            RetrieveResult(
+                chunkId = 1L,
+                chunkIndex = 0,
+                chunkText = DOUBTFUL_TEXT,
+                sectionPath = "Section 1",
+                headingLevel = 1,
+                sourceDocument = "scan.adoc",
+                similarity = 0.9,
+                confidence = 0.1,
+                doubtful = true,
+            )
         world.store = DoubtStubRagStore(listOf(shaky(shakyCount++)))
     }
 
     private var shakyCount = 0
-    private fun shaky(i: Int): RetrieveResult = RetrieveResult(
-        chunkId = i.toLong(), chunkIndex = i, chunkText = DOUBTFUL_TEXT,
-        sectionPath = "Section $i", headingLevel = 1,
-        sourceDocument = "scan.adoc", similarity = 0.9,
-        confidence = 0.1, doubtful = true
-    )
+
+    private fun shaky(i: Int): RetrieveResult =
+        RetrieveResult(
+            chunkId = i.toLong(),
+            chunkIndex = i,
+            chunkText = DOUBTFUL_TEXT,
+            sectionPath = "Section $i",
+            headingLevel = 1,
+            sourceDocument = "scan.adoc",
+            similarity = 0.9,
+            confidence = 0.1,
+            doubtful = true,
+        )
 
     @When("the docs context is loaded with doubtful exclusion disabled")
     fun `docs context loaded keeping doubtful`() {
@@ -201,15 +247,17 @@ class DoubtQualitySteps(private val world: DoubtQualityWorld) {
     }
 
     private fun loadDocsContext() {
-        val builder = CompositeContextBuilder(
-            workspaceRoot = File(System.getProperty("java.io.tmpdir")),
-            vectorStore = codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy"),
-            embeddingPipeline = codebase.rag.EmbeddingPipeline(
-                codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy")
-            ),
-            config = contracts.context.CompositeContextConfig(),
-            codexStore = world.store,
-        )
+        val builder =
+            CompositeContextBuilder(
+                workspaceRoot = File(System.getProperty("java.io.tmpdir")),
+                vectorStore = codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy"),
+                embeddingPipeline =
+                    codebase.rag.EmbeddingPipeline(
+                        codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy"),
+                    ),
+                config = contracts.context.CompositeContextConfig(),
+                codexStore = world.store,
+            )
         builder.excludeDoubtfulDocs = world.excludeDoubtful
         val composite = builder.build(DOUBT_QUERY)
         world.docsSection = composite.docsSection
@@ -218,15 +266,19 @@ class DoubtQualitySteps(private val world: DoubtQualityWorld) {
     @Then("the docs section contains the doubt marker")
     fun `docs section contains doubt marker`() {
         val docs = world.docsSection!!
-        assertTrue(docs.contains(codebase.store.DoubtExposure.DOUBT_MARKER),
-            "Expected doubt marker in docs section, got: $docs")
+        assertTrue(
+            docs.contains(codebase.store.DoubtExposure.DOUBT_MARKER),
+            "Expected doubt marker in docs section, got: $docs",
+        )
     }
 
     @Then("the docs section does not contain the doubt marker")
     fun `docs section does not contain doubt marker`() {
         val docs = world.docsSection!!
-        assertFalse(docs.contains(codebase.store.DoubtExposure.DOUBT_MARKER),
-            "Expected no doubt marker in docs section, got: $docs")
+        assertFalse(
+            docs.contains(codebase.store.DoubtExposure.DOUBT_MARKER),
+            "Expected no doubt marker in docs section, got: $docs",
+        )
     }
 
     @Then("the docs section contains the confident chunk text")
@@ -250,8 +302,10 @@ class DoubtQualitySteps(private val world: DoubtQualityWorld) {
     @Then("the docs section reports all results were excluded")
     fun `docs section all excluded`() {
         val docs = world.docsSection!!
-        assertTrue(docs.contains("exclus", ignoreCase = true),
-            "Expected exclusion notice in docs section, got: $docs")
+        assertTrue(
+            docs.contains("exclus", ignoreCase = true),
+            "Expected exclusion notice in docs section, got: $docs",
+        )
     }
 
     companion object {

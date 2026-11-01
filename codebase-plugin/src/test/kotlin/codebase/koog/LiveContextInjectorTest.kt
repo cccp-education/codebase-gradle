@@ -1,23 +1,23 @@
 package codebase.koog
 
+import codebase.koog.state.VibecodingState
 import contracts.session.AgentContext
 import contracts.vibecoding.registry.AuditEntry
-import codebase.koog.state.VibecodingState
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.Instant
 
 class LiveContextInjectorTest {
-
     private val injector = LiveContextInjector()
 
     @Test
     fun `injectLiveContext always includes live section with metadata`() {
-        val state = VibecodingState(
-            intention = "test",
-            workspaceRoot = "/tmp"
-        )
+        val state =
+            VibecodingState(
+                intention = "test",
+                workspaceRoot = "/tmp",
+            )
         val result = injector.injectLiveContext(state, emptyList())
         assertTrue(result.contains("[LIVE_CONTEXT]"))
         assertTrue(result.contains("Intention: test"))
@@ -28,13 +28,14 @@ class LiveContextInjectorTest {
 
     @Test
     fun `injectLiveContext includes session metadata header`() {
-        val state = VibecodingState(
-            intention = "Add dark mode toggle",
-            workspaceRoot = "/home/user/project",
-            iteration = 2,
-            maxActions = 10,
-            focusLevel = "MODULE"
-        )
+        val state =
+            VibecodingState(
+                intention = "Add dark mode toggle",
+                workspaceRoot = "/home/user/project",
+                iteration = 2,
+                maxActions = 10,
+                focusLevel = "MODULE",
+            )
         val result = injector.injectLiveContext(state, emptyList())
 
         assertTrue(result.contains("[LIVE_CONTEXT]"))
@@ -45,13 +46,14 @@ class LiveContextInjectorTest {
 
     @Test
     fun `injectLiveContext includes error when present`() {
-        val state = VibecodingState(
-            intention = "Fix compilation",
-            workspaceRoot = "/tmp",
-            error = "Compilation failed: syntax error",
-            retryCount = 1,
-            maxRetries = 3
-        )
+        val state =
+            VibecodingState(
+                intention = "Fix compilation",
+                workspaceRoot = "/tmp",
+                error = "Compilation failed: syntax error",
+                retryCount = 1,
+                maxRetries = 3,
+            )
         val result = injector.injectLiveContext(state, emptyList())
 
         assertTrue(result.contains("Error: Compilation failed: syntax error"))
@@ -60,31 +62,33 @@ class LiveContextInjectorTest {
 
     @Test
     fun `injectLiveContext includes tool call history from audit entries`() {
-        val state = VibecodingState(
-            intention = "Build project",
-            workspaceRoot = "/tmp",
-            iteration = 2,
-            executedTasks = listOf("compileKotlin", "runTests")
-        )
-        val auditEntries = listOf(
-            AuditEntry(
-                timestamp = Instant.now(),
-                tool = "exec_gradle",
-                arguments = mapOf("task" to "compileKotlin"),
-                dryRun = false,
-                result = "BUILD SUCCESSFUL",
-                workspaceRoot = "/tmp"
-            ),
-            AuditEntry(
-                timestamp = Instant.now(),
-                tool = "exec_gradle",
-                arguments = mapOf("task" to "test"),
-                dryRun = false,
-                result = "3 tests failed",
-                error = "Test failures in FooTest",
-                workspaceRoot = "/tmp"
+        val state =
+            VibecodingState(
+                intention = "Build project",
+                workspaceRoot = "/tmp",
+                iteration = 2,
+                executedTasks = listOf("compileKotlin", "runTests"),
             )
-        )
+        val auditEntries =
+            listOf(
+                AuditEntry(
+                    timestamp = Instant.now(),
+                    tool = "exec_gradle",
+                    arguments = mapOf("task" to "compileKotlin"),
+                    dryRun = false,
+                    result = "BUILD SUCCESSFUL",
+                    workspaceRoot = "/tmp",
+                ),
+                AuditEntry(
+                    timestamp = Instant.now(),
+                    tool = "exec_gradle",
+                    arguments = mapOf("task" to "test"),
+                    dryRun = false,
+                    result = "3 tests failed",
+                    error = "Test failures in FooTest",
+                    workspaceRoot = "/tmp",
+                ),
+            )
         val result = injector.injectLiveContext(state, auditEntries)
 
         assertTrue(result.contains("Tool call history"))
@@ -96,12 +100,13 @@ class LiveContextInjectorTest {
 
     @Test
     fun `injectLiveContext includes executed tasks summary`() {
-        val state = VibecodingState(
-            intention = "Multi-step build",
-            workspaceRoot = "/tmp",
-            iteration = 3,
-            executedTasks = listOf("compileKotlin", "runTests", "publishToMavenLocal")
-        )
+        val state =
+            VibecodingState(
+                intention = "Multi-step build",
+                workspaceRoot = "/tmp",
+                iteration = 3,
+                executedTasks = listOf("compileKotlin", "runTests", "publishToMavenLocal"),
+            )
         val result = injector.injectLiveContext(state, emptyList())
 
         assertTrue(result.contains("Executed tasks"))
@@ -112,16 +117,18 @@ class LiveContextInjectorTest {
 
     @Test
     fun `injectLiveContext includes static context when provided`() {
-        val state = VibecodingState(
-            intention = "Add feature",
-            workspaceRoot = "/tmp"
-        )
-        val staticContext = AgentContext(
-            eagerRules = "Rule 1: No commits without permission",
-            ragChunks = listOf("chunk1: Architecture overview", "chunk2: API docs"),
-            graphRelations = "codebase → planner → training",
-            backlogItems = listOf("EPIC SP-6: LiveContextInjector")
-        )
+        val state =
+            VibecodingState(
+                intention = "Add feature",
+                workspaceRoot = "/tmp",
+            )
+        val staticContext =
+            AgentContext(
+                eagerRules = "Rule 1: No commits without permission",
+                ragChunks = listOf("chunk1: Architecture overview", "chunk2: API docs"),
+                graphRelations = "codebase → planner → training",
+                backlogItems = listOf("EPIC SP-6: LiveContextInjector"),
+            )
         val result = injector.injectLiveContext(state, emptyList(), staticContext)
 
         assertTrue(result.contains("[STATIC_CONTEXT]"))
@@ -134,11 +141,12 @@ class LiveContextInjectorTest {
 
     @Test
     fun `injectLiveContext does not include static context section when null`() {
-        val state = VibecodingState(
-            intention = "Add feature",
-            workspaceRoot = "/tmp",
-            iteration = 1
-        )
+        val state =
+            VibecodingState(
+                intention = "Add feature",
+                workspaceRoot = "/tmp",
+                iteration = 1,
+            )
         val result = injector.injectLiveContext(state, emptyList(), null)
 
         assertFalse(result.contains("[STATIC_CONTEXT]"))
@@ -147,11 +155,12 @@ class LiveContextInjectorTest {
 
     @Test
     fun `injectLiveContext includes focus level BIG_PICTURE`() {
-        val state = VibecodingState(
-            intention = "Architecture decision",
-            workspaceRoot = "/tmp",
-            focusLevel = "BIG_PICTURE"
-        )
+        val state =
+            VibecodingState(
+                intention = "Architecture decision",
+                workspaceRoot = "/tmp",
+                focusLevel = "BIG_PICTURE",
+            )
         val result = injector.injectLiveContext(state, emptyList())
 
         assertTrue(result.contains("Focus: BIG_PICTURE"))
@@ -159,11 +168,12 @@ class LiveContextInjectorTest {
 
     @Test
     fun `injectLiveContext includes focus level IMPLEMENTATION`() {
-        val state = VibecodingState(
-            intention = "Fix typo",
-            workspaceRoot = "/tmp",
-            focusLevel = "IMPLEMENTATION"
-        )
+        val state =
+            VibecodingState(
+                intention = "Fix typo",
+                workspaceRoot = "/tmp",
+                focusLevel = "IMPLEMENTATION",
+            )
         val result = injector.injectLiveContext(state, emptyList())
 
         assertTrue(result.contains("Focus: IMPLEMENTATION"))
@@ -171,12 +181,13 @@ class LiveContextInjectorTest {
 
     @Test
     fun `injectLiveContext handles dryRun mode`() {
-        val state = VibecodingState(
-            intention = "Test dry run",
-            workspaceRoot = "/tmp",
-            dryRun = true,
-            iteration = 0
-        )
+        val state =
+            VibecodingState(
+                intention = "Test dry run",
+                workspaceRoot = "/tmp",
+                dryRun = true,
+                iteration = 0,
+            )
         val result = injector.injectLiveContext(state, emptyList())
 
         assertTrue(result.contains("Dry run: true"))
@@ -184,12 +195,13 @@ class LiveContextInjectorTest {
 
     @Test
     fun `injectLiveContext handles finished state`() {
-        val state = VibecodingState(
-            intention = "Done",
-            workspaceRoot = "/tmp",
-            finished = true,
-            iteration = 5
-        )
+        val state =
+            VibecodingState(
+                intention = "Done",
+                workspaceRoot = "/tmp",
+                finished = true,
+                iteration = 5,
+            )
         val result = injector.injectLiveContext(state, emptyList())
 
         assertTrue(result.contains("Status: FINISHED"))
@@ -197,12 +209,13 @@ class LiveContextInjectorTest {
 
     @Test
     fun `injectLiveContext handles error state`() {
-        val state = VibecodingState(
-            intention = "Failed",
-            workspaceRoot = "/tmp",
-            error = "Permanent failure",
-            finished = true
-        )
+        val state =
+            VibecodingState(
+                intention = "Failed",
+                workspaceRoot = "/tmp",
+                error = "Permanent failure",
+                finished = true,
+            )
         val result = injector.injectLiveContext(state, emptyList())
 
         assertTrue(result.contains("Status: ERROR"))
@@ -211,10 +224,11 @@ class LiveContextInjectorTest {
 
     @Test
     fun `injectLiveContext handles empty static context gracefully`() {
-        val state = VibecodingState(
-            intention = "Test",
-            workspaceRoot = "/tmp"
-        )
+        val state =
+            VibecodingState(
+                intention = "Test",
+                workspaceRoot = "/tmp",
+            )
         val emptyStatic = AgentContext()
         val result = injector.injectLiveContext(state, emptyList(), emptyStatic)
 
@@ -224,22 +238,24 @@ class LiveContextInjectorTest {
 
     @Test
     fun `injectLiveContext truncates long tool results`() {
-        val state = VibecodingState(
-            intention = "Long output",
-            workspaceRoot = "/tmp",
-            iteration = 1
-        )
-        val longResult = "x".repeat(2000)
-        val auditEntries = listOf(
-            AuditEntry(
-                timestamp = Instant.now(),
-                tool = "exec_gradle",
-                arguments = mapOf("task" to "build"),
-                dryRun = false,
-                result = longResult,
-                workspaceRoot = "/tmp"
+        val state =
+            VibecodingState(
+                intention = "Long output",
+                workspaceRoot = "/tmp",
+                iteration = 1,
             )
-        )
+        val longResult = "x".repeat(2000)
+        val auditEntries =
+            listOf(
+                AuditEntry(
+                    timestamp = Instant.now(),
+                    tool = "exec_gradle",
+                    arguments = mapOf("task" to "build"),
+                    dryRun = false,
+                    result = longResult,
+                    workspaceRoot = "/tmp",
+                ),
+            )
         val result = injector.injectLiveContext(state, auditEntries)
 
         assertTrue(result.contains("exec_gradle(build)"))

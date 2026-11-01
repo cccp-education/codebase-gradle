@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class RollbackStrategyExecutorTest {
-
     private val workspaceRoot = "/tmp/test-workspace"
 
     @Test
@@ -17,10 +16,11 @@ class RollbackStrategyExecutorTest {
         val registry = ToolRegistry()
         val executor = RollbackStrategyExecutor(registry, workspaceRoot)
         val state = vibecodingState(retryCount = 3, maxRetries = 3)
-        val plan = VibecodingPlan(
-            listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
-            rollbackStrategy = RollbackStrategy.STOP_ON_ERROR
-        )
+        val plan =
+            VibecodingPlan(
+                listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
+                rollbackStrategy = RollbackStrategy.STOP_ON_ERROR,
+            )
         val failedStep = plan.steps[0]
 
         val result = executor.execute(state, plan, failedStep)
@@ -39,18 +39,20 @@ class RollbackStrategyExecutorTest {
             "EXIT 0\nChecked out files"
         }
         val executor = RollbackStrategyExecutor(registry, workspaceRoot)
-        val state = vibecodingState(
-            retryCount = 3,
-            maxRetries = 3,
-            executedTasks = listOf("compile")
-        )
-        val plan = VibecodingPlan(
-            listOf(
-                VibecodingStep("compile", "build", "BUILD SUCCESSFUL"),
-                VibecodingStep("test", "test", "All tests passed")
-            ),
-            rollbackStrategy = RollbackStrategy.REVERT_AND_CONTINUE
-        )
+        val state =
+            vibecodingState(
+                retryCount = 3,
+                maxRetries = 3,
+                executedTasks = listOf("compile"),
+            )
+        val plan =
+            VibecodingPlan(
+                listOf(
+                    VibecodingStep("compile", "build", "BUILD SUCCESSFUL"),
+                    VibecodingStep("test", "test", "All tests passed"),
+                ),
+                rollbackStrategy = RollbackStrategy.REVERT_AND_CONTINUE,
+            )
         val failedStep = plan.steps[0]
 
         val result = executor.execute(state, plan, failedStep, listOf("src/main/Foo.kt"))
@@ -67,10 +69,11 @@ class RollbackStrategyExecutorTest {
         val registry = ToolRegistry()
         val executor = RollbackStrategyExecutor(registry, workspaceRoot)
         val state = vibecodingState(retryCount = 3, maxRetries = 3)
-        val plan = VibecodingPlan(
-            listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
-            rollbackStrategy = RollbackStrategy.REVERT_AND_CONTINUE
-        )
+        val plan =
+            VibecodingPlan(
+                listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
+                rollbackStrategy = RollbackStrategy.REVERT_AND_CONTINUE,
+            )
         val failedStep = plan.steps[0]
 
         val result = executor.execute(state, plan, failedStep)
@@ -84,18 +87,20 @@ class RollbackStrategyExecutorTest {
     fun `MARK_SKIPPED should mark step skipped and continue`() {
         val registry = ToolRegistry()
         val executor = RollbackStrategyExecutor(registry, workspaceRoot)
-        val state = vibecodingState(
-            retryCount = 3,
-            maxRetries = 3,
-            executedTasks = listOf("compile")
-        )
-        val plan = VibecodingPlan(
-            listOf(
-                VibecodingStep("compile", "build", "BUILD SUCCESSFUL"),
-                VibecodingStep("test", "test", "All tests passed")
-            ),
-            rollbackStrategy = RollbackStrategy.MARK_SKIPPED
-        )
+        val state =
+            vibecodingState(
+                retryCount = 3,
+                maxRetries = 3,
+                executedTasks = listOf("compile"),
+            )
+        val plan =
+            VibecodingPlan(
+                listOf(
+                    VibecodingStep("compile", "build", "BUILD SUCCESSFUL"),
+                    VibecodingStep("test", "test", "All tests passed"),
+                ),
+                rollbackStrategy = RollbackStrategy.MARK_SKIPPED,
+            )
         val failedStep = plan.steps[0]
 
         val result = executor.execute(state, plan, failedStep)
@@ -112,10 +117,11 @@ class RollbackStrategyExecutorTest {
         val registry = ToolRegistry()
         val executor = RollbackStrategyExecutor(registry, workspaceRoot)
         val state = vibecodingState(retryCount = 3, maxRetries = 3)
-        val plan = VibecodingPlan(
-            listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
-            rollbackStrategy = RollbackStrategy.FALLBACK_HUMAN
-        )
+        val plan =
+            VibecodingPlan(
+                listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
+                rollbackStrategy = RollbackStrategy.FALLBACK_HUMAN,
+            )
         val failedStep = plan.steps[0]
 
         val result = executor.execute(state, plan, failedStep)
@@ -131,10 +137,11 @@ class RollbackStrategyExecutorTest {
         val registry = ToolRegistry()
         val executor = RollbackStrategyExecutor(registry, workspaceRoot)
         val state = vibecodingState(retryCount = 3, maxRetries = 3)
-        val plan = VibecodingPlan(
-            listOf(VibecodingStep("generate content plan", "generateContentPlan", "Content plan generated")),
-            rollbackStrategy = RollbackStrategy.STOP_ON_ERROR
-        )
+        val plan =
+            VibecodingPlan(
+                listOf(VibecodingStep("generate content plan", "generateContentPlan", "Content plan generated")),
+                rollbackStrategy = RollbackStrategy.STOP_ON_ERROR,
+            )
         val failedStep = plan.steps[0]
 
         val result = executor.execute(state, plan, failedStep)
@@ -148,10 +155,11 @@ class RollbackStrategyExecutorTest {
         val registry = ToolRegistry()
         val executor = RollbackStrategyExecutor(registry, workspaceRoot)
         val state = vibecodingState(retryCount = 2, maxRetries = 3)
-        val plan = VibecodingPlan(
-            listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
-            rollbackStrategy = RollbackStrategy.MARK_SKIPPED
-        )
+        val plan =
+            VibecodingPlan(
+                listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
+                rollbackStrategy = RollbackStrategy.MARK_SKIPPED,
+            )
         val failedStep = plan.steps[0]
 
         val result = executor.execute(state, plan, failedStep)
@@ -169,10 +177,11 @@ class RollbackStrategyExecutorTest {
         }
         val executor = RollbackStrategyExecutor(registry, workspaceRoot)
         val state = vibecodingState(retryCount = 5, maxRetries = 3)
-        val plan = VibecodingPlan(
-            listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
-            rollbackStrategy = RollbackStrategy.REVERT_AND_CONTINUE
-        )
+        val plan =
+            VibecodingPlan(
+                listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
+                rollbackStrategy = RollbackStrategy.REVERT_AND_CONTINUE,
+            )
         val failedStep = plan.steps[0]
 
         val result = executor.execute(state, plan, failedStep, listOf("src/main/Foo.kt"))
@@ -183,12 +192,12 @@ class RollbackStrategyExecutorTest {
     private fun vibecodingState(
         retryCount: Int = 0,
         maxRetries: Int = 3,
-        executedTasks: List<String> = emptyList()
+        executedTasks: List<String> = emptyList(),
     ) = VibecodingState(
         intention = "test",
         workspaceRoot = workspaceRoot,
         retryCount = retryCount,
         maxRetries = maxRetries,
-        executedTasks = executedTasks
+        executedTasks = executedTasks,
     )
 }

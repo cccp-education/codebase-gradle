@@ -5,11 +5,10 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import java.io.File
-import kotlin.test.assertTrue
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class ExecGradleToolTest {
-
     private val repoRootDir: String =
         File(System.getProperty("user.dir")).let { dir ->
             var current = dir
@@ -77,9 +76,10 @@ class ExecGradleToolTest {
 
     @Test
     fun `bare value without preceding flag is rejected`() {
-        val exception = assertFailsWith<SecurityException> {
-            ExecGradleTool.validateGradleTask("test FooTest")
-        }
+        val exception =
+            assertFailsWith<SecurityException> {
+                ExecGradleTool.validateGradleTask("test FooTest")
+            }
         assertTrue(exception.message!!.contains("allowlist"))
     }
 
@@ -92,9 +92,10 @@ class ExecGradleToolTest {
 
     @Test
     fun `clean build is rejected`() {
-        val exception = assertFailsWith<SecurityException> {
-            ExecGradleTool.validateGradleTask("clean build")
-        }
+        val exception =
+            assertFailsWith<SecurityException> {
+                ExecGradleTool.validateGradleTask("clean build")
+            }
         assertTrue(exception.message!!.contains("denied"))
     }
 
@@ -107,17 +108,19 @@ class ExecGradleToolTest {
 
     @Test
     fun `refresh dependencies is rejected by deny-list`() {
-        val exception = assertFailsWith<SecurityException> {
-            ExecGradleTool.validateGradleTask("build --refresh-dependencies")
-        }
+        val exception =
+            assertFailsWith<SecurityException> {
+                ExecGradleTool.validateGradleTask("build --refresh-dependencies")
+            }
         assertTrue(exception.message!!.contains("denied"))
     }
 
     @Test
     fun `rm is rejected`() {
-        val exception = assertFailsWith<SecurityException> {
-            ExecGradleTool.validateGradleTask("rm -rf build")
-        }
+        val exception =
+            assertFailsWith<SecurityException> {
+                ExecGradleTool.validateGradleTask("rm -rf build")
+            }
         assertTrue(exception.message!!.contains("denied"))
     }
 
@@ -137,9 +140,10 @@ class ExecGradleToolTest {
 
     @Test
     fun `unknown task is rejected by allowlist deny-by-default`() {
-        val exception = assertFailsWith<SecurityException> {
-            ExecGradleTool.validateGradleTask("evilTask")
-        }
+        val exception =
+            assertFailsWith<SecurityException> {
+                ExecGradleTool.validateGradleTask("evilTask")
+            }
         assertTrue(exception.message!!.contains("allowlist"))
     }
 
@@ -167,24 +171,31 @@ class ExecGradleToolTest {
     @Test
     @Tag("integration")
     fun `execute blocking runs gradle task`() {
-        val result = ExecGradleTool.executeBlocking(
-            task = "tasks",
-            workingDir = repoRootDir
+        val result =
+            ExecGradleTool.executeBlocking(
+                task = "tasks",
+                workingDir = repoRootDir,
+            )
+        assertTrue(
+            result.contains("GRADLE EXIT: 0"),
+            "Expected success exit code: ${result.take(200)}",
         )
-        assertTrue(result.contains("GRADLE EXIT: 0"),
-            "Expected success exit code: ${result.take(200)}")
     }
 
     @Test
     @Tag("integration")
-    fun `async execute returns result`() = runBlocking {
-        val result = ExecGradleTool.execute(
-            ExecGradleTool.Args(
-                task = "tasks",
-                workingDir = repoRootDir
+    fun `async execute returns result`() =
+        runBlocking {
+            val result =
+                ExecGradleTool.execute(
+                    ExecGradleTool.Args(
+                        task = "tasks",
+                        workingDir = repoRootDir,
+                    ),
+                )
+            assertTrue(
+                result.startsWith("GRADLE EXIT: 0"),
+                "Expected EXIT: 0, got: ${result.take(200)}",
             )
-        )
-        assertTrue(result.startsWith("GRADLE EXIT: 0"),
-            "Expected EXIT: 0, got: ${result.take(200)}")
-    }
+        }
 }

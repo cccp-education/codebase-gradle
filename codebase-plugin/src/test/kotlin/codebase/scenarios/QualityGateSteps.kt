@@ -1,6 +1,13 @@
 package codebase.scenarios
 
-import codebase.quality.*
+import codebase.quality.DeterministicOffTopicDetector
+import codebase.quality.DeterministicPiiResidualDetector
+import codebase.quality.DeterministicSentimentAnalyzer
+import codebase.quality.Domain
+import codebase.quality.QualityAssessment
+import codebase.quality.QualityGate
+import codebase.quality.QualityGateConfig
+import codebase.quality.QualityVerdict
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
@@ -9,7 +16,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class QualityGateSteps {
-
     private lateinit var gate: QualityGate
     private var lastAssessment: QualityAssessment? = null
     private var lastFeedback: String = ""
@@ -18,12 +24,13 @@ class QualityGateSteps {
 
     @Given("a QualityGate is instantiated with default deterministic checkers")
     fun `instantiate quality gate`() {
-        gate = QualityGate(
-            sentimentAnalyzer = DeterministicSentimentAnalyzer(),
-            offTopicDetector = DeterministicOffTopicDetector(),
-            piiDetector = DeterministicPiiResidualDetector(),
-            config = QualityGateConfig()
-        )
+        gate =
+            QualityGate(
+                sentimentAnalyzer = DeterministicSentimentAnalyzer(),
+                offTopicDetector = DeterministicOffTopicDetector(),
+                piiDetector = DeterministicPiiResidualDetector(),
+                config = QualityGateConfig(),
+            )
     }
 
     @When("I evaluate CODING output {string}")
@@ -68,16 +75,20 @@ class QualityGateSteps {
     fun `failing checks contain`(checkerName: String) {
         assertNotNull(lastAssessment)
         val failing = lastAssessment!!.failingChecks
-        assertTrue(failing.any { it.checkerName == checkerName },
-            "Expected failing check '$checkerName' but got: ${failing.map { it.checkerName }}")
+        assertTrue(
+            failing.any { it.checkerName == checkerName },
+            "Expected failing check '$checkerName' but got: ${failing.map { it.checkerName }}",
+        )
     }
 
     @Then("the assessment contains at least {int} failing checks")
     fun `assessment contains at least N failing checks`(count: Int) {
         assertNotNull(lastAssessment)
         val failing = lastAssessment!!.failingChecks
-        assertTrue(failing.size >= count,
-            "Expected at least $count failing checks but got ${failing.size}")
+        assertTrue(
+            failing.size >= count,
+            "Expected at least $count failing checks but got ${failing.size}",
+        )
     }
 
     @Then("the quality gate fails")
@@ -88,22 +99,28 @@ class QualityGateSteps {
 
     @Then("the feedback message contains {string}")
     fun `feedback message contains`(substring: String) {
-        assertTrue(lastFeedback.contains(substring),
-            "Expected feedback to contain '$substring' but got: $lastFeedback")
+        assertTrue(
+            lastFeedback.contains(substring),
+            "Expected feedback to contain '$substring' but got: $lastFeedback",
+        )
     }
 
     @Then("the quality gate verdict is not {string}")
     fun `quality gate verdict is not`(verdictName: String) {
         assertNotNull(lastAssessment)
         val excluded = QualityVerdict.valueOf(verdictName)
-        assertTrue(lastAssessment!!.overallVerdict != excluded,
-            "Expected verdict NOT $excluded but got ${lastAssessment!!.overallVerdict}")
+        assertTrue(
+            lastAssessment!!.overallVerdict != excluded,
+            "Expected verdict NOT $excluded but got ${lastAssessment!!.overallVerdict}",
+        )
     }
 
     @Then("all scores are {double}")
     fun `all scores are`(score: Double) {
         assertNotNull(lastAssessment)
-        assertTrue(lastAssessment!!.results.all { it.score == score },
-            "Expected all scores to be $score but got: ${lastAssessment!!.results.map { it.score }}")
+        assertTrue(
+            lastAssessment!!.results.all { it.score == score },
+            "Expected all scores to be $score but got: ${lastAssessment!!.results.map { it.score }}",
+        )
     }
 }

@@ -3,20 +3,19 @@ package codebase.scenarios
 import codebase.koog.MultiChannelContextGraph
 import codebase.koog.MultiChannelState
 import codebase.koog.governance.GovernanceContextLoader
-import graphify.model.GraphCommunity
-import graphify.model.GraphEdge
-import graphify.model.GraphModel
-import graphify.model.GraphNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import contracts.context.ChannelBudget
 import contracts.context.ContextChannel
 import contracts.session.AgentContext
+import graphify.model.GraphCommunity
+import graphify.model.GraphEdge
+import graphify.model.GraphModel
+import graphify.model.GraphNode
 import java.io.File
 import java.nio.file.Files
 
 class SubgraphWorld {
-
     var workspaceRoot: File = Files.createTempDirectory("subgraph-cucumber").toFile()
     var graphFileExists: Boolean = true
     var result: MultiChannelState? = null
@@ -83,6 +82,5 @@ class SubgraphWorld {
         agentContext = GovernanceContextLoader(graphFile = graphFile).load(workspaceRoot)
     }
 
-    fun channel(type: Class<out ContextChannel>): ContextChannel? =
-        result?.channels?.find { type.isInstance(it) }
+    fun channel(type: Class<out ContextChannel>): ContextChannel? = result?.channels?.find { type.isInstance(it) }
 }

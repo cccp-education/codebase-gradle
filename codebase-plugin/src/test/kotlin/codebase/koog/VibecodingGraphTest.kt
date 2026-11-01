@@ -1,20 +1,25 @@
 package codebase.koog
 
-import codebase.koog.session.SessionRecord
 import codebase.koog.llm.FakeLlmProvider
 import codebase.koog.llm.LlmProvider
+import codebase.koog.session.SessionRecord
+import codebase.koog.state.VibecodingState
 import contracts.agent.Epic
 import contracts.agent.Plan
-import contracts.agent.GradleTask as PlanTask
 import contracts.agent.UserStory
 import contracts.vibecoding.registry.ToolRegistry
-import codebase.koog.state.VibecodingState
 import kotlinx.coroutines.delay
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.time.Instant
+import contracts.agent.GradleTask as PlanTask
 
 /**
  * Tests unitaires pour VibecodingGraph — graphe koog d'exécution autonome.
@@ -26,11 +31,11 @@ import java.time.Instant
  * Résilient : les tests passent sans pgvector, sans Ollama.
  */
 class VibecodingGraphTest {
-
-    private val vibecodingGraph = VibecodingGraph(
-        augmentedGraph = null, // pas de pgvector — mode résilient
-        toolRegistry = ToolRegistry()
-    )
+    private val vibecodingGraph =
+        VibecodingGraph(
+            augmentedGraph = null, // pas de pgvector — mode résilient
+            toolRegistry = ToolRegistry(),
+        )
 
     // ---- Structure du graphe koog ----
 
@@ -54,25 +59,29 @@ class VibecodingGraphTest {
 
     @Test
     fun `execute should return a result state`() {
-        val state = VibecodingState(
-            intention = "Add dark mode toggle",
-            workspaceRoot = "/tmp"
-        )
+        val state =
+            VibecodingState(
+                intention = "Add dark mode toggle",
+                workspaceRoot = "/tmp",
+            )
 
         val result = vibecodingGraph.execute(state)
 
         assertNotNull(result)
         // Ne doit pas crasher — résilient sans pgvector
-        assertFalse(result.error?.contains("NullPointerException") ?: false,
-            "Should not crash with NPE even without pgvector")
+        assertFalse(
+            result.error?.contains("NullPointerException") ?: false,
+            "Should not crash with NPE even without pgvector",
+        )
     }
 
     @Test
     fun `execute should preserve the original intention`() {
-        val state = VibecodingState(
-            intention = "Fix typo in README",
-            workspaceRoot = "/tmp"
-        )
+        val state =
+            VibecodingState(
+                intention = "Fix typo in README",
+                workspaceRoot = "/tmp",
+            )
 
         val result = vibecodingGraph.execute(state)
 
@@ -83,12 +92,13 @@ class VibecodingGraphTest {
 
     @Test
     fun `dry run should not execute real commands`() {
-        val state = VibecodingState(
-            intention = "Update config files",
-            workspaceRoot = "/tmp",
-            dryRun = true,
-            maxActions = 5
-        )
+        val state =
+            VibecodingState(
+                intention = "Update config files",
+                workspaceRoot = "/tmp",
+                dryRun = true,
+                maxActions = 5,
+            )
 
         val result = vibecodingGraph.execute(state)
 
@@ -100,32 +110,40 @@ class VibecodingGraphTest {
 
     @Test
     fun `should respect maxActions limit`() {
-        val state = VibecodingState(
-            intention = "Refactor large codebase",
-            workspaceRoot = "/tmp",
-            maxActions = 3
-        )
+        val state =
+            VibecodingState(
+                intention = "Refactor large codebase",
+                workspaceRoot = "/tmp",
+                maxActions = 3,
+            )
 
         val result = vibecodingGraph.execute(state)
 
-        assertTrue(result.iteration <= 3,
-            "Should not exceed maxActions=3, got ${result.iteration}")
-        assertTrue(result.isFinal || result.error != null,
-            "Should finish after maxActions (isFinal=${result.isFinal}, finished=${result.finished})")
+        assertTrue(
+            result.iteration <= 3,
+            "Should not exceed maxActions=3, got ${result.iteration}",
+        )
+        assertTrue(
+            result.isFinal || result.error != null,
+            "Should finish after maxActions (isFinal=${result.isFinal}, finished=${result.finished})",
+        )
     }
 
     @Test
     fun `should stop when maxActions is zero`() {
-        val state = VibecodingState(
-            intention = "Quick fix",
-            workspaceRoot = "/tmp",
-            maxActions = 0
-        )
+        val state =
+            VibecodingState(
+                intention = "Quick fix",
+                workspaceRoot = "/tmp",
+                maxActions = 0,
+            )
 
         val result = vibecodingGraph.execute(state)
 
-        assertTrue(result.isFinal || result.error != null,
-            "Should finish immediately with maxActions=0 (isFinal=${result.isFinal}, iteration=${result.iteration})")
+        assertTrue(
+            result.isFinal || result.error != null,
+            "Should finish immediately with maxActions=0 (isFinal=${result.isFinal}, iteration=${result.iteration})",
+        )
     }
 
     // ---- ToolRegistry interaction ----
@@ -133,19 +151,23 @@ class VibecodingGraphTest {
     @Test
     fun `should build context and classify intention without pgvector`() {
         // augmentedGraph=null → mode résilient : pas de pgvector, classification "simple"
-        val graph = VibecodingGraph(
-            augmentedGraph = null,
-            toolRegistry = ToolRegistry()
-        )
-        val state = VibecodingState(
-            intention = "Add simple feature",
-            workspaceRoot = "/tmp"
-        )
+        val graph =
+            VibecodingGraph(
+                augmentedGraph = null,
+                toolRegistry = ToolRegistry(),
+            )
+        val state =
+            VibecodingState(
+                intention = "Add simple feature",
+                workspaceRoot = "/tmp",
+            )
 
         val result = graph.execute(state)
 
-        assertTrue(result.classification == "simple" || result.classification == "",
-            "Classification should be 'simple' without pgvector: '${result.classification}'")
+        assertTrue(
+            result.classification == "simple" || result.classification == "",
+            "Classification should be 'simple' without pgvector: '${result.classification}'",
+        )
     }
 
     // ---- V-3 : Sécurité ----
@@ -153,43 +175,61 @@ class VibecodingGraphTest {
     @Test
     fun `execute should stop when startTime exceeds timeout even with a plan`() {
         val nowMs = System.currentTimeMillis()
-        val fakePlan = Plan(
-            title = "timeout-test",
-            epics = listOf(
-                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
-                    UserStory(description = "US1", tasks = listOf(
-                        PlanTask(description = "task1", gradleTask = "tasks")
-                    ))
-                ))
-            ),
-            totalPoints = 1,
-            estimatedSessions = "1"
-        )
-        val state = VibecodingState(
-            intention = "Timeout test",
-            workspaceRoot = "/tmp",
-            sessionTimeoutSeconds = 1,
-            sessionStartTimeMs = nowMs - 2000, // déjà 2s au-dessus du timeout 1s
-            maxActions = 100,
-            plan = fakePlan,
-            planJson = "{}"
-        )
+        val fakePlan =
+            Plan(
+                title = "timeout-test",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "E1",
+                            description = "test",
+                            points = 1,
+                            userStories =
+                                listOf(
+                                    UserStory(
+                                        description = "US1",
+                                        tasks =
+                                            listOf(
+                                                PlanTask(description = "task1", gradleTask = "tasks"),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    ),
+                totalPoints = 1,
+                estimatedSessions = "1",
+            )
+        val state =
+            VibecodingState(
+                intention = "Timeout test",
+                workspaceRoot = "/tmp",
+                sessionTimeoutSeconds = 1,
+                sessionStartTimeMs = nowMs - 2000, // déjà 2s au-dessus du timeout 1s
+                maxActions = 100,
+                plan = fakePlan,
+                planJson = "{}",
+            )
         val result = vibecodingGraph.execute(state)
-        assertTrue(result.error != null,
-            "Should have error when timeout exceeded (error=${result.error})")
-        assertTrue(result.error!!.contains("Timeout", ignoreCase = true),
-            "Error message should mention timeout, got: ${result.error}")
+        assertTrue(
+            result.error != null,
+            "Should have error when timeout exceeded (error=${result.error})",
+        )
+        assertTrue(
+            result.error!!.contains("Timeout", ignoreCase = true),
+            "Error message should mention timeout, got: ${result.error}",
+        )
     }
 
     // ---- Fin clean ----
 
     @Test
     fun `execute should not throw exceptions`() {
-        val state = VibecodingState(
-            intention = "Test resilience",
-            workspaceRoot = "/nonexistent/path",
-            dryRun = true
-        )
+        val state =
+            VibecodingState(
+                intention = "Test resilience",
+                workspaceRoot = "/nonexistent/path",
+                dryRun = true,
+            )
 
         assertDoesNotThrow {
             vibecodingGraph.execute(state)
@@ -200,25 +240,26 @@ class VibecodingGraphTest {
 
     @Test
     fun `resumeSession should reconstruct VibecodingState from SessionRecord`() {
-        val record = SessionRecord(
-            id = "session-abc123",
-            parentSessionId = null,
-            workspaceRoot = "/tmp/test-resume",
-            intention = "Fix typo in README",
-            dryRun = false,
-            maxActions = 20,
-            classification = "documentation",
-            planJson = """{"title":"Plan","epics":[]}""",
-            promptTokens = 1500L,
-            completionTokens = 800L,
-            cost = 0.0021,
-            error = null,
-            finished = false,
-            iterationCount = 5,
-            confidentialityLevel = "INTERNAL",
-            createdAt = Instant.now().minusSeconds(60),
-            updatedAt = Instant.now()
-        )
+        val record =
+            SessionRecord(
+                id = "session-abc123",
+                parentSessionId = null,
+                workspaceRoot = "/tmp/test-resume",
+                intention = "Fix typo in README",
+                dryRun = false,
+                maxActions = 20,
+                classification = "documentation",
+                planJson = """{"title":"Plan","epics":[]}""",
+                promptTokens = 1500L,
+                completionTokens = 800L,
+                cost = 0.0021,
+                error = null,
+                finished = false,
+                iterationCount = 5,
+                confidentialityLevel = "INTERNAL",
+                createdAt = Instant.now().minusSeconds(60),
+                updatedAt = Instant.now(),
+            )
 
         val state = VibecodingGraph.resumeSession(record)
 
@@ -234,25 +275,26 @@ class VibecodingGraphTest {
 
     @Test
     fun `resumeSession should set maxActions on resumed state`() {
-        val record = SessionRecord(
-            id = "session-def456",
-            parentSessionId = null,
-            workspaceRoot = "/tmp",
-            intention = "Add feature X",
-            dryRun = false,
-            maxActions = 15,
-            classification = "simple",
-            planJson = null,
-            promptTokens = 0L,
-            completionTokens = 0L,
-            cost = 0.0,
-            error = null,
-            finished = false,
-            iterationCount = 3,
-            confidentialityLevel = "INTERNAL",
-            createdAt = Instant.now().minusSeconds(120),
-            updatedAt = Instant.now()
-        )
+        val record =
+            SessionRecord(
+                id = "session-def456",
+                parentSessionId = null,
+                workspaceRoot = "/tmp",
+                intention = "Add feature X",
+                dryRun = false,
+                maxActions = 15,
+                classification = "simple",
+                planJson = null,
+                promptTokens = 0L,
+                completionTokens = 0L,
+                cost = 0.0,
+                error = null,
+                finished = false,
+                iterationCount = 3,
+                confidentialityLevel = "INTERNAL",
+                createdAt = Instant.now().minusSeconds(120),
+                updatedAt = Instant.now(),
+            )
 
         val state = VibecodingGraph.resumeSession(record)
 
@@ -264,25 +306,26 @@ class VibecodingGraphTest {
 
     @Test
     fun `resumeSession finished record should produce finished state`() {
-        val record = SessionRecord(
-            id = "fin-789",
-            parentSessionId = null,
-            workspaceRoot = "/tmp",
-            intention = "Finished task",
-            dryRun = false,
-            maxActions = 10,
-            classification = "done",
-            planJson = null,
-            promptTokens = 100L,
-            completionTokens = 50L,
-            cost = 0.0003,
-            error = null,
-            finished = true,
-            iterationCount = 10,
-            confidentialityLevel = "INTERNAL",
-            createdAt = Instant.now().minusSeconds(300),
-            updatedAt = Instant.now()
-        )
+        val record =
+            SessionRecord(
+                id = "fin-789",
+                parentSessionId = null,
+                workspaceRoot = "/tmp",
+                intention = "Finished task",
+                dryRun = false,
+                maxActions = 10,
+                classification = "done",
+                planJson = null,
+                promptTokens = 100L,
+                completionTokens = 50L,
+                cost = 0.0003,
+                error = null,
+                finished = true,
+                iterationCount = 10,
+                confidentialityLevel = "INTERNAL",
+                createdAt = Instant.now().minusSeconds(300),
+                updatedAt = Instant.now(),
+            )
 
         val state = VibecodingGraph.resumeSession(record)
 
@@ -300,41 +343,59 @@ class VibecodingGraphTest {
         val fakeLlm = FakeLlmProvider()
         fakeLlm.nextResponse = "retry with different approach"
 
-        val plan = Plan(
-            title = "Fix compilation",
-            epics = listOf(
-                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
-                    UserStory(description = "US1", tasks = listOf(
-                        PlanTask(description = "compile", gradleTask = "compileKotlin")
-                    ))
-                ))
-            ),
-            totalPoints = 1,
-            estimatedSessions = "1"
-        )
+        val plan =
+            Plan(
+                title = "Fix compilation",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "E1",
+                            description = "test",
+                            points = 1,
+                            userStories =
+                                listOf(
+                                    UserStory(
+                                        description = "US1",
+                                        tasks =
+                                            listOf(
+                                                PlanTask(description = "compile", gradleTask = "compileKotlin"),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    ),
+                totalPoints = 1,
+                estimatedSessions = "1",
+            )
 
-        val graph = VibecodingGraph(
-            augmentedGraph = null,
-            toolRegistry = ToolRegistry(),
-            llmProvider = fakeLlm
-        )
+        val graph =
+            VibecodingGraph(
+                augmentedGraph = null,
+                toolRegistry = ToolRegistry(),
+                llmProvider = fakeLlm,
+            )
 
-        val state = VibecodingState(
-            intention = "Fix compilation error",
-            workspaceRoot = "/tmp",
-            maxActions = 5,
-            maxRetries = 3,
-            plan = plan
-        )
+        val state =
+            VibecodingState(
+                intention = "Fix compilation error",
+                workspaceRoot = "/tmp",
+                maxActions = 5,
+                maxRetries = 3,
+                plan = plan,
+            )
 
         val result = graph.execute(state)
 
         // Doit avoir fait au moins 2 itérations (essai initial + retry)
-        assertTrue(result.iteration >= 2,
-            "Should iterate at least 2 times for retry, got ${result.iteration}")
+        assertTrue(
+            result.iteration >= 2,
+            "Should iterate at least 2 times for retry, got ${result.iteration}",
+        )
         // Max retries (3) non dépassé
-        assertTrue(result.retryCount <= 3,
-            "Should not exceed maxRetries=3, got retryCount=${result.retryCount}")
+        assertTrue(
+            result.retryCount <= 3,
+            "Should not exceed maxRetries=3, got retryCount=${result.retryCount}",
+        )
     }
 
     @Test
@@ -342,38 +403,54 @@ class VibecodingGraphTest {
         val fakeLlm = FakeLlmProvider()
         fakeLlm.nextResponse = "try again"
 
-        val plan = Plan(
-            title = "Fix bug",
-            epics = listOf(
-                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
-                    UserStory(description = "US1", tasks = listOf(
-                        PlanTask(description = "run tests", gradleTask = "test")
-                    ))
-                ))
-            ),
-            totalPoints = 1,
-            estimatedSessions = "1"
-        )
+        val plan =
+            Plan(
+                title = "Fix bug",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "E1",
+                            description = "test",
+                            points = 1,
+                            userStories =
+                                listOf(
+                                    UserStory(
+                                        description = "US1",
+                                        tasks =
+                                            listOf(
+                                                PlanTask(description = "run tests", gradleTask = "test"),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    ),
+                totalPoints = 1,
+                estimatedSessions = "1",
+            )
 
-        val graph = VibecodingGraph(
-            augmentedGraph = null,
-            toolRegistry = ToolRegistry(),
-            llmProvider = fakeLlm
-        )
+        val graph =
+            VibecodingGraph(
+                augmentedGraph = null,
+                toolRegistry = ToolRegistry(),
+                llmProvider = fakeLlm,
+            )
 
-        val state = VibecodingState(
-            intention = "Run failing tests",
-            workspaceRoot = "/tmp",
-            maxActions = 5,
-            maxRetries = 1, // une seule tentative de retry
-            plan = plan
-        )
+        val state =
+            VibecodingState(
+                intention = "Run failing tests",
+                workspaceRoot = "/tmp",
+                maxActions = 5,
+                maxRetries = 1, // une seule tentative de retry
+                plan = plan,
+            )
 
         val result = graph.execute(state)
 
         // Doit abandonner après maxRetries
-        assertTrue(result.error != null || result.finished,
-            "Should eventually stop after maxRetries: error=${result.error}, finished=${result.finished}")
+        assertTrue(
+            result.error != null || result.finished,
+            "Should eventually stop after maxRetries: error=${result.error}, finished=${result.finished}",
+        )
         assertTrue(result.retryCount <= 1, "retryCount should not exceed maxRetries=1")
     }
 
@@ -382,89 +459,123 @@ class VibecodingGraphTest {
         // Erreur fatale (ex: timeout) ne doit pas être retryée
         val nowMs = System.currentTimeMillis()
 
-        val plan = Plan(
-            title = "Timeout test",
-            epics = listOf(
-                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
-                    UserStory(description = "US1", tasks = listOf(
-                        PlanTask(description = "run", gradleTask = "test")
-                    ))
-                ))
-            ),
-            totalPoints = 1,
-            estimatedSessions = "1"
-        )
+        val plan =
+            Plan(
+                title = "Timeout test",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "E1",
+                            description = "test",
+                            points = 1,
+                            userStories =
+                                listOf(
+                                    UserStory(
+                                        description = "US1",
+                                        tasks =
+                                            listOf(
+                                                PlanTask(description = "run", gradleTask = "test"),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    ),
+                totalPoints = 1,
+                estimatedSessions = "1",
+            )
 
-        val graph = VibecodingGraph(
-            augmentedGraph = null,
-            toolRegistry = ToolRegistry()
-        )
+        val graph =
+            VibecodingGraph(
+                augmentedGraph = null,
+                toolRegistry = ToolRegistry(),
+            )
 
-        val state = VibecodingState(
-            intention = "Timed out task",
-            workspaceRoot = "/tmp",
-            sessionTimeoutSeconds = 1,
-            sessionStartTimeMs = nowMs - 2000,
-            maxActions = 100,
-            maxRetries = 3,
-            plan = plan
-        )
+        val state =
+            VibecodingState(
+                intention = "Timed out task",
+                workspaceRoot = "/tmp",
+                sessionTimeoutSeconds = 1,
+                sessionStartTimeMs = nowMs - 2000,
+                maxActions = 100,
+                maxRetries = 3,
+                plan = plan,
+            )
 
         val result = graph.execute(state)
 
         // Timeout = erreur fatale → pas de retry
-        assertEquals(0, result.retryCount,
-            "Timeout is a permanent error, should not retry")
+        assertEquals(
+            0,
+            result.retryCount,
+            "Timeout is a permanent error, should not retry",
+        )
         assertTrue(result.error != null, "Should have error")
     }
 
     @Test
     @Tag("integration")
     fun `v6 retry should clear error after successful retry`() {
-        val repoRootDir = File(System.getProperty("user.dir")).let { dir ->
-            var current = dir
-            while (current.parentFile != null && !File(current, "gradlew").exists()) {
-                current = current.parentFile
+        val repoRootDir =
+            File(System.getProperty("user.dir")).let { dir ->
+                var current = dir
+                while (current.parentFile != null && !File(current, "gradlew").exists()) {
+                    current = current.parentFile
+                }
+                if (File(current, "gradlew").exists()) current.absolutePath else "/tmp"
             }
-            if (File(current, "gradlew").exists()) current.absolutePath else "/tmp"
-        }
 
         val fakeLlm = FakeLlmProvider()
         fakeLlm.nextResponse = "fixed the issue"
 
-        val plan = Plan(
-            title = "Multi-step",
-            epics = listOf(
-                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
-                    UserStory(description = "US1", tasks = listOf(
-                        PlanTask(description = "step1", gradleTask = "nonexistentTask"),
-                        PlanTask(description = "step2", gradleTask = "tasks"),
-                        PlanTask(description = "step3", gradleTask = "properties")
-                    ))
-                ))
-            ),
-            totalPoints = 1,
-            estimatedSessions = "1"
-        )
+        val plan =
+            Plan(
+                title = "Multi-step",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "E1",
+                            description = "test",
+                            points = 1,
+                            userStories =
+                                listOf(
+                                    UserStory(
+                                        description = "US1",
+                                        tasks =
+                                            listOf(
+                                                PlanTask(description = "step1", gradleTask = "nonexistentTask"),
+                                                PlanTask(description = "step2", gradleTask = "tasks"),
+                                                PlanTask(description = "step3", gradleTask = "properties"),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    ),
+                totalPoints = 1,
+                estimatedSessions = "1",
+            )
 
-        val graph = VibecodingGraph(
-            augmentedGraph = null,
-            toolRegistry = ToolRegistry(),
-            llmProvider = fakeLlm
-        )
+        val graph =
+            VibecodingGraph(
+                augmentedGraph = null,
+                toolRegistry = ToolRegistry(),
+                llmProvider = fakeLlm,
+            )
 
-        val state = VibecodingState(
-            intention = "Multi-step with retry",
-            workspaceRoot = repoRootDir,
-            maxActions = 10,
-            maxRetries = 2,
-            plan = plan
-        )
+        val state =
+            VibecodingState(
+                intention = "Multi-step with retry",
+                workspaceRoot = repoRootDir,
+                maxActions = 10,
+                maxRetries = 2,
+                plan = plan,
+            )
 
         val result = graph.execute(state)
 
-        assertTrue(result.executedTasks.size >= 2,
-            "Should have executed at least 2 tasks after retry, got ${result.executedTasks.size}")
+        assertTrue(
+            result.executedTasks.size >= 2,
+            "Should have executed at least 2 tasks after retry, got ${result.executedTasks.size}",
+        )
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -473,95 +584,125 @@ class VibecodingGraphTest {
 
     @Test
     fun `VibecodingGraph should expose llmTimeoutMs constructor param with 30s default`() {
-        val graph = VibecodingGraph(
-            augmentedGraph = null,
-            toolRegistry = ToolRegistry()
-        )
+        val graph =
+            VibecodingGraph(
+                augmentedGraph = null,
+                toolRegistry = ToolRegistry(),
+            )
         assertEquals(30_000L, graph.llmTimeoutMs)
     }
 
     @Test
     fun `VibecodingGraph should accept custom llmTimeoutMs`() {
-        val graph = VibecodingGraph(
-            augmentedGraph = null,
-            toolRegistry = ToolRegistry(),
-            llmTimeoutMs = 5_000L
-        )
+        val graph =
+            VibecodingGraph(
+                augmentedGraph = null,
+                toolRegistry = ToolRegistry(),
+                llmTimeoutMs = 5_000L,
+            )
         assertEquals(5_000L, graph.llmTimeoutMs)
     }
 
     @Test
     fun `callLLMNode should timeout when LLM exceeds llmTimeoutMs`() {
-        val slowLlm = LlmProvider { delay(10_000); "late" }
-        val graph = VibecodingGraph(
-            augmentedGraph = null,
-            toolRegistry = ToolRegistry(),
-            llmProvider = slowLlm,
-            llmTimeoutMs = 50L
-        )
-        val state = VibecodingState(
-            intention = "test timeout",
-            workspaceRoot = "/tmp",
-            maxActions = 3
-        )
+        val slowLlm =
+            LlmProvider {
+                delay(10_000)
+                "late"
+            }
+        val graph =
+            VibecodingGraph(
+                augmentedGraph = null,
+                toolRegistry = ToolRegistry(),
+                llmProvider = slowLlm,
+                llmTimeoutMs = 50L,
+            )
+        val state =
+            VibecodingState(
+                intention = "test timeout",
+                workspaceRoot = "/tmp",
+                maxActions = 3,
+            )
         val result = graph.execute(state)
         assertNotNull(result.error, "Should have error after LLM timeout")
         val error = result.error!!
         assertTrue(
             error.contains("LLMTimeout") || error.contains("Timeout"),
-            "Error should mention timeout, got: $error"
+            "Error should mention timeout, got: $error",
         )
     }
 
     @Test
     fun `callLLMNode should succeed when LLM completes within llmTimeoutMs`() {
         val fastLlm = LlmProvider { "DONE" }
-        val graph = VibecodingGraph(
-            augmentedGraph = null,
-            toolRegistry = ToolRegistry(),
-            llmProvider = fastLlm,
-            llmTimeoutMs = 5_000L
-        )
-        val state = VibecodingState(
-            intention = "test fast LLM",
-            workspaceRoot = "/tmp",
-            maxActions = 1
-        )
+        val graph =
+            VibecodingGraph(
+                augmentedGraph = null,
+                toolRegistry = ToolRegistry(),
+                llmProvider = fastLlm,
+                llmTimeoutMs = 5_000L,
+            )
+        val state =
+            VibecodingState(
+                intention = "test fast LLM",
+                workspaceRoot = "/tmp",
+                maxActions = 1,
+            )
         val result = graph.execute(state)
         assertNull(result.error, "Should not error when LLM is fast: ${result.error}")
     }
 
     @Test
     fun `error recovery replan should not hang when LLM is slow`() {
-        val slowLlm = LlmProvider { delay(10_000); "late replan" }
-        val plan = Plan(
-            title = "Force error path",
-            epics = listOf(
-                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
-                    UserStory(description = "US1", tasks = listOf(
-                        PlanTask(description = "compile", gradleTask = "compileKotlin")
-                    ))
-                ))
-            ),
-            totalPoints = 1,
-            estimatedSessions = "1"
-        )
-        val graph = VibecodingGraph(
-            augmentedGraph = null,
-            toolRegistry = ToolRegistry(),
-            llmProvider = slowLlm,
-            llmTimeoutMs = 50L
-        )
-        val state = VibecodingState(
-            intention = "trigger replan timeout",
-            workspaceRoot = "/tmp",
-            maxActions = 5,
-            maxRetries = 2,
-            plan = plan
-        )
+        val slowLlm =
+            LlmProvider {
+                delay(10_000)
+                "late replan"
+            }
+        val plan =
+            Plan(
+                title = "Force error path",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "E1",
+                            description = "test",
+                            points = 1,
+                            userStories =
+                                listOf(
+                                    UserStory(
+                                        description = "US1",
+                                        tasks =
+                                            listOf(
+                                                PlanTask(description = "compile", gradleTask = "compileKotlin"),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    ),
+                totalPoints = 1,
+                estimatedSessions = "1",
+            )
+        val graph =
+            VibecodingGraph(
+                augmentedGraph = null,
+                toolRegistry = ToolRegistry(),
+                llmProvider = slowLlm,
+                llmTimeoutMs = 50L,
+            )
+        val state =
+            VibecodingState(
+                intention = "trigger replan timeout",
+                workspaceRoot = "/tmp",
+                maxActions = 5,
+                maxRetries = 2,
+                plan = plan,
+            )
         val result = graph.execute(state)
-        assertTrue(result.finished || result.error != null,
-            "Should terminate (not hang) when replan LLM times out: finished=${result.finished}, error=${result.error}")
+        assertTrue(
+            result.finished || result.error != null,
+            "Should terminate (not hang) when replan LLM times out: finished=${result.finished}, error=${result.error}",
+        )
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -570,71 +711,103 @@ class VibecodingGraphTest {
 
     @Test
     fun `buildPromptForIteration should not report negative remaining tasks when executed exceeds plan total`() {
-        val plan = Plan(
-            title = "Single task plan",
-            epics = listOf(
-                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
-                    UserStory(description = "US1", tasks = listOf(
-                        PlanTask(description = "only task", gradleTask = "tasks")
-                    ))
-                ))
-            ),
-            totalPoints = 1,
-            estimatedSessions = "1"
-        )
+        val plan =
+            Plan(
+                title = "Single task plan",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "E1",
+                            description = "test",
+                            points = 1,
+                            userStories =
+                                listOf(
+                                    UserStory(
+                                        description = "US1",
+                                        tasks =
+                                            listOf(
+                                                PlanTask(description = "only task", gradleTask = "tasks"),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    ),
+                totalPoints = 1,
+                estimatedSessions = "1",
+            )
         // 3 executed tasks > 1 plan task → remaining would be -2 without coerceAtLeast(0)
-        val state = VibecodingState(
-            intention = "Force negative remaining",
-            workspaceRoot = "/tmp",
-            maxActions = 10,
-            maxRetries = 2,
-            plan = plan,
-            executedTasks = listOf("tasks", "compileKotlin", "test")
-        )
+        val state =
+            VibecodingState(
+                intention = "Force negative remaining",
+                workspaceRoot = "/tmp",
+                maxActions = 10,
+                maxRetries = 2,
+                plan = plan,
+                executedTasks = listOf("tasks", "compileKotlin", "test"),
+            )
 
         val prompt = vibecodingGraph.buildPromptForIteration(state)
 
         val remainingLine = prompt.lineSequence().firstOrNull { it.startsWith("Plan remaining tasks:") }
         assertNotNull(remainingLine, "Prompt should contain a 'Plan remaining tasks' line")
         val line = remainingLine!!
-        assertFalse(line.contains("-"),
-            "Remaining tasks should not be negative, got: $line")
-        assertTrue(line.contains("0"),
-            "Remaining tasks should be coerced to 0, got: $line")
+        assertFalse(
+            line.contains("-"),
+            "Remaining tasks should not be negative, got: $line",
+        )
+        assertTrue(
+            line.contains("0"),
+            "Remaining tasks should be coerced to 0, got: $line",
+        )
     }
 
     @Test
     fun `buildPromptForIteration should report positive remaining tasks when plan has more tasks than executed`() {
-        val plan = Plan(
-            title = "Three task plan",
-            epics = listOf(
-                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
-                    UserStory(description = "US1", tasks = listOf(
-                        PlanTask(description = "t1", gradleTask = "tasks"),
-                        PlanTask(description = "t2", gradleTask = "compileKotlin"),
-                        PlanTask(description = "t3", gradleTask = "test")
-                    ))
-                ))
-            ),
-            totalPoints = 1,
-            estimatedSessions = "1"
-        )
-        val state = VibecodingState(
-            intention = "Normal remaining",
-            workspaceRoot = "/tmp",
-            maxActions = 10,
-            maxRetries = 2,
-            plan = plan,
-            executedTasks = listOf("tasks")
-        )
+        val plan =
+            Plan(
+                title = "Three task plan",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "E1",
+                            description = "test",
+                            points = 1,
+                            userStories =
+                                listOf(
+                                    UserStory(
+                                        description = "US1",
+                                        tasks =
+                                            listOf(
+                                                PlanTask(description = "t1", gradleTask = "tasks"),
+                                                PlanTask(description = "t2", gradleTask = "compileKotlin"),
+                                                PlanTask(description = "t3", gradleTask = "test"),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    ),
+                totalPoints = 1,
+                estimatedSessions = "1",
+            )
+        val state =
+            VibecodingState(
+                intention = "Normal remaining",
+                workspaceRoot = "/tmp",
+                maxActions = 10,
+                maxRetries = 2,
+                plan = plan,
+                executedTasks = listOf("tasks"),
+            )
 
         val prompt = vibecodingGraph.buildPromptForIteration(state)
 
         val remainingLine = prompt.lineSequence().firstOrNull { it.startsWith("Plan remaining tasks:") }
         assertNotNull(remainingLine, "Prompt should contain a 'Plan remaining tasks' line")
         val line = remainingLine!!
-        assertTrue(line.contains("2"),
-            "Remaining tasks should be 2 (3 total - 1 executed), got: $line")
+        assertTrue(
+            line.contains("2"),
+            "Remaining tasks should be 2 (3 total - 1 executed), got: $line",
+        )
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -646,36 +819,52 @@ class VibecodingGraphTest {
         val fakeLlm = FakeLlmProvider()
         fakeLlm.nextResponse = "try again"
 
-        val plan = Plan(
-            title = "Always fails",
-            epics = listOf(
-                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
-                    UserStory(description = "US1", tasks = listOf(
-                        PlanTask(description = "run tests", gradleTask = "test")
-                    ))
-                ))
-            ),
-            totalPoints = 1,
-            estimatedSessions = "1"
-        )
+        val plan =
+            Plan(
+                title = "Always fails",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "E1",
+                            description = "test",
+                            points = 1,
+                            userStories =
+                                listOf(
+                                    UserStory(
+                                        description = "US1",
+                                        tasks =
+                                            listOf(
+                                                PlanTask(description = "run tests", gradleTask = "test"),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    ),
+                totalPoints = 1,
+                estimatedSessions = "1",
+            )
 
-        val graph = VibecodingGraph(
-            augmentedGraph = null,
-            toolRegistry = ToolRegistry(),
-            llmProvider = fakeLlm
-        )
+        val graph =
+            VibecodingGraph(
+                augmentedGraph = null,
+                toolRegistry = ToolRegistry(),
+                llmProvider = fakeLlm,
+            )
 
-        val state = VibecodingState(
-            intention = "Run failing tests",
-            workspaceRoot = "/tmp",
-            maxActions = 10,
-            maxRetries = 2,
-            plan = plan
-        )
+        val state =
+            VibecodingState(
+                intention = "Run failing tests",
+                workspaceRoot = "/tmp",
+                maxActions = 10,
+                maxRetries = 2,
+                plan = plan,
+            )
 
         val result = graph.execute(state)
 
-        assertTrue(result.retryCount <= 2,
-            "retryCount should not exceed maxRetries=2 (one increment per retry), got ${result.retryCount} — double-increment bug if >2")
+        assertTrue(
+            result.retryCount <= 2,
+            "retryCount should not exceed maxRetries=2 (one increment per retry), got ${result.retryCount} — double-increment bug if >2",
+        )
     }
 }

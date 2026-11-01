@@ -6,10 +6,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class LlmConfigTest {
-
     @Test
     fun `should deserialize from YAML with envVar pattern`() {
-        val yaml = """
+        val yaml =
+            """
             ai:
               ollama:
                 baseUrl: "http://localhost:11437"
@@ -18,7 +18,7 @@ class LlmConfigTest {
                 envVar: "GEMINI_API_KEY"
                 model: "gemini-1.5-flash"
                 baseUrl: "https://generativelanguage.googleapis.com/v1beta"
-        """.trimIndent()
+            """.trimIndent()
 
         val config = LlmConfig.fromYaml(yaml)
 
@@ -37,11 +37,14 @@ class LlmConfigTest {
 
     @Test
     fun `should resolve Gemini API key from env var`() {
-        val config = LlmConfig.fromYaml("""
-            ai:
-              gemini:
-                envVar: "GEMINI_API_KEY"
-        """.trimIndent())
+        val config =
+            LlmConfig.fromYaml(
+                """
+                ai:
+                  gemini:
+                    envVar: "GEMINI_API_KEY"
+                """.trimIndent(),
+            )
 
         assertEquals("GEMINI_API_KEY", config.ai.gemini.envVar)
 
@@ -59,12 +62,15 @@ class LlmConfigTest {
 
     @Test
     fun `should resolve Ollama defaults when no env vars set`() {
-        val config = LlmConfig.fromYaml("""
-            ai:
-              ollama:
-                baseUrl: "http://localhost:11437"
-                model: "gpt-oss:120b-cloud"
-        """.trimIndent())
+        val config =
+            LlmConfig.fromYaml(
+                """
+                ai:
+                  ollama:
+                    baseUrl: "http://localhost:11437"
+                    model: "gpt-oss:120b-cloud"
+                """.trimIndent(),
+            )
 
         assertEquals("http://localhost:11437", config.ai.ollama.resolveBaseUrl())
         assertEquals("gpt-oss:120b-cloud", config.ai.ollama.resolveModel())

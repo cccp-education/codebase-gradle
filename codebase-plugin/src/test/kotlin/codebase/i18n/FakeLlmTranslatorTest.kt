@@ -7,14 +7,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 class FakeLlmTranslatorTest {
-
     @Test
     fun `default translation is deterministic stub`() {
         val translator = FakeLlmTranslator()
 
-        val result = translator.translate(
-            TranslationRequest("Bonjour", "fr", "en")
-        )
+        val result =
+            translator.translate(
+                TranslationRequest("Bonjour", "fr", "en"),
+            )
 
         assertIs<TranslationResult.Success>(result)
         assertEquals("[en] Bonjour", result.translatedText)

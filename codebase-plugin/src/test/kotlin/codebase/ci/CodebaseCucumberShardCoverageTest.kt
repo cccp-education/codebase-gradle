@@ -21,17 +21,17 @@ import java.io.File
  * 3. the `unit` job runs the plain `test` task.
  */
 class CodebaseCucumberShardCoverageTest {
-
-    private val repoRoot: File = run {
-        var dir = File(System.getProperty("user.dir")).absoluteFile
-        while (dir.parentFile != null && !dir.resolve(".github/workflows/test.yml").isFile) {
-            dir = dir.parentFile
+    private val repoRoot: File =
+        run {
+            var dir = File(System.getProperty("user.dir")).absoluteFile
+            while (dir.parentFile != null && !dir.resolve(".github/workflows/test.yml").isFile) {
+                dir = dir.parentFile
+            }
+            check(dir.resolve(".github/workflows/test.yml").isFile) {
+                "test.yml not found above ${System.getProperty("user.dir")}"
+            }
+            dir
         }
-        check(dir.resolve(".github/workflows/test.yml").isFile) {
-            "test.yml not found above ${System.getProperty("user.dir")}"
-        }
-        dir
-    }
 
     private val scenarioDir = repoRoot.resolve("codebase-plugin/src/test/kotlin/codebase/scenarios")
     private val featuresDir = repoRoot.resolve("codebase-plugin/src/test/features")
@@ -39,12 +39,14 @@ class CodebaseCucumberShardCoverageTest {
     private val workflow = repoRoot.resolve(".github/workflows/test.yml")
 
     private fun allFeatures(): Set<String> =
-        featuresDir.listFiles { f -> f.isFile && f.name.endsWith(".feature") }!!
+        featuresDir
+            .listFiles { f -> f.isFile && f.name.endsWith(".feature") }!!
             .map { it.name }
             .toSet()
 
     private fun shardRunners(): List<File> =
-        scenarioDir.listFiles { f -> f.isFile && f.name.startsWith("CucumberShard") && f.name.endsWith("Runner.kt") }!!
+        scenarioDir
+            .listFiles { f -> f.isFile && f.name.startsWith("CucumberShard") && f.name.endsWith("Runner.kt") }!!
             .sortedBy { it.name }
 
     private fun runnerFeatures(runner: File): List<String> =
@@ -55,7 +57,9 @@ class CodebaseCucumberShardCoverageTest {
 
     private fun runnerTags(runner: File): String =
         Regex("""FILTER_TAGS_PROPERTY_NAME,\s*value = "([^"]*)"""")
-            .find(runner.readText())?.groupValues?.get(1) ?: ""
+            .find(runner.readText())
+            ?.groupValues
+            ?.get(1) ?: ""
 
     @Test
     fun `the shards cover every feature exactly once and exclude integration`() {
@@ -97,10 +101,16 @@ class CodebaseCucumberShardCoverageTest {
                 .contains(runner)
         }
 
-        val buildShardTasks = Regex("""cucumberTestShard[A-Za-z0-9]+""")
-            .findAll(build).map { it.value }.toSet()
-        val ciShardTasks = Regex("""cucumberTestShard[A-Za-z0-9]+""")
-            .findAll(ci).map { it.value }.toSet()
+        val buildShardTasks =
+            Regex("""cucumberTestShard[A-Za-z0-9]+""")
+                .findAll(build)
+                .map { it.value }
+                .toSet()
+        val ciShardTasks =
+            Regex("""cucumberTestShard[A-Za-z0-9]+""")
+                .findAll(ci)
+                .map { it.value }
+                .toSet()
 
         assertThat(buildShardTasks)
             .describedAs("shard CucumberTaskSpec tasks")

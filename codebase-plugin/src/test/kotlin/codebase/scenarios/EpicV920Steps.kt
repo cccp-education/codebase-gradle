@@ -7,8 +7,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class EpicV920Steps(private val world: IngestGovernanceWorld) {
-
+class EpicV920Steps(
+    private val world: IngestGovernanceWorld,
+) {
     @Before("@epic_v_9_20")
     fun reset() {
         world.reset()
@@ -37,42 +38,58 @@ class EpicV920Steps(private val world: IngestGovernanceWorld) {
     @Then("the chunk incremental report has chunks added equal to {int}")
     fun `chunk incremental report chunks added equal to`(expected: Int) {
         val report = world.lastChunkIncrementalReport ?: error("No chunk incremental report")
-        assertEquals(expected, report.chunksAdded.size,
-            "Expected chunksAdded.size=$expected, got ${report.chunksAdded.size}")
+        assertEquals(
+            expected,
+            report.chunksAdded.size,
+            "Expected chunksAdded.size=$expected, got ${report.chunksAdded.size}",
+        )
     }
 
     @Then("the chunk incremental report has chunks added greater than {int}")
     fun `chunk incremental report chunks added greater than`(min: Int) {
         val report = world.lastChunkIncrementalReport ?: error("No chunk incremental report")
-        assertTrue(report.chunksAdded.size > min,
-            "Expected chunksAdded.size > $min, got ${report.chunksAdded.size}")
+        assertTrue(
+            report.chunksAdded.size > min,
+            "Expected chunksAdded.size > $min, got ${report.chunksAdded.size}",
+        )
     }
 
     @Then("the chunk incremental report has chunks modified equal to {int}")
     fun `chunk incremental report chunks modified equal to`(expected: Int) {
         val report = world.lastChunkIncrementalReport ?: error("No chunk incremental report")
-        assertEquals(expected, report.chunksModified.size,
-            "Expected chunksModified.size=$expected, got ${report.chunksModified.size}")
+        assertEquals(
+            expected,
+            report.chunksModified.size,
+            "Expected chunksModified.size=$expected, got ${report.chunksModified.size}",
+        )
     }
 
     @Then("the chunk incremental report has chunks removed equal to {int}")
     fun `chunk incremental report chunks removed equal to`(expected: Int) {
         val report = world.lastChunkIncrementalReport ?: error("No chunk incremental report")
-        assertEquals(expected, report.chunksRemoved.size,
-            "Expected chunksRemoved.size=$expected, got ${report.chunksRemoved.size}")
+        assertEquals(
+            expected,
+            report.chunksRemoved.size,
+            "Expected chunksRemoved.size=$expected, got ${report.chunksRemoved.size}",
+        )
     }
 
     @Then("the chunk incremental report has chunks unchanged equal to {int}")
     fun `chunk incremental report chunks unchanged equal to`(expected: Int) {
         val report = world.lastChunkIncrementalReport ?: error("No chunk incremental report")
-        assertEquals(expected, report.chunksUnchanged.size,
-            "Expected chunksUnchanged.size=$expected, got ${report.chunksUnchanged.size}")
+        assertEquals(
+            expected,
+            report.chunksUnchanged.size,
+            "Expected chunksUnchanged.size=$expected, got ${report.chunksUnchanged.size}",
+        )
     }
 
     @Then("the chunk incremental report has chunks unchanged greater than {int}")
     fun `chunk incremental report chunks unchanged greater than`(min: Int) {
         val report = world.lastChunkIncrementalReport ?: error("No chunk incremental report")
-        assertTrue(report.chunksUnchanged.size > min,
-            "Expected chunksUnchanged.size > $min, got ${report.chunksUnchanged.size}")
+        assertTrue(
+            report.chunksUnchanged.size > min,
+            "Expected chunksUnchanged.size > $min, got ${report.chunksUnchanged.size}",
+        )
     }
 }

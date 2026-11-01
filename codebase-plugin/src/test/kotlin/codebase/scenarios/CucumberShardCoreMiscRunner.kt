@@ -36,15 +36,16 @@ import org.junit.platform.suite.api.Suite
 @SelectClasspathResource("features/epic_l_3_augmented_planning.feature")
 @ConfigurationParameter(
     key = FEATURES_PROPERTY_NAME,
-    value = "src/test/features/codebase_vibe_hardening.feature,src/test/features/codebase_vibe_hardening_2.feature," +
-        "src/test/features/koog_pipeline_dedup.feature,src/test/features/prepare_context.feature," +
-        "src/test/features/epic_7_expert_dispatcher.feature,src/test/features/epic_8_expert_exposure.feature," +
-        "src/test/features/epic_l_3_augmented_planning.feature"
+    value =
+        "src/test/features/codebase_vibe_hardening.feature,src/test/features/codebase_vibe_hardening_2.feature," +
+            "src/test/features/koog_pipeline_dedup.feature,src/test/features/prepare_context.feature," +
+            "src/test/features/epic_7_expert_dispatcher.feature,src/test/features/epic_8_expert_exposure.feature," +
+            "src/test/features/epic_l_3_augmented_planning.feature",
 )
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "codebase.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-shard-core-misc.html, json:build/reports/cucumber-shard-core-misc.json"
+    value = "pretty, html:build/reports/cucumber-shard-core-misc.html, json:build/reports/cucumber-shard-core-misc.json",
 )
 @ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @integration")
 class CucumberShardCoreMiscRunner

@@ -1,6 +1,8 @@
 package codebase.scenarios
 
 import codebase.rag.CompositeContextBuilder
+import codebase.rag.EmbeddingPipeline
+import codebase.rag.VectorStore
 import codebase.store.RagVectorStore
 import codebase.store.RetrieveResult
 import io.cucumber.java.en.And
@@ -25,8 +27,9 @@ import kotlin.test.assertTrue
  * [RagVectorStore] (instantiated, never queried) or a [StubRagStore]
  * returning canned [RetrieveResult] lists.
  */
-class RagSocleSteps(private val world: RagSocleWorld) {
-
+class RagSocleSteps(
+    private val world: RagSocleWorld,
+) {
     @Given("a rag socle world is initialized")
     fun `rag socle world initialized`() {
         world.ensureInitialized()
@@ -40,12 +43,20 @@ class RagSocleSteps(private val world: RagSocleWorld) {
 
     @When("the rag socle store is instantiated with host {string}, port {int}, database {string}, username {string}, password {string}")
     fun `rag socle store instantiated with custom params`(
-        host: String, port: Int, database: String, username: String, password: String
+        host: String,
+        port: Int,
+        database: String,
+        username: String,
+        password: String,
     ) {
-        world.store = RagVectorStore(
-            host = host, port = port, database = database,
-            username = username, password = password
-        )
+        world.store =
+            RagVectorStore(
+                host = host,
+                port = port,
+                database = database,
+                username = username,
+                password = password,
+            )
     }
 
     @Then("the rag socle store is non-null")
@@ -58,16 +69,28 @@ class RagSocleSteps(private val world: RagSocleWorld) {
         assertEquals("codebase.store.RagVectorStore", world.store!!.javaClass.name)
     }
 
-    @Given("a retrieve result with chunkId {long}, chunkIndex {int}, chunkText {string}, sectionPath {string}, headingLevel {int}, sourceDocument {string}, similarity {double}")
+    @Given(
+        "a retrieve result with chunkId {long}, chunkIndex {int}, chunkText {string}, sectionPath {string}, headingLevel {int}, sourceDocument {string}, similarity {double}",
+    )
     fun `retrieve result given`(
-        chunkId: Long, chunkIndex: Int, chunkText: String, sectionPath: String,
-        headingLevel: Int, sourceDocument: String, similarity: Double
+        chunkId: Long,
+        chunkIndex: Int,
+        chunkText: String,
+        sectionPath: String,
+        headingLevel: Int,
+        sourceDocument: String,
+        similarity: Double,
     ) {
-        world.retrieveResult = RetrieveResult(
-            chunkId = chunkId, chunkIndex = chunkIndex, chunkText = chunkText,
-            sectionPath = sectionPath, headingLevel = headingLevel,
-            sourceDocument = sourceDocument, similarity = similarity
-        )
+        world.retrieveResult =
+            RetrieveResult(
+                chunkId = chunkId,
+                chunkIndex = chunkIndex,
+                chunkText = chunkText,
+                sectionPath = sectionPath,
+                headingLevel = headingLevel,
+                sourceDocument = sourceDocument,
+                similarity = similarity,
+            )
     }
 
     @Then("the retrieve result chunkId is {long}")
@@ -99,15 +122,17 @@ class RagSocleSteps(private val world: RagSocleWorld) {
 
     @And("the docs context is loaded for query {string}")
     fun `docs context loaded`(query: String) {
-        val builder = CompositeContextBuilder(
-            workspaceRoot = File(System.getProperty("java.io.tmpdir")),
-            vectorStore = codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy"),
-            embeddingPipeline = codebase.rag.EmbeddingPipeline(
-                codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy")
-            ),
-            config = contracts.context.CompositeContextConfig(),
-            codexStore = world.store,
-        )
+        val builder =
+            CompositeContextBuilder(
+                workspaceRoot = File(System.getProperty("java.io.tmpdir")),
+                vectorStore = codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy"),
+                embeddingPipeline =
+                    codebase.rag.EmbeddingPipeline(
+                        codebase.rag.VectorStore("jdbc:postgresql://localhost:5432/dummy", "dummy", "dummy"),
+                    ),
+                config = contracts.context.CompositeContextConfig(),
+                codexStore = world.store,
+            )
         // build() exercises assembleContext which degrades RAG gracefully
         // (dummy VectorStore throws, caught) and populates docsSection via
         // loadDocsContext (the socle store under test).
@@ -118,8 +143,10 @@ class RagSocleSteps(private val world: RagSocleWorld) {
     @Then("the docs section reports the rag store is not configured")
     fun `docs section not configured`() {
         val docs = world.docsSection!!
-        assertTrue(docs.contains("non configure", ignoreCase = true),
-            "Expected 'non configure' in docs section, got: $docs")
+        assertTrue(
+            docs.contains("non configure", ignoreCase = true),
+            "Expected 'non configure' in docs section, got: $docs",
+        )
     }
 
     @Given("a rag store stub that throws on search")
@@ -135,19 +162,29 @@ class RagSocleSteps(private val world: RagSocleWorld) {
     @Then("the docs section reports the rag store is unavailable")
     fun `docs section unavailable`() {
         val docs = world.docsSection!!
-        assertTrue(docs.contains("indisponible", ignoreCase = true),
-            "Expected 'indisponible' in docs section, got: $docs")
+        assertTrue(
+            docs.contains("indisponible", ignoreCase = true),
+            "Expected 'indisponible' in docs section, got: $docs",
+        )
     }
 
     @Given("a rag store stub returning {int} results for query {string}")
-    fun `rag store stub returning`(count: Int, query: String) {
-        val results = (1..count).map { i ->
-            RetrieveResult(
-                chunkId = i.toLong(), chunkIndex = i - 1, chunkText = "result $i for $query",
-                sectionPath = "Section $i", headingLevel = 1,
-                sourceDocument = "doc.pdf", similarity = 1.0 - (i * 0.1)
-            )
-        }
+    fun `rag store stub returning`(
+        count: Int,
+        query: String,
+    ) {
+        val results =
+            (1..count).map { i ->
+                RetrieveResult(
+                    chunkId = i.toLong(),
+                    chunkIndex = i - 1,
+                    chunkText = "result $i for $query",
+                    sectionPath = "Section $i",
+                    headingLevel = 1,
+                    sourceDocument = "doc.pdf",
+                    similarity = 1.0 - (i * 0.1),
+                )
+            }
         world.store = StubRagStore(results = results)
     }
 
@@ -161,14 +198,19 @@ class RagSocleSteps(private val world: RagSocleWorld) {
         val docs = world.docsSection!!
         val markers = docs.split("[Doc] source=").toSet()
         // The first segment is the intro line; count the rest.
-        assertEquals(expected, markers.size - 1,
-            "Expected $expected result entries, got: ${markers.size - 1} in: $docs")
+        assertEquals(
+            expected,
+            markers.size - 1,
+            "Expected $expected result entries, got: ${markers.size - 1} in: $docs",
+        )
     }
 
     @And("the docs section contains the source document {string}")
     fun `docs section source document`(expected: String) {
         val docs = world.docsSection!!
-        assertTrue(docs.contains(expected),
-            "Expected source document '$expected' in docs section, got: $docs")
+        assertTrue(
+            docs.contains(expected),
+            "Expected source document '$expected' in docs section, got: $docs",
+        )
     }
 }

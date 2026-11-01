@@ -3,9 +3,9 @@ package codebase.store
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrowsExactly
-import java.lang.reflect.InvocationTargetException
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.lang.reflect.InvocationTargetException
 
 /**
  * Characterization test — EPIC CDX-RAG-1 : mirror of codex `CodexVectorStoreTest`.
@@ -17,16 +17,16 @@ import org.junit.jupiter.api.Test
  * / `codex_chunks` stay unchanged (Loi de l'Économie d'Encre).
  */
 class RagVectorStoreTest {
-
     @Test
     fun `store can be instantiated with all connection parameters`() {
-        val store = RagVectorStore(
-            host = "testhost",
-            port = 5433,
-            database = "testdb",
-            username = "testuser",
-            password = "testpass"
-        )
+        val store =
+            RagVectorStore(
+                host = "testhost",
+                port = 5433,
+                database = "testdb",
+                username = "testuser",
+                password = "testpass",
+            )
         assertNotNull(store)
     }
 
@@ -38,15 +38,16 @@ class RagVectorStoreTest {
 
     @Test
     fun `RetrieveResult data class contract is intact`() {
-        val result = RetrieveResult(
-            chunkId = 1L,
-            chunkIndex = 0,
-            chunkText = "test chunk",
-            sectionPath = "Chapter 1",
-            headingLevel = 1,
-            sourceDocument = "test-doc",
-            similarity = 0.95
-        )
+        val result =
+            RetrieveResult(
+                chunkId = 1L,
+                chunkIndex = 0,
+                chunkText = "test chunk",
+                sectionPath = "Chapter 1",
+                headingLevel = 1,
+                sourceDocument = "test-doc",
+                similarity = 0.95,
+            )
         assertEquals(1L, result.chunkId)
         assertEquals(0, result.chunkIndex)
         assertEquals("test chunk", result.chunkText)
@@ -103,25 +104,27 @@ class RagVectorStoreTest {
         val store = RagVectorStore()
         val method = store.javaClass.getDeclaredMethod("computeEmbedding", String::class.java)
         method.isAccessible = true
-        val exception = assertThrowsExactly(InvocationTargetException::class.java) {
-            method.invoke(store, "")
-        }
+        val exception =
+            assertThrowsExactly(InvocationTargetException::class.java) {
+                method.invoke(store, "")
+            }
         assertEquals(
             IllegalArgumentException::class.java,
             exception.cause!!.javaClass,
-            "computeEmbedding should throw IllegalArgumentException for empty string"
+            "computeEmbedding should throw IllegalArgumentException for empty string",
         )
     }
 
     @Test
     fun `buildConnectionFactory produces valid factory`() {
-        val store = RagVectorStore(
-            host = "testhost",
-            port = 5433,
-            database = "testdb",
-            username = "testuser",
-            password = "testpass"
-        )
+        val store =
+            RagVectorStore(
+                host = "testhost",
+                port = 5433,
+                database = "testdb",
+                username = "testuser",
+                password = "testpass",
+            )
         val method = store.javaClass.getDeclaredMethod("buildConnectionFactory")
         method.isAccessible = true
         val factory = method.invoke(store)
@@ -131,13 +134,14 @@ class RagVectorStoreTest {
 
     @Test
     fun `store constructor stores all parameters correctly`() {
-        val store = RagVectorStore(
-            host = "remote.example.com",
-            port = 9999,
-            database = "production",
-            username = "reader",
-            password = "p@ssw0rd!"
-        )
+        val store =
+            RagVectorStore(
+                host = "remote.example.com",
+                port = 9999,
+                database = "production",
+                username = "reader",
+                password = "p@ssw0rd!",
+            )
 
         val hostField = store.javaClass.getDeclaredField("host").also { it.isAccessible = true }
         val portField = store.javaClass.getDeclaredField("port").also { it.isAccessible = true }

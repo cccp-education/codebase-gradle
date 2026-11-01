@@ -1,35 +1,36 @@
 package codebase.koog.llm.pool
 
-import contracts.llmpool.LlmInstance
-import contracts.llmpool.RotationStrategy
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class GeminiMultiAccountPoolTest {
-
-    private fun pool(vararg keys: String): GeminiKeyPool =
-        GeminiPoolFactory.fromKeys(keys.toList())
+    private fun pool(vararg keys: String): GeminiKeyPool = GeminiPoolFactory.fromKeys(keys.toList())
 
     @Test
     fun `multi-account pool with 2 accounts should have 2 sub-pools`() {
-        val multi = GeminiMultiAccountPool(mapOf(
-            "account-A" to pool("key-A1", "key-A2"),
-            "account-B" to pool("key-B1", "key-B2")
-        ))
+        val multi =
+            GeminiMultiAccountPool(
+                mapOf(
+                    "account-A" to pool("key-A1", "key-A2"),
+                    "account-B" to pool("key-B1", "key-B2"),
+                ),
+            )
         assertEquals(2, multi.accountCount())
         assertEquals(4, multi.totalSize())
     }
 
     @Test
     fun `nextInstance should rotate across accounts`() {
-        val multi = GeminiMultiAccountPool(mapOf(
-            "account-A" to pool("key-A1", "key-A2"),
-            "account-B" to pool("key-B1", "key-B2")
-        ))
+        val multi =
+            GeminiMultiAccountPool(
+                mapOf(
+                    "account-A" to pool("key-A1", "key-A2"),
+                    "account-B" to pool("key-B1", "key-B2"),
+                ),
+            )
         val first = multi.nextInstance()
         val second = multi.nextInstance()
         val third = multi.nextInstance()
@@ -43,10 +44,13 @@ class GeminiMultiAccountPoolTest {
     @Test
     fun `markRateLimited should skip key in the right account`() {
         val accountA = pool("key-A1", "key-A2")
-        val multi = GeminiMultiAccountPool(mapOf(
-            "account-A" to accountA,
-            "account-B" to pool("key-B1")
-        ))
+        val multi =
+            GeminiMultiAccountPool(
+                mapOf(
+                    "account-A" to accountA,
+                    "account-B" to pool("key-B1"),
+                ),
+            )
         val inst = accountA.instances()[0]
         multi.markRateLimited(inst)
         assertTrue(multi.isRateLimited(inst))
@@ -75,11 +79,12 @@ class GeminiMultiAccountPoolTest {
 
     @Test
     fun `fromEnvVarsMultiAccount should map GEMINI_ACCOUNT_N_API_KEY_M pattern`() {
-        val env = mapOf(
-            "GEMINI_ACCOUNT_1_API_KEY_1" to "a1k1",
-            "GEMINI_ACCOUNT_1_API_KEY_2" to "a1k2",
-            "GEMINI_ACCOUNT_2_API_KEY_1" to "a2k1"
-        )
+        val env =
+            mapOf(
+                "GEMINI_ACCOUNT_1_API_KEY_1" to "a1k1",
+                "GEMINI_ACCOUNT_1_API_KEY_2" to "a1k2",
+                "GEMINI_ACCOUNT_2_API_KEY_1" to "a2k1",
+            )
         val multi = GeminiMultiAccountPool.fromEnvVars(env)
         assertEquals(2, multi.accountCount())
         assertEquals(3, multi.totalSize())
@@ -87,11 +92,12 @@ class GeminiMultiAccountPoolTest {
 
     @Test
     fun `fromEnvVarsMultiAccount should skip empty keys`() {
-        val env = mapOf(
-            "GEMINI_ACCOUNT_1_API_KEY_1" to "a1k1",
-            "GEMINI_ACCOUNT_1_API_KEY_2" to "",
-            "GEMINI_ACCOUNT_2_API_KEY_1" to "a2k1"
-        )
+        val env =
+            mapOf(
+                "GEMINI_ACCOUNT_1_API_KEY_1" to "a1k1",
+                "GEMINI_ACCOUNT_1_API_KEY_2" to "",
+                "GEMINI_ACCOUNT_2_API_KEY_1" to "a2k1",
+            )
         val multi = GeminiMultiAccountPool.fromEnvVars(env)
         assertEquals(2, multi.accountCount())
         assertEquals(2, multi.totalSize())

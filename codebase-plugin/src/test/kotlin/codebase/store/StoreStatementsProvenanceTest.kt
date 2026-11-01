@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test
  * (Loi de l'Économie d'Encre).
  */
 class StoreStatementsProvenanceTest {
-
     @Test
     fun `provenanceSchema is additive ALTER TABLE with pages TEXT`() {
         val stmts = StoreStatements.provenanceSchema()

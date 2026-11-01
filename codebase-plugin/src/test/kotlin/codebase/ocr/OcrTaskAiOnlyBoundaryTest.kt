@@ -14,10 +14,16 @@ import kotlin.test.assertTrue
  * AI-only. Software OCR (Tesseract) is actioned by codex via `collectOcr`.
  */
 class OcrTaskAiOnlyBoundaryTest {
-
     @Test
-    fun `tesseract provider is rejected with boundary message`(@TempDir dir: Path) {
-        val project = ProjectBuilder.builder().withProjectDir(dir.toFile()).withName("ocr-tess").build()
+    fun `tesseract provider is rejected with boundary message`(
+        @TempDir dir: Path,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(dir.toFile())
+                .withName("ocr-tess")
+                .build()
         project.pluginManager.apply(codebase.CodebasePlugin::class.java)
 
         val imgFile = dir.resolve("tess.png").toFile()
@@ -32,13 +38,20 @@ class OcrTaskAiOnlyBoundaryTest {
         val exception = assertThrows<GradleException> { task.executeOcr() }
         assertTrue(
             exception.message!!.contains("codex"),
-            "Error message should point to the codex plugin: ${exception.message}"
+            "Error message should point to the codex plugin: ${exception.message}",
         )
     }
 
     @Test
-    fun `gemini+ollama raises error when both providers fail without software fallback`(@TempDir dir: Path) {
-        val project = ProjectBuilder.builder().withProjectDir(dir.toFile()).withName("ocr-tess-fb").build()
+    fun `gemini+ollama raises error when both providers fail without software fallback`(
+        @TempDir dir: Path,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(dir.toFile())
+                .withName("ocr-tess-fb")
+                .build()
         project.pluginManager.apply(codebase.CodebasePlugin::class.java)
 
         val imgFile = dir.resolve("fallback.png").toFile()
@@ -55,14 +68,15 @@ class OcrTaskAiOnlyBoundaryTest {
         val exception = assertThrows<GradleException> { task.executeOcr() }
         assertTrue(
             exception.message == OcrTask.AI_ONLY_ERROR_MESSAGE,
-            "Error should be the AI-only boundary message: ${exception.message}"
+            "Error should be the AI-only boundary message: ${exception.message}",
         )
     }
 
     private fun createMinimalPng(): ByteArray {
-        val pngHex = "89504E470D0A1A0A0000000D4948445200000001000000010802000000907" +
-            "71DE0000000C4944415408D763F8FFFF3F000005005E018246A4B10000000049" +
-            "454E44AE426082"
+        val pngHex =
+            "89504E470D0A1A0A0000000D4948445200000001000000010802000000907" +
+                "71DE0000000C4944415408D763F8FFFF3F000005005E018246A4B10000000049" +
+                "454E44AE426082"
         val cleaned = pngHex.replace(Regex("[^0-9A-Fa-f]"), "")
         val bytes = ByteArray(cleaned.length / 2)
         for (i in bytes.indices) {

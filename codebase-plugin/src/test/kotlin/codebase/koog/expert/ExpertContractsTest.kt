@@ -1,10 +1,13 @@
 package codebase.koog.expert
 
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 
 class ExpertContractsTest {
-
     private val kotlinDomain = ExpertDomain("kotlin", "Kotlin, Gradle, JVM ecosystem")
     private val docsDomain = ExpertDomain("docs", "Documentation, AsciiDoc, technical writing")
     private val generalDomain = ExpertDomain("general", "Generalist fallback")
@@ -18,19 +21,21 @@ class ExpertContractsTest {
 
     @Test
     fun `ExpertCallRequest serialization roundtrip`() {
-        val request = ExpertCallRequest(
-            taskId = "task-001",
-            domain = kotlinDomain,
-            subtaskType = "code_generation",
-            context = ExpertCallContext(
-                maxTokens = 2000,
-                relevantSchemas = listOf("plugin.json"),
-                relevantFiles = listOf("build.gradle.kts")
-            ),
-            prompt = "Generate a Kotlin class for a Gradle plugin",
-            expectedOutputFormat = "kotlin",
-            validationCriteria = listOf("compiles", "matches_schema", "no_hallucination")
-        )
+        val request =
+            ExpertCallRequest(
+                taskId = "task-001",
+                domain = kotlinDomain,
+                subtaskType = "code_generation",
+                context =
+                    ExpertCallContext(
+                        maxTokens = 2000,
+                        relevantSchemas = listOf("plugin.json"),
+                        relevantFiles = listOf("build.gradle.kts"),
+                    ),
+                prompt = "Generate a Kotlin class for a Gradle plugin",
+                expectedOutputFormat = "kotlin",
+                validationCriteria = listOf("compiles", "matches_schema", "no_hallucination"),
+            )
 
         assertEquals("task-001", request.taskId)
         assertEquals(kotlinDomain, request.domain)
@@ -45,14 +50,15 @@ class ExpertContractsTest {
 
     @Test
     fun `ExpertCallResponse with success`() {
-        val response = ExpertCallResponse(
-            taskId = "task-001",
-            domain = kotlinDomain,
-            output = "class MyPlugin : Plugin<Project> { }",
-            confidenceScore = 0.95,
-            tokenUsage = ExpertTokenUsage(150, 300, 450),
-            validationPassed = true
-        )
+        val response =
+            ExpertCallResponse(
+                taskId = "task-001",
+                domain = kotlinDomain,
+                output = "class MyPlugin : Plugin<Project> { }",
+                confidenceScore = 0.95,
+                tokenUsage = ExpertTokenUsage(150, 300, 450),
+                validationPassed = true,
+            )
 
         assertEquals("task-001", response.taskId)
         assertEquals(kotlinDomain, response.domain)
@@ -67,15 +73,16 @@ class ExpertContractsTest {
 
     @Test
     fun `ExpertCallResponse with failure`() {
-        val response = ExpertCallResponse(
-            taskId = "task-002",
-            domain = docsDomain,
-            output = "",
-            confidenceScore = 0.0,
-            tokenUsage = ExpertTokenUsage(100, 0, 100),
-            validationPassed = false,
-            error = "Off-topic detected: response not about documentation"
-        )
+        val response =
+            ExpertCallResponse(
+                taskId = "task-002",
+                domain = docsDomain,
+                output = "",
+                confidenceScore = 0.0,
+                tokenUsage = ExpertTokenUsage(100, 0, 100),
+                validationPassed = false,
+                error = "Off-topic detected: response not about documentation",
+            )
 
         assertFalse(response.validationPassed)
         assertEquals("Off-topic detected: response not about documentation", response.error)

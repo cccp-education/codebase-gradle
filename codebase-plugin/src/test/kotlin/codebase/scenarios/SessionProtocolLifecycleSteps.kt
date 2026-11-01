@@ -8,10 +8,10 @@ import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import java.io.File
 
-class SessionProtocolLifecycleSteps(private val world: SessionProtocolLifecycleWorld) {
-
+class SessionProtocolLifecycleSteps(
+    private val world: SessionProtocolLifecycleWorld,
+) {
     @Given("a SessionProtocolTask with lifecycle enabled")
     fun `setup lifecycle`() {
         world.setupLifecycleManager(world.lifecycleDir)
@@ -22,27 +22,44 @@ class SessionProtocolLifecycleSteps(private val world: SessionProtocolLifecycleW
     }
 
     @And("a session {string} exists with prompt {string}")
-    fun `prepopulate session`(sessionId: String, prompt: String) {
+    fun `prepopulate session`(
+        sessionId: String,
+        prompt: String,
+    ) {
         world.lifecycleManager.create(prompt = prompt, model = "test-model", sessionId = sessionId)
     }
 
     @When("I execute action {string} with prompt {string}")
-    fun `execute action with prompt`(action: String, prompt: String) {
+    fun `execute action with prompt`(
+        action: String,
+        prompt: String,
+    ) {
         world.executeAction(action = action, prompt = prompt)
     }
 
     @When("I execute action {string} with prompt {string} and sessionId {string}")
-    fun `execute action with prompt and sessionId`(action: String, prompt: String, sessionId: String) {
+    fun `execute action with prompt and sessionId`(
+        action: String,
+        prompt: String,
+        sessionId: String,
+    ) {
         world.executeAction(action = action, prompt = prompt, sessionId = sessionId)
     }
 
     @When("I execute action {string} with sessionId {string} and prompt {string}")
-    fun `execute action with sessionId and prompt`(action: String, sessionId: String, prompt: String) {
+    fun `execute action with sessionId and prompt`(
+        action: String,
+        sessionId: String,
+        prompt: String,
+    ) {
         world.executeAction(action = action, sessionId = sessionId, prompt = prompt)
     }
 
     @When("I execute action {string} with sessionId {string}")
-    fun `execute action with sessionId only`(action: String, sessionId: String) {
+    fun `execute action with sessionId only`(
+        action: String,
+        sessionId: String,
+    ) {
         world.executeAction(action = action, sessionId = sessionId)
     }
 
@@ -79,7 +96,10 @@ class SessionProtocolLifecycleSteps(private val world: SessionProtocolLifecycleW
     }
 
     @Then("the lifecycle session {string} has prompt {string}")
-    fun `lifecycle session has prompt`(sessionId: String, expectedPrompt: String) {
+    fun `lifecycle session has prompt`(
+        sessionId: String,
+        expectedPrompt: String,
+    ) {
         val session = world.lifecycleManager.get(sessionId)
         assertNotNull(session, "Session $sessionId not found")
         assertTrue(session?.prompt == expectedPrompt, "Expected prompt '$expectedPrompt', got: ${session?.prompt}")

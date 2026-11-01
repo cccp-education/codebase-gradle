@@ -3,28 +3,28 @@ package codebase.blog
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
-import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class BlogArticleRendererTest {
-
     private val renderer = BlogArticleRenderer(articleNumber = 127)
 
     @Test
-    fun `render produces valid AsciiDoc file with JBake headers`(@TempDir tempDir: Path) {
-        val data = BlogArticleData(
-            sessionNumber = "042",
-            sessionTitle = "EPIC 7 Pipeline LLM — TDD complet",
-            sessionDate = "2026-06-01",
-            boroughName = "magic-borough",
-            context = "Projet magic-borough — N2 pipeline LLM.",
-            achievements = "=== EPIC 7.1 — PromptTemplateFactory\n5 templates, 3/3 PASS\n\n=== EPIC 7.2 — LlmPipelineOrchestrator\n4/4 PASS",
-            testResults = "- 7/7 JUnit5 PASS",
-            nextSession = "EPIC 7.3 — Pipeline error recovery"
-        )
+    fun `render produces valid AsciiDoc file with JBake headers`(
+        @TempDir tempDir: Path,
+    ) {
+        val data =
+            BlogArticleData(
+                sessionNumber = "042",
+                sessionTitle = "EPIC 7 Pipeline LLM — TDD complet",
+                sessionDate = "2026-06-01",
+                boroughName = "magic-borough",
+                context = "Projet magic-borough — N2 pipeline LLM.",
+                achievements = "=== EPIC 7.1 — PromptTemplateFactory\n5 templates, 3/3 PASS\n\n=== EPIC 7.2 — LlmPipelineOrchestrator\n4/4 PASS",
+                testResults = "- 7/7 JUnit5 PASS",
+                nextSession = "EPIC 7.3 — Pipeline error recovery",
+            )
 
         val outputDir = tempDir.resolve("output").toFile()
         renderer.render(data, outputDir)
@@ -56,17 +56,20 @@ class BlogArticleRendererTest {
     }
 
     @Test
-    fun `render outputs correct numbering with leading zeros`(@TempDir tempDir: Path) {
-        val data = BlogArticleData(
-            sessionNumber = "001",
-            sessionTitle = "Setup",
-            sessionDate = "2026-06-01",
-            boroughName = "test",
-            context = "init",
-            achievements = "done",
-            testResults = "OK",
-            nextSession = "next"
-        )
+    fun `render outputs correct numbering with leading zeros`(
+        @TempDir tempDir: Path,
+    ) {
+        val data =
+            BlogArticleData(
+                sessionNumber = "001",
+                sessionTitle = "Setup",
+                sessionDate = "2026-06-01",
+                boroughName = "test",
+                context = "init",
+                achievements = "done",
+                testResults = "OK",
+                nextSession = "next",
+            )
 
         val rendererWithNum = BlogArticleRenderer(articleNumber = 8)
         val outputDir = tempDir.resolve("output").toFile()
@@ -78,11 +81,20 @@ class BlogArticleRendererTest {
     }
 
     @Test
-    fun `render creates output directory if not exists`(@TempDir tempDir: Path) {
-        val data = BlogArticleData(
-            sessionNumber = "001", sessionTitle = "Title", sessionDate = "2026-06-01",
-            boroughName = "b", context = "c", achievements = "a", testResults = "t", nextSession = "n"
-        )
+    fun `render creates output directory if not exists`(
+        @TempDir tempDir: Path,
+    ) {
+        val data =
+            BlogArticleData(
+                sessionNumber = "001",
+                sessionTitle = "Title",
+                sessionDate = "2026-06-01",
+                boroughName = "b",
+                context = "c",
+                achievements = "a",
+                testResults = "t",
+                nextSession = "n",
+            )
 
         val outputDir = File(tempDir.toFile(), "not-yet-created/subdir")
         renderer.render(data, outputDir)
@@ -92,15 +104,31 @@ class BlogArticleRendererTest {
     }
 
     @Test
-    fun `render produces unique filenames for multiple articles`(@TempDir tempDir: Path) {
-        val data1 = BlogArticleData(
-            sessionNumber = "001", sessionTitle = "First", sessionDate = "2026-06-01",
-            boroughName = "b1", context = "c1", achievements = "a1", testResults = "t1", nextSession = "n1"
-        )
-        val data2 = BlogArticleData(
-            sessionNumber = "002", sessionTitle = "Second", sessionDate = "2026-06-02",
-            boroughName = "b2", context = "c2", achievements = "a2", testResults = "t2", nextSession = "n2"
-        )
+    fun `render produces unique filenames for multiple articles`(
+        @TempDir tempDir: Path,
+    ) {
+        val data1 =
+            BlogArticleData(
+                sessionNumber = "001",
+                sessionTitle = "First",
+                sessionDate = "2026-06-01",
+                boroughName = "b1",
+                context = "c1",
+                achievements = "a1",
+                testResults = "t1",
+                nextSession = "n1",
+            )
+        val data2 =
+            BlogArticleData(
+                sessionNumber = "002",
+                sessionTitle = "Second",
+                sessionDate = "2026-06-02",
+                boroughName = "b2",
+                context = "c2",
+                achievements = "a2",
+                testResults = "t2",
+                nextSession = "n2",
+            )
 
         val outputDir = tempDir.resolve("output").toFile()
 
@@ -117,17 +145,20 @@ class BlogArticleRendererTest {
     }
 
     @Test
-    fun `render escape special AsciiDoc characters in content`(@TempDir tempDir: Path) {
-        val data = BlogArticleData(
-            sessionNumber = "010",
-            sessionTitle = "EPIC | Pipeline — TDD",
-            sessionDate = "2026-06-15",
-            boroughName = "codebase",
-            context = "Pipeline | LLM || RAG pgvector",
-            achievements = "=== Section | avec pipe",
-            testResults = "- 10/10 | PASS",
-            nextSession = "EPIC | 11"
-        )
+    fun `render escape special AsciiDoc characters in content`(
+        @TempDir tempDir: Path,
+    ) {
+        val data =
+            BlogArticleData(
+                sessionNumber = "010",
+                sessionTitle = "EPIC | Pipeline — TDD",
+                sessionDate = "2026-06-15",
+                boroughName = "codebase",
+                context = "Pipeline | LLM || RAG pgvector",
+                achievements = "=== Section | avec pipe",
+                testResults = "- 10/10 | PASS",
+                nextSession = "EPIC | 11",
+            )
 
         val outputDir = tempDir.resolve("output").toFile()
         renderer.render(data, outputDir)
@@ -138,17 +169,20 @@ class BlogArticleRendererTest {
     }
 
     @Test
-    fun `render handles empty achievements and test results gracefully`(@TempDir tempDir: Path) {
-        val data = BlogArticleData(
-            sessionNumber = "099",
-            sessionTitle = "Empty achievements",
-            sessionDate = "2026-06-15",
-            boroughName = "test-borough",
-            context = "Some context.",
-            achievements = "",
-            testResults = "",
-            nextSession = "No next session"
-        )
+    fun `render handles empty achievements and test results gracefully`(
+        @TempDir tempDir: Path,
+    ) {
+        val data =
+            BlogArticleData(
+                sessionNumber = "099",
+                sessionTitle = "Empty achievements",
+                sessionDate = "2026-06-15",
+                boroughName = "test-borough",
+                context = "Some context.",
+                achievements = "",
+                testResults = "",
+                nextSession = "No next session",
+            )
 
         val outputDir = tempDir.resolve("output").toFile()
         renderer.render(data, outputDir)

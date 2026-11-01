@@ -5,14 +5,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class AnonymizationContextTest {
-
     @Test
     fun `AnonymizationRequest stores sourcePath content and targetFormat`() {
-        val request = AnonymizationRequest(
-            sourcePath = "/workspace/config/secrets.yml",
-            content = "api_key: sk-123456",
-            targetFormat = "yml"
-        )
+        val request =
+            AnonymizationRequest(
+                sourcePath = "/workspace/config/secrets.yml",
+                content = "api_key: sk-123456",
+                targetFormat = "yml",
+            )
         assertEquals("/workspace/config/secrets.yml", request.sourcePath)
         assertEquals("api_key: sk-123456", request.content)
         assertEquals("yml", request.targetFormat)
@@ -20,13 +20,14 @@ class AnonymizationContextTest {
 
     @Test
     fun `AnonymizationResult reports findings count from detectedPiiCategories`() {
-        val result = AnonymizationResult(
-            anonymizedContent = "api_key: [REDACTED]",
-            confidenceScore = 0.95,
-            detectedPiiCategories = listOf("API_KEY", "EMAIL"),
-            replacedCount = 2,
-            summary = "2 secrets anonymized"
-        )
+        val result =
+            AnonymizationResult(
+                anonymizedContent = "api_key: [REDACTED]",
+                confidenceScore = 0.95,
+                detectedPiiCategories = listOf("API_KEY", "EMAIL"),
+                replacedCount = 2,
+                summary = "2 secrets anonymized",
+            )
         assertEquals(2, result.detectedPiiCategories.size)
         assertEquals(2, result.replacedCount)
         assertEquals(0.95, result.confidenceScore)
@@ -58,20 +59,22 @@ class AnonymizationContextTest {
 
     @Test
     fun `PiiCategory stores name level and examples`() {
-        val apiKey = PiiCategory(
-            name = "API_KEY",
-            level = 3,
-            examples = listOf("ghp_xxx", "sk-xxx")
-        )
+        val apiKey =
+            PiiCategory(
+                name = "API_KEY",
+                level = 3,
+                examples = listOf("ghp_xxx", "sk-xxx"),
+            )
         assertEquals("API_KEY", apiKey.name)
         assertEquals(3, apiKey.level)
         assertEquals(2, apiKey.examples.size)
 
-        val email = PiiCategory(
-            name = "EMAIL",
-            level = 1,
-            examples = listOf("user@example.com")
-        )
+        val email =
+            PiiCategory(
+                name = "EMAIL",
+                level = 1,
+                examples = listOf("user@example.com"),
+            )
         assertEquals("EMAIL", email.name)
         assertEquals(1, email.level)
         assertEquals(1, email.examples.size)
@@ -79,11 +82,12 @@ class AnonymizationContextTest {
 
     @Test
     fun `AnonymizationRequest copy with different targetFormat`() {
-        val request = AnonymizationRequest(
-            sourcePath = "/app/config.json",
-            content = "{\"password\": \"secret\"}",
-            targetFormat = "json"
-        )
+        val request =
+            AnonymizationRequest(
+                sourcePath = "/app/config.json",
+                content = "{\"password\": \"secret\"}",
+                targetFormat = "json",
+            )
         val modified = request.copy(targetFormat = "yaml")
         assertEquals("/app/config.json", modified.sourcePath)
         assertEquals("yaml", modified.targetFormat)

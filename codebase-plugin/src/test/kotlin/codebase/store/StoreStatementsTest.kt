@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test
  * bind-count contract are identical — only the package and class name change.
  */
 class StoreStatementsTest {
-
     @Test
     fun `initSchema statements are parameterless DDL`() {
         val stmts = StoreStatements.initSchema()
@@ -39,15 +38,15 @@ class StoreStatementsTest {
         val sql = StoreStatements.updateEmbedding("0.1,0.2,0.3", 42L)
         assertTrue(
             sql.contains("'[0.1,0.2,0.3]'::vector"),
-            "updateEmbedding must inline vector literal, was: $sql"
+            "updateEmbedding must inline vector literal, was: $sql",
         )
         assertTrue(
             sql.contains("WHERE id = 42"),
-            "updateEmbedding must inline chunkId (Long safe), was: $sql"
+            "updateEmbedding must inline chunkId (Long safe), was: $sql",
         )
         assertFalse(
             containsInterpolation(sql),
-            "updateEmbedding must not interpolate Kotlin variables (CDX-CR3-1): $sql"
+            "updateEmbedding must not interpolate Kotlin variables (CDX-CR3-1): $sql",
         )
     }
 
@@ -63,7 +62,7 @@ class StoreStatementsTest {
         val sql = StoreStatements.updateEmbedding("[0.1,0.2,0.3]", 42L)
         assertTrue(
             sql.contains("'[0.1,0.2,0.3]'::vector"),
-            "updateEmbedding must produce a single bracket pair, was: $sql"
+            "updateEmbedding must produce a single bracket pair, was: $sql",
         )
         assertFalse(sql.contains("[["), "Double bracket breaks the pgvector cast: $sql")
     }

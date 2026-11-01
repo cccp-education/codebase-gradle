@@ -3,7 +3,6 @@ package codebase.store
 import codebase.infrastructure.PostgresFixture
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration
 import io.r2dbc.postgresql.PostgresqlConnectionFactory
-import java.util.UUID
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.runBlocking
@@ -11,6 +10,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -23,33 +23,35 @@ import kotlin.test.assertTrue
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RagVectorStorePageProvenanceTest {
-
     private val sourceDocument = "page-provenance-test-${UUID.randomUUID()}"
 
-    private val store = RagVectorStore(
-        host = PostgresFixture.host,
-        port = PostgresFixture.port,
-        database = PostgresFixture.databaseName,
-        username = PostgresFixture.username,
-        password = PostgresFixture.password
-    )
+    private val store =
+        RagVectorStore(
+            host = PostgresFixture.host,
+            port = PostgresFixture.port,
+            database = PostgresFixture.databaseName,
+            username = PostgresFixture.username,
+            password = PostgresFixture.password,
+        )
 
-    private val chunkWithPages = DocumentChunk(
-        id = "chk-pages-01",
-        sourceDocument = sourceDocument,
-        sectionPath = "Chapter 1",
-        headingLevel = 1,
-        content = "referentiel competences de la formation professionnelle",
-        pages = listOf(40, 41)
-    )
+    private val chunkWithPages =
+        DocumentChunk(
+            id = "chk-pages-01",
+            sourceDocument = sourceDocument,
+            sectionPath = "Chapter 1",
+            headingLevel = 1,
+            content = "referentiel competences de la formation professionnelle",
+            pages = listOf(40, 41),
+        )
 
-    private val chunkWithoutPages = DocumentChunk(
-        id = "chk-pages-02",
-        sourceDocument = sourceDocument,
-        sectionPath = "Chapter 2",
-        headingLevel = 1,
-        content = "references pedagogiques du programme de formation"
-    )
+    private val chunkWithoutPages =
+        DocumentChunk(
+            id = "chk-pages-02",
+            sourceDocument = sourceDocument,
+            sectionPath = "Chapter 2",
+            headingLevel = 1,
+            content = "references pedagogiques du programme de formation",
+        )
 
     @BeforeAll
     fun setup() {
@@ -66,14 +68,15 @@ class RagVectorStorePageProvenanceTest {
 
     @Test
     fun `pages round-trip from ingestion to retrieval`() {
-        val ingested = runBlocking {
-            store.ingestWithDoubt(
-                listOf(
-                    DoubtfulChunk(chunk = chunkWithPages, doubt = DoubtMetadata.fromConfidence(0.95)),
-                    DoubtfulChunk(chunk = chunkWithoutPages, doubt = DoubtMetadata.fromConfidence(0.3))
+        val ingested =
+            runBlocking {
+                store.ingestWithDoubt(
+                    listOf(
+                        DoubtfulChunk(chunk = chunkWithPages, doubt = DoubtMetadata.fromConfidence(0.95)),
+                        DoubtfulChunk(chunk = chunkWithoutPages, doubt = DoubtMetadata.fromConfidence(0.3)),
+                    ),
                 )
-            )
-        }
+            }
         assertEquals(1, ingested, "exactly one test document should be ingested")
 
         val results = runBlocking { store.searchWithDoubtBlocking("referentiel competences", topK = 10) }
@@ -99,15 +102,17 @@ class RagVectorStorePageProvenanceTest {
 
     private fun deleteTestRows() {
         runBlocking {
-            val factory = PostgresqlConnectionFactory(
-                PostgresqlConnectionConfiguration.builder()
-                    .host(PostgresFixture.host)
-                    .port(PostgresFixture.port)
-                    .database(PostgresFixture.databaseName)
-                    .username(PostgresFixture.username)
-                    .password(PostgresFixture.password)
-                    .build()
-            )
+            val factory =
+                PostgresqlConnectionFactory(
+                    PostgresqlConnectionConfiguration
+                        .builder()
+                        .host(PostgresFixture.host)
+                        .port(PostgresFixture.port)
+                        .database(PostgresFixture.databaseName)
+                        .username(PostgresFixture.username)
+                        .password(PostgresFixture.password)
+                        .build(),
+                )
             val conn = factory.create().awaitFirst()
             try {
                 // The testcontainer is a persistent singleton shared across
@@ -115,10 +120,10 @@ class RagVectorStorePageProvenanceTest {
                 // run carry byte-identical content and break the global topK
                 // (arbitrary tie-breaking). Sweep the whole closed test
                 // family, not just this run's UUID.
-                conn.createStatement(
-                    "DELETE FROM codex_documents WHERE source_document LIKE \$1 OR source_document LIKE \$2"
-                )
-                    .bind(0, "page-provenance-test-%")
+                conn
+                    .createStatement(
+                        "DELETE FROM codex_documents WHERE source_document LIKE \$1 OR source_document LIKE \$2",
+                    ).bind(0, "page-provenance-test-%")
                     .bind(1, "page-exposition-test-%")
                     .execute()
                     .awaitFirst()

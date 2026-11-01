@@ -4,7 +4,6 @@ import codebase.koog.agentic.AgenticCompiler
 import codebase.koog.agentic.CompiledArtifact
 
 class AgenticCompilerWorld {
-
     val compiler = AgenticCompiler()
 
     var lastCompiledArtifact: CompiledArtifact? = null

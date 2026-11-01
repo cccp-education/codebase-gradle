@@ -1,16 +1,14 @@
 package codebase.koog.expert
 
-import kotlinx.serialization.json.Json
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlin.test.assertFailsWith
 
 class ExpertManifestReaderTest {
-
     private fun writeManifest(content: String): File {
         val tmp = File.createTempFile("manifest-reader", ".json")
         tmp.writeText(content)
@@ -19,7 +17,8 @@ class ExpertManifestReaderTest {
 
     @Test
     fun `read returns ExpertExposureManifest parsed from JSON`() {
-        val json = """
+        val json =
+            """
             {
               "version": "1.0",
               "generatedAt": "2026-06-22T20:00:00Z",
@@ -28,7 +27,7 @@ class ExpertManifestReaderTest {
                 {"domain": "docs", "label": "docs domain", "modelName": "qwen3-vl:235b-cloud", "baseUrl": "***anonymized***", "timeoutSeconds": 90}
               ]
             }
-        """.trimIndent()
+            """.trimIndent()
         val file = writeManifest(json)
 
         val manifest = ExpertManifestReader.read(file)
@@ -55,11 +54,12 @@ class ExpertManifestReaderTest {
 
     @Test
     fun `read preserves anonymized baseUrl`() {
-        val json = """
+        val json =
+            """
             {"version":"1.0","generatedAt":"t","experts":[
               {"domain":"docs","label":"docs domain","modelName":"m","baseUrl":"***anonymized***","timeoutSeconds":30}
             ]}
-        """.trimIndent()
+            """.trimIndent()
         val file = writeManifest(json)
 
         val manifest = ExpertManifestReader.read(file)
@@ -69,12 +69,13 @@ class ExpertManifestReaderTest {
 
     @Test
     fun `findByDomain returns matching entry`() {
-        val json = """
+        val json =
+            """
             {"version":"1.0","generatedAt":"t","experts":[
               {"domain":"kotlin","label":"kotlin domain","modelName":"m1","baseUrl":"u1","timeoutSeconds":10},
               {"domain":"docs","label":"docs domain","modelName":"m2","baseUrl":"u2","timeoutSeconds":20}
             ]}
-        """.trimIndent()
+            """.trimIndent()
         val file = writeManifest(json)
 
         val entry = ExpertManifestReader.read(file).findByDomain("docs")

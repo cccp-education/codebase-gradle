@@ -5,20 +5,20 @@ import contracts.i18n.TranslationRequest
 import contracts.i18n.TranslationResult
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertIs
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class LlmTranslatorTest {
-
     @Test
     fun `translate success returns sanitized LLM response`() {
         val llm = FakeLlmProvider().apply { nextResponse = "  \"Hello world\"  " }
         val translator = LlmTranslator(llm)
 
-        val result = translator.translate(
-            TranslationRequest("Bonjour le monde", "fr", "en")
-        )
+        val result =
+            translator.translate(
+                TranslationRequest("Bonjour le monde", "fr", "en"),
+            )
 
         assertIs<TranslationResult.Success>(result)
         assertEquals("Hello world", result.translatedText)
@@ -29,9 +29,10 @@ class LlmTranslatorTest {
         val llm = FakeLlmProvider().apply { nextResponse = "   " }
         val translator = LlmTranslator(llm)
 
-        val result = translator.translate(
-            TranslationRequest("Bonjour", "fr", "en")
-        )
+        val result =
+            translator.translate(
+                TranslationRequest("Bonjour", "fr", "en"),
+            )
 
         assertIs<TranslationResult.Failure>(result)
         assertTrue(result.reason.contains("blank"))
@@ -39,14 +40,16 @@ class LlmTranslatorTest {
 
     @Test
     fun `translate LLM exception yields Failure`() {
-        val llm = FakeLlmProvider().apply {
-            nextResponse = ""
-        }
+        val llm =
+            FakeLlmProvider().apply {
+                nextResponse = ""
+            }
         val translator = LlmTranslator(llm)
 
-        val result = translator.translate(
-            TranslationRequest("Bonjour", "fr", "en")
-        )
+        val result =
+            translator.translate(
+                TranslationRequest("Bonjour", "fr", "en"),
+            )
 
         assertIs<TranslationResult.Failure>(result)
     }

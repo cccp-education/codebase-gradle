@@ -29,27 +29,31 @@ class SessionProtocolE2EWorld {
         sessionId: String = "",
         maxActions: Int = 3,
         model: String = "",
-        useContextFile: Boolean = false
+        useContextFile: Boolean = false,
     ) {
         val projectDir = Files.createTempDirectory("sp4-e2e-cucumber").toFile()
         val customResponseFile = Files.createTempFile("sp4-e2e-response", ".json").toFile()
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(projectDir)
-            .withName("sp4-e2e-test")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(projectDir)
+                .withName("sp4-e2e-test")
+                .build()
         project.pluginManager.apply("java-base")
 
-        val task = project.tasks.register("sessionProtocol", SessionProtocolTask::class.java) {
-            it.action.set(action)
-            it.maxActions.set(maxActions)
-            it.responseFile.set(customResponseFile)
-            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
-            if (prompt.isNotBlank()) it.prompt.set(prompt)
-            if (sessionId.isNotBlank()) it.sessionId.set(sessionId)
-            if (model.isNotBlank()) it.model.set(model)
-            if (useContextFile && contextFile != null) it.contextFile.set(contextFile!!)
-        }.get()
+        val task =
+            project.tasks
+                .register("sessionProtocol", SessionProtocolTask::class.java) {
+                    it.action.set(action)
+                    it.maxActions.set(maxActions)
+                    it.responseFile.set(customResponseFile)
+                    it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+                    if (prompt.isNotBlank()) it.prompt.set(prompt)
+                    if (sessionId.isNotBlank()) it.sessionId.set(sessionId)
+                    if (model.isNotBlank()) it.model.set(model)
+                    if (useContextFile && contextFile != null) it.contextFile.set(contextFile!!)
+                }.get()
 
         task.llmProvider = FakeLlmProvider()
         task.toolRegistry = ToolRegistry()

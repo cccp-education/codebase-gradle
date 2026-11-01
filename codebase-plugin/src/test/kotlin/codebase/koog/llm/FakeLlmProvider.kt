@@ -5,7 +5,6 @@ package codebase.koog.llm
  * Retourne des réponses déterministes pour valider le pipeline BDD.
  */
 class FakeLlmProvider : LlmProvider {
-
     val promptsReceived = mutableListOf<String>()
 
     var nextResponse: String = "I'll execute: add_dark_mode_toggle"

@@ -3,12 +3,11 @@ package codebase.scenarios
 import codebase.koog.VibecodingGraph
 import codebase.koog.llm.FakeLlmProvider
 import codebase.koog.planning.RollbackStrategyExecutor
+import codebase.koog.state.VibecodingState
 import contracts.agent.Epic
-import contracts.agent.GradleTask as PlanTask
+import contracts.agent.Plan
 import contracts.agent.UserStory
 import contracts.vibecoding.registry.ToolRegistry
-import contracts.agent.Plan
-import codebase.koog.state.VibecodingState
 import io.cucumber.java.Before
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
@@ -17,9 +16,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import contracts.agent.GradleTask as PlanTask
 
-class E2EPlanFailAdaptSteps(private val world: E2EPlanFailAdaptWorld) {
-
+class E2EPlanFailAdaptSteps(
+    private val world: E2EPlanFailAdaptWorld,
+) {
     @Before("@epic_x_6")
     fun reset() {
         world.reset()
@@ -40,61 +41,95 @@ class E2EPlanFailAdaptSteps(private val world: E2EPlanFailAdaptWorld) {
             }
         }
         val rollbackExecutor = RollbackStrategyExecutor(world.toolRegistry!!, "/tmp/test")
-        world.graph = VibecodingGraph(
-            augmentedGraph = null,
-            toolRegistry = world.toolRegistry!!,
-            llmProvider = world.fakeLlm,
-            rollbackExecutor = rollbackExecutor
-        )
+        world.graph =
+            VibecodingGraph(
+                augmentedGraph = null,
+                toolRegistry = world.toolRegistry!!,
+                llmProvider = world.fakeLlm,
+                rollbackExecutor = rollbackExecutor,
+            )
     }
 
     @Given("a VibecodingState with plan {string} and maxRetries {int}")
-    fun `state with plan and maxRetries`(planDesc: String, maxRetries: Int) {
+    fun `state with plan and maxRetries`(
+        planDesc: String,
+        maxRetries: Int,
+    ) {
         val steps = planDesc.split("→").map { it.trim() }
-        val plan = Plan(
-            title = "E2E test plan",
-            epics = listOf(
-                Epic(name = "E1", description = "test", points = steps.size, userStories = listOf(
-                    UserStory(description = "US1", tasks = steps.map { step ->
-                        PlanTask(description = step, gradleTask = step)
-                    })
-                ))
-            ),
-            totalPoints = steps.size,
-            estimatedSessions = "1"
-        )
-        world.state = VibecodingState(
-            intention = "E2E test: $planDesc",
-            workspaceRoot = "/tmp/test",
-            maxActions = 10,
-            maxRetries = maxRetries,
-            plan = plan
-        )
+        val plan =
+            Plan(
+                title = "E2E test plan",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "E1",
+                            description = "test",
+                            points = steps.size,
+                            userStories =
+                                listOf(
+                                    UserStory(
+                                        description = "US1",
+                                        tasks =
+                                            steps.map { step ->
+                                                PlanTask(description = step, gradleTask = step)
+                                            },
+                                    ),
+                                ),
+                        ),
+                    ),
+                totalPoints = steps.size,
+                estimatedSessions = "1",
+            )
+        world.state =
+            VibecodingState(
+                intention = "E2E test: $planDesc",
+                workspaceRoot = "/tmp/test",
+                maxActions = 10,
+                maxRetries = maxRetries,
+                plan = plan,
+            )
     }
 
     @Given("a VibecodingState with plan {string} and maxRetries {int} and rollbackStrategy {word}")
-    fun `state with plan maxRetries and rollbackStrategy`(planDesc: String, maxRetries: Int, strategy: String) {
+    fun `state with plan maxRetries and rollbackStrategy`(
+        planDesc: String,
+        maxRetries: Int,
+        strategy: String,
+    ) {
         val steps = planDesc.split("→").map { it.trim() }
-        val plan = Plan(
-            title = "E2E test plan",
-            epics = listOf(
-                Epic(name = "E1", description = "test", points = steps.size, userStories = listOf(
-                    UserStory(description = "US1", tasks = steps.map { step ->
-                        PlanTask(description = step, gradleTask = step)
-                    })
-                ))
-            ),
-            totalPoints = steps.size,
-            estimatedSessions = "1"
-        )
-        world.state = VibecodingState(
-            intention = "E2E test: $planDesc",
-            workspaceRoot = "/tmp/test",
-            maxActions = 10,
-            maxRetries = maxRetries,
-            rollbackStrategy = strategy,
-            plan = plan
-        )
+        val plan =
+            Plan(
+                title = "E2E test plan",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "E1",
+                            description = "test",
+                            points = steps.size,
+                            userStories =
+                                listOf(
+                                    UserStory(
+                                        description = "US1",
+                                        tasks =
+                                            steps.map { step ->
+                                                PlanTask(description = step, gradleTask = step)
+                                            },
+                                    ),
+                                ),
+                        ),
+                    ),
+                totalPoints = steps.size,
+                estimatedSessions = "1",
+            )
+        world.state =
+            VibecodingState(
+                intention = "E2E test: $planDesc",
+                workspaceRoot = "/tmp/test",
+                maxActions = 10,
+                maxRetries = maxRetries,
+                rollbackStrategy = strategy,
+                plan = plan,
+            )
     }
 
     @Given("the first compile will fail with {string}")

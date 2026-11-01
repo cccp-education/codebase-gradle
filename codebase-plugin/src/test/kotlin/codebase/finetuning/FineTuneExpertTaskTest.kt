@@ -5,12 +5,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import kotlin.test.assertFailsWith
 
 class FineTuneExpertTaskTest {
-
     @Test
     fun `task is abstract DefaultTask`() {
         val clazz = FineTuneExpertTask::class.java
@@ -20,13 +19,16 @@ class FineTuneExpertTaskTest {
 
     @Test
     fun `task is annotated DisableCachingByDefault`() {
-        val annotation = FineTuneExpertTask::class.java
-            .getAnnotation(org.gradle.work.DisableCachingByDefault::class.java)
+        val annotation =
+            FineTuneExpertTask::class.java
+                .getAnnotation(org.gradle.work.DisableCachingByDefault::class.java)
         assertNotNull(annotation, "Should have @DisableCachingByDefault")
     }
 
     @Test
-    fun `task exposes baseModel dataset outputModelName corpusRatio inputs`(@TempDir tempDir: Path) {
+    fun `task exposes baseModel dataset outputModelName corpusRatio inputs`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("fineTuneExpert", FineTuneExpertTask::class.java).get()
@@ -44,7 +46,9 @@ class FineTuneExpertTaskTest {
     }
 
     @Test
-    fun `execute writes success report when pipeline returns Success`(@TempDir tempDir: Path) {
+    fun `execute writes success report when pipeline returns Success`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("fineTuneExpert", FineTuneExpertTask::class.java).get()
@@ -60,10 +64,15 @@ class FineTuneExpertTaskTest {
         fake.enqueueResult(
             FineTuningResult.success(
                 outputModelName = "expert-coding",
-                ggufPath = project.layout.buildDirectory.get().asFile.resolve("finetuning/gguf/expert-coding.gguf").absolutePath,
+                ggufPath =
+                    project.layout.buildDirectory
+                        .get()
+                        .asFile
+                        .resolve("finetuning/gguf/expert-coding.gguf")
+                        .absolutePath,
                 iterations = 3,
-                validationScore = 0.92
-            )
+                validationScore = 0.92,
+            ),
         )
         task.pipeline = fake
 
@@ -79,7 +88,9 @@ class FineTuneExpertTaskTest {
     }
 
     @Test
-    fun `execute writes failure report when pipeline returns Failure`(@TempDir tempDir: Path) {
+    fun `execute writes failure report when pipeline returns Failure`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("fineTuneExpert", FineTuneExpertTask::class.java).get()
@@ -96,13 +107,19 @@ class FineTuneExpertTaskTest {
 
         task.executeFineTune()
 
-        val content = task.outputReport.get().asFile.readText()
+        val content =
+            task.outputReport
+                .get()
+                .asFile
+                .readText()
         assertTrue(content.contains("FAILURE"), "Report should contain FAILURE status")
         assertTrue(content.contains("Ollama unavailable"), "Report should contain failure reason")
     }
 
     @Test
-    fun `execute throws GradleException when baseModel blank`(@TempDir tempDir: Path) {
+    fun `execute throws GradleException when baseModel blank`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("fineTuneExpert", FineTuneExpertTask::class.java).get()
@@ -115,7 +132,9 @@ class FineTuneExpertTaskTest {
     }
 
     @Test
-    fun `execute throws GradleException when outputModelName blank`(@TempDir tempDir: Path) {
+    fun `execute throws GradleException when outputModelName blank`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("fineTuneExpert", FineTuneExpertTask::class.java).get()
@@ -128,7 +147,9 @@ class FineTuneExpertTaskTest {
     }
 
     @Test
-    fun `execute throws GradleException when dataset empty`(@TempDir tempDir: Path) {
+    fun `execute throws GradleException when dataset empty`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("fineTuneExpert", FineTuneExpertTask::class.java).get()
@@ -141,7 +162,9 @@ class FineTuneExpertTaskTest {
     }
 
     @Test
-    fun `execute uses corpusGlobs fallback when dataset empty`(@TempDir tempDir: Path) {
+    fun `execute uses corpusGlobs fallback when dataset empty`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("fineTuneExpert", FineTuneExpertTask::class.java).get()
@@ -162,7 +185,9 @@ class FineTuneExpertTaskTest {
     }
 
     @Test
-    fun `execute creates parent directories of outputReport`(@TempDir tempDir: Path) {
+    fun `execute creates parent directories of outputReport`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("fineTuneExpert", FineTuneExpertTask::class.java).get()
@@ -179,11 +204,18 @@ class FineTuneExpertTaskTest {
 
         task.executeFineTune()
 
-        assertTrue(task.outputReport.get().asFile.exists())
+        assertTrue(
+            task.outputReport
+                .get()
+                .asFile
+                .exists(),
+        )
     }
 
     @Test
-    fun `execute report contains baseModel and dataset fields`(@TempDir tempDir: Path) {
+    fun `execute report contains baseModel and dataset fields`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("fineTuneExpert", FineTuneExpertTask::class.java).get()
@@ -200,14 +232,20 @@ class FineTuneExpertTaskTest {
 
         task.executeFineTune()
 
-        val content = task.outputReport.get().asFile.readText()
+        val content =
+            task.outputReport
+                .get()
+                .asFile
+                .readText()
         assertTrue(content.contains("gemma4:31b-cloud"), "Report should reference base model")
         assertTrue(content.contains("docs/coding/**/*.adoc"), "Report should reference dataset glob 1")
         assertTrue(content.contains("docs/framework/**/*.adoc"), "Report should reference dataset glob 2")
     }
 
     @Test
-    fun `execute default pipeline is OllamaFineTunerAdapter when not overridden`(@TempDir tempDir: Path) {
+    fun `execute default pipeline is OllamaFineTunerAdapter when not overridden`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("fineTuneExpert", FineTuneExpertTask::class.java).get()
@@ -221,7 +259,11 @@ class FineTuneExpertTaskTest {
 
         task.executeFineTune()
 
-        val content = task.outputReport.get().asFile.readText()
+        val content =
+            task.outputReport
+                .get()
+                .asFile
+                .readText()
         assertTrue(content.contains("FAILURE"), "Default Ollama adapter with no server should produce FAILURE")
     }
 }

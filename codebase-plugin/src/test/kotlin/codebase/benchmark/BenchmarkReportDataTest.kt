@@ -9,13 +9,16 @@ import kotlin.test.assertNotNull
  * et leur export AsciiDoc via BenchmarkReportExporter.
  */
 class BenchmarkReportDataTest {
-
     @Test
     fun `CrossingData stores all fields correctly`() {
-        val crossing = CrossingData(
-            documentId = "doc-001", expectedCircle = 4, actualCircle = 3,
-            confidenceScore = 0.87, excerpt = "Ce document parle de code open source"
-        )
+        val crossing =
+            CrossingData(
+                documentId = "doc-001",
+                expectedCircle = 4,
+                actualCircle = 3,
+                confidenceScore = 0.87,
+                excerpt = "Ce document parle de code open source",
+            )
         assertEquals("doc-001", crossing.documentId)
         assertEquals(4, crossing.expectedCircle)
         assertEquals(3, crossing.actualCircle)
@@ -26,10 +29,13 @@ class BenchmarkReportDataTest {
     @Test
     fun `ThresholdData stores thresholds and crossings`() {
         val crossing = CrossingData("d1", 2, 2, 0.95, "excerpt")
-        val threshold = ThresholdData(
-            threshold = "10000 tokens", totalSamples = 50,
-            errorRate = 0.12, boundaryCrossings = listOf(crossing)
-        )
+        val threshold =
+            ThresholdData(
+                threshold = "10000 tokens",
+                totalSamples = 50,
+                errorRate = 0.12,
+                boundaryCrossings = listOf(crossing),
+            )
         assertEquals("10000 tokens", threshold.threshold)
         assertEquals(50, threshold.totalSamples)
         assertEquals(0.12, threshold.errorRate, 0.001)
@@ -40,11 +46,13 @@ class BenchmarkReportDataTest {
     @Test
     fun `BenchmarkReport aggregates thresholds and scenario`() {
         val threshold = ThresholdData("5000 tokens", 30, 0.08, emptyList())
-        val report = BenchmarkReport(
-            scenario = "BASELINE", channels = listOf("RAG_ONLY"),
-            summary = "Benchmark baseline sans contexte augmenté",
-            results = listOf(threshold)
-        )
+        val report =
+            BenchmarkReport(
+                scenario = "BASELINE",
+                channels = listOf("RAG_ONLY"),
+                summary = "Benchmark baseline sans contexte augmenté",
+                results = listOf(threshold),
+            )
         assertEquals("BASELINE", report.scenario)
         assertEquals(listOf("RAG_ONLY"), report.channels)
         assertEquals(1, report.results.size)
@@ -99,29 +107,30 @@ class BenchmarkReportDataTest {
 
     @Test
     fun `BenchmarkReportExporter parseObject deserializes from JSON`() {
-        val json = """
-        {
-          "scenario": "FULL-STACK",
-          "channels": ["EAGER", "RAG"],
-          "summary": "Test complet",
-          "results": [
+        val json =
+            """
             {
-              "threshold": "10000 tokens",
-              "totalSamples": 42,
-              "errorRate": 0.05,
-              "boundaryCrossings": [
+              "scenario": "FULL-STACK",
+              "channels": ["EAGER", "RAG"],
+              "summary": "Test complet",
+              "results": [
                 {
-                  "documentId": "cross-1",
-                  "expectedCircle": 4,
-                  "actualCircle": 4,
-                  "confidenceScore": 0.93,
-                  "excerpt": "extrait du document"
+                  "threshold": "10000 tokens",
+                  "totalSamples": 42,
+                  "errorRate": 0.05,
+                  "boundaryCrossings": [
+                    {
+                      "documentId": "cross-1",
+                      "expectedCircle": 4,
+                      "actualCircle": 4,
+                      "confidenceScore": 0.93,
+                      "excerpt": "extrait du document"
+                    }
+                  ]
                 }
               ]
             }
-          ]
-        }
-        """.trimIndent()
+            """.trimIndent()
 
         val report = BenchmarkReportExporter.parseObject(json)
 
@@ -138,14 +147,15 @@ class BenchmarkReportDataTest {
 
     @Test
     fun `BenchmarkReportExporter exportAsciiDoc generates valid adoc`() {
-        val json = """
-        {
-          "scenario": "BASELINE",
-          "channels": [],
-          "summary": "",
-          "results": []
-        }
-        """.trimIndent()
+        val json =
+            """
+            {
+              "scenario": "BASELINE",
+              "channels": [],
+              "summary": "",
+              "results": []
+            }
+            """.trimIndent()
 
         val adoc = BenchmarkReportExporter.exportAsciiDoc(json, "SCENARIO-001")
 

@@ -6,7 +6,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class TextAnonymizerTest {
-
     @Test
     fun `anonymize replaces email addresses`() {
         val input = "Contact: jean.dupont@example.com pour info"
@@ -22,7 +21,14 @@ class TextAnonymizerTest {
         assertFalse(result.contains("@acme.com"))
         assertFalse(result.contains("@corp.org"))
         assertFalse(result.contains("@test.fr"))
-        assertEquals(3, Regex.escape("***@anonymous.com").toRegex().findAll(result).count())
+        assertEquals(
+            3,
+            Regex
+                .escape("***@anonymous.com")
+                .toRegex()
+                .findAll(result)
+                .count(),
+        )
     }
 
     @Test

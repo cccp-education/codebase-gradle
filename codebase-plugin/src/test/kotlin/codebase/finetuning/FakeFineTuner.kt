@@ -15,9 +15,8 @@ package codebase.finetuning
  * dans [callCount] pour vérifications unit/Cucumber.
  */
 class FakeFineTuner(
-    private val defaultResult: FineTuningResult? = null
+    private val defaultResult: FineTuningResult? = null,
 ) : FineTuningPipeline {
-
     var lastRequest: FineTuningRequest? = null
         private set
 

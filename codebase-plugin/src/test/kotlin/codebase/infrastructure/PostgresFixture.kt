@@ -3,14 +3,14 @@ package codebase.infrastructure
 import org.testcontainers.containers.PostgreSQLContainer
 
 object PostgresFixture {
-
-    val container: PostgreSQLContainer<Nothing> = PostgreSQLContainer<Nothing>("pgvector/pgvector:pg17").apply {
-        withDatabaseName("codebase_test")
-        withUsername("codebase")
-        withPassword("codebase")
-        withStartupTimeout(java.time.Duration.ofMinutes(2))
-        withReuse(true)
-    }
+    val container: PostgreSQLContainer<Nothing> =
+        PostgreSQLContainer<Nothing>("pgvector/pgvector:pg17").apply {
+            withDatabaseName("codebase_test")
+            withUsername("codebase")
+            withPassword("codebase")
+            withStartupTimeout(java.time.Duration.ofMinutes(2))
+            withReuse(true)
+        }
 
     init {
         if (!container.isRunning) {

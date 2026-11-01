@@ -1,14 +1,14 @@
 package codebase.koog
 
-import graphify.model.GraphCommunity
-import graphify.model.GraphEdge
-import graphify.model.GraphModel
-import graphify.model.GraphNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import contracts.context.ChannelBudget
 import contracts.context.ChannelType
 import contracts.context.ContextChannel
+import graphify.model.GraphCommunity
+import graphify.model.GraphEdge
+import graphify.model.GraphModel
+import graphify.model.GraphNode
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -18,7 +18,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class MultiChannelContextGraphTest {
-
     @Test
     fun `graph topology has all four nodes`() {
         val graph = MultiChannelContextGraph()
@@ -33,11 +32,12 @@ class MultiChannelContextGraphTest {
     @Tag("integration")
     fun `execute collects eager channel from test workspace`() {
         val graph = MultiChannelContextGraph()
-        val state = MultiChannelState(
-            intention = "test",
-            workspaceRoot = "/home/cheroliv/workspace",
-            budget = ChannelBudget(totalTokenBudget = 3000)
-        )
+        val state =
+            MultiChannelState(
+                intention = "test",
+                workspaceRoot = "/home/cheroliv/workspace",
+                budget = ChannelBudget(totalTokenBudget = 3000),
+            )
         val result = graph.execute(state)
 
         assertTrue(result.channels.isNotEmpty(), "Should have at least eager channel")
@@ -49,11 +49,12 @@ class MultiChannelContextGraphTest {
     @Test
     fun `execute returns all four channels after assembly`() {
         val graph = MultiChannelContextGraph()
-        val state = MultiChannelState(
-            intention = "architecture",
-            workspaceRoot = "/home/cheroliv/workspace",
-            budget = ChannelBudget(totalTokenBudget = 3000)
-        )
+        val state =
+            MultiChannelState(
+                intention = "architecture",
+                workspaceRoot = "/home/cheroliv/workspace",
+                budget = ChannelBudget(totalTokenBudget = 3000),
+            )
         val result = graph.execute(state)
 
         assertEquals(5, result.channels.size, "Should have 5 channels")
@@ -67,11 +68,12 @@ class MultiChannelContextGraphTest {
     @Test
     fun `assemble produces non-empty assembledContext`() {
         val graph = MultiChannelContextGraph()
-        val state = MultiChannelState(
-            intention = "workspace context",
-            workspaceRoot = "/home/cheroliv/workspace",
-            budget = ChannelBudget(totalTokenBudget = 3000)
-        )
+        val state =
+            MultiChannelState(
+                intention = "workspace context",
+                workspaceRoot = "/home/cheroliv/workspace",
+                budget = ChannelBudget(totalTokenBudget = 3000),
+            )
         val result = graph.execute(state)
 
         assertTrue(result.assembledContext.isNotEmpty(), "Assembled context should not be empty")
@@ -83,17 +85,20 @@ class MultiChannelContextGraphTest {
     fun `channels respect budget truncation`() {
         val graph = MultiChannelContextGraph()
         val budget = ChannelBudget(totalTokenBudget = 1000)
-        val state = MultiChannelState(
-            intention = "test",
-            workspaceRoot = "/home/cheroliv/workspace",
-            budget = budget
-        )
+        val state =
+            MultiChannelState(
+                intention = "test",
+                workspaceRoot = "/home/cheroliv/workspace",
+                budget = budget,
+            )
         val result = graph.execute(state)
 
         val totalContentLength = result.channels.sumOf { it.content.length }
         val maxExpectedChars = budget.eagerTokens * 4 + budget.ragTokens * 4 + budget.graphifyTokens * 4 + budget.docsTokens * 4 + budget.resourceTokens * 4
-        assertTrue(totalContentLength <= maxExpectedChars + 100,
-            "Total content ($totalContentLength) should be within budget ($maxExpectedChars)")
+        assertTrue(
+            totalContentLength <= maxExpectedChars + 100,
+            "Total content ($totalContentLength) should be within budget ($maxExpectedChars)",
+        )
     }
 
     @Test
@@ -102,11 +107,12 @@ class MultiChannelContextGraphTest {
         val rag = ContextChannel.Rag("rag content")
         val graphify = ContextChannel.Graphify("graphify content")
         val resource = ContextChannel.Resource("resource content")
-        val state = MultiChannelState(
-            intention = "test",
-            workspaceRoot = "/tmp",
-            channels = listOf(eager, rag, graphify, resource)
-        )
+        val state =
+            MultiChannelState(
+                intention = "test",
+                workspaceRoot = "/tmp",
+                channels = listOf(eager, rag, graphify, resource),
+            )
         assertNotNull(state.eager)
         assertEquals("eager content", state.eager!!.content)
         assertNotNull(state.rag)
@@ -120,20 +126,25 @@ class MultiChannelContextGraphTest {
     @Test
     fun `execute is resilient when workspaceRoot does not exist`() {
         val graph = MultiChannelContextGraph()
-        val state = MultiChannelState(
-            intention = "test",
-            workspaceRoot = "/nonexistent/path/for/test",
-            budget = ChannelBudget(totalTokenBudget = 1000)
-        )
+        val state =
+            MultiChannelState(
+                intention = "test",
+                workspaceRoot = "/nonexistent/path/for/test",
+                budget = ChannelBudget(totalTokenBudget = 1000),
+            )
         val result = graph.execute(state)
 
         assertTrue(result.channels.isNotEmpty(), "Should not crash on invalid path")
-        assertTrue(result.channels.any { it.content.isBlank() || it.content.contains("non trouve") || it.content.contains("indisponible") },
-            "Should gracefully handle missing resources")
+        assertTrue(
+            result.channels.any { it.content.isBlank() || it.content.contains("non trouve") || it.content.contains("indisponible") },
+            "Should gracefully handle missing resources",
+        )
     }
 
     @Test
-    fun `graphify channel contains real subgraph content when graph json exists`(@TempDir tempDir: File) {
+    fun `graphify channel contains real subgraph content when graph json exists`(
+        @TempDir tempDir: File,
+    ) {
         val office = tempDir.resolve("office").apply { mkdirs() }
         val mapper = ObjectMapper().registerKotlinModule()
         val model =
@@ -156,11 +167,12 @@ class MultiChannelContextGraphTest {
         office.resolve("graph.json").writeText(mapper.writeValueAsString(model))
 
         val graph = MultiChannelContextGraph()
-        val state = MultiChannelState(
-            intention = "test",
-            workspaceRoot = tempDir.absolutePath,
-            budget = ChannelBudget(totalTokenBudget = 3000)
-        )
+        val state =
+            MultiChannelState(
+                intention = "test",
+                workspaceRoot = tempDir.absolutePath,
+                budget = ChannelBudget(totalTokenBudget = 3000),
+            )
         val result = graph.execute(state)
 
         assertNotNull(result.graphify, "Graphify channel should be present")
@@ -169,7 +181,9 @@ class MultiChannelContextGraphTest {
     }
 
     @Test
-    fun `resource channel is fed from the real subgraph when graph json exists`(@TempDir tempDir: File) {
+    fun `resource channel is fed from the real subgraph when graph json exists`(
+        @TempDir tempDir: File,
+    ) {
         val office = tempDir.resolve("office").apply { mkdirs() }
         val mapper = ObjectMapper().registerKotlinModule()
         val model =
@@ -192,11 +206,20 @@ class MultiChannelContextGraphTest {
         office.resolve("graph.json").writeText(mapper.writeValueAsString(model))
 
         val graph = MultiChannelContextGraph()
-        val state = MultiChannelState(
-            intention = "test",
-            workspaceRoot = tempDir.absolutePath,
-            budget = ChannelBudget(totalTokenBudget = 3000, budgetEager = 0.35, budgetRag = 0.25, budgetGraphify = 0.15, budgetDocs = 0.15, budgetResource = 0.10)
-        )
+        val state =
+            MultiChannelState(
+                intention = "test",
+                workspaceRoot = tempDir.absolutePath,
+                budget =
+                    ChannelBudget(
+                        totalTokenBudget = 3000,
+                        budgetEager = 0.35,
+                        budgetRag = 0.25,
+                        budgetGraphify = 0.15,
+                        budgetDocs = 0.15,
+                        budgetResource = 0.10,
+                    ),
+            )
         val result = graph.execute(state)
 
         assertNotNull(result.resource, "Resource channel should be present")
@@ -205,19 +228,30 @@ class MultiChannelContextGraphTest {
     }
 
     @Test
-    fun `resource channel is empty when no graph file exists`(@TempDir tempDir: File) {
+    fun `resource channel is empty when no graph file exists`(
+        @TempDir tempDir: File,
+    ) {
         val graph = MultiChannelContextGraph()
-        val state = MultiChannelState(
-            intention = "test",
-            workspaceRoot = tempDir.absolutePath,
-            budget = ChannelBudget(totalTokenBudget = 3000, budgetEager = 0.35, budgetRag = 0.25, budgetGraphify = 0.15, budgetDocs = 0.15, budgetResource = 0.10)
-        )
+        val state =
+            MultiChannelState(
+                intention = "test",
+                workspaceRoot = tempDir.absolutePath,
+                budget =
+                    ChannelBudget(
+                        totalTokenBudget = 3000,
+                        budgetEager = 0.35,
+                        budgetRag = 0.25,
+                        budgetGraphify = 0.15,
+                        budgetDocs = 0.15,
+                        budgetResource = 0.10,
+                    ),
+            )
         val result = graph.execute(state)
 
         assertNotNull(result.resource, "Resource channel should be present")
         assertTrue(
             result.resource!!.content.isBlank() || result.resource!!.content.contains("non trouve"),
-            "Should gracefully handle missing graph file"
+            "Should gracefully handle missing graph file",
         )
     }
 }

@@ -32,16 +32,17 @@ import org.junit.platform.suite.api.Suite
 @SelectClasspathResource("features/epic_translation.feature")
 @ConfigurationParameter(
     key = FEATURES_PROPERTY_NAME,
-    value = "src/test/features/epic_sp_1_session_protocol.feature,src/test/features/epic_sp_2_session_server.feature," +
-        "src/test/features/epic_sp_3_lifecycle.feature,src/test/features/epic_sp_4_e2e.feature," +
-        "src/test/features/epic_sp_5_event_stream.feature,src/test/features/epic_sp_6_live_context.feature," +
-        "src/test/features/autonomous_session.feature,src/test/features/epic_sld8_llm_service.feature," +
-        "src/test/features/epic_translation.feature"
+    value =
+        "src/test/features/epic_sp_1_session_protocol.feature,src/test/features/epic_sp_2_session_server.feature," +
+            "src/test/features/epic_sp_3_lifecycle.feature,src/test/features/epic_sp_4_e2e.feature," +
+            "src/test/features/epic_sp_5_event_stream.feature,src/test/features/epic_sp_6_live_context.feature," +
+            "src/test/features/autonomous_session.feature,src/test/features/epic_sld8_llm_service.feature," +
+            "src/test/features/epic_translation.feature",
 )
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "codebase.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-shard-session-protocol.html, json:build/reports/cucumber-shard-session-protocol.json"
+    value = "pretty, html:build/reports/cucumber-shard-session-protocol.html, json:build/reports/cucumber-shard-session-protocol.json",
 )
 @ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @wip and not @integration")
 class CucumberShardSessionProtocolRunner

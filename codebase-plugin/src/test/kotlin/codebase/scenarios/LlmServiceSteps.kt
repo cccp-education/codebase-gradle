@@ -18,8 +18,9 @@ import kotlin.test.assertNotNull
  * All steps are prefixed "llmService" to avoid name collisions with other
  * step classes (pattern aligned with PoolSteps).
  */
-class LlmServiceSteps(private val world: LlmServiceWorld) {
-
+class LlmServiceSteps(
+    private val world: LlmServiceWorld,
+) {
     @Given("a Gradle project with sharedServices available")
     fun `gradle project with shared services`() {
         world.project = ProjectBuilder.builder().build()
@@ -30,14 +31,15 @@ class LlmServiceSteps(private val world: LlmServiceWorld) {
 
     @When("I register LlmBuildService with model {string}")
     fun `register llm build service with model`(model: String) {
-        val provider = world.project.gradle.sharedServices.registerIfAbsent(
-            "llmBuildService-${model.ifBlank { "blank" }}",
-            codebase.koog.llm.service.LlmBuildService::class.java
-        ) { spec ->
-            spec.parameters.model.set(model)
-            spec.parameters.ollamaPoolPorts.set("")
-            spec.maxParallelUsages.set(1)
-        }
+        val provider =
+            world.project.gradle.sharedServices.registerIfAbsent(
+                "llmBuildService-${model.ifBlank { "blank" }}",
+                codebase.koog.llm.service.LlmBuildService::class.java,
+            ) { spec ->
+                spec.parameters.model.set(model)
+                spec.parameters.ollamaPoolPorts.set("")
+                spec.maxParallelUsages.set(1)
+            }
         world.serviceProvider = provider
         world.provider = provider.get().provider()
     }

@@ -1,42 +1,40 @@
 package codebase.scenarios
 
 import codebase.infrastructure.PostgresFixture
-import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.slf4j.LoggerFactory
 import java.sql.DriverManager
 
 class PgVectorContainerSteps {
-
     companion object {
         private val log = LoggerFactory.getLogger(PgVectorContainerSteps::class.java)
     }
 
     @When("I start a pgvector container")
-    fun `start a pgvector container`() {
+    fun startAPgvectorContainer() {
         log.info("pgvector container ready (PostgresFixture)")
     }
 
     @When("I stop the container")
-    fun `stop the container`() {
+    fun stopTheContainer() {
         log.info("pgvector container managed by PostgresFixture (no-op)")
     }
 
     @Then("the container is running")
-    fun `the container is running`() {
+    fun theContainerIsRunning() {
         assert(PostgresFixture.container.isRunning) { "Container should be running" }
         log.info("Container is running: ${PostgresFixture.container.containerId}")
     }
 
     @Then("the container is not running")
-    fun `the container is not running`() {
+    fun theContainerIsNotRunning() {
         assert(!PostgresFixture.container.isRunning) { "Container should not be running" }
         log.info("Container is stopped")
     }
 
     @Then("the vector extension is available")
-    fun `the vector extension is available`() {
+    fun theVectorExtensionIsAvailable() {
         DriverManager.getConnection(PostgresFixture.jdbcUrl, PostgresFixture.username, PostgresFixture.password).use { conn ->
             conn.createStatement().use { stmt ->
                 val rs = stmt.executeQuery("SELECT count(*) FROM pg_available_extensions WHERE name = 'vector'")
@@ -49,7 +47,7 @@ class PgVectorContainerSteps {
     }
 
     @Then("I can create a table with a vector\\({int}) column")
-    fun `i can create a table with a vector column`(dimensions: Int) {
+    fun iCanCreateATableWithAVectorColumn(dimensions: Int) {
         DriverManager.getConnection(PostgresFixture.jdbcUrl, PostgresFixture.username, PostgresFixture.password).use { conn ->
             conn.createStatement().use { stmt ->
                 stmt.execute("CREATE EXTENSION IF NOT EXISTS vector")

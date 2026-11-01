@@ -8,22 +8,22 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class StimulusCascadeTest {
-
     private val cascade = StimulusCascade(dryRun = true)
 
     // ══════ exportCascadeJson ══════
 
     @Test
     fun `exportCascadeJson produces valid JSON with empty sections`() {
-        val report = StimulusCascadeReport(
-            source = "test brain dump",
-            sourceHash = "abcdef1234567890",
-            sections = emptyList(),
-            visionCount = 0,
-            opinionCount = 0,
-            dilutedCount = 0,
-            timestamp = LocalDateTime.of(2026, 5, 28, 14, 30, 0)
-        )
+        val report =
+            StimulusCascadeReport(
+                source = "test brain dump",
+                sourceHash = "abcdef1234567890",
+                sections = emptyList(),
+                visionCount = 0,
+                opinionCount = 0,
+                dilutedCount = 0,
+                timestamp = LocalDateTime.of(2026, 5, 28, 14, 30, 0),
+            )
 
         val json = cascade.exportCascadeJson(report)
 
@@ -37,11 +37,12 @@ class StimulusCascadeTest {
 
     @Test
     fun `exportCascadeJson includes timestamp in ISO format`() {
-        val report = StimulusCascadeReport(
-            source = "test",
-            sourceHash = "hash",
-            timestamp = LocalDateTime.of(2026, 1, 15, 10, 30, 45)
-        )
+        val report =
+            StimulusCascadeReport(
+                source = "test",
+                sourceHash = "hash",
+                timestamp = LocalDateTime.of(2026, 1, 15, 10, 30, 45),
+            )
 
         val json = cascade.exportCascadeJson(report)
 
@@ -50,29 +51,32 @@ class StimulusCascadeTest {
 
     @Test
     fun `exportCascadeJson includes VISION section with dilution target`() {
-        val target = DilutionTarget(
-            targetDocument = TargetDocument.WORKSPACE_VISION,
-            suggestedSection = "== Architecture DAG",
-            rationale = "Contenu architectural valide"
-        )
-        val record = DilutionRecord(
-            sectionId = "S1",
-            sectionTitle = "Architecture N0-N3",
-            content = "Le DAG a 4 niveaux.",
-            classification = ContentClassification.VISION,
-            confidence = 0.95,
-            dilutionTarget = target,
-            classificationRationale = "Vision claire",
-            timestamp = LocalDateTime.of(2026, 5, 28, 12, 0)
-        )
-        val report = StimulusCascadeReport(
-            source = "brain dump",
-            sourceHash = "abc",
-            sections = listOf(record),
-            visionCount = 1,
-            opinionCount = 0,
-            dilutedCount = 1
-        )
+        val target =
+            DilutionTarget(
+                targetDocument = TargetDocument.WORKSPACE_VISION,
+                suggestedSection = "== Architecture DAG",
+                rationale = "Contenu architectural valide",
+            )
+        val record =
+            DilutionRecord(
+                sectionId = "S1",
+                sectionTitle = "Architecture N0-N3",
+                content = "Le DAG a 4 niveaux.",
+                classification = ContentClassification.VISION,
+                confidence = 0.95,
+                dilutionTarget = target,
+                classificationRationale = "Vision claire",
+                timestamp = LocalDateTime.of(2026, 5, 28, 12, 0),
+            )
+        val report =
+            StimulusCascadeReport(
+                source = "brain dump",
+                sourceHash = "abc",
+                sections = listOf(record),
+                visionCount = 1,
+                opinionCount = 0,
+                dilutedCount = 1,
+            )
 
         val json = cascade.exportCascadeJson(report)
 
@@ -86,24 +90,26 @@ class StimulusCascadeTest {
 
     @Test
     fun `exportCascadeJson includes OPINION section with null dilution target`() {
-        val record = DilutionRecord(
-            sectionId = "O1",
-            sectionTitle = "Préférence Kotlin",
-            content = "Je préfère Kotlin.",
-            classification = ContentClassification.OPINION,
-            confidence = 0.72,
-            dilutionTarget = null,
-            classificationRationale = "Opinion subjective",
-            timestamp = LocalDateTime.of(2026, 5, 28, 12, 0)
-        )
-        val report = StimulusCascadeReport(
-            source = "brain dump",
-            sourceHash = "abc",
-            sections = listOf(record),
-            visionCount = 0,
-            opinionCount = 1,
-            dilutedCount = 0
-        )
+        val record =
+            DilutionRecord(
+                sectionId = "O1",
+                sectionTitle = "Préférence Kotlin",
+                content = "Je préfère Kotlin.",
+                classification = ContentClassification.OPINION,
+                confidence = 0.72,
+                dilutionTarget = null,
+                classificationRationale = "Opinion subjective",
+                timestamp = LocalDateTime.of(2026, 5, 28, 12, 0),
+            )
+        val report =
+            StimulusCascadeReport(
+                source = "brain dump",
+                sourceHash = "abc",
+                sections = listOf(record),
+                visionCount = 0,
+                opinionCount = 1,
+                dilutedCount = 0,
+            )
 
         val json = cascade.exportCascadeJson(report)
 
@@ -114,22 +120,37 @@ class StimulusCascadeTest {
 
     @Test
     fun `exportCascadeJson handles multiple sections with proper JSON commas`() {
-        val vRecord = DilutionRecord(
-            sectionId = "S1", sectionTitle = "V", content = "v",
-            classification = ContentClassification.VISION, confidence = 0.9,
-            dilutionTarget = DilutionTarget(TargetDocument.WORKSPACE_VISION, "== Test", "ok"),
-            classificationRationale = "r", timestamp = LocalDateTime.now()
-        )
-        val oRecord = DilutionRecord(
-            sectionId = "O1", sectionTitle = "O", content = "o",
-            classification = ContentClassification.OPINION, confidence = 0.6,
-            dilutionTarget = null, classificationRationale = "r2", timestamp = LocalDateTime.now()
-        )
-        val report = StimulusCascadeReport(
-            source = "test", sourceHash = "abc",
-            sections = listOf(vRecord, oRecord),
-            visionCount = 1, opinionCount = 1, dilutedCount = 1
-        )
+        val vRecord =
+            DilutionRecord(
+                sectionId = "S1",
+                sectionTitle = "V",
+                content = "v",
+                classification = ContentClassification.VISION,
+                confidence = 0.9,
+                dilutionTarget = DilutionTarget(TargetDocument.WORKSPACE_VISION, "== Test", "ok"),
+                classificationRationale = "r",
+                timestamp = LocalDateTime.now(),
+            )
+        val oRecord =
+            DilutionRecord(
+                sectionId = "O1",
+                sectionTitle = "O",
+                content = "o",
+                classification = ContentClassification.OPINION,
+                confidence = 0.6,
+                dilutionTarget = null,
+                classificationRationale = "r2",
+                timestamp = LocalDateTime.now(),
+            )
+        val report =
+            StimulusCascadeReport(
+                source = "test",
+                sourceHash = "abc",
+                sections = listOf(vRecord, oRecord),
+                visionCount = 1,
+                opinionCount = 1,
+                dilutedCount = 1,
+            )
 
         val json = cascade.exportCascadeJson(report)
 
@@ -143,12 +164,13 @@ class StimulusCascadeTest {
 
     @Test
     fun `exportCascadeAsciiDoc contains report title and metadata`() {
-        val report = StimulusCascadeReport(
-            source = "test source",
-            sourceHash = "abc123def456",
-            sections = emptyList(),
-            timestamp = LocalDateTime.of(2026, 5, 28, 14, 0)
-        )
+        val report =
+            StimulusCascadeReport(
+                source = "test source",
+                sourceHash = "abc123def456",
+                sections = emptyList(),
+                timestamp = LocalDateTime.of(2026, 5, 28, 14, 0),
+            )
 
         val adoc = cascade.exportCascadeAsciiDoc(report)
 
@@ -161,21 +183,48 @@ class StimulusCascadeTest {
 
     @Test
     fun `exportCascadeAsciiDoc metadata table shows correct counts`() {
-        val report = StimulusCascadeReport(
-            source = "test", sourceHash = "hash123",
-            sections = listOf(
-                DilutionRecord("S1", "V", "c", ContentClassification.VISION, 0.9,
-                    DilutionTarget(TargetDocument.WORKSPACE_VISION, "== S", "r"), "r",
-                    LocalDateTime.of(2026, 5, 28, 12, 0)),
-                DilutionRecord("S2", "V2", "c2", ContentClassification.VISION, 0.8,
-                    DilutionTarget(TargetDocument.WORKSPACE_AS_PRODUCT, "== P", "r2"), "r2",
-                    LocalDateTime.of(2026, 5, 28, 12, 0)),
-                DilutionRecord("O1", "O", "o", ContentClassification.OPINION, 0.5, null, "r3",
-                    LocalDateTime.of(2026, 5, 28, 12, 0)),
-            ),
-            visionCount = 2, opinionCount = 1, dilutedCount = 2,
-            timestamp = LocalDateTime.of(2026, 5, 28, 14, 0)
-        )
+        val report =
+            StimulusCascadeReport(
+                source = "test",
+                sourceHash = "hash123",
+                sections =
+                    listOf(
+                        DilutionRecord(
+                            "S1",
+                            "V",
+                            "c",
+                            ContentClassification.VISION,
+                            0.9,
+                            DilutionTarget(TargetDocument.WORKSPACE_VISION, "== S", "r"),
+                            "r",
+                            LocalDateTime.of(2026, 5, 28, 12, 0),
+                        ),
+                        DilutionRecord(
+                            "S2",
+                            "V2",
+                            "c2",
+                            ContentClassification.VISION,
+                            0.8,
+                            DilutionTarget(TargetDocument.WORKSPACE_AS_PRODUCT, "== P", "r2"),
+                            "r2",
+                            LocalDateTime.of(2026, 5, 28, 12, 0),
+                        ),
+                        DilutionRecord(
+                            "O1",
+                            "O",
+                            "o",
+                            ContentClassification.OPINION,
+                            0.5,
+                            null,
+                            "r3",
+                            LocalDateTime.of(2026, 5, 28, 12, 0),
+                        ),
+                    ),
+                visionCount = 2,
+                opinionCount = 1,
+                dilutedCount = 2,
+                timestamp = LocalDateTime.of(2026, 5, 28, 14, 0),
+            )
 
         val adoc = cascade.exportCascadeAsciiDoc(report)
 
@@ -186,21 +235,47 @@ class StimulusCascadeTest {
 
     @Test
     fun `exportCascadeAsciiDoc shows impacted documents table`() {
-        val report = StimulusCascadeReport(
-            source = "test", sourceHash = "h",
-            sections = listOf(
-                DilutionRecord("S1", "V", "c", ContentClassification.VISION, 0.9,
-                    DilutionTarget(TargetDocument.WORKSPACE_VISION, "== A", "r"), "r",
-                    LocalDateTime.now()),
-                DilutionRecord("S2", "V2", "c2", ContentClassification.VISION, 0.8,
-                    DilutionTarget(TargetDocument.WORKSPACE_VISION, "== B", "r2"), "r2",
-                    LocalDateTime.now()),
-                DilutionRecord("S3", "V3", "c3", ContentClassification.VISION, 0.7,
-                    DilutionTarget(TargetDocument.WHAT_THE_GAMES_BEEN_MISSING, "== C", "r3"), "r3",
-                    LocalDateTime.now()),
-            ),
-            visionCount = 3, opinionCount = 0, dilutedCount = 3
-        )
+        val report =
+            StimulusCascadeReport(
+                source = "test",
+                sourceHash = "h",
+                sections =
+                    listOf(
+                        DilutionRecord(
+                            "S1",
+                            "V",
+                            "c",
+                            ContentClassification.VISION,
+                            0.9,
+                            DilutionTarget(TargetDocument.WORKSPACE_VISION, "== A", "r"),
+                            "r",
+                            LocalDateTime.now(),
+                        ),
+                        DilutionRecord(
+                            "S2",
+                            "V2",
+                            "c2",
+                            ContentClassification.VISION,
+                            0.8,
+                            DilutionTarget(TargetDocument.WORKSPACE_VISION, "== B", "r2"),
+                            "r2",
+                            LocalDateTime.now(),
+                        ),
+                        DilutionRecord(
+                            "S3",
+                            "V3",
+                            "c3",
+                            ContentClassification.VISION,
+                            0.7,
+                            DilutionTarget(TargetDocument.WHAT_THE_GAMES_BEEN_MISSING, "== C", "r3"),
+                            "r3",
+                            LocalDateTime.now(),
+                        ),
+                    ),
+                visionCount = 3,
+                opinionCount = 0,
+                dilutedCount = 3,
+            )
 
         val adoc = cascade.exportCascadeAsciiDoc(report)
 
@@ -212,17 +287,37 @@ class StimulusCascadeTest {
 
     @Test
     fun `exportCascadeAsciiDoc classification table shows all sections`() {
-        val report = StimulusCascadeReport(
-            source = "test", sourceHash = "h",
-            sections = listOf(
-                DilutionRecord("S1", "Titre Vision", "c1", ContentClassification.VISION, 0.95,
-                    DilutionTarget(TargetDocument.WORKSPACE_VISION, "== Test", "r"), "r",
-                    LocalDateTime.now()),
-                DilutionRecord("O1", "Titre Opinion", "c2", ContentClassification.OPINION, 0.60,
-                    null, "opinion", LocalDateTime.now()),
-            ),
-            visionCount = 1, opinionCount = 1, dilutedCount = 1
-        )
+        val report =
+            StimulusCascadeReport(
+                source = "test",
+                sourceHash = "h",
+                sections =
+                    listOf(
+                        DilutionRecord(
+                            "S1",
+                            "Titre Vision",
+                            "c1",
+                            ContentClassification.VISION,
+                            0.95,
+                            DilutionTarget(TargetDocument.WORKSPACE_VISION, "== Test", "r"),
+                            "r",
+                            LocalDateTime.now(),
+                        ),
+                        DilutionRecord(
+                            "O1",
+                            "Titre Opinion",
+                            "c2",
+                            ContentClassification.OPINION,
+                            0.60,
+                            null,
+                            "opinion",
+                            LocalDateTime.now(),
+                        ),
+                    ),
+                visionCount = 1,
+                opinionCount = 1,
+                dilutedCount = 1,
+            )
 
         val adoc = cascade.exportCascadeAsciiDoc(report)
 
@@ -233,20 +328,33 @@ class StimulusCascadeTest {
 
     @Test
     fun `exportCascadeAsciiDoc shows routing decisions for VISION sections`() {
-        val target = DilutionTarget(
-            TargetDocument.WORKSPACE_AS_PRODUCT,
-            "== Business Model",
-            "Contenu business stratégique"
-        )
-        val report = StimulusCascadeReport(
-            source = "test", sourceHash = "h",
-            sections = listOf(
-                DilutionRecord("S1", "Business Model", "Le business model est...",
-                    ContentClassification.VISION, 0.92, target, "Vision business",
-                    LocalDateTime.now()),
-            ),
-            visionCount = 1, opinionCount = 0, dilutedCount = 1
-        )
+        val target =
+            DilutionTarget(
+                TargetDocument.WORKSPACE_AS_PRODUCT,
+                "== Business Model",
+                "Contenu business stratégique",
+            )
+        val report =
+            StimulusCascadeReport(
+                source = "test",
+                sourceHash = "h",
+                sections =
+                    listOf(
+                        DilutionRecord(
+                            "S1",
+                            "Business Model",
+                            "Le business model est...",
+                            ContentClassification.VISION,
+                            0.92,
+                            target,
+                            "Vision business",
+                            LocalDateTime.now(),
+                        ),
+                    ),
+                visionCount = 1,
+                opinionCount = 0,
+                dilutedCount = 1,
+            )
 
         val adoc = cascade.exportCascadeAsciiDoc(report)
 
@@ -260,15 +368,27 @@ class StimulusCascadeTest {
 
     @Test
     fun `exportCascadeAsciiDoc shows confined OPINION sections`() {
-        val report = StimulusCascadeReport(
-            source = "test", sourceHash = "h",
-            sections = listOf(
-                DilutionRecord("O1", "Opinion Kotlin", "Je pense que Kotlin est mieux.",
-                    ContentClassification.OPINION, 0.70, null, "Préférence personnelle",
-                    LocalDateTime.now()),
-            ),
-            visionCount = 0, opinionCount = 1, dilutedCount = 0
-        )
+        val report =
+            StimulusCascadeReport(
+                source = "test",
+                sourceHash = "h",
+                sections =
+                    listOf(
+                        DilutionRecord(
+                            "O1",
+                            "Opinion Kotlin",
+                            "Je pense que Kotlin est mieux.",
+                            ContentClassification.OPINION,
+                            0.70,
+                            null,
+                            "Préférence personnelle",
+                            LocalDateTime.now(),
+                        ),
+                    ),
+                visionCount = 0,
+                opinionCount = 1,
+                dilutedCount = 0,
+            )
 
         val adoc = cascade.exportCascadeAsciiDoc(report)
 
@@ -281,15 +401,27 @@ class StimulusCascadeTest {
 
     @Test
     fun `exportCascadeAsciiDoc empty opinions shows placeholder`() {
-        val report = StimulusCascadeReport(
-            source = "test", sourceHash = "h",
-            sections = listOf(
-                DilutionRecord("S1", "V", "c", ContentClassification.VISION, 0.9,
-                    DilutionTarget(TargetDocument.WORKSPACE_VISION, "== T", "r"), "r",
-                    LocalDateTime.now()),
-            ),
-            visionCount = 1, opinionCount = 0, dilutedCount = 1
-        )
+        val report =
+            StimulusCascadeReport(
+                source = "test",
+                sourceHash = "h",
+                sections =
+                    listOf(
+                        DilutionRecord(
+                            "S1",
+                            "V",
+                            "c",
+                            ContentClassification.VISION,
+                            0.9,
+                            DilutionTarget(TargetDocument.WORKSPACE_VISION, "== T", "r"),
+                            "r",
+                            LocalDateTime.now(),
+                        ),
+                    ),
+                visionCount = 1,
+                opinionCount = 0,
+                dilutedCount = 1,
+            )
 
         val adoc = cascade.exportCascadeAsciiDoc(report)
 
@@ -298,16 +430,27 @@ class StimulusCascadeTest {
 
     @Test
     fun `exportCascadeAsciiDoc includes source code block with content`() {
-        val report = StimulusCascadeReport(
-            source = "test", sourceHash = "h",
-            sections = listOf(
-                DilutionRecord("S1", "Titre", "Contenu de la section à afficher".repeat(10),
-                    ContentClassification.VISION, 0.85,
-                    DilutionTarget(TargetDocument.WORKSPACE_VISION, "== S", "r"), "r",
-                    LocalDateTime.now()),
-            ),
-            visionCount = 1, opinionCount = 0, dilutedCount = 1
-        )
+        val report =
+            StimulusCascadeReport(
+                source = "test",
+                sourceHash = "h",
+                sections =
+                    listOf(
+                        DilutionRecord(
+                            "S1",
+                            "Titre",
+                            "Contenu de la section à afficher".repeat(10),
+                            ContentClassification.VISION,
+                            0.85,
+                            DilutionTarget(TargetDocument.WORKSPACE_VISION, "== S", "r"),
+                            "r",
+                            LocalDateTime.now(),
+                        ),
+                    ),
+                visionCount = 1,
+                opinionCount = 0,
+                dilutedCount = 1,
+            )
 
         val adoc = cascade.exportCascadeAsciiDoc(report)
 
@@ -325,11 +468,12 @@ class StimulusCascadeTest {
 
     @Test
     fun `DilutionTarget stores document section and rationale`() {
-        val target = DilutionTarget(
-            targetDocument = TargetDocument.WORKSPACE_AS_PRODUCT,
-            suggestedSection = "== Pricing Strategy",
-            rationale = "Contenu stratégique business"
-        )
+        val target =
+            DilutionTarget(
+                targetDocument = TargetDocument.WORKSPACE_AS_PRODUCT,
+                suggestedSection = "== Pricing Strategy",
+                rationale = "Contenu stratégique business",
+            )
 
         assertEquals(TargetDocument.WORKSPACE_AS_PRODUCT, target.targetDocument)
         assertEquals("== Pricing Strategy", target.suggestedSection)
@@ -338,12 +482,17 @@ class StimulusCascadeTest {
 
     @Test
     fun `DilutionRecord with null dilution target is OPINION style`() {
-        val record = DilutionRecord(
-            sectionId = "O1", sectionTitle = "Opinion", content = "Je pense...",
-            classification = ContentClassification.OPINION, confidence = 0.5,
-            dilutionTarget = null, classificationRationale = "subjectif",
-            timestamp = LocalDateTime.of(2026, 5, 28, 12, 0)
-        )
+        val record =
+            DilutionRecord(
+                sectionId = "O1",
+                sectionTitle = "Opinion",
+                content = "Je pense...",
+                classification = ContentClassification.OPINION,
+                confidence = 0.5,
+                dilutionTarget = null,
+                classificationRationale = "subjectif",
+                timestamp = LocalDateTime.of(2026, 5, 28, 12, 0),
+            )
 
         assertEquals("O1", record.sectionId)
         assertEquals(null, record.dilutionTarget)
@@ -373,7 +522,8 @@ class StimulusCascadeTest {
 
     @Test
     fun `parseSections extracts headings from AsciiDoc text`() {
-        val text = """
+        val text =
+            """
             = Brain Dump
             == Vision Architecture
             Le DAG a 4 niveaux N0-N3.
@@ -383,7 +533,7 @@ class StimulusCascadeTest {
             Franchement, c'est plus lisible.
             == Organisation des fichiers
             Le workspace est structuré en cercles de confiance.
-        """.trimIndent()
+            """.trimIndent()
 
         val sections = cascade.parseSections(text)
 
@@ -421,7 +571,8 @@ class StimulusCascadeTest {
 
     @Test
     fun `parseSections preserves section boundaries between headings`() {
-        val text = """
+        val text =
+            """
             == Section A
             Texte de la section A.
             Plusieurs lignes dans A.
@@ -430,7 +581,7 @@ class StimulusCascadeTest {
             == Section C
             Texte de C.
             Sur deux lignes.
-        """.trimIndent()
+            """.trimIndent()
 
         val sections = cascade.parseSections(text)
         assertEquals(3, sections.size)
@@ -506,11 +657,12 @@ class StimulusCascadeTest {
     @Test
     fun `parseRoutingResponse strips markdown code fences`() {
         val section = StimulusCascade.ParsedSection("S7", "Code", "contenu")
-        val raw = """
+        val raw =
+            """
             ```json
             {"targetDocument": "WORKSPACE_VISION", "suggestedSection": "== Gov", "rationale": "Rules"}
             ```
-        """.trimIndent()
+            """.trimIndent()
 
         val result = cascade.parseRoutingResponse(section, raw)
         assertEquals(TargetDocument.WORKSPACE_VISION, result.targetDocument)
@@ -543,19 +695,32 @@ class StimulusCascadeTest {
     // ══════ archiveReport ══════
 
     @Test
-    fun `archiveReport creates directory with timestamp and saves files`(@TempDir tempDir: File) {
+    fun `archiveReport creates directory with timestamp and saves files`(
+        @TempDir tempDir: File,
+    ) {
         val cascadeWithRoot = StimulusCascade(workspaceRoot = tempDir.absolutePath, dryRun = true)
-        val report = StimulusCascadeReport(
-            source = "= Brain dump test\n== Section 1\ncontenu",
-            sourceHash = "abc123",
-            sections = listOf(
-                DilutionRecord("S1", "Section 1", "contenu", ContentClassification.VISION, 0.9,
-                    DilutionTarget(TargetDocument.WORKSPACE_VISION, "== Test", "ok"), "r",
-                    LocalDateTime.of(2026, 5, 28, 14, 0)),
-            ),
-            visionCount = 1, opinionCount = 0, dilutedCount = 1,
-            timestamp = LocalDateTime.of(2026, 5, 28, 14, 30, 0)
-        )
+        val report =
+            StimulusCascadeReport(
+                source = "= Brain dump test\n== Section 1\ncontenu",
+                sourceHash = "abc123",
+                sections =
+                    listOf(
+                        DilutionRecord(
+                            "S1",
+                            "Section 1",
+                            "contenu",
+                            ContentClassification.VISION,
+                            0.9,
+                            DilutionTarget(TargetDocument.WORKSPACE_VISION, "== Test", "ok"),
+                            "r",
+                            LocalDateTime.of(2026, 5, 28, 14, 0),
+                        ),
+                    ),
+                visionCount = 1,
+                opinionCount = 0,
+                dilutedCount = 1,
+                timestamp = LocalDateTime.of(2026, 5, 28, 14, 30, 0),
+            )
 
         val archivePath = cascadeWithRoot.archiveReport(report)
 

@@ -5,18 +5,30 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class TaskListFormatterTest {
-
-    private val schemas = listOf(
-        TaskSchema("build", "Compiles the project", "build", "DefaultTask", emptyList()),
-        TaskSchema("test", "Runs unit tests", "verification", "Test", listOf(
-            TaskOption("tests", "Filter tests by name", false, "String")
-        )),
-        TaskSchema("publish", "Publishes artifacts", "publishing", "PublishToMavenRepository", listOf(
-            TaskOption("repository", "Target repository", false, "String"),
-            TaskOption("dryRun", "Simulate without publishing", false, "Boolean")
-        )),
-        TaskSchema("clean", "Deletes build output", "build", "Delete", emptyList())
-    )
+    private val schemas =
+        listOf(
+            TaskSchema("build", "Compiles the project", "build", "DefaultTask", emptyList()),
+            TaskSchema(
+                "test",
+                "Runs unit tests",
+                "verification",
+                "Test",
+                listOf(
+                    TaskOption("tests", "Filter tests by name", false, "String"),
+                ),
+            ),
+            TaskSchema(
+                "publish",
+                "Publishes artifacts",
+                "publishing",
+                "PublishToMavenRepository",
+                listOf(
+                    TaskOption("repository", "Target repository", false, "String"),
+                    TaskOption("dryRun", "Simulate without publishing", false, "Boolean"),
+                ),
+            ),
+            TaskSchema("clean", "Deletes build output", "build", "Delete", emptyList()),
+        )
 
     @Test
     fun `format should produce structured output with task name and description`() {
@@ -40,15 +52,20 @@ class TaskListFormatterTest {
         val result = TaskListFormatter.format(schemas)
         val cleanBlock = result.lines().dropWhile { !it.contains("gradle_clean") }.takeWhile { it.isNotBlank() || it.startsWith("---") }
         val cleanText = cleanBlock.joinToString("\n")
-        assertTrue(!cleanText.contains("Options:") || cleanText.lines().last() == "Options: none",
-            "Tasks without options should say 'none' or have no Options line")
+        assertTrue(
+            !cleanText.contains("Options:") || cleanText.lines().last() == "Options: none",
+            "Tasks without options should say 'none' or have no Options line",
+        )
     }
 
     @Test
     fun `filter by group should return only matching tasks`() {
         val result = TaskListFormatter.format(schemas, group = "build")
-        assertEquals(2, result.lines().count { it.startsWith("- gradle_") },
-            "Should return build group tasks only")
+        assertEquals(
+            2,
+            result.lines().count { it.startsWith("- gradle_") },
+            "Should return build group tasks only",
+        )
         assertTrue(result.contains("gradle_build"))
         assertTrue(!result.contains("gradle_test"))
     }

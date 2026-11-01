@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class StdoutFormatterTest {
-
     @Test
     fun `Tag value class stores label and formats as bracket wrapped`() {
         val tag = StdoutFormatter.Tag("DEBUG")
@@ -23,17 +22,19 @@ class StdoutFormatterTest {
 
     @Test
     fun `section formats tag plus content`() {
-        val output = captureStdout {
-            StdoutFormatter.section(StdoutFormatter.Tag.PLAN, "test content")
-        }
+        val output =
+            captureStdout {
+                StdoutFormatter.section(StdoutFormatter.Tag.PLAN, "test content")
+            }
         assertEquals("[PLAN] test content\n", output)
     }
 
     @Test
     fun `banner produces box around title`() {
-        val output = captureStdout {
-            StdoutFormatter.banner("Hello")
-        }
+        val output =
+            captureStdout {
+                StdoutFormatter.banner("Hello")
+            }
         val lines = output.lines()
         assertTrue(lines.size >= 4)
         assertTrue(lines[0].startsWith("═"))
@@ -43,9 +44,10 @@ class StdoutFormatterTest {
 
     @Test
     fun `separator prints 60 dashes`() {
-        val output = captureStdout {
-            StdoutFormatter.separator()
-        }
+        val output =
+            captureStdout {
+                StdoutFormatter.separator()
+            }
         assertEquals("─".repeat(60) + "\n", output)
     }
 

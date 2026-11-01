@@ -17,8 +17,9 @@ import kotlin.test.assertTrue
  *
  * L-3 : test du pipeline complet buildContext → classify → plan.
  */
-class AugmentedPlanningSteps(private val world: AugmentedPlanningWorld) {
-
+class AugmentedPlanningSteps(
+    private val world: AugmentedPlanningWorld,
+) {
     // ── Given ──
 
     @Given("a KoogAugmentedContextGraph is instantiated")
@@ -38,24 +39,29 @@ class AugmentedPlanningSteps(private val world: AugmentedPlanningWorld) {
     fun `execute augmented context pipeline`(intention: String) {
         world.intention = intention
 
-        val initialState = AugmentedState(
-            intention = intention,
-            workspaceRoot = world.workspaceRoot.absolutePath
-        )
+        val initialState =
+            AugmentedState(
+                intention = intention,
+                workspaceRoot = world.workspaceRoot.absolutePath,
+            )
 
         world.resultState = world.graph.execute(initialState)
         assertNotNull(world.resultState, "Result state should never be null")
     }
 
     @When("I execute the augmented context pipeline with intention {string} and workspace {string}")
-    fun `execute augmented context pipeline with workspace`(intention: String, workspace: String) {
+    fun `execute augmented context pipeline with workspace`(
+        intention: String,
+        workspace: String,
+    ) {
         world.intention = intention
         val ws = File(workspace).also { it.mkdirs() }
 
-        val initialState = AugmentedState(
-            intention = intention,
-            workspaceRoot = ws.absolutePath
-        )
+        val initialState =
+            AugmentedState(
+                intention = intention,
+                workspaceRoot = ws.absolutePath,
+            )
 
         world.resultState = world.graph.execute(initialState)
         assertNotNull(world.resultState, "Result state should never be null")
@@ -74,7 +80,7 @@ class AugmentedPlanningSteps(private val world: AugmentedPlanningWorld) {
         assertNotNull(world.resultState, "Result state should exist")
         assertTrue(
             classification == expected,
-            "Expected classification '$expected', got '$classification'"
+            "Expected classification '$expected', got '$classification'",
         )
     }
 
@@ -86,7 +92,7 @@ class AugmentedPlanningSteps(private val world: AugmentedPlanningWorld) {
         assertTrue(
             hasError,
             "Without pgvector, error or planError should be set " +
-                "(got error='${state.error}', planError='${state.planError}')"
+                "(got error='${state.error}', planError='${state.planError}')",
         )
     }
 
@@ -105,7 +111,7 @@ class AugmentedPlanningSteps(private val world: AugmentedPlanningWorld) {
         assertNotNull(world.resultState, "Result state should exist")
         assertTrue(
             world.resultState!!.intention == world.intention,
-            "Intention should be preserved — expected '${world.intention}', got '${world.resultState!!.intention}'"
+            "Intention should be preserved — expected '${world.intention}', got '${world.resultState!!.intention}'",
         )
     }
 }

@@ -1,10 +1,12 @@
 package codebase.koog.agentic
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class AgenticOntologizerTest {
-
     private val ontologizer = AgenticOntologizer()
 
     @Test
@@ -93,102 +95,108 @@ class AgenticOntologizerTest {
 
     @Test
     fun `should compute high confidence for fully annotated chunk`() {
-        val chunk = AgenticChunk(
-            id = "abc123",
-            sourceFile = "TAXONOMIE_WORKSPACE.adoc",
-            sourceLines = "42-48",
-            chunkType = ChunkType.CONCEPT,
-            content = "== Principes Fondateurs\n. Le verbe dit pourquoi.",
-            verb = TaxonomyVerb.GENERER,
-            domain = "codebase",
-            dagLevel = DagLevel.N1,
-            circle = 4,
-            weight = 1.0,
-            checksum = "sha256..."
-        )
+        val chunk =
+            AgenticChunk(
+                id = "abc123",
+                sourceFile = "TAXONOMIE_WORKSPACE.adoc",
+                sourceLines = "42-48",
+                chunkType = ChunkType.CONCEPT,
+                content = "== Principes Fondateurs\n. Le verbe dit pourquoi.",
+                verb = TaxonomyVerb.GENERER,
+                domain = "codebase",
+                dagLevel = DagLevel.N1,
+                circle = 4,
+                weight = 1.0,
+                checksum = "sha256...",
+            )
         val result = ontologizer.ontologize(listOf(chunk))
         assertEquals(1.0, result.first().ontologyConfidence, 0.01)
     }
 
     @Test
     fun `should compute low confidence for unknown section with no annotations`() {
-        val chunk = AgenticChunk(
-            id = "abc123",
-            sourceFile = "unknown.adoc",
-            sourceLines = "1-1",
-            chunkType = ChunkType.CONCEPT,
-            content = "Some random text.",
-            verb = null,
-            domain = null,
-            dagLevel = null,
-            circle = null,
-            weight = 0.5,
-            checksum = "sha256..."
-        )
+        val chunk =
+            AgenticChunk(
+                id = "abc123",
+                sourceFile = "unknown.adoc",
+                sourceLines = "1-1",
+                chunkType = ChunkType.CONCEPT,
+                content = "Some random text.",
+                verb = null,
+                domain = null,
+                dagLevel = null,
+                circle = null,
+                weight = 0.5,
+                checksum = "sha256...",
+            )
         val result = ontologizer.ontologize(listOf(chunk))
         assertEquals(0.0, result.first().ontologyConfidence, 0.01)
     }
 
     @Test
     fun `should compute medium confidence for known section with partial annotations`() {
-        val chunk = AgenticChunk(
-            id = "abc123",
-            sourceFile = "TAXONOMIE_WORKSPACE.adoc",
-            sourceLines = "42-48",
-            chunkType = ChunkType.CONCEPT,
-            content = "== Taxonomie des Taches\nQuatre Verbes.",
-            verb = TaxonomyVerb.GENERER,
-            domain = null,
-            dagLevel = null,
-            circle = null,
-            weight = 0.5,
-            checksum = "sha256..."
-        )
+        val chunk =
+            AgenticChunk(
+                id = "abc123",
+                sourceFile = "TAXONOMIE_WORKSPACE.adoc",
+                sourceLines = "42-48",
+                chunkType = ChunkType.CONCEPT,
+                content = "== Taxonomie des Taches\nQuatre Verbes.",
+                verb = TaxonomyVerb.GENERER,
+                domain = null,
+                dagLevel = null,
+                circle = null,
+                weight = 0.5,
+                checksum = "sha256...",
+            )
         val result = ontologizer.ontologize(listOf(chunk))
         assertEquals(0.6, result.first().ontologyConfidence, 0.01)
     }
 
     @Test
     fun `should find related chunks by shared domain and verb`() {
-        val chunk1 = AgenticChunk(
-            id = "id1",
-            sourceFile = "AGENT.adoc",
-            sourceLines = "1-5",
-            chunkType = ChunkType.RULE,
-            content = "INTERDICTION FORMELLE de commit.",
-            verb = TaxonomyVerb.INTERDIRE,
-            domain = "codebase",
-            dagLevel = DagLevel.N1,
-            circle = 4,
-            weight = 1.0,
-            checksum = "sha1"
-        )
-        val chunk2 = AgenticChunk(
-            id = "id2",
-            sourceFile = "AGENT.adoc",
-            sourceLines = "10-15",
-            chunkType = ChunkType.RULE,
-            content = "NE JAMAIS lancer de tests.",
-            verb = TaxonomyVerb.INTERDIRE,
-            domain = "codebase",
-            dagLevel = DagLevel.N1,
-            circle = 4,
-            weight = 1.0,
-            checksum = "sha2"
-        )
-        val chunk3 = AgenticChunk(
-            id = "id3",
-            sourceFile = "BACKLOG.adoc",
-            sourceLines = "20-25",
-            chunkType = ChunkType.CONCEPT,
-            content = "Pipeline de generation.",
-            verb = TaxonomyVerb.GENERER,
-            domain = "planner",
-            dagLevel = DagLevel.N2,
-            circle = 4,
-            weight = 0.5,
-            checksum = "sha3"
-        )
+        val chunk1 =
+            AgenticChunk(
+                id = "id1",
+                sourceFile = "AGENT.adoc",
+                sourceLines = "1-5",
+                chunkType = ChunkType.RULE,
+                content = "INTERDICTION FORMELLE de commit.",
+                verb = TaxonomyVerb.INTERDIRE,
+                domain = "codebase",
+                dagLevel = DagLevel.N1,
+                circle = 4,
+                weight = 1.0,
+                checksum = "sha1",
+            )
+        val chunk2 =
+            AgenticChunk(
+                id = "id2",
+                sourceFile = "AGENT.adoc",
+                sourceLines = "10-15",
+                chunkType = ChunkType.RULE,
+                content = "NE JAMAIS lancer de tests.",
+                verb = TaxonomyVerb.INTERDIRE,
+                domain = "codebase",
+                dagLevel = DagLevel.N1,
+                circle = 4,
+                weight = 1.0,
+                checksum = "sha2",
+            )
+        val chunk3 =
+            AgenticChunk(
+                id = "id3",
+                sourceFile = "BACKLOG.adoc",
+                sourceLines = "20-25",
+                chunkType = ChunkType.CONCEPT,
+                content = "Pipeline de generation.",
+                verb = TaxonomyVerb.GENERER,
+                domain = "planner",
+                dagLevel = DagLevel.N2,
+                circle = 4,
+                weight = 0.5,
+                checksum = "sha3",
+            )
 
         val result = ontologizer.ontologize(listOf(chunk1, chunk2, chunk3))
 
@@ -212,7 +220,8 @@ class AgenticOntologizerTest {
 
     @Test
     fun `should ontologize multiple chunks from TAXONOMIE_WORKSPACE adoc`() {
-        val content = """
+        val content =
+            """
             = TAXONOMIE_WORKSPACE — Ontologie
             :date: 2026-05-18
 
@@ -260,7 +269,7 @@ class AgenticOntologizerTest {
             == Conclusion
 
             Ce qu'on importe : les 4 verbes. Ce qu'on n'importe pas : le code Groovy.
-        """.trimIndent()
+            """.trimIndent()
 
         val chunker = AgenticChunker()
         val chunks = chunker.chunk(content, sourceFile = "TAXONOMIE_WORKSPACE.adoc")
@@ -289,19 +298,20 @@ class AgenticOntologizerTest {
 
     @Test
     fun `should preserve original chunk data in ontologized result`() {
-        val chunk = AgenticChunk(
-            id = "preserve-test",
-            sourceFile = "AGENT.adoc",
-            sourceLines = "42-48",
-            chunkType = ChunkType.RULE,
-            content = "INTERDICTION FORMELLE de commit.",
-            verb = TaxonomyVerb.INTERDIRE,
-            domain = "codebase",
-            dagLevel = DagLevel.N1,
-            circle = 4,
-            weight = 1.0,
-            checksum = "abc123def456"
-        )
+        val chunk =
+            AgenticChunk(
+                id = "preserve-test",
+                sourceFile = "AGENT.adoc",
+                sourceLines = "42-48",
+                chunkType = ChunkType.RULE,
+                content = "INTERDICTION FORMELLE de commit.",
+                verb = TaxonomyVerb.INTERDIRE,
+                domain = "codebase",
+                dagLevel = DagLevel.N1,
+                circle = 4,
+                weight = 1.0,
+                checksum = "abc123def456",
+            )
         val result = ontologizer.ontologize(listOf(chunk))
         val ontologized = result.first()
         assertEquals(chunk.id, ontologized.chunk.id)

@@ -2,43 +2,46 @@ package codebase.scenarios
 
 import codebase.koog.VibecodingGraph
 import codebase.koog.llm.FakeLlmProvider
+import codebase.koog.state.VibecodingState
 import contracts.agent.Epic
 import contracts.agent.Plan
-import contracts.agent.GradleTask as PlanTask
 import contracts.agent.UserStory
 import contracts.context.CompositeContext
 import contracts.context.CompositeContextConfig
 import contracts.vibecoding.registry.ToolRegistry
-import codebase.koog.state.VibecodingState
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+import contracts.agent.GradleTask as PlanTask
 
-class EpicZ6AutofocusSteps(private val world: VibecodingWorld) {
-
-    private var sampleContext: CompositeContext = CompositeContext(
-        eagerSection = "",
-        ragSection = "",
-        graphifySection = "",
-        docsSection = "",
-        config = CompositeContextConfig()
-    )
+class EpicZ6AutofocusSteps(
+    private val world: VibecodingWorld,
+) {
+    private var sampleContext: CompositeContext =
+        CompositeContext(
+            eagerSection = "",
+            ragSection = "",
+            graphifySection = "",
+            docsSection = "",
+            config = CompositeContextConfig(),
+        )
 
     private var replanPrompt: String = ""
 
     @Given("a composite context with 4 channels is prepared")
     fun `prepare composite context`() {
-        sampleContext = CompositeContext(
-            eagerSection = "AGENT.adoc rules: no commit without permission\nINDEX.adoc: EPIC Z in progress",
-            ragSection = "VibecodingGraph.kt:680 lines, koog DSL graph with 5 nodes\nVibecodingState.kt:49 lines, data class with focusLevel field",
-            graphifySection = "codebase-plugin → codebase-contracts → workspace-bom\nDAG: N1 → N0",
-            docsSection = "AUTOFOCUS_CAPABILITY.adoc: 4 levels BIG_PICTURE/ARCHITECTURE/MODULE/IMPLEMENTATION",
-            config = CompositeContextConfig()
-        )
+        sampleContext =
+            CompositeContext(
+                eagerSection = "AGENT.adoc rules: no commit without permission\nINDEX.adoc: EPIC Z in progress",
+                ragSection = "VibecodingGraph.kt:680 lines, koog DSL graph with 5 nodes\nVibecodingState.kt:49 lines, data class with focusLevel field",
+                graphifySection = "codebase-plugin → codebase-contracts → workspace-bom\nDAG: N1 → N0",
+                docsSection = "AUTOFOCUS_CAPABILITY.adoc: 4 levels BIG_PICTURE/ARCHITECTURE/MODULE/IMPLEMENTATION",
+                config = CompositeContextConfig(),
+            )
     }
 
     @When("I execute vibecoding with a plan that will fail and maxRetries {int}")
@@ -47,33 +50,47 @@ class EpicZ6AutofocusSteps(private val world: VibecodingWorld) {
         fakeLlm.nextResponse = "retry with different approach"
         world.fakeLlmProvider = fakeLlm
 
-        val plan = Plan(
-            title = "Fix compilation",
-            epics = listOf(
-                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
-                    UserStory(description = "US1", tasks = listOf(
-                        PlanTask(description = "compile", gradleTask = "nonexistentTask")
-                    ))
-                ))
-            ),
-            totalPoints = 1,
-            estimatedSessions = "1"
-        )
+        val plan =
+            Plan(
+                title = "Fix compilation",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "E1",
+                            description = "test",
+                            points = 1,
+                            userStories =
+                                listOf(
+                                    UserStory(
+                                        description = "US1",
+                                        tasks =
+                                            listOf(
+                                                PlanTask(description = "compile", gradleTask = "nonexistentTask"),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    ),
+                totalPoints = 1,
+                estimatedSessions = "1",
+            )
 
-        val graph = VibecodingGraph(
-            augmentedGraph = null,
-            toolRegistry = ToolRegistry(),
-            llmProvider = fakeLlm
-        )
+        val graph =
+            VibecodingGraph(
+                augmentedGraph = null,
+                toolRegistry = ToolRegistry(),
+                llmProvider = fakeLlm,
+            )
 
-        val state = VibecodingState(
-            intention = "fix compilation error in VibecodingGraph.kt:42",
-            workspaceRoot = "/tmp",
-            maxActions = 5,
-            maxRetries = maxRetries,
-            plan = plan,
-            compositeContext = sampleContext
-        )
+        val state =
+            VibecodingState(
+                intention = "fix compilation error in VibecodingGraph.kt:42",
+                workspaceRoot = "/tmp",
+                maxActions = 5,
+                maxRetries = maxRetries,
+                plan = plan,
+                compositeContext = sampleContext,
+            )
 
         world.graph = graph
         world.resultState = graph.execute(state)
@@ -86,33 +103,47 @@ class EpicZ6AutofocusSteps(private val world: VibecodingWorld) {
         fakeLlm.nextResponse = "retry with different approach"
         world.fakeLlmProvider = fakeLlm
 
-        val plan = Plan(
-            title = "Fix compilation",
-            epics = listOf(
-                Epic(name = "E1", description = "test", points = 1, userStories = listOf(
-                    UserStory(description = "US1", tasks = listOf(
-                        PlanTask(description = "compile", gradleTask = "nonexistentTask")
-                    ))
-                ))
-            ),
-            totalPoints = 1,
-            estimatedSessions = "1"
-        )
+        val plan =
+            Plan(
+                title = "Fix compilation",
+                epics =
+                    listOf(
+                        Epic(
+                            name = "E1",
+                            description = "test",
+                            points = 1,
+                            userStories =
+                                listOf(
+                                    UserStory(
+                                        description = "US1",
+                                        tasks =
+                                            listOf(
+                                                PlanTask(description = "compile", gradleTask = "nonexistentTask"),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    ),
+                totalPoints = 1,
+                estimatedSessions = "1",
+            )
 
-        val graph = VibecodingGraph(
-            augmentedGraph = null,
-            toolRegistry = ToolRegistry(),
-            llmProvider = fakeLlm
-        )
+        val graph =
+            VibecodingGraph(
+                augmentedGraph = null,
+                toolRegistry = ToolRegistry(),
+                llmProvider = fakeLlm,
+            )
 
-        val state = VibecodingState(
-            intention = "fix compilation error",
-            workspaceRoot = "/tmp",
-            maxActions = 5,
-            maxRetries = maxRetries,
-            plan = plan,
-            compositeContext = null
-        )
+        val state =
+            VibecodingState(
+                intention = "fix compilation error",
+                workspaceRoot = "/tmp",
+                maxActions = 5,
+                maxRetries = maxRetries,
+                plan = plan,
+                compositeContext = null,
+            )
 
         world.graph = graph
         world.resultState = graph.execute(state)
@@ -155,8 +186,10 @@ class EpicZ6AutofocusSteps(private val world: VibecodingWorld) {
 
     @Then("the vibecoding replan prompt contains {string}")
     fun `replan prompt contains`(expected: String) {
-        assertTrue(replanPrompt.contains(expected),
-            "Replan prompt should contain '$expected' but was: ${replanPrompt.take(500)}")
+        assertTrue(
+            replanPrompt.contains(expected),
+            "Replan prompt should contain '$expected' but was: ${replanPrompt.take(500)}",
+        )
     }
 
     @Then("the vibecoding autofocus stack is not empty")
@@ -166,7 +199,9 @@ class EpicZ6AutofocusSteps(private val world: VibecodingWorld) {
 
     @Then("the vibecoding autofocus stack size is at least {int}")
     fun `autofocus stack size is at least`(minSize: Int) {
-        assertTrue(world.graph.autofocusStack.size() >= minSize,
-            "Autofocus stack size should be at least $minSize but was ${world.graph.autofocusStack.size()}")
+        assertTrue(
+            world.graph.autofocusStack.size() >= minSize,
+            "Autofocus stack size should be at least $minSize but was ${world.graph.autofocusStack.size()}",
+        )
     }
 }

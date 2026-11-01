@@ -7,14 +7,14 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class PgVectorConfigTest {
-
     @Test
     fun `PgVectorConfig stores jdbcUrl user and password`() {
-        val config = PgVectorConfig(
-            jdbcUrl = "jdbc:postgresql://pg.example.com:5432/mydb",
-            user = "admin",
-            password = "s3cret"
-        )
+        val config =
+            PgVectorConfig(
+                jdbcUrl = "jdbc:postgresql://pg.example.com:5432/mydb",
+                user = "admin",
+                password = "s3cret",
+            )
         assertEquals("jdbc:postgresql://pg.example.com:5432/mydb", config.jdbcUrl)
         assertEquals("admin", config.user)
         assertEquals("s3cret", config.password)
@@ -61,16 +61,20 @@ class PgVectorConfigTest {
 
     @Test
     fun `toVectorStore creates VectorStore with same credentials`() {
-        val config = PgVectorConfig(
-            jdbcUrl = "jdbc:postgresql://localhost:5432/testdb",
-            user = "testuser",
-            password = "testpass"
-        )
+        val config =
+            PgVectorConfig(
+                jdbcUrl = "jdbc:postgresql://localhost:5432/testdb",
+                user = "testuser",
+                password = "testpass",
+            )
         val store = config.toVectorStore()
         assertNotNull(store)
     }
 
-    private fun setEnv(key: String, value: String) {
+    private fun setEnv(
+        key: String,
+        value: String,
+    ) {
         val envField = System.getenv()::class.java.getDeclaredField("m")
         envField.isAccessible = true
         @Suppress("UNCHECKED_CAST")
@@ -78,7 +82,10 @@ class PgVectorConfigTest {
         env[key] = value
     }
 
-    private fun restoreEnv(key: String, original: String?) {
+    private fun restoreEnv(
+        key: String,
+        original: String?,
+    ) {
         val envField = System.getenv()::class.java.getDeclaredField("m")
         envField.isAccessible = true
         @Suppress("UNCHECKED_CAST")

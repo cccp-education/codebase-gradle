@@ -15,7 +15,6 @@ import codebase.store.RetrieveResult
  * `@Given` init step (pattern `RagSocleWorld`).
  */
 class CorpusIngestWorld {
-
     var loadedChunks: List<DocumentChunk> = emptyList()
     var markedChunks: List<DoubtfulChunk> = emptyList()
     var fakeStore: CorpusFakeRagStore? = null
@@ -33,26 +32,32 @@ class CorpusIngestWorld {
  * office/ corpus (zéro donnée métier dans le repo).
  */
 object CorpusFileBuilder {
-
-    fun chunksJson(count: Int, doubtful: Int): String {
-        val entries = (1..count).map { i ->
-            val content = if (i <= doubtful) "page [ILLISIBLE] transcription $i" else "clean content $i"
-            """
-            {
-              "id": "chk-${i.toString().padStart(16, '0')}",
-              "sourceDocument": "book",
-              "sectionPath": "Chapter $i",
-              "headingLevel": 1,
-              "content": "$content",
-              "license": "PROPRIETARY"
+    fun chunksJson(
+        count: Int,
+        doubtful: Int,
+    ): String {
+        val entries =
+            (1..count).map { i ->
+                val content = if (i <= doubtful) "page [ILLISIBLE] transcription $i" else "clean content $i"
+                """
+                {
+                  "id": "chk-${i.toString().padStart(16, '0')}",
+                  "sourceDocument": "book",
+                  "sectionPath": "Chapter $i",
+                  "headingLevel": 1,
+                  "content": "$content",
+                  "license": "PROPRIETARY"
+                }
+                """.trimIndent()
             }
-            """.trimIndent()
-        }
         return "[" + entries.joinToString(",") + "]"
     }
 
-    fun twoChunksJson(clean: String, doubtful: String): String {
-        return """
+    fun twoChunksJson(
+        clean: String,
+        doubtful: String,
+    ): String =
+        """
         [
           {
             "id": "chk-0000000000000001",
@@ -72,7 +77,6 @@ object CorpusFileBuilder {
           }
         ]
         """.trimIndent()
-    }
 }
 
 /**
@@ -81,7 +85,6 @@ object CorpusFileBuilder {
  * document rows are recorded in-memory for the Then steps.
  */
 class CorpusFakeRagStore : RagVectorStore() {
-
     val ingestedByDocument: MutableMap<String, MutableList<DoubtfulChunk>> = linkedMapOf()
 
     fun record(marked: List<DoubtfulChunk>) {
@@ -102,8 +105,13 @@ class CorpusFakeRagStore : RagVectorStore() {
 class CorpusStubRagStore(
     private val results: List<RetrieveResult> = emptyList(),
 ) : RagVectorStore() {
+    override fun searchBlocking(
+        query: String,
+        topK: Int,
+    ): List<RetrieveResult> = results
 
-    override fun searchBlocking(query: String, topK: Int): List<RetrieveResult> = results
-
-    override fun searchWithDoubtBlocking(query: String, topK: Int): List<RetrieveResult> = results
+    override fun searchWithDoubtBlocking(
+        query: String,
+        topK: Int,
+    ): List<RetrieveResult> = results
 }

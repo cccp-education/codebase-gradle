@@ -1,7 +1,6 @@
 package codebase.scenarios
 
 import codebase.koog.svo.AutonomousSessionReport
-import java.io.File
 
 /**
  * Shared world for `@autonomous-session` scenarios (EPIC SVO-4/5).
@@ -14,8 +13,9 @@ import java.io.File
  * Pure BDD: no Gradle task, no LLM — the session loop is a fake.
  */
 class AutonomousSessionWorld {
-
-    var boroughDir: java.nio.file.Path = java.nio.file.Files.createTempDirectory("svo-world")
+    var boroughDir: java.nio.file.Path =
+        java.nio.file.Files
+            .createTempDirectory("svo-world")
     var executedIntentions: MutableList<String> = mutableListOf()
     var report: AutonomousSessionReport? = null
     var resumptionContent: String? = null

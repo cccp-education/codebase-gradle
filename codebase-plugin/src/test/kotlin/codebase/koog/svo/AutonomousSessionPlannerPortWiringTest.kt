@@ -22,10 +22,11 @@ import kotlin.test.assertTrue
  * `--borough`/planner path was dead. These tests pin the resolution seam.
  */
 class AutonomousSessionPlannerPortWiringTest {
-
     private class RecordingPort : PlannerPort {
-        override fun plan(intention: String, context: CompositeContext): PlanState =
-            PlanState(intention = intention)
+        override fun plan(
+            intention: String,
+            context: CompositeContext,
+        ): PlanState = PlanState(intention = intention)
     }
 
     /** Faithful mirror of planner's `PlannerPortBuildService` (port via registry). */
@@ -36,6 +37,7 @@ class AutonomousSessionPlannerPortWiringTest {
 
     abstract class TestPortService : BuildService<TestPortService.Params> {
         interface Params : BuildServiceParameters
+
         fun port(): PlannerPort = TestPortRegistry.port ?: PlannerPort.NoOp
     }
 
@@ -70,10 +72,11 @@ class AutonomousSessionPlannerPortWiringTest {
 
         assertFalse(resolved === TestPortRegistry.port, "no wire → degraded fallback")
         assertTrue(
-            resolved.plan(
-                "x",
-                CompositeContext("", "", "", config = contracts.context.CompositeContextConfig()),
-            ).error != null,
+            resolved
+                .plan(
+                    "x",
+                    CompositeContext("", "", "", config = contracts.context.CompositeContextConfig()),
+                ).error != null,
             "NoOp must return a failed PlanState",
         )
     }

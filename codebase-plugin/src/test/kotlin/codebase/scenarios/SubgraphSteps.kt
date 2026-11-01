@@ -8,8 +8,9 @@ import io.cucumber.java.en.When
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class SubgraphSteps(private val world: SubgraphWorld) {
-
+class SubgraphSteps(
+    private val world: SubgraphWorld,
+) {
     @Given("a synthetic graph.json with 3 nodes, 1 edge and 1 community")
     fun `synthetic graph in office`() {
         world.ensureWorkspace()
@@ -66,7 +67,7 @@ class SubgraphSteps(private val world: SubgraphWorld) {
         assertNotNull(ctx, "AgentContext should be loaded")
         assertTrue(
             ctx.graphRelations.contains("[Graphify] subgraph:"),
-            "graphRelations should contain subgraph header. Content: ${ctx.graphRelations.take(300)}"
+            "graphRelations should contain subgraph header. Content: ${ctx.graphRelations.take(300)}",
         )
     }
 
@@ -76,7 +77,7 @@ class SubgraphSteps(private val world: SubgraphWorld) {
         assertNotNull(ctx)
         assertTrue(
             ctx.graphRelations.contains("bakery/BakeryPlugin.adoc"),
-            "graphRelations should contain node. Content: ${ctx.graphRelations.take(300)}"
+            "graphRelations should contain node. Content: ${ctx.graphRelations.take(300)}",
         )
     }
 
@@ -86,7 +87,7 @@ class SubgraphSteps(private val world: SubgraphWorld) {
         assertNotNull(channel)
         assertTrue(
             channel.content.contains("non trouve") || channel.content.contains("not found"),
-            "Should fall back to missing file message. Content: ${channel.content.take(300)}"
+            "Should fall back to missing file message. Content: ${channel.content.take(300)}",
         )
     }
 
@@ -96,7 +97,7 @@ class SubgraphSteps(private val world: SubgraphWorld) {
         assertNotNull(channel)
         assertTrue(
             channel.content.contains("non trouve") || channel.content.contains("not found"),
-            "Should fall back to missing file message. Content: ${channel.content.take(300)}"
+            "Should fall back to missing file message. Content: ${channel.content.take(300)}",
         )
     }
 }

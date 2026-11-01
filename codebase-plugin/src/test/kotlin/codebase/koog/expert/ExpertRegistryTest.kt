@@ -1,11 +1,13 @@
 package codebase.koog.expert
 
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class ExpertRegistryTest {
-
     private lateinit var registry: ExpertRegistry
     private val kotlinDomain = ExpertDomain("kotlin", "Kotlin, Gradle, JVM ecosystem")
     private val docsDomain = ExpertDomain("docs", "Documentation, AsciiDoc, technical writing")
@@ -33,11 +35,13 @@ class ExpertRegistryTest {
 
     @Test
     fun `register multiple experts`() {
-        registry.registerAll(listOf(
-            ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud"),
-            ExpertRegistration(docsDomain, "gpt-oss:120b-cloud"),
-            ExpertRegistration(generalDomain, "gemma4:31b-cloud")
-        ))
+        registry.registerAll(
+            listOf(
+                ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud"),
+                ExpertRegistration(docsDomain, "gpt-oss:120b-cloud"),
+                ExpertRegistration(generalDomain, "gemma4:31b-cloud"),
+            ),
+        )
 
         assertEquals(3, registry.size())
         assertEquals(3, registry.listDomains().size)
@@ -84,10 +88,12 @@ class ExpertRegistryTest {
 
     @Test
     fun `clear empties registry`() {
-        registry.registerAll(listOf(
-            ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud"),
-            ExpertRegistration(docsDomain, "gpt-oss:120b-cloud")
-        ))
+        registry.registerAll(
+            listOf(
+                ExpertRegistration(kotlinDomain, "gpt-oss:120b-cloud"),
+                ExpertRegistration(docsDomain, "gpt-oss:120b-cloud"),
+            ),
+        )
         assertEquals(2, registry.size())
 
         registry.clear()
@@ -101,6 +107,4 @@ class ExpertRegistryTest {
         assertEquals("http://localhost:11437", reg.baseUrl)
         assertEquals(120, reg.timeoutSeconds)
     }
-
-
 }

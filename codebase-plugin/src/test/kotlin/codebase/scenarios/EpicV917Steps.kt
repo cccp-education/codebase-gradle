@@ -14,7 +14,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class EpicV917Steps {
-
     private lateinit var tempDir: Path
     private var extensionDsl: String = ""
     private var strictFromTask: Boolean = false
@@ -32,7 +31,10 @@ class EpicV917Steps {
     }
 
     @Given("the gradle property {string} is set to {string}")
-    fun `gradle property set`(key: String, value: String) {
+    fun `gradle property set`(
+        key: String,
+        value: String,
+    ) {
         File(tempDir.toFile(), "gradle.properties").writeText("$key=$value")
     }
 
@@ -58,10 +60,12 @@ class EpicV917Steps {
     }
 
     private fun buildProjectAndCaptureStrict(dsl: String) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-v9-17-dsl")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-v9-17-dsl")
+                .build()
 
         project.plugins.apply(CodebasePlugin::class.java)
         if (dsl.isNotBlank()) {

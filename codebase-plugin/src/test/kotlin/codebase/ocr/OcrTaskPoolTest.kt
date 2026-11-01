@@ -1,12 +1,7 @@
 package codebase.ocr
 
 import codebase.koog.llm.FakeVisionProvider
-import codebase.koog.llm.pool.GeminiKeyPool
 import codebase.koog.llm.pool.GeminiPoolFactory
-import contracts.llmpool.LlmInstance
-import contracts.llmpool.QuotaConfig
-import contracts.llmpool.ResetPolicy
-import contracts.llmpool.RotationStrategy
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -16,10 +11,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class OcrTaskPoolTest {
-
     @Test
-    fun `OcrTask with geminiApiKeys builds provider with pool rotation`(@TempDir dir: Path) {
-        val project = ProjectBuilder.builder().withProjectDir(dir.toFile()).withName("ocr-pool").build()
+    fun `OcrTask with geminiApiKeys builds provider with pool rotation`(
+        @TempDir dir: Path,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(dir.toFile())
+                .withName("ocr-pool")
+                .build()
         project.pluginManager.apply(codebase.CodebasePlugin::class.java)
 
         val imgFile = File(dir.toFile(), "scan.png")
@@ -31,21 +32,28 @@ class OcrTaskPoolTest {
         task.ocrLanguage.set("fr")
         task.outputFormat.set("asciidoc")
         task.geminiApiKeys = listOf("key-A", "key-B", "key-C")
-        task.geminiVisionProvider = FakeVisionProvider(
-            GeminiPoolFactory.fromKeys(listOf("key-A", "key-B", "key-C"))
-        )
+        task.geminiVisionProvider =
+            FakeVisionProvider(
+                GeminiPoolFactory.fromKeys(listOf("key-A", "key-B", "key-C")),
+            )
 
         task.executeOcr()
 
-        val outFile = project.layout.buildDirectory.dir("ocr").get().asFile
-            .resolve("scan_ocr.adoc")
+        val outFile =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
+                .resolve("scan_ocr.adoc")
         assertTrue(outFile.exists(), "OCR output should exist: ${outFile.absolutePath}")
         val content = outFile.readText(Charsets.UTF_8)
         assertTrue(content.contains("FakeVisionProvider"), "Output should come from FakeVisionProvider. Got:\n$content")
     }
 
     @Test
-    fun `GeminiPoolFactory fromKeys builds pool usable by OcrTask`(@TempDir dir: Path) {
+    fun `GeminiPoolFactory fromKeys builds pool usable by OcrTask`(
+        @TempDir dir: Path,
+    ) {
         val keys = listOf("secret-1", "secret-2")
         val pool = GeminiPoolFactory.fromKeys(keys)
         assertEquals(2, pool.size())
@@ -57,8 +65,15 @@ class OcrTaskPoolTest {
     }
 
     @Test
-    fun `OcrTask with geminiApiKeys rotates on HTTP 429`(@TempDir dir: Path) {
-        val project = ProjectBuilder.builder().withProjectDir(dir.toFile()).withName("ocr-429").build()
+    fun `OcrTask with geminiApiKeys rotates on HTTP 429`(
+        @TempDir dir: Path,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(dir.toFile())
+                .withName("ocr-429")
+                .build()
         project.pluginManager.apply(codebase.CodebasePlugin::class.java)
 
         val imgFile = File(dir.toFile(), "scan429.png")
@@ -77,8 +92,13 @@ class OcrTaskPoolTest {
 
         task.executeOcr()
 
-        val content = project.layout.buildDirectory.dir("ocr").get().asFile
-            .resolve("scan429_ocr.adoc").readText(Charsets.UTF_8)
+        val content =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
+                .resolve("scan429_ocr.adoc")
+                .readText(Charsets.UTF_8)
         assertTrue(content.contains("FakeVisionProvider"))
 
         val first = pool.nextInstance()

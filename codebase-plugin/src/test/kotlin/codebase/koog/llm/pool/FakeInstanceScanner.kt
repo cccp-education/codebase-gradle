@@ -11,27 +11,29 @@ import contracts.llmpool.LlmInstance
  * [livePorts], avec le modèle demandé.
  */
 class FakeInstanceScanner(
-    private val livePorts: Set<Int>
+    private val livePorts: Set<Int>,
 ) : InstanceScanner {
-
-    override suspend fun probe(baseUrl: String, port: Int, model: String): LlmInstance? {
-        return if (port in livePorts) {
+    override suspend fun probe(
+        baseUrl: String,
+        port: Int,
+        model: String,
+    ): LlmInstance? =
+        if (port in livePorts) {
             LlmInstance(
                 id = "ollama-$port",
                 baseUrl = "$baseUrl:$port",
-                model = model
+                model = model,
             )
         } else {
             null
         }
-    }
 }
 
 /**
  * Fake [EnvironmentReader] pour les tests unitaires.
  */
 class FakeEnvironmentReader(
-    private val values: Map<String, String>
+    private val values: Map<String, String>,
 ) : EnvironmentReader {
     override fun get(name: String): String? = values[name]
 }

@@ -10,10 +10,10 @@ import io.cucumber.java.en.When
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
-class TranslationSteps(private val world: TranslationWorld) {
-
+class TranslationSteps(
+    private val world: TranslationWorld,
+) {
     @Given("a FakeLlmTranslator without enqueued results")
     fun `fake translator empty`() {
         world.reset()
@@ -23,17 +23,19 @@ class TranslationSteps(private val world: TranslationWorld) {
     @Given("a FakeLlmTranslator with one enqueued success {string}")
     fun `fake translator with success`(text: String) {
         world.reset()
-        world.translator = FakeLlmTranslator().apply {
-            enqueueResult(TranslationResult.Success(text))
-        }
+        world.translator =
+            FakeLlmTranslator().apply {
+                enqueueResult(TranslationResult.Success(text))
+            }
     }
 
     @Given("a FakeLlmTranslator with one enqueued failure {string}")
     fun `fake translator with failure`(reason: String) {
         world.reset()
-        world.translator = FakeLlmTranslator().apply {
-            enqueueResult(TranslationResult.Failure(reason))
-        }
+        world.translator =
+            FakeLlmTranslator().apply {
+                enqueueResult(TranslationResult.Failure(reason))
+            }
     }
 
     @Given("an LlmTranslator backed by a FakeLlmProvider returning {string}")
@@ -45,12 +47,20 @@ class TranslationSteps(private val world: TranslationWorld) {
     }
 
     @When("I request translation of {string} from {string} to {string}")
-    fun `request translation`(sourceText: String, src: String, tgt: String) {
+    fun `request translation`(
+        sourceText: String,
+        src: String,
+        tgt: String,
+    ) {
         world.executeTranslation(sourceText, src, tgt)
     }
 
     @When("I attempt to request translation of {string} from {string} to {string}")
-    fun `attempt translation`(sourceText: String, src: String, tgt: String) {
+    fun `attempt translation`(
+        sourceText: String,
+        src: String,
+        tgt: String,
+    ) {
         world.attemptTranslation(sourceText, src, tgt)
     }
 
@@ -77,7 +87,10 @@ class TranslationSteps(private val world: TranslationWorld) {
     }
 
     @Then("the translator recorded one request with source {string} and target {string}")
-    fun `recorded request`(src: String, tgt: String) {
+    fun `recorded request`(
+        src: String,
+        tgt: String,
+    ) {
         val fake = world.fakeTranslator()
         assertEquals(1, fake.requestsReceived.size)
         val req = fake.requestsReceived.first()

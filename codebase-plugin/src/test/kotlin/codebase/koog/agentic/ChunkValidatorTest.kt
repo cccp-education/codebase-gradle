@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import java.security.MessageDigest
 
 class ChunkValidatorTest {
-
     private val validator = ChunkValidator()
 
     private fun sha256(input: String): String {
@@ -18,31 +17,32 @@ class ChunkValidatorTest {
     private fun assertHasError(
         result: ValidationResult,
         errorType: ChunkValidationErrorType,
-        messageFragment: String
+        messageFragment: String,
     ) {
         assertTrue(
             result.errors.any { it.errorType == errorType && it.message.contains(messageFragment, ignoreCase = true) },
-            "Expected error of type $errorType containing '$messageFragment', got ${result.errors}"
+            "Expected error of type $errorType containing '$messageFragment', got ${result.errors}",
         )
     }
 
     private fun validChunk(
         content: String = "**INTERDICTION FORMELLE** de committer sans permission",
         checksum: String = sha256(content),
-        id: String = sha256("AGENT.adoc:1-3:$content")
-    ): AgenticChunk = AgenticChunk(
-        id = id,
-        sourceFile = "AGENT.adoc",
-        sourceLines = "1-3",
-        chunkType = ChunkType.RULE,
-        content = content,
-        verb = TaxonomyVerb.INTERDIRE,
-        domain = "codebase",
-        dagLevel = DagLevel.N1,
-        circle = 4,
-        weight = 1.0,
-        checksum = checksum
-    )
+        id: String = sha256("AGENT.adoc:1-3:$content"),
+    ): AgenticChunk =
+        AgenticChunk(
+            id = id,
+            sourceFile = "AGENT.adoc",
+            sourceLines = "1-3",
+            chunkType = ChunkType.RULE,
+            content = content,
+            verb = TaxonomyVerb.INTERDIRE,
+            domain = "codebase",
+            dagLevel = DagLevel.N1,
+            circle = 4,
+            weight = 1.0,
+            checksum = checksum,
+        )
 
     @Test
     fun `should validate a well-formed chunk as valid`() {

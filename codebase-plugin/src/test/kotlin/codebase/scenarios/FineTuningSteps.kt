@@ -32,8 +32,9 @@ import kotlin.test.assertTrue
  * ([FakeFineTuner], [StubRegistryClient], [FakeFineTuningLlm],
  * [StubPromptBuilder]).
  */
-class FineTuningSteps(private val world: FineTuningWorld) {
-
+class FineTuningSteps(
+    private val world: FineTuningWorld,
+) {
     @Given("a finetuning world is initialized")
     fun `finetuning world initialized`() {
         world.ensureInitialized()
@@ -42,90 +43,115 @@ class FineTuningSteps(private val world: FineTuningWorld) {
 
     @Given("a finetuning pipeline wired to an Ollama registry returning success")
     fun `pipeline wired to success registry`() {
-        val stub = StubRegistryClient(
-            createResponse = RegistryResponse.ok(),
-            pushResponse = RegistryResponse.ok(),
-        )
+        val stub =
+            StubRegistryClient(
+                createResponse = RegistryResponse.ok(),
+                pushResponse = RegistryResponse.ok(),
+            )
         world.registryStub = stub
-        world.pipeline = OllamaFineTunerAdapter(
-            registryClient = stub,
-            ggufOutputDir = Files.createTempDirectory("finetuning-cucumber").toFile().toPath(),
-        )
+        world.pipeline =
+            OllamaFineTunerAdapter(
+                registryClient = stub,
+                ggufOutputDir = Files.createTempDirectory("finetuning-cucumber").toFile().toPath(),
+            )
     }
 
     @Given("a finetuning pipeline wired to an Ollama registry returning a 503 failure")
     fun `pipeline wired to 503 registry`() {
-        val stub = StubRegistryClient(
-            createResponse = RegistryResponse.fail(503, "service unavailable"),
-            pushResponse = RegistryResponse.ok(),
-        )
+        val stub =
+            StubRegistryClient(
+                createResponse = RegistryResponse.fail(503, "service unavailable"),
+                pushResponse = RegistryResponse.ok(),
+            )
         world.registryStub = stub
-        world.pipeline = OllamaFineTunerAdapter(
-            registryClient = stub,
-            ggufOutputDir = Files.createTempDirectory("finetuning-cucumber").toFile().toPath(),
-        )
+        world.pipeline =
+            OllamaFineTunerAdapter(
+                registryClient = stub,
+                ggufOutputDir = Files.createTempDirectory("finetuning-cucumber").toFile().toPath(),
+            )
     }
 
     @Given("a finetuning graph with a fake LLM proposing ratio {double}, validating {double} then {double}, and a fake pipeline always succeeding")
-    fun `graph with loop llm`(proposeRatio: Double, firstScore: Double, secondScore: Double) {
-        val llm = FakeFineTuningLlm(
-            proposeResponses = listOf("corpus ratio $proposeRatio", "corpus ratio $proposeRatio"),
-            validateResponses = listOf(firstScore, secondScore),
-        )
+    fun `graph with loop llm`(
+        proposeRatio: Double,
+        firstScore: Double,
+        secondScore: Double,
+    ) {
+        val llm =
+            FakeFineTuningLlm(
+                proposeResponses = listOf("corpus ratio $proposeRatio", "corpus ratio $proposeRatio"),
+                validateResponses = listOf(firstScore, secondScore),
+            )
         val pipeline = FakeFineTuner(defaultResult = fineTuningSuccessStub())
         world.fakeFineTuner = pipeline
         world.finalState = null
         world.registryStub = null
         world.pipeline = null
         // Stash the graph pieces on the world via a transient holder.
-        world.finetuningGraph = FineTuningGraph(
-            promptBuilder = StubPromptBuilder,
-            llm = llm,
-            pipeline = pipeline,
-        )
+        world.finetuningGraph =
+            FineTuningGraph(
+                promptBuilder = StubPromptBuilder,
+                llm = llm,
+                pipeline = pipeline,
+            )
     }
 
     @Given("a finetuning graph with a fake LLM proposing ratio {double}, validating {double}, and a fake pipeline always succeeding")
-    fun `graph with single pass llm`(proposeRatio: Double, score: Double) {
-        val llm = FakeFineTuningLlm(
-            proposeResponses = listOf("corpus ratio $proposeRatio"),
-            validateResponses = listOf(score),
-        )
+    fun `graph with single pass llm`(
+        proposeRatio: Double,
+        score: Double,
+    ) {
+        val llm =
+            FakeFineTuningLlm(
+                proposeResponses = listOf("corpus ratio $proposeRatio"),
+                validateResponses = listOf(score),
+            )
         val pipeline = FakeFineTuner(defaultResult = fineTuningSuccessStub())
         world.fakeFineTuner = pipeline
         world.finalState = null
         world.registryStub = null
         world.pipeline = null
-        world.finetuningGraph = FineTuningGraph(
-            promptBuilder = StubPromptBuilder,
-            llm = llm,
-            pipeline = pipeline,
-        )
+        world.finetuningGraph =
+            FineTuningGraph(
+                promptBuilder = StubPromptBuilder,
+                llm = llm,
+                pipeline = pipeline,
+            )
     }
 
     @When("the finetuning pipeline fine-tunes a request with base model {string}, dataset {string} and output model {string}")
-    fun `pipeline fine tunes`(baseModel: String, dataset: String, outputModel: String) {
-        val request = FineTuningRequest(
-            baseModel = baseModel,
-            dataset = listOf(dataset),
-            outputModelName = outputModel,
-        )
+    fun `pipeline fine tunes`(
+        baseModel: String,
+        dataset: String,
+        outputModel: String,
+    ) {
+        val request =
+            FineTuningRequest(
+                baseModel = baseModel,
+                dataset = listOf(dataset),
+                outputModelName = outputModel,
+            )
         world.result = world.pipeline!!.fineTune(request)
     }
 
     @When("the finetuning graph executes from an initial state with threshold {double} and max {int} iterations")
-    fun `graph executes`(threshold: Double, maxIterations: Int) {
-        val request = FineTuningRequest(
-            baseModel = "gpt-oss:120b-cloud",
-            dataset = listOf("docs/referential/**/*.adoc"),
-            outputModelName = "expert-coding",
-        )
-        val initial = FineTuningState(
-            request = request,
-            config = FineTuningConfig(),
-            validationThreshold = threshold,
-            maxIterations = maxIterations,
-        )
+    fun `graph executes`(
+        threshold: Double,
+        maxIterations: Int,
+    ) {
+        val request =
+            FineTuningRequest(
+                baseModel = "gpt-oss:120b-cloud",
+                dataset = listOf("docs/referential/**/*.adoc"),
+                outputModelName = "expert-coding",
+            )
+        val initial =
+            FineTuningState(
+                request = request,
+                config = FineTuningConfig(),
+                validationThreshold = threshold,
+                maxIterations = maxIterations,
+            )
         world.finalState = world.finetuningGraph!!.execute(initial)
     }
 
@@ -156,7 +182,10 @@ class FineTuningSteps(private val world: FineTuningWorld) {
     }
 
     @And("the finetuning pipeline success result reports {int} iteration and a validation score of {double}")
-    fun `success reports iterations and score`(iterations: Int, score: Double) {
+    fun `success reports iterations and score`(
+        iterations: Int,
+        score: Double,
+    ) {
         val result = world.result as FineTuningResult.Success
         assertEquals(iterations, result.iterations)
         assertEquals(score, result.validationScore, 1e-9)
@@ -167,7 +196,7 @@ class FineTuningSteps(private val world: FineTuningWorld) {
         val result = world.result as FineTuningResult.Failure
         assertTrue(
             result.reason.contains("503") || result.reason.contains("create failed"),
-            "Failure reason should mention the registry failure, got: ${result.reason}"
+            "Failure reason should mention the registry failure, got: ${result.reason}",
         )
     }
 
@@ -216,17 +245,12 @@ class FakeFineTuningLlm(
     private val proposeResponses: List<String>,
     private val validateResponses: List<Double>,
 ) : FineTuningLlm {
-
     private val proposeQueue = proposeResponses.toMutableList()
     private val validateQueue = validateResponses.toMutableList()
 
-    override fun propose(prompt: String): String {
-        return proposeQueue.removeAt(0)
-    }
+    override fun propose(prompt: String): String = proposeQueue.removeAt(0)
 
-    override fun validate(prompt: String): Double {
-        return validateQueue.removeAt(0)
-    }
+    override fun validate(prompt: String): Double = validateQueue.removeAt(0)
 }
 
 /**
@@ -238,6 +262,5 @@ object StubPromptBuilder : FineTuningPromptBuilder {
     override fun buildProposePrompt(state: FineTuningState): String =
         "propose corpus ratio adjustment for ${state.request.outputModelName} (iteration ${state.iteration})"
 
-    override fun buildValidatePrompt(state: FineTuningState): String =
-        "validate fine-tuned model ${state.request.outputModelName}"
+    override fun buildValidatePrompt(state: FineTuningState): String = "validate fine-tuned model ${state.request.outputModelName}"
 }

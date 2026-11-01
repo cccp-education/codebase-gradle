@@ -12,7 +12,6 @@ import kotlin.test.assertTrue
  * Pattern `ValidationConfig` (capsule) / `QualityGateConfig` (codebase).
  */
 class FineTuningConfigTest {
-
     @Test
     fun `defaults are retro-compatible`() {
         val config = FineTuningConfig()
@@ -77,12 +76,13 @@ class FineTuningConfigTest {
 
     @Test
     fun `boundary values are accepted`() {
-        val config = FineTuningConfig(
-            epochs = 1,
-            learningRate = 1e-6,
-            batchSize = 1,
-            continualPreTrainingRatio = 0.0
-        )
+        val config =
+            FineTuningConfig(
+                epochs = 1,
+                learningRate = 1e-6,
+                batchSize = 1,
+                continualPreTrainingRatio = 0.0,
+            )
         assertEquals(1, config.epochs)
         assertEquals(0.0, config.continualPreTrainingRatio)
     }

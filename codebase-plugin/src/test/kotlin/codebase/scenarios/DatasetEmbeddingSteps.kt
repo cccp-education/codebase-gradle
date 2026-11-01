@@ -9,20 +9,20 @@ import org.slf4j.LoggerFactory
 import java.sql.DriverManager
 
 class DatasetEmbeddingSteps {
-
     private val log = LoggerFactory.getLogger(DatasetEmbeddingSteps::class.java)
     private val ctx = PgVectorTestContext
 
     @Given("a pgvector container is running")
-    fun `a pgvector container is running`() {
+    fun aPgvectorContainerIsRunning() {
         log.info("pgvector container ready (PostgresFixture)")
     }
 
     @When("I tokenize each dataset file into sentence-level chunks of approximately 512 tokens")
-    fun `tokenize dataset files into sentence-level chunks`() {
+    fun tokenizeDatasetFilesIntoSentenceLevelChunks() {
         val datasetDir = java.io.File(ctx.DATASETS_DIR)
-        val ktFiles = datasetDir.listFiles { f -> f.isFile && f.name.endsWith(".kt") }?.sortedBy { it.name }
-            ?: throw AssertionError("No .kt files found in ${ctx.DATASETS_DIR}")
+        val ktFiles =
+            datasetDir.listFiles { f -> f.isFile && f.name.endsWith(".kt") }?.sortedBy { it.name }
+                ?: throw AssertionError("No .kt files found in ${ctx.DATASETS_DIR}")
 
         ctx.fileChunks.clear()
         for (file in ktFiles) {
@@ -36,13 +36,14 @@ class DatasetEmbeddingSteps {
     }
 
     @And("I insert the documents and chunks into the pgvector database")
-    fun `insert documents and chunks into pgvector`() {
+    fun insertDocumentsAndChunksIntoPgvector() {
         DriverManager.getConnection(ctx.jdbcUrl(), ctx.jdbcUser(), ctx.jdbcPassword()).use { conn ->
             conn.createStatement().use { stmt ->
                 stmt.execute("CREATE EXTENSION IF NOT EXISTS vector")
                 stmt.execute("DROP TABLE IF EXISTS chunks CASCADE")
                 stmt.execute("DROP TABLE IF EXISTS documents CASCADE")
-                stmt.execute("""
+                stmt.execute(
+                    """
                     CREATE TABLE documents (
                         id BIGSERIAL PRIMARY KEY,
                         file_name TEXT NOT NULL,
@@ -54,8 +55,10 @@ class DatasetEmbeddingSteps {
                         repo_name TEXT,
                         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                     )
-                """.trimIndent())
-                stmt.execute("""
+                    """.trimIndent(),
+                )
+                stmt.execute(
+                    """
                     CREATE TABLE chunks (
                         id BIGSERIAL PRIMARY KEY,
                         document_id BIGINT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
@@ -65,7 +68,8 @@ class DatasetEmbeddingSteps {
                         embedding vector(384),
                         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                     )
-                """.trimIndent())
+                    """.trimIndent(),
+                )
             }
 
             val datasetDir = java.io.File(ctx.DATASETS_DIR)
@@ -74,42 +78,44 @@ class DatasetEmbeddingSteps {
                 val chunksForFile = ctx.fileChunks[fileName] ?: continue
 
                 val docId: Long
-                conn.prepareStatement(
-                    "INSERT INTO documents (file_name, file_path, file_size, chunk_count, package_name, class_name, repo_name) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id"
-                ).use { stmt ->
-                    stmt.setString(1, fileName)
-                    stmt.setString(2, file.path)
-                    stmt.setLong(3, file.length())
-                    stmt.setInt(4, chunksForFile.size)
-                    val (pkg, cls) = if (fileName.endsWith(".kt")) extractKotlinMetadata(file.readText(), fileName) else Pair(null, null)
-                    stmt.setString(5, pkg)
-                    stmt.setString(6, cls)
-                    stmt.setString(7, "test-dataset")
-                    stmt.executeQuery().use { rs ->
-                        rs.next()
-                        docId = rs.getLong(1)
+                conn
+                    .prepareStatement(
+                        "INSERT INTO documents (file_name, file_path, file_size, chunk_count, package_name, class_name, repo_name) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id",
+                    ).use { stmt ->
+                        stmt.setString(1, fileName)
+                        stmt.setString(2, file.path)
+                        stmt.setLong(3, file.length())
+                        stmt.setInt(4, chunksForFile.size)
+                        val (pkg, cls) = if (fileName.endsWith(".kt")) extractKotlinMetadata(file.readText(), fileName) else Pair(null, null)
+                        stmt.setString(5, pkg)
+                        stmt.setString(6, cls)
+                        stmt.setString(7, "test-dataset")
+                        stmt.executeQuery().use { rs ->
+                            rs.next()
+                            docId = rs.getLong(1)
+                        }
                     }
-                }
 
-                conn.prepareStatement(
-                    "INSERT INTO chunks (document_id, chunk_index, chunk_text, token_count) VALUES (?, ?, ?, ?)"
-                ).use { stmt ->
-                    chunksForFile.forEachIndexed { index, chunkText ->
-                        stmt.setLong(1, docId)
-                        stmt.setInt(2, index)
-                        stmt.setString(3, chunkText)
-                        stmt.setInt(4, ctx.estimateTokenCount(chunkText))
-                        stmt.addBatch()
+                conn
+                    .prepareStatement(
+                        "INSERT INTO chunks (document_id, chunk_index, chunk_text, token_count) VALUES (?, ?, ?, ?)",
+                    ).use { stmt ->
+                        chunksForFile.forEachIndexed { index, chunkText ->
+                            stmt.setLong(1, docId)
+                            stmt.setInt(2, index)
+                            stmt.setString(3, chunkText)
+                            stmt.setInt(4, ctx.estimateTokenCount(chunkText))
+                            stmt.addBatch()
+                        }
+                        stmt.executeBatch()
                     }
-                    stmt.executeBatch()
-                }
                 log.info("Inserted document '$fileName' id=$docId with ${chunksForFile.size} chunks")
             }
         }
     }
 
     @Then("the documents table has exactly {int} rows")
-    fun `documents table has exactly N rows`(expected: Int) {
+    fun documentsTableHasExactlyNRows(expected: Int) {
         DriverManager.getConnection(ctx.jdbcUrl(), ctx.jdbcUser(), ctx.jdbcPassword()).use { conn ->
             conn.createStatement().use { stmt ->
                 val rs = stmt.executeQuery("SELECT count(*) FROM documents")
@@ -122,7 +128,7 @@ class DatasetEmbeddingSteps {
     }
 
     @Then("the chunks table has more than 0 rows")
-    fun `chunks table has more than 0 rows`() {
+    fun chunksTableHasMoreThan0Rows() {
         DriverManager.getConnection(ctx.jdbcUrl(), ctx.jdbcUser(), ctx.jdbcPassword()).use { conn ->
             conn.createStatement().use { stmt ->
                 val rs = stmt.executeQuery("SELECT count(*) FROM chunks")
@@ -135,12 +141,13 @@ class DatasetEmbeddingSteps {
     }
 
     @Then("each chunk has a valid foreign key to its parent document")
-    fun `each chunk has valid FK`() {
+    fun eachChunkHasValidFK() {
         DriverManager.getConnection(ctx.jdbcUrl(), ctx.jdbcUser(), ctx.jdbcPassword()).use { conn ->
             conn.createStatement().use { stmt ->
-                val rs = stmt.executeQuery(
-                    "SELECT COUNT(*) FROM chunks c LEFT JOIN documents d ON c.document_id = d.id WHERE d.id IS NULL"
-                )
+                val rs =
+                    stmt.executeQuery(
+                        "SELECT COUNT(*) FROM chunks c LEFT JOIN documents d ON c.document_id = d.id WHERE d.id IS NULL",
+                    )
                 rs.next()
                 val orphans = rs.getInt(1)
                 assert(orphans == 0) { "Found $orphans orphaned chunks with no parent document" }
@@ -150,14 +157,14 @@ class DatasetEmbeddingSteps {
     }
 
     @When("I load the AllMiniLmL6V2 embedding model via ONNX Runtime")
-    fun `load AllMiniLmL6V2 model`() {
+    fun loadAllMiniLmL6V2Model() {
         val dim = ctx.model.dimension()
         assert(dim == 384) { "Expected dimension 384, got $dim" }
         log.info("AllMiniLmL6V2 embedding model loaded, dimension=$dim")
     }
 
     @When("I compute embeddings for all chunks")
-    fun `compute embeddings for all chunks`() {
+    fun computeEmbeddingsForAllChunks() {
         val records = mutableListOf<Pair<Long, String>>()
         DriverManager.getConnection(ctx.jdbcUrl(), ctx.jdbcUser(), ctx.jdbcPassword()).use { conn ->
             conn.createStatement().use { stmt ->
@@ -185,7 +192,7 @@ class DatasetEmbeddingSteps {
     }
 
     @Then("every chunk has a non-null embedding of dimension 384")
-    fun `every chunk has non-null embedding of dimension 384`() {
+    fun everyChunkHasNonNullEmbeddingOfDimension384() {
         DriverManager.getConnection(ctx.jdbcUrl(), ctx.jdbcUser(), ctx.jdbcPassword()).use { conn ->
             conn.createStatement().use { stmt ->
                 val rs1 = stmt.executeQuery("SELECT count(*) FROM chunks WHERE embedding IS NULL")
@@ -204,37 +211,41 @@ class DatasetEmbeddingSteps {
     }
 
     @When("I query with the phrase {string}")
-    fun `query with phrase`(query: String) {
+    fun queryWithPhrase(query: String) {
         val queryEmbedding = ctx.model.embed(TextSegment.from(query)).content()
         val queryVectorStr = queryEmbedding.vector().joinToString(",", "[", "]")
 
         DriverManager.getConnection(ctx.jdbcUrl(), ctx.jdbcUser(), ctx.jdbcPassword()).use { conn ->
-            conn.prepareStatement("""
-                SELECT c.id, c.chunk_text, d.file_name,
-                       1 - (c.embedding <=> ?::vector) AS similarity
-                FROM chunks c
-                JOIN documents d ON c.document_id = d.id
-                WHERE c.embedding IS NOT NULL
-                ORDER BY c.embedding <=> ?::vector
-                LIMIT 5
-            """.trimIndent()).use { stmt ->
-                stmt.setString(1, queryVectorStr)
-                stmt.setString(2, queryVectorStr)
-                ctx.topResults = stmt.executeQuery().use { rs ->
-                    val results = mutableListOf<PgVectorTestContext.TopResult>()
-                    while (rs.next()) {
-                        val text = "(${rs.getString("file_name")}) ${rs.getString("chunk_text")}"
-                        results.add(
-                            PgVectorTestContext.TopResult(
-                                chunkId = rs.getLong("id"),
-                                text = text,
-                                similarity = rs.getDouble("similarity")
-                            )
-                        )
-                    }
-                    results
+            conn
+                .prepareStatement(
+                    """
+                    SELECT c.id, c.chunk_text, d.file_name,
+                           1 - (c.embedding <=> ?::vector) AS similarity
+                    FROM chunks c
+                    JOIN documents d ON c.document_id = d.id
+                    WHERE c.embedding IS NOT NULL
+                    ORDER BY c.embedding <=> ?::vector
+                    LIMIT 5
+                    """.trimIndent(),
+                ).use { stmt ->
+                    stmt.setString(1, queryVectorStr)
+                    stmt.setString(2, queryVectorStr)
+                    ctx.topResults =
+                        stmt.executeQuery().use { rs ->
+                            val results = mutableListOf<PgVectorTestContext.TopResult>()
+                            while (rs.next()) {
+                                val text = "(${rs.getString("file_name")}) ${rs.getString("chunk_text")}"
+                                results.add(
+                                    PgVectorTestContext.TopResult(
+                                        chunkId = rs.getLong("id"),
+                                        text = text,
+                                        similarity = rs.getDouble("similarity"),
+                                    ),
+                                )
+                            }
+                            results
+                        }
                 }
-            }
         }
         log.info("Query returned ${ctx.topResults.size} results")
         ctx.topResults.forEach { r ->
@@ -243,7 +254,7 @@ class DatasetEmbeddingSteps {
     }
 
     @Then("the top 5 results are returned ordered by cosine similarity")
-    fun `top 5 results returned ordered by similarity`() {
+    fun top5ResultsReturnedOrderedBySimilarity() {
         val results = ctx.topResults
         assert(results.size == 5) { "Expected 5 results, got ${results.size}" }
         for (i in 0 until results.size - 1) {
@@ -256,15 +267,16 @@ class DatasetEmbeddingSteps {
     }
 
     @Then("the highest-ranked chunk is semantically related to database task retrieval")
-    fun `highest-ranked chunk is about database task retrieval`() {
+    fun highestRankedChunkIsAboutDatabaseTaskRetrieval() {
         val top = ctx.topResults.first()
-        val relevance = top.text.contains("task", ignoreCase = true) ||
-            top.text.contains("SELECT", ignoreCase = false) ||
-            top.text.contains("tasks", ignoreCase = false) ||
-            top.text.contains("TaskRepository", ignoreCase = false) ||
-            top.text.contains("find", ignoreCase = true) ||
-            top.text.contains("repository", ignoreCase = true) ||
-            top.text.contains("database", ignoreCase = true)
+        val relevance =
+            top.text.contains("task", ignoreCase = true) ||
+                top.text.contains("SELECT", ignoreCase = false) ||
+                top.text.contains("tasks", ignoreCase = false) ||
+                top.text.contains("TaskRepository", ignoreCase = false) ||
+                top.text.contains("find", ignoreCase = true) ||
+                top.text.contains("repository", ignoreCase = true) ||
+                top.text.contains("database", ignoreCase = true)
 
         assert(relevance) {
             "Top chunk is not semantically related to task/database retrieval. " +
@@ -275,18 +287,23 @@ class DatasetEmbeddingSteps {
 
     companion object {
         private val packageRegex = Regex("""^\s*package\s+([\w.]+)""", RegexOption.MULTILINE)
-        private val typeRegex = Regex("""^\s*(?:data\s+)?(?:sealed\s+)?(?:open\s+)?(?:abstract\s+)?(?:enum\s+)?(?:inner\s+)?class\s+(\w+)""", RegexOption.MULTILINE)
+        private val typeRegex =
+            Regex("""^\s*(?:data\s+)?(?:sealed\s+)?(?:open\s+)?(?:abstract\s+)?(?:enum\s+)?(?:inner\s+)?class\s+(\w+)""", RegexOption.MULTILINE)
         private val objectRegex = Regex("""^\s*(?:data\s+)?object\s+(\w+)""", RegexOption.MULTILINE)
         private val interfaceRegex = Regex("""^\s*(?:fun\s+)?interface\s+(\w+)""", RegexOption.MULTILINE)
 
-        fun extractKotlinMetadata(content: String, fileName: String): Pair<String?, String?> {
+        fun extractKotlinMetadata(
+            content: String,
+            fileName: String,
+        ): Pair<String?, String?> {
             val pkg = packageRegex.find(content)?.groupValues?.get(1)
             val allClasses = mutableListOf<String>()
             typeRegex.findAll(content).mapTo(allClasses) { it.groupValues[1] }
             objectRegex.findAll(content).mapTo(allClasses) { it.groupValues[1] }
             interfaceRegex.findAll(content).mapTo(allClasses) { it.groupValues[1] }
-            val cls = allClasses.lastOrNull()
-                ?: fileName.removeSuffix(".kt")
+            val cls =
+                allClasses.lastOrNull()
+                    ?: fileName.removeSuffix(".kt")
             return pkg to cls
         }
     }

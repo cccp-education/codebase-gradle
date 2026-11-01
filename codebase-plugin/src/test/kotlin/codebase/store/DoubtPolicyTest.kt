@@ -15,20 +15,20 @@ import org.junit.jupiter.api.Test
  * object (GREEN).
  */
 class DoubtPolicyTest {
-
     private fun chunk(
         content: String = "clean content",
         sectionPath: String = "Chapter 1 > Section 1.2",
-        overlapNext: String? = null
-    ): DocumentChunk = DocumentChunk(
-        id = "chk-0000000000000001",
-        sourceDocument = "book",
-        sectionPath = sectionPath,
-        headingLevel = 2,
-        content = content,
-        overlapNext = overlapNext,
-        license = "PROPRIETARY"
-    )
+        overlapNext: String? = null,
+    ): DocumentChunk =
+        DocumentChunk(
+            id = "chk-0000000000000001",
+            sourceDocument = "book",
+            sectionPath = sectionPath,
+            headingLevel = 2,
+            content = content,
+            overlapNext = overlapNext,
+            license = "PROPRIETARY",
+        )
 
     @Test
     fun `content carrying the ILLISIBLE marker is doubtful with zero confidence`() {
@@ -60,11 +60,12 @@ class DoubtPolicyTest {
 
     @Test
     fun `mark wraps every chunk with its derived doubt`() {
-        val chunks = listOf(
-            chunk(content = "page [ILLISIBLE]"),
-            chunk(),
-            chunk(content = "another clean page")
-        )
+        val chunks =
+            listOf(
+                chunk(content = "page [ILLISIBLE]"),
+                chunk(),
+                chunk(content = "another clean page"),
+            )
         val marked = DoubtPolicy.mark(chunks)
         assertEquals(chunks.size, marked.size)
         assertTrue(marked[0].doubt.doubtful)

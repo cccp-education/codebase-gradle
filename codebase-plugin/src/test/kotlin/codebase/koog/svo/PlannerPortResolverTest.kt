@@ -11,10 +11,13 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class PlannerPortResolverTest {
-
     private class RecordingPort : PlannerPort {
         val calls = mutableListOf<Pair<String, String>>()
-        override fun plan(intention: String, context: contracts.context.CompositeContext): PlanState {
+
+        override fun plan(
+            intention: String,
+            context: contracts.context.CompositeContext,
+        ): PlanState {
             calls += intention to context.eagerSection
             return PlanState(intention = intention)
         }
@@ -23,15 +26,21 @@ class PlannerPortResolverTest {
     /** Fake BuildService exposing the port() method (mirror planner's PlannerPortBuildService). */
     private abstract class FakePortService : BuildService<FakePortService.Params> {
         interface Params : BuildServiceParameters
+
         abstract fun port(): PlannerPort
     }
 
-    private fun portService(port: PlannerPort): BuildService<*> = object : FakePortService() {
-        override fun port(): PlannerPort = port
-        override fun getParameters(): Params = object : Params {}
-    }
+    private fun portService(port: PlannerPort): BuildService<*> =
+        object : FakePortService() {
+            override fun port(): PlannerPort = port
 
-    private val project = org.gradle.testfixtures.ProjectBuilder.builder().build()
+            override fun getParameters(): Params = object : Params {}
+        }
+
+    private val project =
+        org.gradle.testfixtures.ProjectBuilder
+            .builder()
+            .build()
     private val propertyFactory = project.objects
 
     @Suppress("UNCHECKED_CAST")
@@ -60,12 +69,14 @@ class PlannerPortResolverTest {
     @Test
     fun `resolves by canonical service name when service is present`() {
         val port = RecordingPort()
-        val resolved = PlannerPortResolver.resolve(
-            registrations = listOf(
-                registration("unrelated", null),
-                registration(PlannerPortResolver.CANONICAL_SERVICE_NAME, portService(port)),
-            ),
-        )
+        val resolved =
+            PlannerPortResolver.resolve(
+                registrations =
+                    listOf(
+                        registration("unrelated", null),
+                        registration(PlannerPortResolver.CANONICAL_SERVICE_NAME, portService(port)),
+                    ),
+            )
         assertSame(port, resolved, "wired adapter must win")
     }
 
@@ -77,17 +88,18 @@ class PlannerPortResolverTest {
 
     @Test
     fun `service not exposing port falls back to NoOp`() {
-        val resolved = PlannerPortResolver.resolve(
-            registrations = listOf(
-                registration(
-                    PlannerPortResolver.CANONICAL_SERVICE_NAME,
-                    object : BuildService<BuildServiceParameters> {
-                        override fun getParameters(): BuildServiceParameters =
-                            throw UnsupportedOperationException("test fake — port-less service")
-                    },
-                ),
-            ),
-        )
+        val resolved =
+            PlannerPortResolver.resolve(
+                registrations =
+                    listOf(
+                        registration(
+                            PlannerPortResolver.CANONICAL_SERVICE_NAME,
+                            object : BuildService<BuildServiceParameters> {
+                                override fun getParameters(): BuildServiceParameters = throw UnsupportedOperationException("test fake — port-less service")
+                            },
+                        ),
+                    ),
+            )
         assertSame(PlannerPort.NoOp, resolved)
     }
 

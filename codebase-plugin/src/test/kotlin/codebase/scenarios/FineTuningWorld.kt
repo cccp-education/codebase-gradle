@@ -1,16 +1,14 @@
 package codebase.scenarios
 
+import codebase.finetuning.CreateModelRequest
 import codebase.finetuning.FakeFineTuner
 import codebase.finetuning.FineTuningGraph
 import codebase.finetuning.FineTuningPipeline
 import codebase.finetuning.FineTuningResult
 import codebase.finetuning.FineTuningState
-import codebase.finetuning.OllamaFineTunerAdapter
 import codebase.finetuning.OllamaRegistryClient
-import codebase.finetuning.RegistryResponse
-import codebase.finetuning.CreateModelRequest
 import codebase.finetuning.PushModelRequest
-import java.nio.file.Files
+import codebase.finetuning.RegistryResponse
 
 /**
  * Shared world for `@finetuning` scenarios (EPIC FT-PIPELINE US-5).
@@ -27,7 +25,6 @@ import java.nio.file.Files
  * one fresh instance per scenario via the `@Given` init step).
  */
 class FineTuningWorld {
-
     var registryStub: StubRegistryClient? = null
     var pipeline: FineTuningPipeline? = null
     var fakeFineTuner: FakeFineTuner? = null
@@ -49,7 +46,6 @@ class StubRegistryClient(
     private val createResponse: RegistryResponse = RegistryResponse.ok(),
     private val pushResponse: RegistryResponse = RegistryResponse.ok(),
 ) : OllamaRegistryClient {
-
     var lastCreateRequest: CreateModelRequest? = null
         private set
     var lastPushRequest: PushModelRequest? = null

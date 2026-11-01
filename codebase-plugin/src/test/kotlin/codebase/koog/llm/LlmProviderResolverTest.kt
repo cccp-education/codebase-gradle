@@ -23,7 +23,6 @@ import kotlin.test.assertIs
  * - Autre chaîne → OllamaLlmProvider avec cette chaîne comme model name
  */
 class LlmProviderResolverTest {
-
     @AfterEach
     fun resetScannerFactory() {
         LlmProviderResolver.scannerFactory = { OllamaInstanceScanner() }
@@ -68,9 +67,11 @@ class LlmProviderResolverTest {
 
     @Test
     fun `resolve ollama uses OLLAMA_POOL_PORTS when set`() {
-        LlmProviderResolver.environmentReader = { EnvironmentReader { env ->
-            if (env == "OLLAMA_POOL_PORTS") "11450" else null
-        } }
+        LlmProviderResolver.environmentReader = {
+            EnvironmentReader { env ->
+                if (env == "OLLAMA_POOL_PORTS") "11450" else null
+            }
+        }
         injectFakeScanner(livePorts = setOf(11450))
         val provider = LlmProviderResolver.resolve("ollama")
         assertIs<OllamaLlmProvider>(provider)
@@ -79,24 +80,28 @@ class LlmProviderResolverTest {
 
     @Test
     fun `resolve ollama cycles authorized models across OLLAMA_POOL_PORTS`() {
-        LlmProviderResolver.environmentReader = { EnvironmentReader { env ->
-            if (env == "OLLAMA_POOL_PORTS") "11450,11451,11452" else null
-        } }
+        LlmProviderResolver.environmentReader = {
+            EnvironmentReader { env ->
+                if (env == "OLLAMA_POOL_PORTS") "11450,11451,11452" else null
+            }
+        }
         val provider = LlmProviderResolver.resolve("ollama")
         assertIs<OllamaLlmProvider>(provider)
         val models = provider.pool.instances().map { it.model }
         assertEquals(
             listOf("gpt-oss:120b-cloud", "gemma4:31b-cloud", "gpt-oss:120b-cloud"),
             models,
-            "Models should cycle across explicit ports, not all use DEFAULT_MODEL"
+            "Models should cycle across explicit ports, not all use DEFAULT_MODEL",
         )
     }
 
     @Test
     fun `resolve ollama falls back to scanner when OLLAMA_SCAN_PORTS is true`() {
-        LlmProviderResolver.environmentReader = { EnvironmentReader { env ->
-            if (env == "OLLAMA_SCAN_PORTS") "true" else null
-        } }
+        LlmProviderResolver.environmentReader = {
+            EnvironmentReader { env ->
+                if (env == "OLLAMA_SCAN_PORTS") "true" else null
+            }
+        }
         injectFakeScanner(livePorts = setOf(11437, 11438))
         val provider = LlmProviderResolver.resolve("ollama")
         assertIs<OllamaLlmProvider>(provider)
@@ -104,15 +109,20 @@ class LlmProviderResolverTest {
 
     @Test
     fun `resolve ollama scanner fallback is case insensitive`() {
-        LlmProviderResolver.environmentReader = { EnvironmentReader { env ->
-            if (env == "OLLAMA_SCAN_PORTS") "TRUE" else null
-        } }
+        LlmProviderResolver.environmentReader = {
+            EnvironmentReader { env ->
+                if (env == "OLLAMA_SCAN_PORTS") "TRUE" else null
+            }
+        }
         injectFakeScanner(livePorts = setOf(11437))
         val provider = LlmProviderResolver.resolve("ollama")
         assertIs<OllamaLlmProvider>(provider)
     }
 
-    private fun assertPoolHasFactoryInstances(provider: OllamaLlmProvider, count: Int) {
+    private fun assertPoolHasFactoryInstances(
+        provider: OllamaLlmProvider,
+        count: Int,
+    ) {
         val pool = provider.pool
         assertEquals(count, pool.size(), "Pool should contain $count deterministic factory instances")
         val expected = OllamaInstanceFactory.create()
@@ -123,7 +133,10 @@ class LlmProviderResolverTest {
         assertEquals(expected.map { it.volumeTag }, actual.map { it.volumeTag })
     }
 
-    private fun assertPoolHasExplicitPort(provider: OllamaLlmProvider, port: Int) {
+    private fun assertPoolHasExplicitPort(
+        provider: OllamaLlmProvider,
+        port: Int,
+    ) {
         val urls = provider.pool.instances().map { it.baseUrl }
         assertEquals(listOf("http://localhost:$port"), urls)
     }
@@ -131,18 +144,26 @@ class LlmProviderResolverTest {
     private val OllamaLlmProvider.pool: OllamaPool
         get() {
             val adapter = javaClass.getDeclaredField("adapter").apply { isAccessible = true }.get(this)
-            return adapter.javaClass.getDeclaredField("pool").apply { isAccessible = true }.get(adapter) as OllamaPool
+            return adapter.javaClass
+                .getDeclaredField("pool")
+                .apply { isAccessible = true }
+                .get(adapter) as OllamaPool
         }
 
     private fun injectFakeScanner(
         livePorts: Set<Int>,
-        env: Map<String, String> = emptyMap()
+        env: Map<String, String> = emptyMap(),
     ) {
-        val scanner = object : InstanceScanner {
-            private val delegate = FakeInstanceScanner(livePorts)
-            override suspend fun probe(baseUrl: String, port: Int, model: String) =
-                delegate.probe(baseUrl, port, model)
-        }
+        val scanner =
+            object : InstanceScanner {
+                private val delegate = FakeInstanceScanner(livePorts)
+
+                override suspend fun probe(
+                    baseUrl: String,
+                    port: Int,
+                    model: String,
+                ) = delegate.probe(baseUrl, port, model)
+            }
         val envReader = FakeEnvironmentReader(env)
         LlmProviderResolver.scannerFactory = {
             OllamaInstanceScanner(scanner, envReader)

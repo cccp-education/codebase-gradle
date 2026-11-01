@@ -3,70 +3,77 @@ package codebase.koog.llm
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
-import java.awt.image.BufferedImage
 
 class FakeOllamaOcrProviderTest {
+    @Test
+    fun `processImage returns structured AsciiDoc without network call`() =
+        runBlocking {
+            val provider = FakeOllamaOcrProvider()
+            val fakePng = createFakeImage(100, 50)
+            val result = provider.processImage(fakePng, "image/png", "fr", "gpt-oss:120b-cloud")
+
+            assertTrue(result.contains("= Titre Principal"), "Should have FR title, got: $result")
+            assertTrue(result.contains("FakeOllamaOcrProvider"))
+            assertTrue(result.contains("Confiance: haute"))
+            assertTrue(result.contains("Section 1"))
+            assertTrue(result.contains("Section 2"))
+            assertTrue(result.contains("| Colonne A"))
+            assertTrue(result.contains("| Valeur 1"))
+            assertTrue(result.contains("Premier élément de liste"))
+            assertTrue(result.contains("caractères gras"))
+        }
 
     @Test
-    fun `processImage returns structured AsciiDoc without network call`() = runBlocking {
-        val provider = FakeOllamaOcrProvider()
-        val fakePng = createFakeImage(100, 50)
-        val result = provider.processImage(fakePng, "image/png", "fr", "gpt-oss:120b-cloud")
+    fun `processImage adapts title to language`() =
+        runBlocking {
+            val provider = FakeOllamaOcrProvider()
+            val fakePng = createFakeImage(50, 50)
 
-        assertTrue(result.contains("= Titre Principal"), "Should have FR title, got: $result")
-        assertTrue(result.contains("FakeOllamaOcrProvider"))
-        assertTrue(result.contains("Confiance: haute"))
-        assertTrue(result.contains("Section 1"))
-        assertTrue(result.contains("Section 2"))
-        assertTrue(result.contains("| Colonne A"))
-        assertTrue(result.contains("| Valeur 1"))
-        assertTrue(result.contains("Premier élément de liste"))
-        assertTrue(result.contains("caractères gras"))
-    }
+            val fr = provider.processImage(fakePng, "image/png", "fr", "gpt-oss:120b-cloud")
+            assertTrue(fr.contains("= Titre Principal"))
 
-    @Test
-    fun `processImage adapts title to language`() = runBlocking {
-        val provider = FakeOllamaOcrProvider()
-        val fakePng = createFakeImage(50, 50)
+            val en = provider.processImage(fakePng, "image/png", "en", "gpt-oss:120b-cloud")
+            assertTrue(en.contains("= Main Title"))
 
-        val fr = provider.processImage(fakePng, "image/png", "fr", "gpt-oss:120b-cloud")
-        assertTrue(fr.contains("= Titre Principal"))
-
-        val en = provider.processImage(fakePng, "image/png", "en", "gpt-oss:120b-cloud")
-        assertTrue(en.contains("= Main Title"))
-
-        val de = provider.processImage(fakePng, "image/png", "de", "gpt-oss:120b-cloud")
-        assertTrue(de.contains("= Haupttitel"))
-    }
+            val de = provider.processImage(fakePng, "image/png", "de", "gpt-oss:120b-cloud")
+            assertTrue(de.contains("= Haupttitel"))
+        }
 
     @Test
-    fun `processImage reports image size in output`() = runBlocking {
-        val provider = FakeOllamaOcrProvider()
-        val bytes = ByteArray(42) { 'x'.code.toByte() }
-        val result = provider.processImage(bytes, "image/jpeg", "fr", "gpt-oss:120b-cloud")
-        assertTrue(result.contains("42 bytes"))
-    }
+    fun `processImage reports image size in output`() =
+        runBlocking {
+            val provider = FakeOllamaOcrProvider()
+            val bytes = ByteArray(42) { 'x'.code.toByte() }
+            val result = provider.processImage(bytes, "image/jpeg", "fr", "gpt-oss:120b-cloud")
+            assertTrue(result.contains("42 bytes"))
+        }
 
     @Test
-    fun `processImage reports model name in comment`() = runBlocking {
-        val provider = FakeOllamaOcrProvider()
-        val fakePng = createFakeImage(32, 32)
-        val result = provider.processImage(fakePng, "image/png", "en", model = "gpt-oss:120b-cloud")
-        assertTrue(result.contains("gpt-oss:120b-cloud"))
-    }
+    fun `processImage reports model name in comment`() =
+        runBlocking {
+            val provider = FakeOllamaOcrProvider()
+            val fakePng = createFakeImage(32, 32)
+            val result = provider.processImage(fakePng, "image/png", "en", model = "gpt-oss:120b-cloud")
+            assertTrue(result.contains("gpt-oss:120b-cloud"))
+        }
 
     @Test
-    fun `processImage with default language is french`() = runBlocking {
-        val provider = FakeOllamaOcrProvider()
-        val fakePng = createFakeImage(16, 16)
-        val result = provider.processImage(fakePng, "image/gif", "fr", "gpt-oss:120b-cloud")
-        assertTrue(result.contains("Titre Principal"))
-        assertTrue(result.contains("Langue: fr"))
-    }
+    fun `processImage with default language is french`() =
+        runBlocking {
+            val provider = FakeOllamaOcrProvider()
+            val fakePng = createFakeImage(16, 16)
+            val result = provider.processImage(fakePng, "image/gif", "fr", "gpt-oss:120b-cloud")
+            assertTrue(result.contains("Titre Principal"))
+            assertTrue(result.contains("Langue: fr"))
+        }
 
-    private fun createFakeImage(width: Int, height: Int): ByteArray {
+    private fun createFakeImage(
+        width: Int,
+        height: Int,
+    ): ByteArray {
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
         val tempFile = File.createTempFile("fake-ocr-ollama", ".png")
         ImageIO.write(image, "png", tempFile)

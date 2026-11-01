@@ -11,7 +11,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class OcrTaskTest {
-
     @Test
     fun `OcrEngine returns structured AsciiDoc for fake engine`() {
         val fake = FakeOcrEngine()
@@ -72,13 +71,14 @@ class OcrTaskTest {
 
     @Test
     fun `OcrInputFile data class stores fields`() {
-        val input = OcrInputFile(
-            path = "/tmp/scan.pdf",
-            language = "fr",
-            provider = "gemini",
-            model = "gemini-2.5-flash",
-            maxTokens = 8192
-        )
+        val input =
+            OcrInputFile(
+                path = "/tmp/scan.pdf",
+                language = "fr",
+                provider = "gemini",
+                model = "gemini-2.5-flash",
+                maxTokens = 8192,
+            )
         assertEquals("/tmp/scan.pdf", input.path)
         assertEquals("fr", input.language)
         assertEquals("gemini", input.provider)
@@ -156,8 +156,13 @@ class OcrTaskTest {
     @Test
     fun `FakeVisionProvider is injectable into OcrTask`() {
         val fakeProvider = codebase.koog.llm.FakeVisionProvider()
-        val task = org.gradle.testfixtures.ProjectBuilder.builder().build()
-            .tasks.register("ocr", OcrTask::class.java).get()
+        val task =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .build()
+                .tasks
+                .register("ocr", OcrTask::class.java)
+                .get()
         task.geminiVisionProvider = fakeProvider
         kotlin.test.assertNotNull(task.geminiVisionProvider)
     }
@@ -166,25 +171,36 @@ class OcrTaskTest {
 
     @Test
     fun `llmConfigFile is null by default`() {
-        val task = org.gradle.testfixtures.ProjectBuilder.builder().build()
-            .tasks.register("ocr", OcrTask::class.java).get()
+        val task =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .build()
+                .tasks
+                .register("ocr", OcrTask::class.java)
+                .get()
         kotlin.test.assertNull(task.llmConfigFile, "llmConfigFile should be null by default")
     }
 
     @Test
-    fun `llmConfigFile can be set to an existing YAML`(@TempDir tempDir: Path) {
+    fun `llmConfigFile can be set to an existing YAML`(
+        @TempDir tempDir: Path,
+    ) {
         val ymlFile = tempDir.resolve("llm-config.yml").toFile()
-        ymlFile.writeText("""
+        ymlFile.writeText(
+            """
             ai:
               gemini:
                 envVar: "GEMINI_API_KEY"
                 model: "gemini-1.5-flash"
                 baseUrl: "https://generativelanguage.googleapis.com/v1beta"
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .build()
         project.pluginManager.apply("java-base") // nécessaire pour ProjectBuilder + RegularFileProperty
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -195,26 +211,32 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr with YAML config resolves model from GeminiConfig`(@TempDir tempDir: Path) {
+    fun `executeOcr with YAML config resolves model from GeminiConfig`(
+        @TempDir tempDir: Path,
+    ) {
         // Arrange — llm-config.yml
         val ymlFile = tempDir.resolve("llm-config.yml").toFile()
-        ymlFile.writeText("""
+        ymlFile.writeText(
+            """
             ai:
               gemini:
                 envVar: "GEMINI_API_KEY"
                 model: "gemini-1.5-flash"
                 baseUrl: "https://generativelanguage.googleapis.com/v1beta"
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         // Fichier d'entrée — texte simple (pas image → passe par OcrEngine/texte)
         val inputFile = tempDir.resolve("document.txt").toFile()
         inputFile.writeText("Test content for OCR")
 
         // Fake engine + Fake vision provider
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-yaml-config")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-yaml-config")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -227,7 +249,11 @@ class OcrTaskTest {
         task.executeOcr()
 
         // Assert — le fichier de sortie doit exister
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val outputFile = outputDir.resolve("document_ocr.adoc")
         assertTrue(outputFile.exists(), "Output file should be created: ${outputFile.absolutePath}")
         val content = outputFile.readText()
@@ -235,25 +261,31 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr with -PinputFile via plugin and YAML config`(@TempDir tempDir: Path) {
+    fun `executeOcr with -PinputFile via plugin and YAML config`(
+        @TempDir tempDir: Path,
+    ) {
         // Arrange — llm-config.yml
         val ymlFile = tempDir.resolve("llm-config.yml").toFile()
-        ymlFile.writeText("""
+        ymlFile.writeText(
+            """
             ai:
               gemini:
                 envVar: "GEMINI_API_KEY"
                 model: "gemini-1.5-flash"
                 baseUrl: "https://generativelanguage.googleapis.com/v1beta"
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         // Fichier d'entrée
         val inputFile = tempDir.resolve("scan.png").toFile()
         inputFile.writeText("fake png bytes for testing")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-cli-input")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-cli-input")
+                .build()
         project.pluginManager.apply("java-base")
 
         // Simule -PinputFile=scan.png
@@ -269,18 +301,27 @@ class OcrTaskTest {
         // Ne pas exécuter l'OCR complet (évite le mode image réel)
         // Test uniquement l'injection de -PinputFile
         kotlin.test.assertNotNull(task.inputFile)
-        assertEquals("scan.png", task.inputFile.get().asFile.name)
+        assertEquals(
+            "scan.png",
+            task.inputFile
+                .get()
+                .asFile.name,
+        )
     }
 
     @Test
-    fun `executeOcr with YAML model override falls back to convention when YAML absent`(@TempDir tempDir: Path) {
+    fun `executeOcr with YAML model override falls back to convention when YAML absent`(
+        @TempDir tempDir: Path,
+    ) {
         // Arrange — pas de llm-config.yml
         val inputFile = tempDir.resolve("doc.txt").toFile()
         inputFile.writeText("No YAML here")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -293,7 +334,11 @@ class OcrTaskTest {
         task.executeOcr()
 
         // Assert — convention gemini-2.5-flash utilisé
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val outputFile = outputDir.resolve("doc_ocr.adoc")
         assertTrue(outputFile.exists())
         val content = outputFile.readText()
@@ -301,7 +346,9 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr with corrupt YAML file falls back to convention`(@TempDir tempDir: Path) {
+    fun `executeOcr with corrupt YAML file falls back to convention`(
+        @TempDir tempDir: Path,
+    ) {
         // Arrange — YAML invalide
         val ymlFile = tempDir.resolve("llm-config.yml").toFile()
         ymlFile.writeText("this: is: not: valid:: yaml")
@@ -309,9 +356,11 @@ class OcrTaskTest {
         val inputFile = tempDir.resolve("doc.txt").toFile()
         inputFile.writeText("Corrupt YAML test")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -324,20 +373,28 @@ class OcrTaskTest {
         task.executeOcr()
 
         // Assert
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val outputFile = outputDir.resolve("doc_ocr.adoc")
         assertTrue(outputFile.exists())
     }
 
     @Test
-    fun `executeOcr with ollama provider uses FakeOllamaOcrProvider`(@TempDir tempDir: Path) {
+    fun `executeOcr with ollama provider uses FakeOllamaOcrProvider`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = tempDir.resolve("scan.png").toFile()
         inputFile.writeText("fake png bytes for ollama OCR")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-ollama-ocr")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-ollama-ocr")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -347,7 +404,11 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val outputFile = outputDir.resolve("scan_ocr.adoc")
         assertTrue(outputFile.exists(), "Output file should be created: ${outputFile.absolutePath}")
         val content = outputFile.readText()
@@ -356,14 +417,18 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr with gemini+ollama fallback uses Gemini first`(@TempDir tempDir: Path) {
+    fun `executeOcr with gemini+ollama fallback uses Gemini first`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = tempDir.resolve("scan.png").toFile()
         inputFile.writeText("fake png bytes for fallback OCR")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-gemini-ollama-fallback")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-gemini-ollama-fallback")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -374,7 +439,11 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val outputFile = outputDir.resolve("scan_ocr.adoc")
         assertTrue(outputFile.exists())
         val content = outputFile.readText()
@@ -382,14 +451,18 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr with gemini+ollama falls back to ollama when gemini throws`(@TempDir tempDir: Path) {
+    fun `executeOcr with gemini+ollama falls back to ollama when gemini throws`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = tempDir.resolve("scan.png").toFile()
         inputFile.writeText("fake png bytes for fallback OCR")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-gemini-fails-ollama-fallback")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-gemini-fails-ollama-fallback")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -400,7 +473,11 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val outputFile = outputDir.resolve("scan_ocr.adoc")
         assertTrue(outputFile.exists())
         val content = outputFile.readText()
@@ -408,14 +485,18 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr with ollama provider and custom baseUrl model`(@TempDir tempDir: Path) {
+    fun `executeOcr with ollama provider and custom baseUrl model`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = tempDir.resolve("scan.png").toFile()
         inputFile.writeText("fake png bytes for custom ollama")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-ollama-custom")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-ollama-custom")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -427,7 +508,11 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val outputFile = outputDir.resolve("scan_ocr.adoc")
         assertTrue(outputFile.exists())
     }
@@ -436,23 +521,32 @@ class OcrTaskTest {
 
     @Test
     fun `inputDir property exists and is abstract`() {
-        val task = org.gradle.testfixtures.ProjectBuilder.builder().build()
-            .tasks.register("ocr", OcrTask::class.java).get()
+        val task =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .build()
+                .tasks
+                .register("ocr", OcrTask::class.java)
+                .get()
         assertNotNull(task.inputDir)
     }
 
     @Test
-    fun `executeOcr with inputDir processes multiple files`(@TempDir tempDir: Path) {
+    fun `executeOcr with inputDir processes multiple files`(
+        @TempDir tempDir: Path,
+    ) {
         val inputDir = tempDir.resolve("scans").toFile()
         inputDir.mkdirs()
         inputDir.resolve("doc1.txt").writeText("Content 1")
         inputDir.resolve("doc2.txt").writeText("Content 2")
         inputDir.resolve("doc3.txt").writeText("Content 3")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-batch-inputdir")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-batch-inputdir")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -462,7 +556,11 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val out1 = outputDir.resolve("doc1_ocr.adoc")
         val out2 = outputDir.resolve("doc2_ocr.adoc")
         val out3 = outputDir.resolve("doc3_ocr.adoc")
@@ -475,14 +573,18 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr with inputDir on empty directory throws`(@TempDir tempDir: Path) {
+    fun `executeOcr with inputDir on empty directory throws`(
+        @TempDir tempDir: Path,
+    ) {
         val inputDir = tempDir.resolve("empty").toFile()
         inputDir.mkdirs()
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-empty-dir")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-empty-dir")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -494,11 +596,15 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr with inputDir on non-existent directory throws`(@TempDir tempDir: Path) {
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-nonexistent-dir")
-            .build()
+    fun `executeOcr with inputDir on non-existent directory throws`(
+        @TempDir tempDir: Path,
+    ) {
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-nonexistent-dir")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -510,7 +616,9 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr with inputFile takes priority over inputDir`(@TempDir tempDir: Path) {
+    fun `executeOcr with inputFile takes priority over inputDir`(
+        @TempDir tempDir: Path,
+    ) {
         val inputDir = tempDir.resolve("scans").toFile()
         inputDir.mkdirs()
         inputDir.resolve("batch1.txt").writeText("Batch content")
@@ -518,10 +626,12 @@ class OcrTaskTest {
         val singleFile = tempDir.resolve("single.txt").toFile()
         singleFile.writeText("Single content")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-inputfile-priority")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-inputfile-priority")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -532,7 +642,11 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val singleOutput = outputDir.resolve("single_ocr.adoc")
         val batchOutput = outputDir.resolve("batch1_ocr.adoc")
         assertTrue(singleOutput.exists(), "Single file output should exist")
@@ -541,16 +655,20 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr with inputDir and outputFile ignores custom outputFile in batch mode`(@TempDir tempDir: Path) {
+    fun `executeOcr with inputDir and outputFile ignores custom outputFile in batch mode`(
+        @TempDir tempDir: Path,
+    ) {
         val inputDir = tempDir.resolve("scans").toFile()
         inputDir.mkdirs()
         inputDir.resolve("a.txt").writeText("A")
         inputDir.resolve("b.txt").writeText("B")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-batch-outputfile")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-batch-outputfile")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -561,25 +679,39 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         assertTrue(outputDir.resolve("a_ocr.adoc").exists())
         assertTrue(outputDir.resolve("b_ocr.adoc").exists())
-        assertFalse(project.layout.buildDirectory.file("custom.adoc").get().asFile.exists(),
-            "Custom outputFile should be ignored in batch mode")
+        assertFalse(
+            project.layout.buildDirectory
+                .file("custom.adoc")
+                .get()
+                .asFile
+                .exists(),
+            "Custom outputFile should be ignored in batch mode",
+        )
     }
 
     @Test
-    fun `executeOcr with inputDir sorts files alphabetically`(@TempDir tempDir: Path) {
+    fun `executeOcr with inputDir sorts files alphabetically`(
+        @TempDir tempDir: Path,
+    ) {
         val inputDir = tempDir.resolve("scans").toFile()
         inputDir.mkdirs()
         inputDir.resolve("z.txt").writeText("Z")
         inputDir.resolve("a.txt").writeText("A")
         inputDir.resolve("m.txt").writeText("M")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-batch-sorted")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-batch-sorted")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -589,24 +721,32 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         assertTrue(outputDir.resolve("a_ocr.adoc").exists())
         assertTrue(outputDir.resolve("m_ocr.adoc").exists())
         assertTrue(outputDir.resolve("z_ocr.adoc").exists())
     }
 
     @Test
-    fun `executeOcr with inputDir skips subdirectories`(@TempDir tempDir: Path) {
+    fun `executeOcr with inputDir skips subdirectories`(
+        @TempDir tempDir: Path,
+    ) {
         val inputDir = tempDir.resolve("scans").toFile()
         inputDir.mkdirs()
         inputDir.resolve("file.txt").writeText("File")
         inputDir.resolve("subdir").mkdirs()
         inputDir.resolve("subdir/nested.txt").writeText("Nested")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-batch-skip-subdirs")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-batch-skip-subdirs")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -616,23 +756,33 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         assertTrue(outputDir.resolve("file_ocr.adoc").exists())
-        assertFalse(outputDir.resolve("nested_ocr.adoc").exists(),
-            "Nested files in subdirectories should be skipped")
+        assertFalse(
+            outputDir.resolve("nested_ocr.adoc").exists(),
+            "Nested files in subdirectories should be skipped",
+        )
     }
 
     @Test
-    fun `executeOcr with inputDir and image files uses image OCR path`(@TempDir tempDir: Path) {
+    fun `executeOcr with inputDir and image files uses image OCR path`(
+        @TempDir tempDir: Path,
+    ) {
         val inputDir = tempDir.resolve("scans").toFile()
         inputDir.mkdirs()
         inputDir.resolve("photo.png").writeText("fake png bytes")
         inputDir.resolve("doc.txt").writeText("text content")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-batch-mixed")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-batch-mixed")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -642,22 +792,30 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         assertTrue(outputDir.resolve("doc_ocr.adoc").exists())
         assertTrue(outputDir.resolve("photo_ocr.adoc").exists())
         assertTrue(outputDir.resolve("photo_ocr.adoc").readText().contains("FakeVisionProvider"))
     }
 
     @Test
-    fun `executeOcr with inputDir and markdown format produces md files`(@TempDir tempDir: Path) {
+    fun `executeOcr with inputDir and markdown format produces md files`(
+        @TempDir tempDir: Path,
+    ) {
         val inputDir = tempDir.resolve("scans").toFile()
         inputDir.mkdirs()
         inputDir.resolve("doc.txt").writeText("Markdown test")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-batch-markdown")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-batch-markdown")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -668,22 +826,30 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val mdFile = outputDir.resolve("doc_ocr.md")
         assertTrue(mdFile.exists(), "Markdown output should have .md extension")
         assertFalse(outputDir.resolve("doc_ocr.adoc").exists(), "AsciiDoc output should not exist")
     }
 
     @Test
-    fun `executeOcr with inputDir and text format produces txt files`(@TempDir tempDir: Path) {
+    fun `executeOcr with inputDir and text format produces txt files`(
+        @TempDir tempDir: Path,
+    ) {
         val inputDir = tempDir.resolve("scans").toFile()
         inputDir.mkdirs()
         inputDir.resolve("doc.txt").writeText("Text format test")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-batch-text")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-batch-text")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -694,22 +860,30 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val txtFile = outputDir.resolve("doc_ocr.txt")
         assertTrue(txtFile.exists(), "Text output should have .txt extension")
     }
 
     @Test
-    fun `executeOcr with inputDir and ollama provider processes all files`(@TempDir tempDir: Path) {
+    fun `executeOcr with inputDir and ollama provider processes all files`(
+        @TempDir tempDir: Path,
+    ) {
         val inputDir = tempDir.resolve("scans").toFile()
         inputDir.mkdirs()
         inputDir.resolve("img1.png").writeText("fake png 1")
         inputDir.resolve("img2.png").writeText("fake png 2")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-batch-ollama")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-batch-ollama")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -719,23 +893,31 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         assertTrue(outputDir.resolve("img1_ocr.adoc").exists())
         assertTrue(outputDir.resolve("img2_ocr.adoc").exists())
         assertTrue(outputDir.resolve("img1_ocr.adoc").readText().contains("FakeOllamaOcrProvider"))
     }
 
     @Test
-    fun `executeOcr with inputDir and gemini+ollama fallback processes all files`(@TempDir tempDir: Path) {
+    fun `executeOcr with inputDir and gemini+ollama fallback processes all files`(
+        @TempDir tempDir: Path,
+    ) {
         val inputDir = tempDir.resolve("scans").toFile()
         inputDir.mkdirs()
         inputDir.resolve("img1.png").writeText("fake png 1")
         inputDir.resolve("img2.png").writeText("fake png 2")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-batch-fallback")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-batch-fallback")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -746,30 +928,40 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         assertTrue(outputDir.resolve("img1_ocr.adoc").exists())
         assertTrue(outputDir.resolve("img2_ocr.adoc").exists())
     }
 
     @Test
-    fun `executeOcr with inputDir and YAML config resolves model for all files`(@TempDir tempDir: Path) {
+    fun `executeOcr with inputDir and YAML config resolves model for all files`(
+        @TempDir tempDir: Path,
+    ) {
         val ymlFile = tempDir.resolve("llm-config.yml").toFile()
-        ymlFile.writeText("""
+        ymlFile.writeText(
+            """
             ai:
               gemini:
                 envVar: "GEMINI_API_KEY"
                 model: "gemini-1.5-flash"
                 baseUrl: "https://generativelanguage.googleapis.com/v1beta"
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val inputDir = tempDir.resolve("scans").toFile()
         inputDir.mkdirs()
         inputDir.resolve("doc.txt").writeText("YAML batch test")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-batch-yaml")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-batch-yaml")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -780,18 +972,26 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val outputFile = outputDir.resolve("doc_ocr.adoc")
         assertTrue(outputFile.exists())
         assertTrue(outputFile.readText().contains("YAML batch test"))
     }
 
     @Test
-    fun `executeOcr with neither inputFile nor inputDir throws`(@TempDir tempDir: Path) {
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-no-input")
-            .build()
+    fun `executeOcr with neither inputFile nor inputDir throws`(
+        @TempDir tempDir: Path,
+    ) {
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-no-input")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -805,20 +1005,29 @@ class OcrTaskTest {
 
     @Test
     fun `anonymizeOutput is false by default`() {
-        val task = org.gradle.testfixtures.ProjectBuilder.builder().build()
-            .tasks.register("ocr", OcrTask::class.java).get()
+        val task =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .build()
+                .tasks
+                .register("ocr", OcrTask::class.java)
+                .get()
         assertEquals(false, task.anonymizeOutput.orNull)
     }
 
     @Test
-    fun `executeOcr with anonymizeOutput replaces emails in result`(@TempDir tempDir: Path) {
+    fun `executeOcr with anonymizeOutput replaces emails in result`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = tempDir.resolve("doc.txt").toFile()
         inputFile.writeText("Contact: jean.dupont@example.com")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-anonymize-email")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-anonymize-email")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -828,7 +1037,11 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val outputFile = outputDir.resolve("doc_ocr.adoc")
         assertTrue(outputFile.exists())
         val content = outputFile.readText()
@@ -837,14 +1050,18 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr with anonymizeOutput replaces phone numbers`(@TempDir tempDir: Path) {
+    fun `executeOcr with anonymizeOutput replaces phone numbers`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = tempDir.resolve("doc.txt").toFile()
         inputFile.writeText("Tel: 06 12 34 56 78")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-anonymize-phone")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-anonymize-phone")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -854,7 +1071,11 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val outputFile = outputDir.resolve("doc_ocr.adoc")
         assertTrue(outputFile.exists())
         val content = outputFile.readText()
@@ -862,14 +1083,18 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr with anonymizeOutput replaces API keys`(@TempDir tempDir: Path) {
+    fun `executeOcr with anonymizeOutput replaces API keys`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = tempDir.resolve("doc.txt").toFile()
         inputFile.writeText("Authorization: sk-ant-api03-abcdefghijklmnopqrstuvwxyz123456")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-anonymize-apikey")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-anonymize-apikey")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -879,7 +1104,11 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val outputFile = outputDir.resolve("doc_ocr.adoc")
         assertTrue(outputFile.exists())
         val content = outputFile.readText()
@@ -887,14 +1116,18 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr with anonymizeOutput false preserves PII`(@TempDir tempDir: Path) {
+    fun `executeOcr with anonymizeOutput false preserves PII`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = tempDir.resolve("doc.txt").toFile()
         inputFile.writeText("Contact: jean.dupont@example.com, Tel: 06 12 34 56 78")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-no-anonymize")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-no-anonymize")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -904,7 +1137,11 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val outputFile = outputDir.resolve("doc_ocr.adoc")
         assertTrue(outputFile.exists())
         val content = outputFile.readText()
@@ -913,16 +1150,20 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr batch with anonymizeOutput anonymizes all files`(@TempDir tempDir: Path) {
+    fun `executeOcr batch with anonymizeOutput anonymizes all files`(
+        @TempDir tempDir: Path,
+    ) {
         val inputDir = tempDir.resolve("scans").toFile()
         inputDir.mkdirs()
         inputDir.resolve("doc1.txt").writeText("Email: alice@acme.com")
         inputDir.resolve("doc2.txt").writeText("Tel: +33 6 12 34 56 78")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-batch-anonymize")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-batch-anonymize")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -932,7 +1173,11 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val out1 = outputDir.resolve("doc1_ocr.adoc")
         val out2 = outputDir.resolve("doc2_ocr.adoc")
         assertTrue(out1.exists())
@@ -941,19 +1186,24 @@ class OcrTaskTest {
         assertFalse(out2.readText().contains("+33 6 12 34 56 78"))
     }
 
-    private inline fun <reified T : Throwable> assertThrows(noinline block: () -> Unit): T {
-        return org.junit.jupiter.api.Assertions.assertThrows(T::class.java) { block() }
-    }
+    private inline fun <reified T : Throwable> assertThrows(noinline block: () -> Unit): T =
+        org.junit.jupiter.api.Assertions.assertThrows(T::class.java) {
+            block()
+        }
 
     @Test
-    fun `executeOcr collects metrics per file`(@TempDir tempDir: Path) {
+    fun `executeOcr collects metrics per file`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = tempDir.resolve("doc.txt").toFile()
         inputFile.writeText("Metrics test content")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-metrics-collect")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-metrics-collect")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -972,14 +1222,18 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr generates metrics report`(@TempDir tempDir: Path) {
+    fun `executeOcr generates metrics report`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = tempDir.resolve("doc.txt").toFile()
         inputFile.writeText("Report test")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-metrics-report")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-metrics-report")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -989,8 +1243,17 @@ class OcrTaskTest {
 
         task.executeOcr()
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
-        val reportFile = project.layout.buildDirectory.dir("reports/ocr").get().asFile.resolve("ocr-metrics.adoc")
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
+        val reportFile =
+            project.layout.buildDirectory
+                .dir("reports/ocr")
+                .get()
+                .asFile
+                .resolve("ocr-metrics.adoc")
         assertTrue(reportFile.exists(), "Metrics report should be generated")
         val report = reportFile.readText()
         assertTrue(report.contains("= Rapport Métriques OCR"))
@@ -998,16 +1261,20 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr batch collects metrics for all files`(@TempDir tempDir: Path) {
+    fun `executeOcr batch collects metrics for all files`(
+        @TempDir tempDir: Path,
+    ) {
         val inputDir = tempDir.resolve("scans").toFile()
         inputDir.mkdirs()
         inputDir.resolve("a.txt").writeText("A")
         inputDir.resolve("b.txt").writeText("B")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-batch-metrics")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-batch-metrics")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -1023,14 +1290,18 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr with ollama provider tracks ollama model in metrics`(@TempDir tempDir: Path) {
+    fun `executeOcr with ollama provider tracks ollama model in metrics`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = tempDir.resolve("scan.png").toFile()
         inputFile.writeText("fake png")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-ollama-metrics")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-ollama-metrics")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -1048,14 +1319,18 @@ class OcrTaskTest {
     }
 
     @Test
-    fun `executeOcr with anonymizeOutput tracks replacements in metrics`(@TempDir tempDir: Path) {
+    fun `executeOcr with anonymizeOutput tracks replacements in metrics`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = tempDir.resolve("doc.txt").toFile()
         inputFile.writeText("Contact: jean.dupont@example.com, Tel: 06 12 34 56 78")
 
-        val project = org.gradle.testfixtures.ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("test-anonymize-metrics")
-            .build()
+        val project =
+            org.gradle.testfixtures.ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("test-anonymize-metrics")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocr", OcrTask::class.java).get()

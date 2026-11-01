@@ -2,10 +2,8 @@ package codebase.quality
 
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class QualityVerdictTest {
-
     @Test
     fun `severity order is correct`() {
         assertEquals(0, QualityVerdict.PASS.severity)

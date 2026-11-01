@@ -16,7 +16,6 @@ import contracts.llmpool.RotationStrategy
  * exception sur certaines instances — zéro appel réseau.
  */
 class OllamaCloudWorld {
-
     /** Résultat du dernier appel simulé. */
     var lastResult: String? = null
 
@@ -34,22 +33,23 @@ class OllamaCloudWorld {
     lateinit var instances: List<LlmInstance>
 
     fun buildPool() {
-        instances = listOf(
-            LlmInstance(
-                id = "ollama-11437",
-                baseUrl = "http://localhost:11437",
-                model = "gpt-oss:120b-cloud",
-                quota = QuotaConfig(limitValue = 100, thresholdPercent = 80, resetPolicy = ResetPolicy.NEVER),
-                volumeTag = "ollama-11437"
-            ),
-            LlmInstance(
-                id = "ollama-11438",
-                baseUrl = "http://localhost:11438",
-                model = "gemma4:31b-cloud",
-                quota = QuotaConfig(limitValue = 100, thresholdPercent = 80, resetPolicy = ResetPolicy.NEVER),
-                volumeTag = "ollama-11438"
+        instances =
+            listOf(
+                LlmInstance(
+                    id = "ollama-11437",
+                    baseUrl = "http://localhost:11437",
+                    model = "gpt-oss:120b-cloud",
+                    quota = QuotaConfig(limitValue = 100, thresholdPercent = 80, resetPolicy = ResetPolicy.NEVER),
+                    volumeTag = "ollama-11437",
+                ),
+                LlmInstance(
+                    id = "ollama-11438",
+                    baseUrl = "http://localhost:11438",
+                    model = "gemma4:31b-cloud",
+                    quota = QuotaConfig(limitValue = 100, thresholdPercent = 80, resetPolicy = ResetPolicy.NEVER),
+                    volumeTag = "ollama-11438",
+                ),
             )
-        )
         pool = OllamaPool(instances, rotationStrategy = RotationStrategy.ROUND_ROBIN)
         adapter = OllamaPoolKeyAdapter(pool)
     }
@@ -58,12 +58,13 @@ class OllamaCloudWorld {
         lastException = null
         lastResult = null
         try {
-            val result = adapter.callWithRotation { instance ->
-                if (instance.id in failingInstanceIds) {
-                    throw RuntimeException("quota exceeded for ${instance.id}")
+            val result =
+                adapter.callWithRotation { instance ->
+                    if (instance.id in failingInstanceIds) {
+                        throw RuntimeException("quota exceeded for ${instance.id}")
+                    }
+                    "success-${instance.id}"
                 }
-                "success-${instance.id}"
-            }
             lastResult = result
         } catch (e: IllegalStateException) {
             lastException = e

@@ -5,28 +5,27 @@ import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
-import java.nio.file.Files
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class CodebasePluginTest {
-
-    private val expectedTasks = setOf(
-        "collectFromCodebase",
-        "collectCompositeContext",
-        "generateAugmentedPlan",
-        "vibecode",
-        "autonomousSession",
-        "vibecodingDashboard",
-        "qualityGate",
-        "generateCompositeContext",
-        "ocrDocument",
-        "prepareFineTuningDataset",
-        "fineTuneExpert",
-        "publishExpertToOllama"
-    )
+    private val expectedTasks =
+        setOf(
+            "collectFromCodebase",
+            "collectCompositeContext",
+            "generateAugmentedPlan",
+            "vibecode",
+            "autonomousSession",
+            "vibecodingDashboard",
+            "qualityGate",
+            "generateCompositeContext",
+            "ocrDocument",
+            "prepareFineTuningDataset",
+            "fineTuneExpert",
+            "publishExpertToOllama",
+        )
 
     @Test
     fun `apply plugin registers all 12 tasks`() {
@@ -156,10 +155,15 @@ class CodebasePluginTest {
         val task = project.tasks.findByName("fineTuneExpert")
         assertNotNull(task)
         assertEquals("finetuning", task.group)
-        val depNames = task.taskDependencies.getDependencies(task)
-            .mapNotNull { it.name }.toSet()
-        assertTrue(depNames.contains("prepareFineTuningDataset"),
-            "fineTuneExpert should dependOn prepareFineTuningDataset, got $depNames")
+        val depNames =
+            task.taskDependencies
+                .getDependencies(task)
+                .mapNotNull { it.name }
+                .toSet()
+        assertTrue(
+            depNames.contains("prepareFineTuningDataset"),
+            "fineTuneExpert should dependOn prepareFineTuningDataset, got $depNames",
+        )
     }
 
     @Test
@@ -170,10 +174,15 @@ class CodebasePluginTest {
         val task = project.tasks.findByName("publishExpertToOllama")
         assertNotNull(task)
         assertEquals("finetuning", task.group)
-        val depNames = task.taskDependencies.getDependencies(task)
-            .mapNotNull { it.name }.toSet()
-        assertTrue(depNames.contains("fineTuneExpert"),
-            "publishExpertToOllama should dependOn fineTuneExpert, got $depNames")
+        val depNames =
+            task.taskDependencies
+                .getDependencies(task)
+                .mapNotNull { it.name }
+                .toSet()
+        assertTrue(
+            depNames.contains("fineTuneExpert"),
+            "publishExpertToOllama should dependOn fineTuneExpert, got $depNames",
+        )
     }
 
     @Test
@@ -187,24 +196,32 @@ class CodebasePluginTest {
     }
 
     @Test
-    fun `tasks`(@TempDir tempDir: File) {
+    fun `tasks`(
+        @TempDir tempDir: File,
+    ) {
         val projectDir = tempDir.resolve("consumer")
         projectDir.mkdirs()
-        projectDir.resolve("settings.gradle.kts").writeText("""
+        projectDir.resolve("settings.gradle.kts").writeText(
+            """
             pluginManagement {
                 repositories { mavenLocal(); gradlePluginPortal(); mavenCentral() }
             }
             rootProject.name = "consumer"
-        """.trimIndent())
-        projectDir.resolve("build.gradle.kts").writeText("""
+            """.trimIndent(),
+        )
+        projectDir.resolve("build.gradle.kts").writeText(
+            """
             plugins { id("education.cccp.codebase") version "0.0.1" }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
-        val result = GradleRunner.create()
-            .withProjectDir(projectDir)
-            .withArguments("tasks", "--stacktrace")
-            .withPluginClasspath()
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .withProjectDir(projectDir)
+                .withArguments("tasks", "--stacktrace")
+                .withPluginClasspath()
+                .build()
 
         val output = result.output
 
@@ -214,10 +231,12 @@ class CodebasePluginTest {
         println()
 
         // Extraire uniquement les groupes du plugin (collect, generate, tracking, validate)
-        val pluginSection = output.lines()
-            .dropWhile { !it.contains("Collect tasks") }
-            .takeWhile { !it.contains("Help tasks") }
-            .joinToString("\n")
+        val pluginSection =
+            output
+                .lines()
+                .dropWhile { !it.contains("Collect tasks") }
+                .takeWhile { !it.contains("Help tasks") }
+                .joinToString("\n")
         println(pluginSection)
 
         println()

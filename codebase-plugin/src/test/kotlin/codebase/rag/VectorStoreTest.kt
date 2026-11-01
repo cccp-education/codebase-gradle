@@ -11,7 +11,6 @@ import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class VectorStoreTest {
-
     private val store = VectorStore(PostgresFixture.jdbcUrl, PostgresFixture.username, PostgresFixture.password)
 
     @BeforeEach
@@ -87,14 +86,10 @@ class VectorStoreTest {
     }
 
     // Helper: Generates a 384-dimension vector string filled with `value`
-    private fun vec384(value: Double = 0.0): String {
-        return "[" + (0 until 384).joinToString(", ") { "$value" } + "]"
-    }
+    private fun vec384(value: Double = 0.0): String = "[" + (0 until 384).joinToString(", ") { "$value" } + "]"
 
     // Helper: 384-dim vector with custom value on first position, 0 elsewhere
-    private fun embeddingWithFirstDim(first: Double): String {
-        return "[$first" + (0 until 383).joinToString("") { ", 0.0" } + "]"
-    }
+    private fun embeddingWithFirstDim(first: Double): String = "[$first" + (0 until 383).joinToString("") { ", 0.0" } + "]"
 
     @Test
     fun `allEmbeddingsNonNull returns true after embedding set`() {
@@ -159,8 +154,13 @@ class VectorStoreTest {
     @Test
     fun `findByPackage returns DocRecord with all fields`() {
         store.insertDocument(
-            "Main.kt", "/src/Main.kt", 500, listOf("fun main"),
-            packageName = "com.example", className = "Main", repoName = "my-repo"
+            "Main.kt",
+            "/src/Main.kt",
+            500,
+            listOf("fun main"),
+            packageName = "com.example",
+            className = "Main",
+            repoName = "my-repo",
         )
         val results = store.findByPackage("com.example")
         assertEquals(1, results.size)
@@ -190,10 +190,16 @@ class VectorStoreTest {
 
     @Test
     fun `insertDocument with all metadata`() {
-        val id = store.insertDocument(
-            "Config.kt", "/src/Config.kt", 200, listOf("data class Config"),
-            packageName = "com.example", className = "Config", repoName = "my-repo"
-        )
+        val id =
+            store.insertDocument(
+                "Config.kt",
+                "/src/Config.kt",
+                200,
+                listOf("data class Config"),
+                packageName = "com.example",
+                className = "Config",
+                repoName = "my-repo",
+            )
         assertTrue(id > 0)
     }
 

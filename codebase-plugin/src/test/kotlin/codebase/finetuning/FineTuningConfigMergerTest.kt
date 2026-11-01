@@ -13,7 +13,6 @@ import kotlin.test.assertEquals
  * Pattern `CapsuleConfigMerger` (capsule) / `ValidationConfig` merge.
  */
 class FineTuningConfigMergerTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -22,13 +21,15 @@ class FineTuningConfigMergerTest {
     @Test
     fun `loadFromGradleProperties reads codebase finetuning dot-prefixed properties`() {
         val projectDir = File(tempDir, "project").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             codebase.finetuning.epochs=5
             codebase.finetuning.learningRate=1e-4
             codebase.finetuning.batchSize=8
             codebase.finetuning.corpusGlobs=docs/referential/**/*.adoc,docs/framework/**/*.adoc
             codebase.finetuning.continualPreTrainingRatio=0.20
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val config = FineTuningConfigMerger.loadFromGradleProperties(projectDir)
 
@@ -54,11 +55,13 @@ class FineTuningConfigMergerTest {
     @Test
     fun `loadFromGradleProperties ignores non-finetuning properties`() {
         val projectDir = File(tempDir, "mixed").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             org.gradle.jvmargs=-Xmx2g
             codebase.finetuning.epochs=7
             someOtherProperty=value
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val config = FineTuningConfigMerger.loadFromGradleProperties(projectDir)
 
@@ -69,10 +72,12 @@ class FineTuningConfigMergerTest {
     @Test
     fun `loadFromGradleProperties ignores commented lines`() {
         val projectDir = File(tempDir, "comments").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             # codebase.finetuning.epochs=9
             codebase.finetuning.epochs=6
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val config = FineTuningConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(6, config.epochs)
@@ -81,11 +86,13 @@ class FineTuningConfigMergerTest {
     @Test
     fun `loadFromGradleProperties skips malformed lines`() {
         val projectDir = File(tempDir, "malformed").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             codebase.finetuning.epochs=6
             codebase.finetuning.batchSize
             codebase.finetuning.learningRate=3e-4
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val config = FineTuningConfigMerger.loadFromGradleProperties(projectDir)
 
@@ -134,10 +141,12 @@ class FineTuningConfigMergerTest {
     @Test
     fun `merge YAML overrides gradle properties`() {
         val projectDir = File(tempDir, "merge3").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             codebase.finetuning.epochs=5
             codebase.finetuning.batchSize=8
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val yamlConfig = FineTuningConfig(epochs = 7, batchSize = 16)
 
@@ -150,9 +159,11 @@ class FineTuningConfigMergerTest {
     @Test
     fun `merge CLI overrides both YAML and gradle properties`() {
         val projectDir = File(tempDir, "merge4").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             codebase.finetuning.epochs=5
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val yamlConfig = FineTuningConfig(epochs = 7)
         val cliParams = mapOf("epochs" to 11)
@@ -212,10 +223,12 @@ class FineTuningConfigMergerTest {
     @Test
     fun `merge gradle properties override ENV defaults when no YAML loaded`() {
         val projectDir = File(tempDir, "merge9").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             codebase.finetuning.epochs=6
             codebase.finetuning.batchSize=12
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val merged = FineTuningConfigMerger.merge(projectDir, FineTuningConfig(), emptyMap(), yamlLoaded = false)
 
@@ -226,9 +239,11 @@ class FineTuningConfigMergerTest {
     @Test
     fun `merge handles all 4 precedence levels for same key`() {
         val projectDir = File(tempDir, "merge10").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             codebase.finetuning.epochs=5
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val yamlConfig = FineTuningConfig(epochs = 7)
 
@@ -250,7 +265,7 @@ class FineTuningConfigMergerTest {
         assertEquals(
             listOf("docs/referential/**/*.adoc", "docs/framework/**/*.adoc"),
             merged.corpusGlobs,
-            "CLI comma-split should override YAML"
+            "CLI comma-split should override YAML",
         )
     }
 
@@ -259,9 +274,12 @@ class FineTuningConfigMergerTest {
         val projectDir = File(tempDir, "merge12").also { it.mkdirs() }
         val yamlConfig = FineTuningConfig(corpusGlobs = listOf("docs/referential/**/*.adoc"))
 
-        val merged = FineTuningConfigMerger.merge(
-            projectDir, yamlConfig, mapOf("corpusGlobs" to "")
-        )
+        val merged =
+            FineTuningConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf("corpusGlobs" to ""),
+            )
 
         assertEquals(listOf("docs/referential/**/*.adoc"), merged.corpusGlobs, "Empty CLI should fall back to YAML")
     }

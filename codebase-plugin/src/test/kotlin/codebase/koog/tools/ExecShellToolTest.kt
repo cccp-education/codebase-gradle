@@ -7,25 +7,27 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class ExecShellToolTest {
+    @Test
+    fun `valid command executes and returns exit 0`() =
+        runBlocking {
+            val result = ExecShellTool.execute(ExecShellTool.Args("echo hello"))
+            assertTrue(result.startsWith("EXIT: 0"), "Expected EXIT: 0, got: ${result.take(50)}")
+            assertTrue(result.contains("hello"), "Expected output to contain 'hello': ${result.take(100)}")
+        }
 
     @Test
-    fun `valid command executes and returns exit 0`() = runBlocking {
-        val result = ExecShellTool.execute(ExecShellTool.Args("echo hello"))
-        assertTrue(result.startsWith("EXIT: 0"), "Expected EXIT: 0, got: ${result.take(50)}")
-        assertTrue(result.contains("hello"), "Expected output to contain 'hello': ${result.take(100)}")
-    }
-
-    @Test
-    fun `failing command returns non-zero exit code`() = runBlocking {
-        val result = ExecShellTool.execute(ExecShellTool.Args("git show deadbeef"))
-        assertTrue(!result.startsWith("EXIT: 0"), "Expected non-zero EXIT, got: ${result.take(50)}")
-    }
+    fun `failing command returns non-zero exit code`() =
+        runBlocking {
+            val result = ExecShellTool.execute(ExecShellTool.Args("git show deadbeef"))
+            assertTrue(!result.startsWith("EXIT: 0"), "Expected non-zero EXIT, got: ${result.take(50)}")
+        }
 
     @Test
     fun `rm rf is rejected by deny-list`() {
-        val exception = assertFailsWith<SecurityException> {
-            ExecShellTool.validateCommand("rm -rf /")
-        }
+        val exception =
+            assertFailsWith<SecurityException> {
+                ExecShellTool.validateCommand("rm -rf /")
+            }
         assertTrue(exception.message!!.contains("denied"))
     }
 
@@ -38,9 +40,10 @@ class ExecShellToolTest {
 
     @Test
     fun `sudo is rejected by deny-list`() {
-        val exception = assertFailsWith<SecurityException> {
-            ExecShellTool.validateCommand("sudo echo dangerous")
-        }
+        val exception =
+            assertFailsWith<SecurityException> {
+                ExecShellTool.validateCommand("sudo echo dangerous")
+            }
         assertTrue(exception.message!!.contains("denied"))
     }
 

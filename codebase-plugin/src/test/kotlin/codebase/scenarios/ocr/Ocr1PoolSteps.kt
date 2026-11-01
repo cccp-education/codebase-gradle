@@ -15,25 +15,29 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class Ocr1PoolSteps {
-
     private var pool: GeminiKeyPool? = null
     private val instancesById = mutableMapOf<String, LlmInstance>()
 
     @Given("a Gemini key pool with {int} keys {string}")
-    fun geminiKeyPoolWithKeys(count: Int, keysCsv: String) {
+    fun geminiKeyPoolWithKeys(
+        count: Int,
+        keysCsv: String,
+    ) {
         val ids = keysCsv.split(",").map { it.trim() }
         assertEquals(count, ids.size, "Key count mismatch")
         instancesById.clear()
-        val instances = ids.map { id ->
-            val inst = LlmInstance(
-                id = id,
-                baseUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=$id",
-                model = "gemini-2.5-flash",
-                quota = QuotaConfig(limitValue = 100, thresholdPercent = 80, resetPolicy = ResetPolicy.NEVER)
-            )
-            instancesById[id] = inst
-            inst
-        }
+        val instances =
+            ids.map { id ->
+                val inst =
+                    LlmInstance(
+                        id = id,
+                        baseUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=$id",
+                        model = "gemini-2.5-flash",
+                        quota = QuotaConfig(limitValue = 100, thresholdPercent = 80, resetPolicy = ResetPolicy.NEVER),
+                    )
+                instancesById[id] = inst
+                inst
+            }
         pool = GeminiKeyPool(instances, rotationStrategy = RotationStrategy.ROUND_ROBIN)
     }
 
@@ -76,30 +80,45 @@ class Ocr1PoolSteps {
     private var envMap: MutableMap<String, String> = mutableMapOf()
 
     @Given("env vars with GEMINI_API_KEY_1={string} and GEMINI_API_KEY_2={string}")
-    fun envVarsWithTwoKeys(key1: String, key2: String) {
+    fun envVarsWithTwoKeys(
+        key1: String,
+        key2: String,
+    ) {
         envMap.clear()
         envMap["GEMINI_API_KEY_1"] = key1
         envMap["GEMINI_API_KEY_2"] = key2
     }
 
     @Given("env vars with GEMINI_API_KEY_1={string} and GEMINI_API_KEY_2={string} and GEMINI_API_KEY_3={string}")
-    fun envVarsWithThreeKeys(key1: String, key2: String, key3: String) {
+    fun envVarsWithThreeKeys(
+        key1: String,
+        key2: String,
+        key3: String,
+    ) {
         envMap.clear()
         envMap["GEMINI_API_KEY_1"] = key1
         envMap["GEMINI_API_KEY_2"] = key2
         envMap["GEMINI_API_KEY_3"] = key3
     }
 
-    @Given("env vars with GEMINI_ACCOUNT_{int}_API_KEY_{int}={string} and GEMINI_ACCOUNT_{int}_API_KEY_{int}={string} and GEMINI_ACCOUNT_{int}_API_KEY_{int}={string}")
+    @Given(
+        "env vars with GEMINI_ACCOUNT_{int}_API_KEY_{int}={string} and GEMINI_ACCOUNT_{int}_API_KEY_{int}={string} and GEMINI_ACCOUNT_{int}_API_KEY_{int}={string}",
+    )
     fun envVarsWithMultiAccountKeys(
-        acct1: Int, key1Idx: Int, key1: String,
-        acct2: Int, key2Idx: Int, key2: String,
-        acct3: Int, key3Idx: Int, key3: String
+        acct1: Int,
+        key1Idx: Int,
+        key1: String,
+        acct2: Int,
+        key2Idx: Int,
+        key2: String,
+        acct3: Int,
+        key3Idx: Int,
+        key3: String,
     ) {
         envMap.clear()
-        envMap["GEMINI_ACCOUNT_${acct1}_API_KEY_${key1Idx}"] = key1
-        envMap["GEMINI_ACCOUNT_${acct2}_API_KEY_${key2Idx}"] = key2
-        envMap["GEMINI_ACCOUNT_${acct3}_API_KEY_${key3Idx}"] = key3
+        envMap["GEMINI_ACCOUNT_${acct1}_API_KEY_$key1Idx"] = key1
+        envMap["GEMINI_ACCOUNT_${acct2}_API_KEY_$key2Idx"] = key2
+        envMap["GEMINI_ACCOUNT_${acct3}_API_KEY_$key3Idx"] = key3
     }
 
     @When("I build a Gemini pool from env vars")
@@ -131,13 +150,19 @@ class Ocr1PoolSteps {
     private var collectedMultiInstances: List<LlmInstance> = emptyList()
 
     @Given("a multi-account Gemini pool with 2 accounts and keys {string} and {string}")
-    fun multiAccountPoolWithKeys(account1Csv: String, account2Csv: String) {
+    fun multiAccountPoolWithKeys(
+        account1Csv: String,
+        account2Csv: String,
+    ) {
         val account1Keys = account1Csv.substringAfter(":").split(",").map { it.trim() }
         val account2Keys = account2Csv.substringAfter(":").split(",").map { it.trim() }
-        multiPool = GeminiMultiAccountPool(mapOf(
-            "account-1" to GeminiPoolFactory.fromKeys(account1Keys, idPrefix = "gemini-acct1"),
-            "account-2" to GeminiPoolFactory.fromKeys(account2Keys, idPrefix = "gemini-acct2")
-        ))
+        multiPool =
+            GeminiMultiAccountPool(
+                mapOf(
+                    "account-1" to GeminiPoolFactory.fromKeys(account1Keys, idPrefix = "gemini-acct1"),
+                    "account-2" to GeminiPoolFactory.fromKeys(account2Keys, idPrefix = "gemini-acct2"),
+                ),
+            )
     }
 
     @Then("the multi-account pool has {int} accounts")
@@ -171,7 +196,7 @@ class Ocr1PoolSteps {
     @Then("the next instance from the multi-account pool is not the rate-limited one")
     fun nextInstanceNotRateLimited() {
         val next = multiPool!!.nextInstance()
-        assertTrue(next.id != multiRateLimitedId, "Next instance ${next.id} should differ from rate-limited ${multiRateLimitedId}")
+        assertTrue(next.id != multiRateLimitedId, "Next instance ${next.id} should differ from rate-limited $multiRateLimitedId")
     }
 
     @When("I build a multi-account Gemini pool from env vars")

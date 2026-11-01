@@ -6,20 +6,20 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class VisionOpinionClassifierTest {
-
     private val classifier = VisionOpinionClassifier()
     private val originalProvider = classifier.chatModelProvider
 
     @Test
     fun `parseResponse extracts VISION from well-formed JSON`() {
         val section = ContentSection("V1", "architecture du DAG", ContentClassification.VISION)
-        val raw = """
+        val raw =
+            """
             {
               "classification": "VISION",
               "confidence": 0.95,
               "rationale": "texte factuel décrivant l'architecture du workspace"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val result = classifier.parseResponse(section, raw)
 
@@ -32,13 +32,14 @@ class VisionOpinionClassifierTest {
     @Test
     fun `parseResponse extracts OPINION from well-formed JSON`() {
         val section = ContentSection("O1", "je préfère Kotlin", ContentClassification.OPINION)
-        val raw = """
+        val raw =
+            """
             {
               "classification": "OPINION",
               "confidence": 0.88,
               "rationale": "exprime une préférence personnelle subjective"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val result = classifier.parseResponse(section, raw)
 
@@ -49,7 +50,8 @@ class VisionOpinionClassifierTest {
     @Test
     fun `parseResponse strips markdown code fences around JSON`() {
         val section = ContentSection("V2", "cercles de confiance", ContentClassification.VISION)
-        val raw = """
+        val raw =
+            """
             ```json
             {
               "classification": "VISION",
@@ -57,7 +59,7 @@ class VisionOpinionClassifierTest {
               "rationale": "décrit une règle de gouvernance formelle"
             }
             ```
-        """.trimIndent()
+            """.trimIndent()
 
         val result = classifier.parseResponse(section, raw)
 
@@ -68,7 +70,8 @@ class VisionOpinionClassifierTest {
     @Test
     fun `parseResponse strips simple code fences without json lang tag`() {
         val section = ContentSection("V3", "stimulus pipeline", ContentClassification.VISION)
-        val raw = """
+        val raw =
+            """
             ```
             {
               "classification": "VISION",
@@ -76,7 +79,7 @@ class VisionOpinionClassifierTest {
               "rationale": "document factuel sur le pipeline STIMULUS"
             }
             ```
-        """.trimIndent()
+            """.trimIndent()
 
         val result = classifier.parseResponse(section, raw)
 
@@ -199,13 +202,14 @@ class VisionOpinionClassifierTest {
     @Test
     fun `parseResponse handles whitespace around JSON fields`() {
         val section = ContentSection("W1", "test", ContentClassification.VISION)
-        val raw = """
+        val raw =
+            """
             {
                 "classification" :   "VISION",
                 "confidence"    :0.91,
                 "rationale"  :  "justification avec espaces"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val result = classifier.parseResponse(section, raw)
 
@@ -228,7 +232,7 @@ class VisionOpinionClassifierTest {
             assertEquals(
                 ContentClassification.VISION,
                 section.expectedClassification,
-                "${section.id} should be VISION"
+                "${section.id} should be VISION",
             )
         }
     }
@@ -240,24 +244,26 @@ class VisionOpinionClassifierTest {
             assertEquals(
                 ContentClassification.OPINION,
                 section.expectedClassification,
-                "${section.id} should be OPINION"
+                "${section.id} should be OPINION",
             )
         }
     }
 
     @Test
     fun `ClassificationReport counts vision and opinion correctly`() {
-        val report = ClassificationReport(
-            sections = listOf(
-                SectionClassification("s1", "", ContentClassification.VISION, 0.9, ""),
-                SectionClassification("s2", "", ContentClassification.VISION, 0.8, ""),
-                SectionClassification("s3", "", ContentClassification.OPINION, 0.7, ""),
-            ),
-            visionCount = 2,
-            opinionCount = 1,
-            averageConfidence = 0.8,
-            errors = 0
-        )
+        val report =
+            ClassificationReport(
+                sections =
+                    listOf(
+                        SectionClassification("s1", "", ContentClassification.VISION, 0.9, ""),
+                        SectionClassification("s2", "", ContentClassification.VISION, 0.8, ""),
+                        SectionClassification("s3", "", ContentClassification.OPINION, 0.7, ""),
+                    ),
+                visionCount = 2,
+                opinionCount = 1,
+                averageConfidence = 0.8,
+                errors = 0,
+            )
 
         assertEquals(2, report.visionCount)
         assertEquals(1, report.opinionCount)
@@ -272,11 +278,14 @@ class VisionOpinionClassifierTest {
 
     @Test
     fun `SectionClassification contains all fields`() {
-        val sc = SectionClassification(
-            sectionId = "sec-1", content = "contenu",
-            classification = ContentClassification.VISION,
-            confidence = 0.93, rationale = "raison valable"
-        )
+        val sc =
+            SectionClassification(
+                sectionId = "sec-1",
+                content = "contenu",
+                classification = ContentClassification.VISION,
+                confidence = 0.93,
+                rationale = "raison valable",
+            )
 
         assertEquals("sec-1", sc.sectionId)
         assertEquals("contenu", sc.content)
@@ -325,10 +334,11 @@ class VisionOpinionClassifierTest {
     @Test
     fun `classifyAll with custom sections processes all correctly`() {
         classifier.chatModelProvider = { throw RuntimeException("offline") }
-        val sections = listOf(
-            ContentSection("a", "DAG architecture", ContentClassification.VISION),
-            ContentSection("b", "je pense que", ContentClassification.OPINION)
-        )
+        val sections =
+            listOf(
+                ContentSection("a", "DAG architecture", ContentClassification.VISION),
+                ContentSection("b", "je pense que", ContentClassification.OPINION),
+            )
         val report = classifier.classifyAll(sections)
         assertEquals(2, report.sections.size)
         assertEquals(1, report.visionCount)

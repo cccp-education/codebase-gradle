@@ -5,7 +5,6 @@ import codebase.rag.ChunkTokenizer
 import dev.langchain4j.model.embedding.onnx.allminilml6v2.AllMiniLmL6V2EmbeddingModel
 
 object PgVectorTestContext {
-
     const val DATASETS_DIR = "src/test/resources/datasets"
 
     fun jdbcUrl() = PostgresFixture.jdbcUrl
@@ -20,11 +19,13 @@ object PgVectorTestContext {
 
     var topResults = listOf<TopResult>()
 
-    data class TopResult(val chunkId: Long, val text: String, val similarity: Double)
+    data class TopResult(
+        val chunkId: Long,
+        val text: String,
+        val similarity: Double,
+    )
 
-    fun splitIntoSentenceLevelChunks(text: String): List<String> =
-        ChunkTokenizer.splitIntoSentenceLevelChunks(text)
+    fun splitIntoSentenceLevelChunks(text: String): List<String> = ChunkTokenizer.splitIntoSentenceLevelChunks(text)
 
-    fun estimateTokenCount(text: String): Int =
-        ChunkTokenizer.estimateTokenCount(text)
+    fun estimateTokenCount(text: String): Int = ChunkTokenizer.estimateTokenCount(text)
 }

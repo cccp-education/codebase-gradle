@@ -1,18 +1,18 @@
 package codebase.scenarios
 
 import codebase.koog.LifecycleStatus
-import codebase.koog.SessionProtocolLifecycleManager
 import io.cucumber.java.en.And
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 import java.io.File
 import java.nio.file.Files
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
-class SessionProtocolE2ESteps(private val world: SessionProtocolE2EWorld) {
-
+class SessionProtocolE2ESteps(
+    private val world: SessionProtocolE2EWorld,
+) {
     @Given("an E2E SessionProtocolTask with lifecycle enabled")
     fun `setup lifecycle`() {
         world.setupLifecycleManager(world.lifecycleDir)
@@ -22,19 +22,25 @@ class SessionProtocolE2ESteps(private val world: SessionProtocolE2EWorld) {
     fun `create context file`(eagerRules: String) {
         val dir = Files.createTempDirectory("sp4-context").toFile()
         val file = File(dir, "agent-context.json")
-        file.writeText("""
+        file.writeText(
+            """
             {
                 "eagerRules": "$eagerRules",
                 "ragChunks": [],
                 "graphRelations": "",
                 "backlogItems": []
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         world.contextFile = file
     }
 
     @When("I E2E execute action {string} with prompt {string} and model {string}")
-    fun `execute action with prompt and model`(action: String, prompt: String, model: String) {
+    fun `execute action with prompt and model`(
+        action: String,
+        prompt: String,
+        model: String,
+    ) {
         world.executeAction(action = action, prompt = prompt, model = model)
         if (action == "create") {
             val sessions = world.lifecycleManager.list()
@@ -43,7 +49,10 @@ class SessionProtocolE2ESteps(private val world: SessionProtocolE2EWorld) {
     }
 
     @When("I E2E execute action {string} with prompt {string}")
-    fun `execute action with prompt`(action: String, prompt: String) {
+    fun `execute action with prompt`(
+        action: String,
+        prompt: String,
+    ) {
         world.executeAction(action = action, prompt = prompt)
         if (action == "create") {
             val sessions = world.lifecycleManager.list()
@@ -58,7 +67,10 @@ class SessionProtocolE2ESteps(private val world: SessionProtocolE2EWorld) {
     }
 
     @When("I E2E execute action {string} with sessionId of the created session and prompt {string}")
-    fun `execute action with created sessionId and prompt`(action: String, prompt: String) {
+    fun `execute action with created sessionId and prompt`(
+        action: String,
+        prompt: String,
+    ) {
         val sid = world.createdSessionId ?: throw IllegalStateException("No created session ID available")
         world.executeAction(action = action, sessionId = sid, prompt = prompt)
         if (action == "resume") {
@@ -68,7 +80,10 @@ class SessionProtocolE2ESteps(private val world: SessionProtocolE2EWorld) {
     }
 
     @When("I E2E execute action {string} with prompt {string} and contextFile")
-    fun `execute action with prompt and contextFile`(action: String, prompt: String) {
+    fun `execute action with prompt and contextFile`(
+        action: String,
+        prompt: String,
+    ) {
         world.executeAction(action = action, prompt = prompt, useContextFile = true)
         if (action == "create") {
             val sessions = world.lifecycleManager.list()

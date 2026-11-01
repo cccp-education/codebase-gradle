@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class GovernanceOntologizerTest {
-
     private val ontologizer = GovernanceOntologizer()
 
     @Test
@@ -68,7 +67,7 @@ class GovernanceOntologizerTest {
             dagLevel = null,
             circle = null,
             weight = 0.5,
-            checksum = "checksum-$sourceFile"
+            checksum = "checksum-$sourceFile",
         )
     }
 }

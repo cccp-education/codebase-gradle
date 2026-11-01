@@ -1,9 +1,9 @@
 package codebase.scenarios
 
 import codebase.koog.llm.LlmProvider
+import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.gradle.api.services.BuildService
-import org.gradle.api.Project
 
 /**
  * World object shared between [LlmServiceSteps] steps — holds the state

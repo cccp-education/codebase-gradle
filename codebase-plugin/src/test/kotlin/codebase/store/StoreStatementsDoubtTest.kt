@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test
  * column and rows stay untouched (Loi de l'Économie d'Encre).
  */
 class StoreStatementsDoubtTest {
-
     @Test
     fun `doubtSchema is additive ALTER TABLE IF NOT EXISTS statements`() {
         val stmts = StoreStatements.doubtSchema()
@@ -36,8 +35,8 @@ class StoreStatementsDoubtTest {
         assertTrue(sql.contains("INSERT INTO codex_chunks"))
         assertTrue(
             sql.contains(
-                "document_id, chunk_index, chunk_text, section_path, heading_level, confidence, doubtful, pages"
-            )
+                "document_id, chunk_index, chunk_text, section_path, heading_level, confidence, doubtful, pages",
+            ),
         )
         assertTrue(sql.contains("\$6, \$7, \$8"))
         assertTrue(sql.contains("RETURNING id"))

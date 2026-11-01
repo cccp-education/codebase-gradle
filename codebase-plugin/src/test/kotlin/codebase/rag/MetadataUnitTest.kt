@@ -1,14 +1,16 @@
+// JSON metadata fixtures are single-line literals; wrapping them would obscure the payload.
+@file:Suppress("ktlint:standard:max-line-length")
+
 package codebase.rag
 
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
-import kotlin.test.*
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 class MetadataUnitTest {
-
     @Test
     fun `fromJson should parse QuizMetadata correctly`() {
         val json = """{"type":"Quiz","source":"bronx","version":"1.0","generatedAt":"2026-05-18T19:00:00Z","model":"pro","dependencies":[],"questions":15,"bareme":20,"dureeMax":"30min"}"""
@@ -67,7 +69,9 @@ class MetadataUnitTest {
     }
 
     @Test
-    fun `fromFile should read metadata from a file`(@TempDir tempDir: Path) {
+    fun `fromFile should read metadata from a file`(
+        @TempDir tempDir: Path,
+    ) {
         val json = """{"type":"Plan","source":"codebase","version":"1.0","generatedAt":"2026-05-18T19:00:00Z","model":"pro","dependencies":[],"epics":2,"totalPoints":8,"classification":"simple","estimatedSessions":"1-2"}"""
         val file = File(tempDir.toFile(), "metadata.json")
         file.writeText(json)

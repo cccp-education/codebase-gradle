@@ -18,8 +18,9 @@ import kotlin.test.assertTrue
  * (pattern S-088). Fakes in-memory: the vibecoding loop is a lambda
  * recording the executed intentions — no Gradle task, no network, no LLM.
  */
-class AutonomousSessionSteps(private val world: AutonomousSessionWorld) {
-
+class AutonomousSessionSteps(
+    private val world: AutonomousSessionWorld,
+) {
     @Given("an autonomous session world is initialized")
     fun `autonomous session world initialized`() {
         world.ensureInitialized()
@@ -28,31 +29,42 @@ class AutonomousSessionSteps(private val world: AutonomousSessionWorld) {
 
     @Given("a borough dir without a backlog file")
     fun `borough dir without backlog`() {
-        world.boroughDir = java.nio.file.Files.createTempDirectory("svo-no-backlog")
+        world.boroughDir =
+            java.nio.file.Files
+                .createTempDirectory("svo-no-backlog")
         world.executedIntentions.clear()
     }
 
     @Given("a borough dir with a PROMPT_REPRISE mentioning {string}")
     fun `borough dir with prompt reprise`(mention: String) {
-        world.boroughDir = java.nio.file.Files.createTempDirectory("svo-prompt-reprise")
-        world.boroughDir.resolve("PROMPT_REPRISE.adoc").toFile().writeText("= Prompt de Reprise — $mention")
+        world.boroughDir =
+            java.nio.file.Files
+                .createTempDirectory("svo-prompt-reprise")
+        world.boroughDir
+            .resolve("PROMPT_REPRISE.adoc")
+            .toFile()
+            .writeText("= Prompt de Reprise — $mention")
         world.executedIntentions.clear()
     }
 
     @Given("a borough dir with a never-ending BACKLOG")
     fun `borough dir with never ending backlog`() {
-        world.boroughDir = java.nio.file.Files.createTempDirectory("svo-loop")
+        world.boroughDir =
+            java.nio.file.Files
+                .createTempDirectory("svo-loop")
         world.boroughDir.resolve("BACKLOG.adoc").toFile().writeText(
-            "== EPIC Loop 🟡 EN COURS\n* [ ] endless item 0"
+            "== EPIC Loop 🟡 EN COURS\n* [ ] endless item 0",
         )
         world.executedIntentions.clear()
     }
 
     @Given("a borough dir whose BACKLOG is already complete")
     fun `borough dir with complete backlog`() {
-        world.boroughDir = java.nio.file.Files.createTempDirectory("svo-complete")
+        world.boroughDir =
+            java.nio.file.Files
+                .createTempDirectory("svo-complete")
         world.boroughDir.resolve("BACKLOG.adoc").toFile().writeText(
-            "== EPIC Done ✅ TERMINÉ\n* [x] everything is done"
+            "== EPIC Done ✅ TERMINÉ\n* [x] everything is done",
         )
         world.executedIntentions.clear()
     }
@@ -68,30 +80,39 @@ class AutonomousSessionSteps(private val world: AutonomousSessionWorld) {
     }
 
     private fun isNeverEndingWorld(): Boolean =
-        world.boroughDir.resolve("BACKLOG.adoc").toFile().takeIf { it.isFile }
-            ?.readText()?.contains("EPIC Loop") == true
+        world.boroughDir
+            .resolve("BACKLOG.adoc")
+            .toFile()
+            .takeIf { it.isFile }
+            ?.readText()
+            ?.contains("EPIC Loop") == true
 
-    private fun orchestrate(borough: String, neverEnding: Boolean, transferredPrompt: String? = null) {
+    private fun orchestrate(
+        borough: String,
+        neverEnding: Boolean,
+        transferredPrompt: String? = null,
+    ) {
         val dir = world.boroughDir.toFile()
         var counter = 0
-        world.report = AutonomousSessionOrchestrator.orchestrate(
-            borough = borough,
-            prompt = transferredPrompt,
-            projectDir = dir,
-            maxChainedSessions = 3,
-            maxActionsPerSession = 2,
-            runSession = { state ->
-                world.executedIntentions += state.intention
-                if (neverEnding) {
-                    counter++
-                    dir.resolve("BACKLOG.adoc").writeText(
-                        "== EPIC Loop 🟡 EN COURS\n* [ ] endless item $counter"
-                    )
-                }
-                "done ${world.executedIntentions.size}"
-            },
-            auditAppend = {},
-        )
+        world.report =
+            AutonomousSessionOrchestrator.orchestrate(
+                borough = borough,
+                prompt = transferredPrompt,
+                projectDir = dir,
+                maxChainedSessions = 3,
+                maxActionsPerSession = 2,
+                runSession = { state ->
+                    world.executedIntentions += state.intention
+                    if (neverEnding) {
+                        counter++
+                        dir.resolve("BACKLOG.adoc").writeText(
+                            "== EPIC Loop 🟡 EN COURS\n* [ ] endless item $counter",
+                        )
+                    }
+                    "done ${world.executedIntentions.size}"
+                },
+                auditAppend = {},
+            )
         world.resumptionContent = world.report?.resumptionPrompt
     }
 
@@ -120,11 +141,12 @@ class AutonomousSessionSteps(private val world: AutonomousSessionWorld) {
 
     @Then("the first session consumed the borough default prompt")
     fun `first session consumed borough default`() {
-        val resolved = SessionPromptResolver.resolve(
-            cliPrompt = null,
-            borough = "codebase",
-            projectDir = world.boroughDir.toFile(),
-        )
+        val resolved =
+            SessionPromptResolver.resolve(
+                cliPrompt = null,
+                borough = "codebase",
+                projectDir = world.boroughDir.toFile(),
+            )
         assertEquals(SessionPromptSource.BOROUGH_DEFAULT, resolved.source)
         world.lastResolvedPrompt = resolved.prompt
     }

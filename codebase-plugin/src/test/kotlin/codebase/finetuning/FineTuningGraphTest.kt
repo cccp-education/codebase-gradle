@@ -18,37 +18,40 @@ import org.junit.jupiter.api.Test
  * Baby-step US-3: graph topology + happy path + loop + failure modes.
  */
 class FineTuningGraphTest {
+    private val request =
+        FineTuningRequest(
+            baseModel = "gpt-oss:120b-cloud",
+            dataset = listOf("docs/referential/**/*.adoc"),
+            outputModelName = "expert-coding",
+            corpusRatio = 0.10,
+        )
 
-    private val request = FineTuningRequest(
-        baseModel = "gpt-oss:120b-cloud",
-        dataset = listOf("docs/referential/**/*.adoc"),
-        outputModelName = "expert-coding",
-        corpusRatio = 0.10,
-    )
-
-    private val success = FineTuningResult.Success(
-        outputModelName = "expert-coding",
-        ggufPath = "/tmp/expert-coding.gguf",
-        iterations = 1,
-        validationScore = 0.82,
-    )
+    private val success =
+        FineTuningResult.Success(
+            outputModelName = "expert-coding",
+            ggufPath = "/tmp/expert-coding.gguf",
+            iterations = 1,
+            validationScore = 0.82,
+        )
 
     private fun initialState(
         validationThreshold: Double = 0.7,
         maxIterations: Int = 3,
-    ): FineTuningState = FineTuningState(
-        request = request,
-        validationThreshold = validationThreshold,
-        maxIterations = maxIterations,
-    )
+    ): FineTuningState =
+        FineTuningState(
+            request = request,
+            validationThreshold = validationThreshold,
+            maxIterations = maxIterations,
+        )
 
     @Test
     fun `execute converges on the happy path when the first validation passes`() {
-        val graph = FineTuningGraph(
-            promptBuilder = FakePromptBuilder(),
-            llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.85),
-            pipeline = FakeFineTuner(success),
-        )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = FakePromptBuilder(),
+                llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.85),
+                pipeline = FakeFineTuner(success),
+            )
 
         val result = graph.execute(initialState())
 
@@ -60,11 +63,12 @@ class FineTuningGraphTest {
 
     @Test
     fun `execute populates proposal from the propose node`() {
-        val graph = FineTuningGraph(
-            promptBuilder = FakePromptBuilder(),
-            llm = FakeFineTuningLlm(proposeResponse = "increase corpus ratio to 0.15", validateScore = 0.9),
-            pipeline = FakeFineTuner(success),
-        )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = FakePromptBuilder(),
+                llm = FakeFineTuningLlm(proposeResponse = "increase corpus ratio to 0.15", validateScore = 0.9),
+                pipeline = FakeFineTuner(success),
+            )
 
         val result = graph.execute(initialState())
 
@@ -73,16 +77,18 @@ class FineTuningGraphTest {
 
     @Test
     fun `execute loops back to propose when validation is below threshold`() {
-        val llm = FakeFineTuningLlm(
-            proposeResponses = mutableListOf("ratio 0.10", "ratio 0.15", "ratio 0.20"),
-            validateScores = mutableListOf(0.4, 0.5, 0.9),
-        )
+        val llm =
+            FakeFineTuningLlm(
+                proposeResponses = mutableListOf("ratio 0.10", "ratio 0.15", "ratio 0.20"),
+                validateScores = mutableListOf(0.4, 0.5, 0.9),
+            )
         val pipeline = FakeFineTuner(success)
-        val graph = FineTuningGraph(
-            promptBuilder = FakePromptBuilder(),
-            llm = llm,
-            pipeline = pipeline,
-        )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = FakePromptBuilder(),
+                llm = llm,
+                pipeline = pipeline,
+            )
 
         val result = graph.execute(initialState(validationThreshold = 0.7, maxIterations = 3))
 
@@ -95,15 +101,17 @@ class FineTuningGraphTest {
 
     @Test
     fun `execute fails with MaxIterationsExhausted when the loop never converges`() {
-        val llm = FakeFineTuningLlm(
-            proposeResponses = mutableListOf("r0.10", "r0.15", "r0.20", "r0.25"),
-            validateScores = mutableListOf(0.1, 0.2, 0.3, 0.4),
-        )
-        val graph = FineTuningGraph(
-            promptBuilder = FakePromptBuilder(),
-            llm = llm,
-            pipeline = FakeFineTuner(success),
-        )
+        val llm =
+            FakeFineTuningLlm(
+                proposeResponses = mutableListOf("r0.10", "r0.15", "r0.20", "r0.25"),
+                validateScores = mutableListOf(0.1, 0.2, 0.3, 0.4),
+            )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = FakePromptBuilder(),
+                llm = llm,
+                pipeline = FakeFineTuner(success),
+            )
 
         val result = graph.execute(initialState(validationThreshold = 0.7, maxIterations = 3))
 
@@ -114,11 +122,12 @@ class FineTuningGraphTest {
     @Test
     fun `execute fails immediately when train returns Failure`() {
         val failure = FineTuningResult.Failure("Ollama unavailable", request.dataset)
-        val graph = FineTuningGraph(
-            promptBuilder = FakePromptBuilder(),
-            llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9),
-            pipeline = FakeFineTuner(failure),
-        )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = FakePromptBuilder(),
+                llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9),
+                pipeline = FakeFineTuner(failure),
+            )
 
         val result = graph.execute(initialState())
 
@@ -129,11 +138,12 @@ class FineTuningGraphTest {
 
     @Test
     fun `execute fails when the propose LLM throws`() {
-        val graph = FineTuningGraph(
-            promptBuilder = FakePromptBuilder(),
-            llm = FakeFineTuningLlm(proposeException = RuntimeException("LLM unavailable")),
-            pipeline = FakeFineTuner(success),
-        )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = FakePromptBuilder(),
+                llm = FakeFineTuningLlm(proposeException = RuntimeException("LLM unavailable")),
+                pipeline = FakeFineTuner(success),
+            )
 
         val result = graph.execute(initialState())
 
@@ -144,15 +154,16 @@ class FineTuningGraphTest {
 
     @Test
     fun `execute fails when the train pipeline throws`() {
-        val pipeline = object : FineTuningPipeline {
-            override fun fineTune(request: FineTuningRequest): FineTuningResult =
-                throw RuntimeException("training crashed")
-        }
-        val graph = FineTuningGraph(
-            promptBuilder = FakePromptBuilder(),
-            llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9),
-            pipeline = pipeline,
-        )
+        val pipeline =
+            object : FineTuningPipeline {
+                override fun fineTune(request: FineTuningRequest): FineTuningResult = throw RuntimeException("training crashed")
+            }
+        val graph =
+            FineTuningGraph(
+                promptBuilder = FakePromptBuilder(),
+                llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9),
+                pipeline = pipeline,
+            )
 
         val result = graph.execute(initialState())
 
@@ -162,14 +173,16 @@ class FineTuningGraphTest {
 
     @Test
     fun `execute fails when the validate LLM throws`() {
-        val graph = FineTuningGraph(
-            promptBuilder = FakePromptBuilder(),
-            llm = FakeFineTuningLlm(
-                proposeResponse = "ratio 0.10",
-                validateException = RuntimeException("scorer crashed"),
-            ),
-            pipeline = FakeFineTuner(success),
-        )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = FakePromptBuilder(),
+                llm =
+                    FakeFineTuningLlm(
+                        proposeResponse = "ratio 0.10",
+                        validateException = RuntimeException("scorer crashed"),
+                    ),
+                pipeline = FakeFineTuner(success),
+            )
 
         val result = graph.execute(initialState())
 
@@ -180,11 +193,12 @@ class FineTuningGraphTest {
     @Test
     fun `execute calls the prompt builder with the running state for propose`() {
         val promptBuilder = FakePromptBuilder()
-        val graph = FineTuningGraph(
-            promptBuilder = promptBuilder,
-            llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9),
-            pipeline = FakeFineTuner(success),
-        )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = promptBuilder,
+                llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9),
+                pipeline = FakeFineTuner(success),
+            )
 
         graph.execute(initialState())
 
@@ -195,11 +209,12 @@ class FineTuningGraphTest {
     @Test
     fun `execute calls the prompt builder with the trained state for validate`() {
         val promptBuilder = FakePromptBuilder()
-        val graph = FineTuningGraph(
-            promptBuilder = promptBuilder,
-            llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9),
-            pipeline = FakeFineTuner(success),
-        )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = promptBuilder,
+                llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9),
+                pipeline = FakeFineTuner(success),
+            )
 
         graph.execute(initialState())
 
@@ -212,11 +227,12 @@ class FineTuningGraphTest {
     fun `execute does not call validate when train returns Failure`() {
         val promptBuilder = FakePromptBuilder()
         val failure = FineTuningResult.Failure("boom", request.dataset)
-        val graph = FineTuningGraph(
-            promptBuilder = promptBuilder,
-            llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9),
-            pipeline = FakeFineTuner(failure),
-        )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = promptBuilder,
+                llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9),
+                pipeline = FakeFineTuner(failure),
+            )
 
         graph.execute(initialState())
 
@@ -226,11 +242,12 @@ class FineTuningGraphTest {
     @Test
     fun `execute forwards the LLM propose prompt to the provider`() {
         val llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9)
-        val graph = FineTuningGraph(
-            promptBuilder = FakePromptBuilder(),
-            llm = llm,
-            pipeline = FakeFineTuner(success),
-        )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = FakePromptBuilder(),
+                llm = llm,
+                pipeline = FakeFineTuner(success),
+            )
 
         graph.execute(initialState())
 
@@ -241,11 +258,12 @@ class FineTuningGraphTest {
     @Test
     fun `execute forwards the LLM validate prompt to the provider`() {
         val llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9)
-        val graph = FineTuningGraph(
-            promptBuilder = FakePromptBuilder(),
-            llm = llm,
-            pipeline = FakeFineTuner(success),
-        )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = FakePromptBuilder(),
+                llm = llm,
+                pipeline = FakeFineTuner(success),
+            )
 
         graph.execute(initialState())
 
@@ -254,11 +272,12 @@ class FineTuningGraphTest {
 
     @Test
     fun `asMermaidDiagram returns a non-blank mermaid graph description`() {
-        val graph = FineTuningGraph(
-            promptBuilder = FakePromptBuilder(),
-            llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9),
-            pipeline = FakeFineTuner(success),
-        )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = FakePromptBuilder(),
+                llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9),
+                pipeline = FakeFineTuner(success),
+            )
 
         val mermaid = graph.asMermaidDiagram()
 
@@ -269,11 +288,12 @@ class FineTuningGraphTest {
     fun `execute preserves request and config through the pipeline`() {
         val config = FineTuningConfig(epochs = 5, learningRate = 1e-4)
         val state = FineTuningState(request = request, config = config)
-        val graph = FineTuningGraph(
-            promptBuilder = FakePromptBuilder(),
-            llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9),
-            pipeline = FakeFineTuner(success),
-        )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = FakePromptBuilder(),
+                llm = FakeFineTuningLlm(proposeResponse = "ratio 0.10", validateScore = 0.9),
+                pipeline = FakeFineTuner(success),
+            )
 
         val result = graph.execute(state)
 
@@ -285,11 +305,12 @@ class FineTuningGraphTest {
     fun `execute parses corpus ratio adjustment from the proposal`() {
         val llm = FakeFineTuningLlm(proposeResponse = "increase corpus ratio to 0.15", validateScore = 0.9)
         val pipeline = FakeFineTuner(success)
-        val graph = FineTuningGraph(
-            promptBuilder = FakePromptBuilder(),
-            llm = llm,
-            pipeline = pipeline,
-        )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = FakePromptBuilder(),
+                llm = llm,
+                pipeline = pipeline,
+            )
 
         graph.execute(initialState())
 
@@ -302,11 +323,12 @@ class FineTuningGraphTest {
     fun `execute falls back to request corpus ratio when proposal has no numeric ratio`() {
         val llm = FakeFineTuningLlm(proposeResponse = "use more data", validateScore = 0.9)
         val pipeline = FakeFineTuner(success)
-        val graph = FineTuningGraph(
-            promptBuilder = FakePromptBuilder(),
-            llm = llm,
-            pipeline = pipeline,
-        )
+        val graph =
+            FineTuningGraph(
+                promptBuilder = FakePromptBuilder(),
+                llm = llm,
+                pipeline = pipeline,
+            )
 
         graph.execute(initialState())
 

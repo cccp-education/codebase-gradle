@@ -7,8 +7,9 @@ import io.cucumber.java.en.When
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class ListTasksSteps(private val world: ListTasksWorld) {
-
+class ListTasksSteps(
+    private val world: ListTasksWorld,
+) {
     @Before("@epic_w_4")
     fun reset() {
         world.reset()
@@ -53,7 +54,10 @@ class ListTasksSteps(private val world: ListTasksWorld) {
     }
 
     @Then("the result includes option {string} for task {string}")
-    fun `result includes option for task`(option: String, taskName: String) {
+    fun `result includes option for task`(
+        option: String,
+        taskName: String,
+    ) {
         assertNotNull(world.lastResult, "Result should not be null")
         val lines = world.lastResult.lines()
         val headerIdx = lines.indexOfFirst { it.contains(taskName) }

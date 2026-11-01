@@ -1,18 +1,20 @@
 package codebase.rag
 
 import org.junit.jupiter.api.Test
-import kotlin.test.*
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class YamlConfigAnonymizerTest {
-
     @Test
     fun `anonymizeYaml should replace secret value with asterisks`() {
-        val yaml = """
+        val yaml =
+            """
             |server:
             |  host: localhost
             |  password: secret123
             |  port: 8080
-        """.trimMargin()
+            """.trimMargin()
 
         val result = YamlConfigAnonymizer.anonymizeYaml(yaml)
 
@@ -23,12 +25,13 @@ class YamlConfigAnonymizerTest {
 
     @Test
     fun `anonymizeYaml should not modify non-sensitive keys`() {
-        val yaml = """
+        val yaml =
+            """
             |database:
             |  host: db.example.com
             |  port: 5432
             |  name: mydb
-        """.trimMargin()
+            """.trimMargin()
 
         val result = YamlConfigAnonymizer.anonymizeYaml(yaml)
 
@@ -39,10 +42,11 @@ class YamlConfigAnonymizerTest {
 
     @Test
     fun `anonymizeYaml should preserve comments`() {
-        val yaml = """
+        val yaml =
+            """
             |# database credentials
             |password: secret123
-        """.trimMargin()
+            """.trimMargin()
 
         val result = YamlConfigAnonymizer.anonymizeYaml(yaml)
 
@@ -108,11 +112,12 @@ class YamlConfigAnonymizerTest {
 
     @Test
     fun `verifyNoSecrets should return empty list for clean content`() {
-        val clean = """
+        val clean =
+            """
             |server:
             |  host: localhost
             |  port: 8080
-        """.trimMargin()
+            """.trimMargin()
 
         val findings = YamlConfigAnonymizer.verifyNoSecrets(clean)
 
@@ -121,11 +126,12 @@ class YamlConfigAnonymizerTest {
 
     @Test
     fun `verifyNoSecrets should detect password in plain text`() {
-        val content = """
+        val content =
+            """
             |server:
             |  host: localhost
             |  password: mypass
-        """.trimMargin()
+            """.trimMargin()
 
         val findings = YamlConfigAnonymizer.verifyNoSecrets(content)
 
@@ -145,10 +151,11 @@ class YamlConfigAnonymizerTest {
 
     @Test
     fun `verifyNoSecrets should skip comments`() {
-        val content = """
+        val content =
+            """
             |# password: secret123
             |host: localhost
-        """.trimMargin()
+            """.trimMargin()
 
         val findings = YamlConfigAnonymizer.verifyNoSecrets(content)
 

@@ -1,12 +1,12 @@
 package codebase.scenarios
 
 import codebase.koog.llm.LlmProviderResolver
+import codebase.koog.llm.pool.FakeEnvironmentReader
+import codebase.koog.llm.pool.FakeInstanceScanner
 import codebase.koog.llm.pool.OllamaInstanceFactory
 import codebase.koog.llm.pool.OllamaInstanceScanner
 import codebase.koog.llm.pool.OllamaLlmProvider
 import codebase.koog.llm.pool.OllamaPool
-import codebase.koog.llm.pool.FakeInstanceScanner
-import codebase.koog.llm.pool.FakeEnvironmentReader
 import codebase.koog.llm.pool.port.EnvironmentReader
 import codebase.koog.llm.pool.port.InstanceScanner
 import io.cucumber.java.en.Given
@@ -24,8 +24,9 @@ import kotlin.test.assertTrue
  * Aucun appel réseau : les instances Ollama cloud sont simulées par le pool
  * et l'adaptateur tourne quand une instance lève "quota exceeded".
  */
-class OllamaCloudSteps(private val world: OllamaCloudWorld) {
-
+class OllamaCloudSteps(
+    private val world: OllamaCloudWorld,
+) {
     @Given("an Ollama cloud pool with {int} instances")
     fun `ollama cloud pool with N instances`(count: Int) {
         world.buildPool()
@@ -49,8 +50,11 @@ class OllamaCloudSteps(private val world: OllamaCloudWorld) {
 
     @Then("the call succeeds on the second instance")
     fun `call succeeds on second instance`() {
-        assertEquals("success-ollama-11438", world.lastResult,
-            "Expected fallback to second instance, got ${world.lastResult}")
+        assertEquals(
+            "success-ollama-11438",
+            world.lastResult,
+            "Expected fallback to second instance, got ${world.lastResult}",
+        )
         assertEquals(null, world.lastException, "No exception should be thrown")
     }
 
@@ -60,7 +64,7 @@ class OllamaCloudSteps(private val world: OllamaCloudWorld) {
         // "quota" ou "connection refused". Vérifie au moins le skip.
         assertTrue(
             world.adapter.isInactive("ollama-11437") || world.lastResult == "success-ollama-11438",
-            "First instance should be inactive or skipped after quota exceeded"
+            "First instance should be inactive or skipped after quota exceeded",
         )
     }
 
@@ -70,11 +74,11 @@ class OllamaCloudSteps(private val world: OllamaCloudWorld) {
         assertNotNull(exception, "Expected an IllegalStateException")
         assertTrue(
             exception is IllegalStateException,
-            "Expected IllegalStateException but got ${exception::class.simpleName}"
+            "Expected IllegalStateException but got ${exception::class.simpleName}",
         )
         assertTrue(
             exception.message?.contains(expectedMessage) ?: false,
-            "Expected message containing '$expectedMessage' but got '${exception.message}'"
+            "Expected message containing '$expectedMessage' but got '${exception.message}'",
         )
     }
 
@@ -87,26 +91,35 @@ class OllamaCloudSteps(private val world: OllamaCloudWorld) {
 
     @Given("OLLAMA_POOL_PORTS is set to {string}")
     fun `ollama pool ports is set`(ports: String) {
-        LlmProviderResolver.environmentReader = { EnvironmentReader { env ->
-            if (env == "OLLAMA_POOL_PORTS") ports else null
-        } }
+        LlmProviderResolver.environmentReader = {
+            EnvironmentReader { env ->
+                if (env == "OLLAMA_POOL_PORTS") ports else null
+            }
+        }
     }
 
     @Given("OLLAMA_SCAN_PORTS is set to {string}")
     fun `ollama scan ports is set`(value: String) {
-        LlmProviderResolver.environmentReader = { EnvironmentReader { env ->
-            if (env == "OLLAMA_SCAN_PORTS") value else null
-        } }
+        LlmProviderResolver.environmentReader = {
+            EnvironmentReader { env ->
+                if (env == "OLLAMA_SCAN_PORTS") value else null
+            }
+        }
     }
 
     @Given("the fake scanner reports live ports {string}")
     fun `fake scanner reports live ports`(ports: String) {
         val livePorts = ports.split(",").map { it.trim().toInt() }.toSet()
-        val scanner = object : InstanceScanner {
-            private val delegate = FakeInstanceScanner(livePorts)
-            override suspend fun probe(baseUrl: String, port: Int, model: String) =
-                delegate.probe(baseUrl, port, model)
-        }
+        val scanner =
+            object : InstanceScanner {
+                private val delegate = FakeInstanceScanner(livePorts)
+
+                override suspend fun probe(
+                    baseUrl: String,
+                    port: Int,
+                    model: String,
+                ) = delegate.probe(baseUrl, port, model)
+            }
         LlmProviderResolver.scannerFactory = {
             OllamaInstanceScanner(scanner, FakeEnvironmentReader(emptyMap()))
         }
@@ -132,9 +145,17 @@ class OllamaCloudSteps(private val world: OllamaCloudWorld) {
     fun `provider pool models cycle through authorized models`(count: Int) {
         val provider = world.lastResolvedProvider as OllamaLlmProvider
         val expected = OllamaInstanceFactory.AUTHORIZED_MODELS
-        val actual = provider.pool.instances().take(expected.size).map { it.model }
+        val actual =
+            provider.pool
+                .instances()
+                .take(expected.size)
+                .map { it.model }
         assertEquals(expected, actual)
-        val distinctModels = provider.pool.instances().map { it.model }.toSet()
+        val distinctModels =
+            provider.pool
+                .instances()
+                .map { it.model }
+                .toSet()
         assertEquals(count, distinctModels.size)
         for (model in OllamaInstanceFactory.AUTHORIZED_MODELS) {
             assertTrue(model in distinctModels, "Authorized model '$model' missing")
@@ -142,7 +163,10 @@ class OllamaCloudSteps(private val world: OllamaCloudWorld) {
     }
 
     @Then("the provider pool contains {int} instance on port {int}")
-    fun `provider pool contains N instance on port`(count: Int, port: Int) {
+    fun `provider pool contains N instance on port`(
+        count: Int,
+        port: Int,
+    ) {
         val provider = world.lastResolvedProvider as OllamaLlmProvider
         val instancesOnPort = provider.pool.instances().filter { it.baseUrl == "http://localhost:$port" }
         assertEquals(count, instancesOnPort.size, "Expected $count instance on port $port")
@@ -158,6 +182,9 @@ class OllamaCloudSteps(private val world: OllamaCloudWorld) {
     private val OllamaLlmProvider.pool: OllamaPool
         get() {
             val adapter = javaClass.getDeclaredField("adapter").apply { isAccessible = true }.get(this)
-            return adapter.javaClass.getDeclaredField("pool").apply { isAccessible = true }.get(adapter) as OllamaPool
+            return adapter.javaClass
+                .getDeclaredField("pool")
+                .apply { isAccessible = true }
+                .get(adapter) as OllamaPool
         }
 }

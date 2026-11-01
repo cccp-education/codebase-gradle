@@ -1,13 +1,10 @@
 package codebase.koog.planning
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class VibecodingPlanTest {
-
     @Test
     fun `empty plan should have no steps`() {
         val plan = VibecodingPlan(emptyList())
@@ -17,11 +14,12 @@ class VibecodingPlanTest {
 
     @Test
     fun `plan with steps should preserve order`() {
-        val steps = listOf(
-            VibecodingStep("compile", "build", "BUILD SUCCESSFUL"),
-            VibecodingStep("test", "test", "All tests passed"),
-            VibecodingStep("publish", "publish", "BUILD SUCCESSFUL")
-        )
+        val steps =
+            listOf(
+                VibecodingStep("compile", "build", "BUILD SUCCESSFUL"),
+                VibecodingStep("test", "test", "All tests passed"),
+                VibecodingStep("publish", "publish", "BUILD SUCCESSFUL"),
+            )
         val plan = VibecodingPlan(steps)
         assertEquals(3, plan.steps.size)
         assertEquals("compile", plan.steps[0].description)
@@ -61,28 +59,31 @@ class VibecodingPlanTest {
 
     @Test
     fun `plan should accept REVERT_AND_CONTINUE strategy`() {
-        val plan = VibecodingPlan(
-            listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
-            rollbackStrategy = RollbackStrategy.REVERT_AND_CONTINUE
-        )
+        val plan =
+            VibecodingPlan(
+                listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
+                rollbackStrategy = RollbackStrategy.REVERT_AND_CONTINUE,
+            )
         assertEquals(RollbackStrategy.REVERT_AND_CONTINUE, plan.rollbackStrategy)
     }
 
     @Test
     fun `plan should accept MARK_SKIPPED strategy`() {
-        val plan = VibecodingPlan(
-            listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
-            rollbackStrategy = RollbackStrategy.MARK_SKIPPED
-        )
+        val plan =
+            VibecodingPlan(
+                listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
+                rollbackStrategy = RollbackStrategy.MARK_SKIPPED,
+            )
         assertEquals(RollbackStrategy.MARK_SKIPPED, plan.rollbackStrategy)
     }
 
     @Test
     fun `plan should accept FALLBACK_HUMAN strategy`() {
-        val plan = VibecodingPlan(
-            listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
-            rollbackStrategy = RollbackStrategy.FALLBACK_HUMAN
-        )
+        val plan =
+            VibecodingPlan(
+                listOf(VibecodingStep("compile", "build", "BUILD SUCCESSFUL")),
+                rollbackStrategy = RollbackStrategy.FALLBACK_HUMAN,
+            )
         assertEquals(RollbackStrategy.FALLBACK_HUMAN, plan.rollbackStrategy)
     }
 
@@ -110,11 +111,12 @@ class VibecodingPlanTest {
 
     @Test
     fun `plan with multiple steps and custom strategy should be valid`() {
-        val steps = listOf(
-            VibecodingStep("collect corpus", "collectFromCorpus", "Corpus collected", maxRetries = 2),
-            VibecodingStep("generate content plan", "generateContentPlan", "Content plan generated", verifyHook = "grep ERROR"),
-            VibecodingStep("verify output", "verifyOutput", "Output valid", maxRetries = 1)
-        )
+        val steps =
+            listOf(
+                VibecodingStep("collect corpus", "collectFromCorpus", "Corpus collected", maxRetries = 2),
+                VibecodingStep("generate content plan", "generateContentPlan", "Content plan generated", verifyHook = "grep ERROR"),
+                VibecodingStep("verify output", "verifyOutput", "Output valid", maxRetries = 1),
+            )
         val plan = VibecodingPlan(steps, rollbackStrategy = RollbackStrategy.REVERT_AND_CONTINUE)
         assertEquals(3, plan.steps.size)
         assertEquals(RollbackStrategy.REVERT_AND_CONTINUE, plan.rollbackStrategy)

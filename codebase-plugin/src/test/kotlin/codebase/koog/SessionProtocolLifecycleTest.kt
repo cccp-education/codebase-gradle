@@ -7,14 +7,14 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
 import java.nio.file.Path
 import java.util.UUID
 
 class SessionProtocolLifecycleTest {
-
     @Test
-    fun `create starts a new session with CREATED status`(@TempDir tempDir: Path) {
+    fun `create starts a new session with CREATED status`(
+        @TempDir tempDir: Path,
+    ) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
         val state = manager.create("Fix typo in README", "gemma4:31b-cloud")
 
@@ -27,7 +27,9 @@ class SessionProtocolLifecycleTest {
     }
 
     @Test
-    fun `resume loads an existing session with RUNNING status`(@TempDir tempDir: Path) {
+    fun `resume loads an existing session with RUNNING status`(
+        @TempDir tempDir: Path,
+    ) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
         val created = manager.create("Add dark mode toggle", "gemma4:31b-cloud")
         val resumed = manager.resume(created.sessionId)
@@ -38,7 +40,9 @@ class SessionProtocolLifecycleTest {
     }
 
     @Test
-    fun `close marks session as CLOSED`(@TempDir tempDir: Path) {
+    fun `close marks session as CLOSED`(
+        @TempDir tempDir: Path,
+    ) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
         val created = manager.create("Add tests", "gemini")
         manager.close(created.sessionId)
@@ -48,13 +52,17 @@ class SessionProtocolLifecycleTest {
     }
 
     @Test
-    fun `get returns null for non-existent session`(@TempDir tempDir: Path) {
+    fun `get returns null for non-existent session`(
+        @TempDir tempDir: Path,
+    ) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
         assertNull(manager.get("nonexistent-id"))
     }
 
     @Test
-    fun `list returns all sessions ordered by created_at desc`(@TempDir tempDir: Path) {
+    fun `list returns all sessions ordered by created_at desc`(
+        @TempDir tempDir: Path,
+    ) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
         val s1 = manager.create("First prompt", "model-a")
         Thread.sleep(10)
@@ -67,7 +75,9 @@ class SessionProtocolLifecycleTest {
     }
 
     @Test
-    fun `listByStatus filters sessions`(@TempDir tempDir: Path) {
+    fun `listByStatus filters sessions`(
+        @TempDir tempDir: Path,
+    ) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
         val s1 = manager.create("Prompt A", "model-a")
         manager.close(s1.sessionId)
@@ -83,13 +93,16 @@ class SessionProtocolLifecycleTest {
     }
 
     @Test
-    fun `updateResponse persists execution result`(@TempDir tempDir: Path) {
+    fun `updateResponse persists execution result`(
+        @TempDir tempDir: Path,
+    ) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
         val created = manager.create("Execute task", "model-x")
 
-        val responseJson = """
+        val responseJson =
+            """
             {"sessionId":"${created.sessionId}","output":"Task done","status":"COMPLETED"}
-        """.trimIndent()
+            """.trimIndent()
         manager.updateResponse(created.sessionId, responseJson)
 
         val updated = manager.get(created.sessionId)
@@ -98,7 +111,9 @@ class SessionProtocolLifecycleTest {
     }
 
     @Test
-    fun `resume stores parentSessionId reference`(@TempDir tempDir: Path) {
+    fun `resume stores parentSessionId reference`(
+        @TempDir tempDir: Path,
+    ) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
         val created = manager.create("Original prompt", "model-a")
         val resumed = manager.resume(created.sessionId)
@@ -108,27 +123,35 @@ class SessionProtocolLifecycleTest {
     }
 
     @Test
-    fun `resume non-existent session throws exception`(@TempDir tempDir: Path) {
+    fun `resume non-existent session throws exception`(
+        @TempDir tempDir: Path,
+    ) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
 
-        val exception = org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException::class.java) {
-            manager.resume("nonexistent")
-        }
+        val exception =
+            org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException::class.java) {
+                manager.resume("nonexistent")
+            }
         assertTrue(exception.message!!.contains("not found"))
     }
 
     @Test
-    fun `close non-existent session throws exception`(@TempDir tempDir: Path) {
+    fun `close non-existent session throws exception`(
+        @TempDir tempDir: Path,
+    ) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
 
-        val exception = org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException::class.java) {
-            manager.close("nonexistent")
-        }
+        val exception =
+            org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException::class.java) {
+                manager.close("nonexistent")
+            }
         assertTrue(exception.message!!.contains("not found"))
     }
 
     @Test
-    fun `delete removes session from storage`(@TempDir tempDir: Path) {
+    fun `delete removes session from storage`(
+        @TempDir tempDir: Path,
+    ) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
         val created = manager.create("Temporary session", "model-x")
 
@@ -138,13 +161,17 @@ class SessionProtocolLifecycleTest {
     }
 
     @Test
-    fun `delete non-existent session returns false`(@TempDir tempDir: Path) {
+    fun `delete non-existent session returns false`(
+        @TempDir tempDir: Path,
+    ) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
         assertFalse(manager.delete("nonexistent"))
     }
 
     @Test
-    fun `persistence survives manager recreation`(@TempDir tempDir: Path) {
+    fun `persistence survives manager recreation`(
+        @TempDir tempDir: Path,
+    ) {
         val manager1 = SessionProtocolLifecycleManager(tempDir.toFile())
         val created = manager1.create("Persistent prompt", "model-p")
 
@@ -158,7 +185,9 @@ class SessionProtocolLifecycleTest {
     }
 
     @Test
-    fun `createdAt and updatedAt are populated`(@TempDir tempDir: Path) {
+    fun `createdAt and updatedAt are populated`(
+        @TempDir tempDir: Path,
+    ) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
         val state = manager.create("Timestamp test", "model-t")
 
@@ -168,7 +197,9 @@ class SessionProtocolLifecycleTest {
     }
 
     @Test
-    fun `model is stored and retrieved`(@TempDir tempDir: Path) {
+    fun `model is stored and retrieved`(
+        @TempDir tempDir: Path,
+    ) {
         val manager = SessionProtocolLifecycleManager(tempDir.toFile())
         val state = manager.create("Model test", "gemini-2.5-flash")
 

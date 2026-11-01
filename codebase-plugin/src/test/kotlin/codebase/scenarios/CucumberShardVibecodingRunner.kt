@@ -32,16 +32,17 @@ import org.junit.platform.suite.api.Suite
 @SelectClasspathResource("features/epic_z_7_cross_borough.feature")
 @ConfigurationParameter(
     key = FEATURES_PROPERTY_NAME,
-    value = "src/test/features/epic_v_vibecoding.feature,src/test/features/epic_v6_ollama_cloud.feature," +
-        "src/test/features/epic_v6_pool.feature,src/test/features/epic_v6_resolver.feature," +
-        "src/test/features/epic_v_pool.feature,src/test/features/epic_v_session_repository.feature," +
-        "src/test/features/epic_v_dashboard.feature,src/test/features/epic_v_local_governance_fallback.feature," +
-        "src/test/features/epic_z_6_autofocus_feedback.feature,src/test/features/epic_z_7_cross_borough.feature"
+    value =
+        "src/test/features/epic_v_vibecoding.feature,src/test/features/epic_v6_ollama_cloud.feature," +
+            "src/test/features/epic_v6_pool.feature,src/test/features/epic_v6_resolver.feature," +
+            "src/test/features/epic_v_pool.feature,src/test/features/epic_v_session_repository.feature," +
+            "src/test/features/epic_v_dashboard.feature,src/test/features/epic_v_local_governance_fallback.feature," +
+            "src/test/features/epic_z_6_autofocus_feedback.feature,src/test/features/epic_z_7_cross_borough.feature",
 )
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "codebase.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-shard-vibecoding.html, json:build/reports/cucumber-shard-vibecoding.json"
+    value = "pretty, html:build/reports/cucumber-shard-vibecoding.html, json:build/reports/cucumber-shard-vibecoding.json",
 )
 @ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @wip and not @integration")
 class CucumberShardVibecodingRunner

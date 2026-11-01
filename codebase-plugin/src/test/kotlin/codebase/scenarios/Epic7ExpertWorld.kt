@@ -1,11 +1,10 @@
 package codebase.scenarios
 
+import codebase.koog.expert.DispatcherAgent
 import codebase.koog.expert.ExpertCallPipeline
 import codebase.koog.expert.ExpertCallRepository
 import codebase.koog.expert.ExpertDomain
-import codebase.koog.expert.ExpertRegistration
 import codebase.koog.expert.ExpertRegistry
-import codebase.koog.expert.DispatcherAgent
 import codebase.koog.expert.FakeExpertAgent
 import codebase.koog.llm.FakeLlmProvider
 

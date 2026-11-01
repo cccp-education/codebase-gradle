@@ -21,23 +21,24 @@ import java.util.Base64
  * @param keyPool GeminiKeyPool with test secrets (default: 2 keys, quota 10, threshold 50%)
  */
 class FakeVisionProvider(
-    val keyPool: GeminiKeyPool = GeminiKeyPool(
-        listOf(
-            LlmInstance(
-                id = "test-gemini-key-1",
-                baseUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=test-secret-1",
-                model = "gemini-2.5-flash",
-                quota = QuotaConfig(limitValue = 10, thresholdPercent = 50, resetPolicy = ResetPolicy.NEVER)
+    val keyPool: GeminiKeyPool =
+        GeminiKeyPool(
+            listOf(
+                LlmInstance(
+                    id = "test-gemini-key-1",
+                    baseUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=test-secret-1",
+                    model = "gemini-2.5-flash",
+                    quota = QuotaConfig(limitValue = 10, thresholdPercent = 50, resetPolicy = ResetPolicy.NEVER),
+                ),
+                LlmInstance(
+                    id = "test-gemini-key-2",
+                    baseUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=test-secret-2",
+                    model = "gemini-2.5-flash",
+                    quota = QuotaConfig(limitValue = 10, thresholdPercent = 50, resetPolicy = ResetPolicy.NEVER),
+                ),
             ),
-            LlmInstance(
-                id = "test-gemini-key-2",
-                baseUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=test-secret-2",
-                model = "gemini-2.5-flash",
-                quota = QuotaConfig(limitValue = 10, thresholdPercent = 50, resetPolicy = ResetPolicy.NEVER)
-            )
+            rotationStrategy = RotationStrategy.ROUND_ROBIN,
         ),
-        rotationStrategy = RotationStrategy.ROUND_ROBIN
-    )
 ) : VisionProvider {
     private val log = LoggerFactory.getLogger(FakeVisionProvider::class.java)
 
@@ -49,21 +50,26 @@ class FakeVisionProvider(
         mimeType: String,
         language: String,
         model: String,
-        maxTokens: Int
+        maxTokens: Int,
     ): String {
         val instance = keyPool.nextInstance()
         _lastUsedKeyId = instance.id
         log.info(
             "[FakeVision] key={}, model={}, mimeType={}, size={}bytes, poolSize={}",
-            instance.id, instance.model, mimeType, imageBytes.size, keyPool.size()
+            instance.id,
+            instance.model,
+            mimeType,
+            imageBytes.size,
+            keyPool.size(),
         )
         val encodedPreview = Base64.getEncoder().encodeToString(imageBytes.take(16).toByteArray())
-        val langLabel = when (language.lowercase()) {
-            "fr" -> "Titre Principal"
-            "en" -> "Main Title"
-            "de" -> "Haupttitel"
-            else -> "Title"
-        }
+        val langLabel =
+            when (language.lowercase()) {
+                "fr" -> "Titre Principal"
+                "en" -> "Main Title"
+                "de" -> "Haupttitel"
+                else -> "Title"
+            }
         return """
             = $langLabel
             // OCR par FakeVisionProvider (test)
@@ -92,6 +98,6 @@ class FakeVisionProvider(
             | Valeur 1  | Valeur 2
             | Valeur 3  | Valeur 4
             |===
-        """.trimIndent()
+            """.trimIndent()
     }
 }

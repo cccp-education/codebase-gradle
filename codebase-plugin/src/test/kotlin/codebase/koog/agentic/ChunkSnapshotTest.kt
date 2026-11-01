@@ -6,7 +6,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ChunkSnapshotTest {
-
     @Test
     fun `empty snapshot has no entries and no ids`() {
         val snapshot = ChunkSnapshot.empty()
@@ -17,10 +16,13 @@ class ChunkSnapshotTest {
 
     @Test
     fun `ids returns all chunk ids from entries`() {
-        val snapshot = ChunkSnapshot(listOf(
-            ChunkSnapshotEntry("id-a", "AGENT.adoc", "5-10", "checksum-a"),
-            ChunkSnapshotEntry("id-b", "BACKLOG.adoc", "1-3", "checksum-b")
-        ))
+        val snapshot =
+            ChunkSnapshot(
+                listOf(
+                    ChunkSnapshotEntry("id-a", "AGENT.adoc", "5-10", "checksum-a"),
+                    ChunkSnapshotEntry("id-b", "BACKLOG.adoc", "1-3", "checksum-b"),
+                ),
+            )
 
         assertEquals(setOf("id-a", "id-b"), snapshot.ids())
     }
@@ -35,27 +37,36 @@ class ChunkSnapshotTest {
 
     @Test
     fun `entryOf returns null for unknown chunk id`() {
-        val snapshot = ChunkSnapshot(listOf(
-            ChunkSnapshotEntry("id-a", "AGENT.adoc", "5-10", "checksum-a")
-        ))
+        val snapshot =
+            ChunkSnapshot(
+                listOf(
+                    ChunkSnapshotEntry("id-a", "AGENT.adoc", "5-10", "checksum-a"),
+                ),
+            )
 
         assertNull(snapshot.entryOf("id-unknown"))
     }
 
     @Test
     fun `checksumOf returns checksum for known chunk id`() {
-        val snapshot = ChunkSnapshot(listOf(
-            ChunkSnapshotEntry("id-a", "AGENT.adoc", "5-10", "checksum-a")
-        ))
+        val snapshot =
+            ChunkSnapshot(
+                listOf(
+                    ChunkSnapshotEntry("id-a", "AGENT.adoc", "5-10", "checksum-a"),
+                ),
+            )
 
         assertEquals("checksum-a", snapshot.checksumOf("id-a"))
     }
 
     @Test
     fun `checksumOf returns null for unknown chunk id`() {
-        val snapshot = ChunkSnapshot(listOf(
-            ChunkSnapshotEntry("id-a", "AGENT.adoc", "5-10", "checksum-a")
-        ))
+        val snapshot =
+            ChunkSnapshot(
+                listOf(
+                    ChunkSnapshotEntry("id-a", "AGENT.adoc", "5-10", "checksum-a"),
+                ),
+            )
 
         assertNull(snapshot.checksumOf("id-unknown"))
     }
@@ -91,7 +102,12 @@ class ChunkSnapshotTest {
         assertTrue(snapshot.entries.isEmpty())
     }
 
-    private fun agenticChunk(id: String, sourceFile: String, sourceLines: String, content: String): AgenticChunk =
+    private fun agenticChunk(
+        id: String,
+        sourceFile: String,
+        sourceLines: String,
+        content: String,
+    ): AgenticChunk =
         AgenticChunk(
             id = id,
             sourceFile = sourceFile,
@@ -103,7 +119,7 @@ class ChunkSnapshotTest {
             dagLevel = null,
             circle = null,
             weight = 0.5,
-            checksum = sha256(content)
+            checksum = sha256(content),
         )
 
     private fun sha256(input: String): String {

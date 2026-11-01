@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
 import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -17,7 +16,6 @@ import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OcrIngestTaskTest {
-
     private val store = VectorStore(PostgresFixture.jdbcUrl, PostgresFixture.username, PostgresFixture.password)
     private val pipeline = EmbeddingPipeline(store)
 
@@ -44,14 +42,18 @@ class OcrIngestTaskTest {
     }
 
     @Test
-    fun `ocrIngest with empty directory logs warning`(@TempDir tempDir: Path) {
+    fun `ocrIngest with empty directory logs warning`(
+        @TempDir tempDir: Path,
+    ) {
         val ocrDir = tempDir.resolve("ocr").toFile()
         ocrDir.mkdirs()
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("ocr-ingest-empty")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("ocr-ingest-empty")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
@@ -65,11 +67,14 @@ class OcrIngestTaskTest {
     }
 
     @Test
-    fun `ocrIngest with single adoc file chunks and embeds`(@TempDir tempDir: Path) {
+    fun `ocrIngest with single adoc file chunks and embeds`(
+        @TempDir tempDir: Path,
+    ) {
         val ocrDir = tempDir.resolve("ocr").toFile()
         ocrDir.mkdirs()
         val ocrFile = ocrDir.resolve("document_ocr.adoc")
-        ocrFile.writeText("""
+        ocrFile.writeText(
+            """
             = Document OCRisé
             :langue: fr
             :modèle: gemini-2.5-flash
@@ -86,12 +91,15 @@ class OcrIngestTaskTest {
             == Section 2
 
             Les embeddings sont calculés avec ONNX AllMiniLmL6V2.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("ocr-ingest-single")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("ocr-ingest-single")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
@@ -108,17 +116,21 @@ class OcrIngestTaskTest {
     }
 
     @Test
-    fun `ocrIngest with multiple adoc files ingests all`(@TempDir tempDir: Path) {
+    fun `ocrIngest with multiple adoc files ingests all`(
+        @TempDir tempDir: Path,
+    ) {
         val ocrDir = tempDir.resolve("ocr").toFile()
         ocrDir.mkdirs()
         ocrDir.resolve("doc1_ocr.adoc").writeText("= Document 1\n\nContenu du premier document OCR.")
         ocrDir.resolve("doc2_ocr.adoc").writeText("= Document 2\n\nContenu du second document OCR.")
         ocrDir.resolve("doc3_ocr.adoc").writeText("= Document 3\n\nContenu du troisième document OCR.")
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("ocr-ingest-multi")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("ocr-ingest-multi")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
@@ -134,17 +146,21 @@ class OcrIngestTaskTest {
     }
 
     @Test
-    fun `ocrIngest skips non-adoc files`(@TempDir tempDir: Path) {
+    fun `ocrIngest skips non-adoc files`(
+        @TempDir tempDir: Path,
+    ) {
         val ocrDir = tempDir.resolve("ocr").toFile()
         ocrDir.mkdirs()
         ocrDir.resolve("doc_ocr.adoc").writeText("= Document OCR\n\nContenu AsciiDoc.")
         ocrDir.resolve("doc_ocr.md").writeText("# Document Markdown\n\nContenu Markdown.")
         ocrDir.resolve("doc_ocr.txt").writeText("Document texte.")
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("ocr-ingest-filter")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("ocr-ingest-filter")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
@@ -158,15 +174,19 @@ class OcrIngestTaskTest {
     }
 
     @Test
-    fun `ocrIngest is idempotent`(@TempDir tempDir: Path) {
+    fun `ocrIngest is idempotent`(
+        @TempDir tempDir: Path,
+    ) {
         val ocrDir = tempDir.resolve("ocr").toFile()
         ocrDir.mkdirs()
         ocrDir.resolve("doc_ocr.adoc").writeText("= Document\n\nContenu test.")
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("ocr-ingest-idempotent")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("ocr-ingest-idempotent")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
@@ -187,15 +207,19 @@ class OcrIngestTaskTest {
     }
 
     @Test
-    fun `ocrIngest with ensureSchema does not drop existing data`(@TempDir tempDir: Path) {
+    fun `ocrIngest with ensureSchema does not drop existing data`(
+        @TempDir tempDir: Path,
+    ) {
         val ocrDir = tempDir.resolve("ocr").toFile()
         ocrDir.mkdirs()
         ocrDir.resolve("doc1_ocr.adoc").writeText("= Doc 1\n\nPremier document.")
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("ocr-ingest-ensure")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("ocr-ingest-ensure")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
@@ -213,10 +237,13 @@ class OcrIngestTaskTest {
     }
 
     @Test
-    fun `ocrIngest result is queryable via RAG`(@TempDir tempDir: Path) {
+    fun `ocrIngest result is queryable via RAG`(
+        @TempDir tempDir: Path,
+    ) {
         val ocrDir = tempDir.resolve("ocr").toFile()
         ocrDir.mkdirs()
-        ocrDir.resolve("rapport_ocr.adoc").writeText("""
+        ocrDir.resolve("rapport_ocr.adoc").writeText(
+            """
             = Rapport OCRisé
             :langue: fr
 
@@ -229,12 +256,15 @@ class OcrIngestTaskTest {
 
             Les investissements R&D représentent 15% du budget.
             L'effectif est de 42 collaborateurs.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("ocr-ingest-query")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("ocr-ingest-query")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
@@ -248,15 +278,20 @@ class OcrIngestTaskTest {
         val results = store.querySimilar(queryVector, topK = 3)
 
         assertTrue(results.isNotEmpty(), "Should return RAG results")
-        assertTrue(results.any { it.text.contains("chiffre d'affaires") || it.text.contains("Q1") },
-            "Results should contain relevant content")
+        assertTrue(
+            results.any { it.text.contains("chiffre d'affaires") || it.text.contains("Q1") },
+            "Results should contain relevant content",
+        )
     }
 
     @Test
-    fun `ocrIngest with anonymized OCR content is queryable`(@TempDir tempDir: Path) {
+    fun `ocrIngest with anonymized OCR content is queryable`(
+        @TempDir tempDir: Path,
+    ) {
         val ocrDir = tempDir.resolve("ocr").toFile()
         ocrDir.mkdirs()
-        ocrDir.resolve("anonymized_ocr.adoc").writeText("""
+        ocrDir.resolve("anonymized_ocr.adoc").writeText(
+            """
             = Document OCRisé (Anonymisé)
             :langue: fr
 
@@ -267,12 +302,15 @@ class OcrIngestTaskTest {
 
             Le projet Alpha a livré la version 2.0 en production.
             Les tests de performance montrent une latence de 12ms.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("ocr-ingest-anonymized")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("ocr-ingest-anonymized")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
@@ -286,16 +324,22 @@ class OcrIngestTaskTest {
         val results = store.querySimilar(queryVector, topK = 3)
 
         assertTrue(results.isNotEmpty(), "Should return RAG results for anonymized content")
-        assertTrue(results.any { it.text.contains("Alpha") || it.text.contains("production") },
-            "Results should contain business content despite anonymization")
+        assertTrue(
+            results.any { it.text.contains("Alpha") || it.text.contains("production") },
+            "Results should contain business content despite anonymization",
+        )
     }
 
     @Test
-    fun `ocrIngest with non-existent directory does not crash`(@TempDir tempDir: Path) {
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("ocr-ingest-nonexistent")
-            .build()
+    fun `ocrIngest with non-existent directory does not crash`(
+        @TempDir tempDir: Path,
+    ) {
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("ocr-ingest-nonexistent")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
@@ -309,15 +353,19 @@ class OcrIngestTaskTest {
     }
 
     @Test
-    fun `ocrIngest with custom jdbcUrl uses provided connection`(@TempDir tempDir: Path) {
+    fun `ocrIngest with custom jdbcUrl uses provided connection`(
+        @TempDir tempDir: Path,
+    ) {
         val ocrDir = tempDir.resolve("ocr").toFile()
         ocrDir.mkdirs()
         ocrDir.resolve("doc_ocr.adoc").writeText("= Doc\n\nContenu.")
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("ocr-ingest-custom-jdbc")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("ocr-ingest-custom-jdbc")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
@@ -332,20 +380,25 @@ class OcrIngestTaskTest {
     }
 
     @Test
-    fun `ocrIngest with large document produces multiple chunks`(@TempDir tempDir: Path) {
+    fun `ocrIngest with large document produces multiple chunks`(
+        @TempDir tempDir: Path,
+    ) {
         val ocrDir = tempDir.resolve("ocr").toFile()
         ocrDir.mkdirs()
-        val paragraphs = (1..20).joinToString("\n\n") { i ->
-            "== Section $i\n\nCeci est le contenu de la section $i du document OCR. " +
-            "Il contient plusieurs phrases pour générer des chunks. " +
-            "Le pipeline d'ingestion découpe le texte en segments sémantiques."
-        }
+        val paragraphs =
+            (1..20).joinToString("\n\n") { i ->
+                "== Section $i\n\nCeci est le contenu de la section $i du document OCR. " +
+                    "Il contient plusieurs phrases pour générer des chunks. " +
+                    "Le pipeline d'ingestion découpe le texte en segments sémantiques."
+            }
         ocrDir.resolve("large_ocr.adoc").writeText("= Grand Document\n\n$paragraphs")
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("ocr-ingest-large")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("ocr-ingest-large")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
@@ -361,14 +414,18 @@ class OcrIngestTaskTest {
     }
 
     @Test
-    fun `E2E image to OCR to anonymize to ingest to query`(@TempDir tempDir: Path) {
+    fun `E2E image to OCR to anonymize to ingest to query`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = tempDir.resolve("scan.png").toFile()
         inputFile.writeText("fake png bytes for E2E test")
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("ocr-e2e")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("ocr-e2e")
+                .build()
         project.pluginManager.apply("java-base")
 
         val ocrTask = project.tasks.register("ocr", OcrTask::class.java).get()
@@ -382,7 +439,11 @@ class OcrIngestTaskTest {
 
         ocrTask.executeOcr()
 
-        val ocrOutputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val ocrOutputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         val ocrOutputFile = ocrOutputDir.resolve("scan_ocr.adoc")
         assertTrue(ocrOutputFile.exists(), "OCR output file should exist")
 
@@ -405,20 +466,26 @@ class OcrIngestTaskTest {
         val results = store.querySimilar(queryVector, topK = 3)
 
         assertTrue(results.isNotEmpty(), "E2E RAG query should return results")
-        assertTrue(results.any { it.text.contains("Document OCRisé") || it.text.contains("FakeVisionProvider") },
-            "E2E results should contain OCR content")
+        assertTrue(
+            results.any { it.text.contains("Document OCRisé") || it.text.contains("FakeVisionProvider") },
+            "E2E results should contain OCR content",
+        )
     }
 
     @Test
-    fun `ocrIngest collects metrics per file`(@TempDir tempDir: Path) {
+    fun `ocrIngest collects metrics per file`(
+        @TempDir tempDir: Path,
+    ) {
         val ocrDir = tempDir.resolve("ocr").toFile()
         ocrDir.mkdirs()
         ocrDir.resolve("doc_ocr.adoc").writeText("= Document\n\nContenu test.")
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("ocr-ingest-metrics")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("ocr-ingest-metrics")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
@@ -437,15 +504,19 @@ class OcrIngestTaskTest {
     }
 
     @Test
-    fun `ocrIngest generates metrics report`(@TempDir tempDir: Path) {
+    fun `ocrIngest generates metrics report`(
+        @TempDir tempDir: Path,
+    ) {
         val ocrDir = tempDir.resolve("ocr").toFile()
         ocrDir.mkdirs()
         ocrDir.resolve("doc_ocr.adoc").writeText("= Document\n\nContenu test.")
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("ocr-ingest-report")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("ocr-ingest-report")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()
@@ -455,7 +526,12 @@ class OcrIngestTaskTest {
 
         task.executeIngest()
 
-        val reportFile = project.layout.buildDirectory.dir("reports/ocr").get().asFile.resolve("ocr-ingest-metrics.adoc")
+        val reportFile =
+            project.layout.buildDirectory
+                .dir("reports/ocr")
+                .get()
+                .asFile
+                .resolve("ocr-ingest-metrics.adoc")
         assertTrue(reportFile.exists(), "Ingest metrics report should be generated")
         val report = reportFile.readText()
         assertTrue(report.contains("= Rapport Métriques OCR"))
@@ -463,16 +539,20 @@ class OcrIngestTaskTest {
     }
 
     @Test
-    fun `ocrIngest with multiple files collects metrics for all`(@TempDir tempDir: Path) {
+    fun `ocrIngest with multiple files collects metrics for all`(
+        @TempDir tempDir: Path,
+    ) {
         val ocrDir = tempDir.resolve("ocr").toFile()
         ocrDir.mkdirs()
         ocrDir.resolve("doc1_ocr.adoc").writeText("= Doc 1\n\nContenu 1.")
         ocrDir.resolve("doc2_ocr.adoc").writeText("= Doc 2\n\nContenu 2.")
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(tempDir.toFile())
-            .withName("ocr-ingest-multi-metrics")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tempDir.toFile())
+                .withName("ocr-ingest-multi-metrics")
+                .build()
         project.pluginManager.apply("java-base")
 
         val task = project.tasks.register("ocrIngest", OcrIngestTask::class.java).get()

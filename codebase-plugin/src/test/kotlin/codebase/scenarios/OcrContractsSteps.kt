@@ -29,8 +29,9 @@ import kotlin.test.assertTrue
  * `OcrTask` AI-only rejection path via `executeOcr` on a ProjectBuilder
  * fixture.
  */
-class OcrContractsSteps(private val world: OcrContractsWorld) {
-
+class OcrContractsSteps(
+    private val world: OcrContractsWorld,
+) {
     @Given("an OCR contracts world is initialized")
     fun `ocr contracts world initialized`() {
         assertNotNull(world, "OcrContractsWorld should be instantiated by PicoContainer")
@@ -40,21 +41,23 @@ class OcrContractsSteps(private val world: OcrContractsWorld) {
     fun `vision provider stub returns`(response: String) {
         world.visionStub.resetQueue(listOf(response))
         world.scanFile = null
-        pendingRequest = OcrRequest(
-            imageData = byteArrayOf(1, 2, 3),
-            format = "image/png",
-            language = "fr"
-        )
+        pendingRequest =
+            OcrRequest(
+                imageData = byteArrayOf(1, 2, 3),
+                format = "image/png",
+                language = "fr",
+            )
     }
 
     @Given("a JPEG request in English processed with model {string}")
     fun `jpeg request with model`(model: String) {
         adapterModel = model
-        pendingRequest = OcrRequest(
-            imageData = ByteArray(0),
-            format = "image/jpeg",
-            language = "en"
-        )
+        pendingRequest =
+            OcrRequest(
+                imageData = ByteArray(0),
+                format = "image/jpeg",
+                language = "en",
+            )
     }
 
     @When("the N0 OCR engine adapter processes the request")
@@ -100,10 +103,11 @@ class OcrContractsSteps(private val world: OcrContractsWorld) {
     @Given("two successive requests through the same N0 engine instance")
     fun `two successive requests`() {
         world.visionStub.resetQueue(listOf("= Page un", "= Page two"))
-        successiveRequests = listOf(
-            OcrRequest(imageData = byteArrayOf(1), format = "image/png", language = "fr"),
-            OcrRequest(imageData = byteArrayOf(2), format = "image/png", language = "en")
-        )
+        successiveRequests =
+            listOf(
+                OcrRequest(imageData = byteArrayOf(1), format = "image/png", language = "fr"),
+                OcrRequest(imageData = byteArrayOf(2), format = "image/png", language = "en"),
+            )
     }
 
     @When("the N0 OCR engine adapter processes both requests")
@@ -128,7 +132,10 @@ class OcrContractsSteps(private val world: OcrContractsWorld) {
     // ── Degraded Tesseract boundary (OcrTask AI-only) ──────────────────
 
     @Given("a scan file {string} submitted with software provider {string}")
-    fun `scan file with software provider`(filename: String, provider: String) {
+    fun `scan file with software provider`(
+        filename: String,
+        provider: String,
+    ) {
         prepareTask(filename)
         task!!.ocrProvider.set(provider)
     }
@@ -148,8 +155,12 @@ class OcrContractsSteps(private val world: OcrContractsWorld) {
         } catch (e: Exception) {
             world.taskError = e
         }
-        world.outputDir = project!!
-            .layout.buildDirectory.dir("ocr").get().asFile
+        world.outputDir =
+            project!!
+                .layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
     }
 
     @Then("an OCR contracts error is raised containing {string}")
@@ -157,7 +168,7 @@ class OcrContractsSteps(private val world: OcrContractsWorld) {
         assertNotNull(world.taskError, "Expected an error to be raised")
         assertTrue(
             world.taskError!!.message!!.contains(expected),
-            "Error message should contain '$expected'. Got: ${world.taskError!!.message}"
+            "Error message should contain '$expected'. Got: ${world.taskError!!.message}",
         )
     }
 
@@ -179,10 +190,12 @@ class OcrContractsSteps(private val world: OcrContractsWorld) {
         val tmpDir = Files.createTempDirectory("ocr-contracts").toFile()
         val imgFile = File(tmpDir, filename)
         imgFile.writeBytes(minimalPng())
-        val proj = ProjectBuilder.builder()
-            .withProjectDir(tmpDir)
-            .withName("ocr-contracts-task")
-            .build()
+        val proj =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(tmpDir)
+                .withName("ocr-contracts-task")
+                .build()
         proj.pluginManager.apply(CodebasePlugin::class.java)
         val t = proj.tasks.getByName("ocrDocument") as OcrTask
         t.inputFile.set(proj.layout.projectDirectory.file(filename))
@@ -193,9 +206,10 @@ class OcrContractsSteps(private val world: OcrContractsWorld) {
     }
 
     private fun minimalPng(): ByteArray {
-        val pngHex = "89504E470D0A1A0A0000000D4948445200000001000000010802000000907" +
-            "71DE0000000C4944415408D763F8FFFF3F000005005E018246A4B10000000049" +
-            "454E44AE426082"
+        val pngHex =
+            "89504E470D0A1A0A0000000D4948445200000001000000010802000000907" +
+                "71DE0000000C4944415408D763F8FFFF3F000005005E018246A4B10000000049" +
+                "454E44AE426082"
         val cleaned = pngHex.replace(Regex("[^0-9A-Fa-f]"), "")
         val bytes = ByteArray(cleaned.length / 2)
         for (i in bytes.indices) {

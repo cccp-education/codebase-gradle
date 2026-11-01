@@ -1,9 +1,6 @@
 package codebase.scenarios
 
-import codebase.koog.agentic.ChunkValidationError
 import codebase.koog.agentic.ChunkValidationErrorType
-import codebase.koog.agentic.ChunkType
-import codebase.koog.agentic.TaxonomyVerb
 import io.cucumber.java.Before
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
@@ -11,8 +8,9 @@ import io.cucumber.java.en.When
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class ChunkValidatorSteps(private val world: ChunkValidatorWorld) {
-
+class ChunkValidatorSteps(
+    private val world: ChunkValidatorWorld,
+) {
     @Before("@epic_v_9_5")
     fun reset() {
         world.reset()
@@ -20,13 +18,14 @@ class ChunkValidatorSteps(private val world: ChunkValidatorWorld) {
 
     @Given("an AGENT.adoc content with a rule {string}")
     fun `agent adoc content with rule`(rule: String) {
-        world.content = """
+        world.content =
+            """
             = AGENT.adoc — Directives Agent
 
             == Regles Absolues
 
             $rule
-        """.trimIndent()
+            """.trimIndent()
         world.sourceFile = "AGENT.adoc"
     }
 
@@ -36,7 +35,10 @@ class ChunkValidatorSteps(private val world: ChunkValidatorWorld) {
     }
 
     @Given("a chunk with content {string} and a fake checksum {string}")
-    fun `chunk with content and fake checksum`(content: String, fakeChecksum: String) {
+    fun `chunk with content and fake checksum`(
+        content: String,
+        fakeChecksum: String,
+    ) {
         world.chunk = world.buildChunk(content = content, checksum = fakeChecksum)
     }
 
@@ -83,7 +85,7 @@ class ChunkValidatorSteps(private val world: ChunkValidatorWorld) {
         val result = world.lastResult ?: error("No validation result")
         assertTrue(
             result.errors.any { it.message.contains(keyword, ignoreCase = true) },
-            "Errors should contain '$keyword', got: ${result.errors}"
+            "Errors should contain '$keyword', got: ${result.errors}",
         )
     }
 
@@ -93,7 +95,7 @@ class ChunkValidatorSteps(private val world: ChunkValidatorWorld) {
         val expectedType = ChunkValidationErrorType.valueOf(typeName)
         assertTrue(
             result.errors.any { it.errorType == expectedType },
-            "Errors should contain type $typeName, got: ${result.errors.map { it.errorType }}"
+            "Errors should contain type $typeName, got: ${result.errors.map { it.errorType }}",
         )
     }
 }

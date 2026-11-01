@@ -16,7 +16,6 @@ import codebase.koog.pipeline.pipelineGraph
  * PicoContainer-scoped, one fresh instance per scenario.
  */
 class KoogPipelineWorld {
-
     var proposeThrows: String? = null
     var validateError: String? = null
 
@@ -36,8 +35,7 @@ class KoogPipelineWorld {
         mermaidDiagram = pipelineGraph(definition).asMermaidDiagram()
     }
 
-    private fun buildDefinition(): KoogPipelineDefinition =
-        KoogPipelineDefinition(proposeThrows = proposeThrows, validateError = validateError)
+    private fun buildDefinition(): KoogPipelineDefinition = KoogPipelineDefinition(proposeThrows = proposeThrows, validateError = validateError)
 }
 
 enum class SampleStage {
@@ -66,7 +64,6 @@ class KoogPipelineDefinition(
     private val proposeThrows: String? = null,
     private val validateError: String? = null,
 ) : PipelineDefinition<SampleState> {
-
     override val name = "sample-pipeline"
 
     val calls = mutableListOf<String>()
@@ -93,9 +90,13 @@ class KoogPipelineDefinition(
 
     override fun isFailed(state: SampleState): Boolean = state.stage == SampleStage.FAILED
 
-    override fun onProposeFailure(state: SampleState, cause: Throwable): SampleState =
-        state.copy(stage = SampleStage.FAILED, error = "ProposeFailed: ${cause.message}")
+    override fun onProposeFailure(
+        state: SampleState,
+        cause: Throwable,
+    ): SampleState = state.copy(stage = SampleStage.FAILED, error = "ProposeFailed: ${cause.message}")
 
-    override fun onGenerateFailure(state: SampleState, cause: Throwable): SampleState =
-        state.copy(stage = SampleStage.FAILED, error = "GenerateFailed: ${cause.message}")
+    override fun onGenerateFailure(
+        state: SampleState,
+        cause: Throwable,
+    ): SampleState = state.copy(stage = SampleStage.FAILED, error = "GenerateFailed: ${cause.message}")
 }

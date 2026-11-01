@@ -8,7 +8,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class OpenApiSpecGeneratorTest {
-
     private val generator = OpenApiSpecGenerator()
 
     @Test

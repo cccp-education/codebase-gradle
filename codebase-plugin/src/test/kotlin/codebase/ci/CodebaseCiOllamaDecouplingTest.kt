@@ -21,17 +21,17 @@ import java.io.File
  *    Ollama-dependent test can never be silently excluded from both jobs.
  */
 class CodebaseCiOllamaDecouplingTest {
-
-    private val repoRoot: File = run {
-        var dir = File(System.getProperty("user.dir")).absoluteFile
-        while (dir.parentFile != null && !dir.resolve(".github/workflows/test.yml").isFile) {
-            dir = dir.parentFile
+    private val repoRoot: File =
+        run {
+            var dir = File(System.getProperty("user.dir")).absoluteFile
+            while (dir.parentFile != null && !dir.resolve(".github/workflows/test.yml").isFile) {
+                dir = dir.parentFile
+            }
+            check(dir.resolve(".github/workflows/test.yml").isFile) {
+                "test.yml not found above ${System.getProperty("user.dir")}"
+            }
+            dir
         }
-        check(dir.resolve(".github/workflows/test.yml").isFile) {
-            "test.yml not found above ${System.getProperty("user.dir")}"
-        }
-        dir
-    }
 
     private val testSourcesDir = repoRoot.resolve("codebase-plugin/src/test/kotlin")
     private val buildScript = repoRoot.resolve("codebase-plugin/build.gradle.kts")
@@ -44,10 +44,11 @@ class CodebaseCiOllamaDecouplingTest {
         val start = text.indexOf(marker)
         check(start >= 0) { "job '$name' not found in test.yml" }
         val from = start + marker.length
-        val next = Regex("""(?m)^  [a-zA-Z0-9][a-zA-Z0-9-]*:""")
-            .findAll(text)
-            .map { it.range.first }
-            .firstOrNull { it > from }
+        val next =
+            Regex("""(?m)^  [a-zA-Z0-9][a-zA-Z0-9-]*:""")
+                .findAll(text)
+                .map { it.range.first }
+                .firstOrNull { it > from }
         return if (next != null) text.substring(from, next) else text.substring(from)
     }
 
@@ -104,15 +105,17 @@ class CodebaseCiOllamaDecouplingTest {
 
     @Test
     fun `every test source reaching a real Ollama instance carries the ollama tag`() {
-        val offenders = testSourcesDir.walkTopDown()
-            .filter { it.isFile && it.name.endsWith(".kt") }
-            // The guards live in codebase/ci and mention OLLAMA_TEST_PORT in
-            // assertions — they are not test sources that reach Ollama.
-            .filterNot { it.parentFile.name == "ci" }
-            .filter { it.readText().contains("OLLAMA_TEST_PORT") }
-            .filterNot { it.readText().contains("@Tag(\"ollama\")") }
-            .map { it.relativeTo(repoRoot).path }
-            .toList()
+        val offenders =
+            testSourcesDir
+                .walkTopDown()
+                .filter { it.isFile && it.name.endsWith(".kt") }
+                // The guards live in codebase/ci and mention OLLAMA_TEST_PORT in
+                // assertions — they are not test sources that reach Ollama.
+                .filterNot { it.parentFile.name == "ci" }
+                .filter { it.readText().contains("OLLAMA_TEST_PORT") }
+                .filterNot { it.readText().contains("@Tag(\"ollama\")") }
+                .map { it.relativeTo(repoRoot).path }
+                .toList()
 
         assertThat(offenders)
             .describedAs("test sources reading OLLAMA_TEST_PORT must be @Tag(\"ollama\")")

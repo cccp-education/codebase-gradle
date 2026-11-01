@@ -9,8 +9,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class TaskResultVerifierSteps(private val world: TaskResultVerifierWorld) {
-
+class TaskResultVerifierSteps(
+    private val world: TaskResultVerifierWorld,
+) {
     @Before("@epic_x_2")
     fun reset() {
         world.reset()
@@ -22,7 +23,10 @@ class TaskResultVerifierSteps(private val world: TaskResultVerifierWorld) {
     }
 
     @When("I verify stdout {string} and stderr {string}")
-    fun `verify stdout and stderr`(stdout: String, stderr: String) {
+    fun `verify stdout and stderr`(
+        stdout: String,
+        stderr: String,
+    ) {
         world.lastResult = world.verifier.verify(stdout, stderr)
     }
 
@@ -41,7 +45,9 @@ class TaskResultVerifierSteps(private val world: TaskResultVerifierWorld) {
     @Then("the error message contains {string}")
     fun `error message contains`(expected: String) {
         assertNotNull(world.lastResult)
-        assertTrue(world.lastResult!!.errorMessage.contains(expected),
-            "Expected error message to contain '$expected' but got: ${world.lastResult!!.errorMessage}")
+        assertTrue(
+            world.lastResult!!.errorMessage.contains(expected),
+            "Expected error message to contain '$expected' but got: ${world.lastResult!!.errorMessage}",
+        )
     }
 }

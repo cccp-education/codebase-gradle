@@ -9,10 +9,14 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Tag
 import java.net.HttpURLConnection
 import java.net.URI
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
+import kotlin.test.assertNotSame
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class OllamaLlmProviderTest {
-
     private val defaultQuota = QuotaConfig(limitValue = 100, thresholdPercent = 80, resetPolicy = ResetPolicy.NEVER)
 
     /**
@@ -28,8 +32,8 @@ class OllamaLlmProviderTest {
     private val ciModel = System.getenv("OLLAMA_TEST_MODEL") ?: "qwen3:0.6b"
 
     /** Test si Ollama tourne sur ce port avec au moins 1 modèle pullé */
-    private fun isOllamaReady(port: Int): Boolean {
-        return try {
+    private fun isOllamaReady(port: Int): Boolean =
+        try {
             val url = URI("http://localhost:$port/api/tags").toURL()
             val conn = url.openConnection() as HttpURLConnection
             conn.connectTimeout = 2000
@@ -39,7 +43,6 @@ class OllamaLlmProviderTest {
         } catch (_: Exception) {
             false
         }
-    }
 
     @Test
     fun `OllamaLlmProvider should implement LlmProvider`() {
@@ -71,9 +74,10 @@ class OllamaLlmProviderTest {
     @Tag("ollama")
     @Test
     fun `OllamaLlmProvider should rotate through pool instances on ModelNotFoundException`() {
-        val instances = listOf(ciPort, ciPort + 1).map { port ->
-            LlmInstance("ollama-$port", "http://localhost:$port", ciModel, quota = defaultQuota)
-        }
+        val instances =
+            listOf(ciPort, ciPort + 1).map { port ->
+                LlmInstance("ollama-$port", "http://localhost:$port", ciModel, quota = defaultQuota)
+            }
         val pool = OllamaPool(instances, rotationStrategy = RotationStrategy.ROUND_ROBIN)
 
         assumeTrue(isOllamaReady(ciPort), "Ollama not ready on port $ciPort — skipping integration test")
@@ -93,8 +97,9 @@ class OllamaLlmProviderTest {
         // Vérifie que l'instance a a bien été utilisée (usage incrémenté)
         val firstAfterCall = pool.instances().first { it.id == "ollama-$ciPort" }
         assertTrue(
-            pool.isQuotaExceeded(firstAfterCall.copy(quota = QuotaConfig(limitValue = 1, thresholdPercent = 50, resetPolicy = ResetPolicy.NEVER))) || !usageBeforeA,
-            "Pool should increment usage count even on ModelNotFoundException"
+            pool.isQuotaExceeded(firstAfterCall.copy(quota = QuotaConfig(limitValue = 1, thresholdPercent = 50, resetPolicy = ResetPolicy.NEVER))) ||
+                !usageBeforeA,
+            "Pool should increment usage count even on ModelNotFoundException",
         )
     }
 
@@ -139,14 +144,20 @@ class OllamaLlmProviderTest {
     @Tag("ollama")
     @Test
     fun `OllamaLlmProvider should rotate on quota exceeded using adapter`() {
-        val instanceA = LlmInstance(
-            "a", "http://localhost:$ciPort", ciModel,
-            quota = QuotaConfig(limitValue = 1, thresholdPercent = 50, resetPolicy = ResetPolicy.NEVER)
-        )
-        val instanceB = LlmInstance(
-            "b", "http://localhost:${ciPort + 1}", ciModel,
-            quota = QuotaConfig(limitValue = 100, thresholdPercent = 80, resetPolicy = ResetPolicy.NEVER)
-        )
+        val instanceA =
+            LlmInstance(
+                "a",
+                "http://localhost:$ciPort",
+                ciModel,
+                quota = QuotaConfig(limitValue = 1, thresholdPercent = 50, resetPolicy = ResetPolicy.NEVER),
+            )
+        val instanceB =
+            LlmInstance(
+                "b",
+                "http://localhost:${ciPort + 1}",
+                ciModel,
+                quota = QuotaConfig(limitValue = 100, thresholdPercent = 80, resetPolicy = ResetPolicy.NEVER),
+            )
         val pool = OllamaPool(listOf(instanceA, instanceB), rotationStrategy = RotationStrategy.ROUND_ROBIN)
         val provider = OllamaLlmProvider(pool)
 
@@ -160,19 +171,21 @@ class OllamaLlmProviderTest {
 
     @Test
     fun `OllamaLlmProvider should throw when all instances refuse connection`() {
-        val instances = listOf(
-            LlmInstance("a", "http://localhost:1", "gpt-oss:120b-cloud", quota = defaultQuota),
-            LlmInstance("b", "http://localhost:2", "gpt-oss:120b-cloud", quota = defaultQuota)
-        )
+        val instances =
+            listOf(
+                LlmInstance("a", "http://localhost:1", "gpt-oss:120b-cloud", quota = defaultQuota),
+                LlmInstance("b", "http://localhost:2", "gpt-oss:120b-cloud", quota = defaultQuota),
+            )
         val pool = OllamaPool(instances, rotationStrategy = RotationStrategy.ROUND_ROBIN)
 
         val provider = OllamaLlmProvider(pool)
-        val exception = assertFailsWith<IllegalStateException> {
-            kotlinx.coroutines.runBlocking { provider.call("One word") }
-        }
+        val exception =
+            assertFailsWith<IllegalStateException> {
+                kotlinx.coroutines.runBlocking { provider.call("One word") }
+            }
         assertTrue(
             exception.message?.contains("All Ollama instances failed") ?: false,
-            "Expected pool exhaustion message but got: ${exception.message}"
+            "Expected pool exhaustion message but got: ${exception.message}",
         )
     }
 }

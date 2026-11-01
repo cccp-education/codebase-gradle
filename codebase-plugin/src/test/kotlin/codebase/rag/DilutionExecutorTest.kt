@@ -8,18 +8,18 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class DilutionExecutorTest {
-
     private val executor = DilutionExecutor("/tmp/test", dryRun = true)
 
     @Test
     fun `findSectionStart finds == heading`() {
-        val content = """
+        val content =
+            """
             = Document
             == Section A
             contenu section A
             == Section B
             contenu section B
-        """.trimIndent()
+            """.trimIndent()
 
         val pos = executor.findSectionStart(content, "== Section B")
         assertNotNull(pos)
@@ -28,11 +28,12 @@ class DilutionExecutorTest {
 
     @Test
     fun `findSectionStart finds === heading`() {
-        val content = """
+        val content =
+            """
             = Document
             === Sous-section
             contenu
-        """.trimIndent()
+            """.trimIndent()
 
         val pos = executor.findSectionStart(content, "== Sous-section")
         assertNotNull(pos)
@@ -47,10 +48,11 @@ class DilutionExecutorTest {
 
     @Test
     fun `findSectionStart strips == prefix from search`() {
-        val content = """
+        val content =
+            """
             == Mon Titre
             contenu
-        """.trimIndent()
+            """.trimIndent()
 
         val pos = executor.findSectionStart(content, "== Mon Titre")
         assertNotNull(pos)
@@ -65,20 +67,22 @@ class DilutionExecutorTest {
 
     @Test
     fun `formatDilutedSection includes all metadata fields`() {
-        val record = DilutionRecord(
-            sectionId = "S1",
-            sectionTitle = "Architecture DAG",
-            content = "Le DAG a 4 niveaux.",
-            classification = ContentClassification.VISION,
-            confidence = 0.93,
-            dilutionTarget = DilutionTarget(
-                TargetDocument.WORKSPACE_VISION,
-                "== Gouvernance",
-                "Contenu architectural"
-            ),
-            classificationRationale = "Vision technique",
-            timestamp = LocalDateTime.of(2026, 5, 28, 14, 0)
-        )
+        val record =
+            DilutionRecord(
+                sectionId = "S1",
+                sectionTitle = "Architecture DAG",
+                content = "Le DAG a 4 niveaux.",
+                classification = ContentClassification.VISION,
+                confidence = 0.93,
+                dilutionTarget =
+                    DilutionTarget(
+                        TargetDocument.WORKSPACE_VISION,
+                        "== Gouvernance",
+                        "Contenu architectural",
+                    ),
+                classificationRationale = "Vision technique",
+                timestamp = LocalDateTime.of(2026, 5, 28, 14, 0),
+            )
 
         val formatted = executor.formatDilutedSection(record)
 
@@ -92,12 +96,17 @@ class DilutionExecutorTest {
 
     @Test
     fun `formatDilutedSection OPINION record shows dash for null dilution target`() {
-        val record = DilutionRecord(
-            sectionId = "O1", sectionTitle = "Opinion", content = "Je pense...",
-            classification = ContentClassification.OPINION, confidence = 0.5,
-            dilutionTarget = null, classificationRationale = "subjectif",
-            timestamp = LocalDateTime.of(2026, 5, 28, 12, 0)
-        )
+        val record =
+            DilutionRecord(
+                sectionId = "O1",
+                sectionTitle = "Opinion",
+                content = "Je pense...",
+                classification = ContentClassification.OPINION,
+                confidence = 0.5,
+                dilutionTarget = null,
+                classificationRationale = "subjectif",
+                timestamp = LocalDateTime.of(2026, 5, 28, 12, 0),
+            )
 
         val formatted = executor.formatDilutedSection(record)
 
@@ -107,12 +116,17 @@ class DilutionExecutorTest {
 
     @Test
     fun `formatDilutedSection includes date in dd MMM yyyy format`() {
-        val record = DilutionRecord(
-            sectionId = "S1", sectionTitle = "Test", content = "test",
-            classification = ContentClassification.VISION, confidence = 0.9,
-            dilutionTarget = DilutionTarget(TargetDocument.WORKSPACE_VISION, "== S", "r"),
-            classificationRationale = "r", timestamp = LocalDateTime.of(2026, 3, 15, 10, 0)
-        )
+        val record =
+            DilutionRecord(
+                sectionId = "S1",
+                sectionTitle = "Test",
+                content = "test",
+                classification = ContentClassification.VISION,
+                confidence = 0.9,
+                dilutionTarget = DilutionTarget(TargetDocument.WORKSPACE_VISION, "== S", "r"),
+                classificationRationale = "r",
+                timestamp = LocalDateTime.of(2026, 3, 15, 10, 0),
+            )
 
         val formatted = executor.formatDilutedSection(record)
 
@@ -121,12 +135,17 @@ class DilutionExecutorTest {
 
     @Test
     fun `formatDilutedSection has AsciiDoc table structure`() {
-        val record = DilutionRecord(
-            sectionId = "S1", sectionTitle = "T", content = "c",
-            classification = ContentClassification.VISION, confidence = 0.8,
-            dilutionTarget = DilutionTarget(TargetDocument.WORKSPACE_VISION, "== S", "r"),
-            classificationRationale = "r", timestamp = LocalDateTime.now()
-        )
+        val record =
+            DilutionRecord(
+                sectionId = "S1",
+                sectionTitle = "T",
+                content = "c",
+                classification = ContentClassification.VISION,
+                confidence = 0.8,
+                dilutionTarget = DilutionTarget(TargetDocument.WORKSPACE_VISION, "== S", "r"),
+                classificationRationale = "r",
+                timestamp = LocalDateTime.now(),
+            )
 
         val formatted = executor.formatDilutedSection(record)
 
@@ -140,13 +159,14 @@ class DilutionExecutorTest {
 
     @Test
     fun `injectSection inserts content after existing heading`() {
-        val content = """
+        val content =
+            """
             = Document
             == Section A
             contenu section A
             == Section B
             contenu section B
-        """.trimIndent()
+            """.trimIndent()
 
         val formatted = "\n=== Nouvelle section\nNouveau contenu\n"
         val result = executor.injectSection(content, formatted, "== Section B")
@@ -170,13 +190,14 @@ class DilutionExecutorTest {
 
     @Test
     fun `findLastSectionEnd returns correct position after last heading`() {
-        val content = """
+        val content =
+            """
             = Document
             == Section A
             contenu section A
             == Section B
             contenu section B
-        """.trimIndent()
+            """.trimIndent()
 
         val pos = executor.findLastSectionEnd(content)
 
@@ -198,13 +219,14 @@ class DilutionExecutorTest {
 
     @Test
     fun `DilutionResult success stores documentPath`() {
-        val result = DilutionResult(
-            documentPath = "WORKSPACE_VISION.adoc",
-            sectionInjected = "== Architecture",
-            success = true,
-            backupPath = "/tmp/backup",
-            error = null
-        )
+        val result =
+            DilutionResult(
+                documentPath = "WORKSPACE_VISION.adoc",
+                sectionInjected = "== Architecture",
+                success = true,
+                backupPath = "/tmp/backup",
+                error = null,
+            )
 
         assertEquals("WORKSPACE_VISION.adoc", result.documentPath)
         assertEquals("== Architecture", result.sectionInjected)
@@ -215,13 +237,14 @@ class DilutionExecutorTest {
 
     @Test
     fun `DilutionResult failure stores error message`() {
-        val result = DilutionResult(
-            documentPath = "",
-            sectionInjected = "",
-            success = false,
-            backupPath = null,
-            error = "Aucune cible de dilution"
-        )
+        val result =
+            DilutionResult(
+                documentPath = "",
+                sectionInjected = "",
+                success = false,
+                backupPath = null,
+                error = "Aucune cible de dilution",
+            )
 
         assertEquals(false, result.success)
         assertEquals("Aucune cible de dilution", result.error)

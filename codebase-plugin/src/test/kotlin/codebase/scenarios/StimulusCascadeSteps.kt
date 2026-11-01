@@ -1,6 +1,13 @@
 package codebase.scenarios
 
-import codebase.rag.*
+import codebase.rag.ActiveStimulus
+import codebase.rag.ContentClassification
+import codebase.rag.DilutionExecutor
+import codebase.rag.DilutionRecord
+import codebase.rag.DilutionResult
+import codebase.rag.DilutionTarget
+import codebase.rag.StimulusDetector
+import codebase.rag.TargetDocument
 import io.cucumber.java.After
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
@@ -11,7 +18,6 @@ import java.nio.file.Files
 import java.time.LocalDateTime
 
 class StimulusCascadeSteps {
-
     private val log = LoggerFactory.getLogger(StimulusCascadeSteps::class.java)
     private var tmpDir: File? = null
     private var dilutionResult: DilutionResult? = null
@@ -30,9 +36,13 @@ class StimulusCascadeSteps {
     }
 
     @Given("the target document {string} already contains the section {string}")
-    fun createDocWithSection(filename: String, section: String) {
+    fun createDocWithSection(
+        filename: String,
+        section: String,
+    ) {
         docFile = File(tmpDir, filename)
-        val content = """
+        val content =
+            """
 = Test Document
 :jbake-status: draft
 
@@ -58,7 +68,8 @@ $section
     @Given("the target document {string} does not contain a traceability table")
     fun createDocWithoutTraceability(filename: String) {
         docFile = File(tmpDir, filename)
-        val content = """
+        val content =
+            """
 = Document Without Traceability
 :jbake-status: draft
 
@@ -75,7 +86,8 @@ Initial content.
     @Given("the target document {string} has initial content")
     fun createDocWithInitialContent(filename: String) {
         docFile = File(tmpDir, filename)
-        val content = """
+        val content =
+            """
 = Initial Document
 :jbake-status: draft
 
@@ -93,24 +105,29 @@ Nine founding principles.
     }
 
     @When("a VISION section is diluted into {string} in section {string}")
-    fun diluteVisionSection(filename: String, section: String) {
+    fun diluteVisionSection(
+        filename: String,
+        section: String,
+    ) {
         val executor = DilutionExecutor(tmpDir!!.absolutePath)
         val targetDoc = TargetDocument.entries.find { it.path == filename } ?: TargetDocument.WORKSPACE_VISION
 
-        dilutionRecord = DilutionRecord(
-            sectionId = "S1",
-            sectionTitle = "Section de test",
-            content = "This is the test section content.\n\nContent enriched by STIMULUS.",
-            classification = ContentClassification.VISION,
-            confidence = 0.95,
-            dilutionTarget = DilutionTarget(
-                targetDocument = targetDoc,
-                suggestedSection = section,
-                rationale = "Test routing rationale"
-            ),
-            classificationRationale = "Test classification rationale",
-            timestamp = LocalDateTime.now()
-        )
+        dilutionRecord =
+            DilutionRecord(
+                sectionId = "S1",
+                sectionTitle = "Section de test",
+                content = "This is the test section content.\n\nContent enriched by STIMULUS.",
+                classification = ContentClassification.VISION,
+                confidence = 0.95,
+                dilutionTarget =
+                    DilutionTarget(
+                        targetDocument = targetDoc,
+                        suggestedSection = section,
+                        rationale = "Test routing rationale",
+                    ),
+                classificationRationale = "Test classification rationale",
+                timestamp = LocalDateTime.now(),
+            )
 
         dilutionResult = dilutionRecord?.let { executor.execute(it) }
         log.info("Dilution result: success={} error={}", dilutionResult?.success, dilutionResult?.error)
@@ -120,20 +137,22 @@ Nine founding principles.
     fun diluteVisionDryRun(filename: String) {
         val executor = DilutionExecutor(tmpDir!!.absolutePath, dryRun = true)
 
-        dilutionRecord = DilutionRecord(
-            sectionId = "S3",
-            sectionTitle = "Section dry run",
-            content = "Content that must not be injected.",
-            classification = ContentClassification.VISION,
-            confidence = 0.90,
-            dilutionTarget = DilutionTarget(
-                targetDocument = TargetDocument.WORKSPACE_ORGANIZATION,
-                suggestedSection = "== Principes",
-                rationale = "Test dry run routing"
-            ),
-            classificationRationale = "Test dry run classification",
-            timestamp = LocalDateTime.now()
-        )
+        dilutionRecord =
+            DilutionRecord(
+                sectionId = "S3",
+                sectionTitle = "Section dry run",
+                content = "Content that must not be injected.",
+                classification = ContentClassification.VISION,
+                confidence = 0.90,
+                dilutionTarget =
+                    DilutionTarget(
+                        targetDocument = TargetDocument.WORKSPACE_ORGANIZATION,
+                        suggestedSection = "== Principes",
+                        rationale = "Test dry run routing",
+                    ),
+                classificationRationale = "Test dry run classification",
+                timestamp = LocalDateTime.now(),
+            )
 
         dilutionResult = dilutionRecord?.let { executor.execute(it) }
     }
@@ -183,14 +202,17 @@ Nine founding principles.
     }
 
     @Given("a test workspace with {int} .adoc stimulus files and {int} already diluted documents")
-    fun createWorkspaceWithStimuli(stimulusCount: Int, dilutedCount: Int) {
+    fun createWorkspaceWithStimuli(
+        stimulusCount: Int,
+        dilutedCount: Int,
+    ) {
         tmpDir = Files.createTempDirectory("graphify-stimulus-ws").toFile()
 
         for (i in 1..stimulusCount) {
-            val name = "STIMULUS_0${i}.adoc"
+            val name = "STIMULUS_0$i.adoc"
             File(tmpDir, name).writeText(
                 "= Brain Dump $i\n\n== Test section\n\nStimulus content $i.",
-                Charsets.UTF_8
+                Charsets.UTF_8,
             )
             log.info("Stimulus created: {}", name)
         }
@@ -212,7 +234,7 @@ Nine founding principles.
 | STIMULUS_01.adoc | 12 May 2026 | Test
 |===
 """.trimStart(),
-                    Charsets.UTF_8
+                    Charsets.UTF_8,
                 )
             }
         }
@@ -243,18 +265,22 @@ Nine founding principles.
     }
 
     @Given("a test workspace with {int} recent stimulus and {int} stimulus that is {int} days old")
-    fun createWorkspaceWithAgedStimuli(recentCount: Int, oldCount: Int, days: Int) {
+    fun createWorkspaceWithAgedStimuli(
+        recentCount: Int,
+        oldCount: Int,
+        days: Int,
+    ) {
         tmpDir = Files.createTempDirectory("graphify-stimulus-aged").toFile()
 
         for (i in 1..recentCount) {
-            val name = "STIMULUS_RECENT_${i}.adoc"
+            val name = "STIMULUS_RECENT_$i.adoc"
             val f = File(tmpDir, name)
             f.writeText("= Brain Dump Recent $i\n\nRecent content.", Charsets.UTF_8)
             f.setLastModified(System.currentTimeMillis())
         }
 
         for (i in 1..oldCount) {
-            val name = "STIMULUS_OLD_${i}.adoc"
+            val name = "STIMULUS_OLD_$i.adoc"
             val f = File(tmpDir, name)
             f.writeText("= Brain Dump Old $i\n\nOld content.", Charsets.UTF_8)
             val oldTime = System.currentTimeMillis() - days * 24 * 60 * 60 * 1000L

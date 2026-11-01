@@ -5,12 +5,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import kotlin.test.assertFailsWith
 
 class PrepareFineTuningDatasetTaskTest {
-
     @Test
     fun `task is abstract DefaultTask`() {
         val clazz = PrepareFineTuningDatasetTask::class.java
@@ -20,13 +19,16 @@ class PrepareFineTuningDatasetTaskTest {
 
     @Test
     fun `task is annotated DisableCachingByDefault`() {
-        val annotation = PrepareFineTuningDatasetTask::class.java
-            .getAnnotation(org.gradle.work.DisableCachingByDefault::class.java)
+        val annotation =
+            PrepareFineTuningDatasetTask::class.java
+                .getAnnotation(org.gradle.work.DisableCachingByDefault::class.java)
         assertNotNull(annotation, "Should have @DisableCachingByDefault")
     }
 
     @Test
-    fun `task exposes baseModel dataset outputModelName corpusRatio inputs`(@TempDir tempDir: Path) {
+    fun `task exposes baseModel dataset outputModelName corpusRatio inputs`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("prepareFineTuningDataset", PrepareFineTuningDatasetTask::class.java).get()
@@ -44,7 +46,9 @@ class PrepareFineTuningDatasetTaskTest {
     }
 
     @Test
-    fun `execute writes dataset listing and Modelfile section to outputFile`(@TempDir tempDir: Path) {
+    fun `execute writes dataset listing and Modelfile section to outputFile`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("prepare", PrepareFineTuningDatasetTask::class.java).get()
@@ -68,7 +72,9 @@ class PrepareFineTuningDatasetTaskTest {
     }
 
     @Test
-    fun `execute uses corpusGlobs fallback when dataset empty`(@TempDir tempDir: Path) {
+    fun `execute uses corpusGlobs fallback when dataset empty`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("prepare", PrepareFineTuningDatasetTask::class.java).get()
@@ -80,13 +86,19 @@ class PrepareFineTuningDatasetTaskTest {
 
         task.executePrepare()
 
-        val content = task.outputFile.get().asFile.readText()
+        val content =
+            task.outputFile
+                .get()
+                .asFile
+                .readText()
         assertTrue(content.contains("corpus/**/*.adoc"))
         assertTrue(content.contains("FROM gemma4:31b-cloud"))
     }
 
     @Test
-    fun `execute throws GradleException when baseModel blank`(@TempDir tempDir: Path) {
+    fun `execute throws GradleException when baseModel blank`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("prepare", PrepareFineTuningDatasetTask::class.java).get()
@@ -99,7 +111,9 @@ class PrepareFineTuningDatasetTaskTest {
     }
 
     @Test
-    fun `execute throws GradleException when outputModelName blank`(@TempDir tempDir: Path) {
+    fun `execute throws GradleException when outputModelName blank`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("prepare", PrepareFineTuningDatasetTask::class.java).get()
@@ -112,7 +126,9 @@ class PrepareFineTuningDatasetTaskTest {
     }
 
     @Test
-    fun `execute throws GradleException when dataset and corpusGlobs both empty`(@TempDir tempDir: Path) {
+    fun `execute throws GradleException when dataset and corpusGlobs both empty`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("prepare", PrepareFineTuningDatasetTask::class.java).get()
@@ -125,7 +141,9 @@ class PrepareFineTuningDatasetTaskTest {
     }
 
     @Test
-    fun `execute creates parent directories of outputFile`(@TempDir tempDir: Path) {
+    fun `execute creates parent directories of outputFile`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("prepare", PrepareFineTuningDatasetTask::class.java).get()
@@ -137,11 +155,18 @@ class PrepareFineTuningDatasetTaskTest {
 
         task.executePrepare()
 
-        assertTrue(task.outputFile.get().asFile.exists())
+        assertTrue(
+            task.outputFile
+                .get()
+                .asFile
+                .exists(),
+        )
     }
 
     @Test
-    fun `execute Modelfile header uses corpusRatio value`(@TempDir tempDir: Path) {
+    fun `execute Modelfile header uses corpusRatio value`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("prepare", PrepareFineTuningDatasetTask::class.java).get()
@@ -154,12 +179,18 @@ class PrepareFineTuningDatasetTaskTest {
 
         task.executePrepare()
 
-        val content = task.outputFile.get().asFile.readText()
+        val content =
+            task.outputFile
+                .get()
+                .asFile
+                .readText()
         assertTrue(content.contains("0.25"), "Modelfile should embed corpusRatio=0.25")
     }
 
     @Test
-    fun `execute writes dataset section header and Modelfile section header`(@TempDir tempDir: Path) {
+    fun `execute writes dataset section header and Modelfile section header`(
+        @TempDir tempDir: Path,
+    ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply("java-base")
         val task = project.tasks.register("prepare", PrepareFineTuningDatasetTask::class.java).get()
@@ -171,7 +202,11 @@ class PrepareFineTuningDatasetTaskTest {
 
         task.executePrepare()
 
-        val content = task.outputFile.get().asFile.readText()
+        val content =
+            task.outputFile
+                .get()
+                .asFile
+                .readText()
         assertTrue(content.contains("Modelfile"), "Should contain Modelfile section")
         assertTrue(content.contains("Dataset"), "Should contain Dataset section")
     }

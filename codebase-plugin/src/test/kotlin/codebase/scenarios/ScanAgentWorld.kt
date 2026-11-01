@@ -1,15 +1,14 @@
 package codebase.scenarios
 
+import codebase.koog.agentic.IngestGovernanceTask
 import codebase.koog.agentic.IngestionReport
 import codebase.koog.agentic.ScanAgent
 import codebase.koog.agentic.ScannedFile
 import org.gradle.testfixtures.ProjectBuilder
-import codebase.koog.agentic.IngestGovernanceTask
 import java.io.File
 import java.nio.file.Files
 
 class ScanAgentWorld {
-
     private val scanAgent = ScanAgent()
     var scannedFiles: List<ScannedFile> = emptyList()
         private set
@@ -26,9 +25,11 @@ class ScanAgentWorld {
 
     fun ingestWorkspace(dir: File = workspaceDir) {
         val project = ProjectBuilder.builder().withProjectDir(dir).build()
-        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
-            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
-        }.get()
+        val task =
+            project.tasks
+                .register("ingestGovernance", IngestGovernanceTask::class.java) {
+                    it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+                }.get()
         task.executeIngest()
         ingestionReport = task.lastIngestionReport
     }

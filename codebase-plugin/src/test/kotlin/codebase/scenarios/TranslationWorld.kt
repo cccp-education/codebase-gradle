@@ -1,12 +1,10 @@
 package codebase.scenarios
 
 import codebase.i18n.FakeLlmTranslator
-import codebase.i18n.LlmTranslator
 import codebase.koog.llm.FakeLlmProvider
 import contracts.i18n.TranslationRequest
 import contracts.i18n.TranslationResult
 import contracts.i18n.TranslationService
-import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 
 class TranslationWorld {
@@ -24,7 +22,11 @@ class TranslationWorld {
         lastRequest = null
     }
 
-    fun executeTranslation(sourceText: String, src: String, tgt: String) {
+    fun executeTranslation(
+        sourceText: String,
+        src: String,
+        tgt: String,
+    ) {
         val req = TranslationRequest(sourceText, src, tgt)
         lastRequest = req
         try {
@@ -34,7 +36,11 @@ class TranslationWorld {
         }
     }
 
-    fun attemptTranslation(sourceText: String, src: String, tgt: String) {
+    fun attemptTranslation(
+        sourceText: String,
+        src: String,
+        tgt: String,
+    ) {
         try {
             val req = TranslationRequest(sourceText, src, tgt)
             translator!!.translate(req)

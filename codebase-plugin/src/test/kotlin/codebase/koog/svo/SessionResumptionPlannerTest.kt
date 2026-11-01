@@ -6,17 +6,17 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SessionResumptionPlannerTest {
-
     private fun state(
         open: List<String> = listOf("SVO-2 objects purs", "SVO-3 adapter planner"),
         done: List<String> = listOf("SVO-1 inversion port"),
         intention: String = "EPIC SVO — Session Vibecoding Orchestrée",
-    ): SessionResumptionState = SessionResumptionState(
-        borough = "codebase",
-        openItems = open,
-        doneItems = done,
-        lastIntention = intention,
-    )
+    ): SessionResumptionState =
+        SessionResumptionState(
+            borough = "codebase",
+            openItems = open,
+            doneItems = done,
+            lastIntention = intention,
+        )
 
     @Test
     fun `prompt mentions borough and next open item first`() {
@@ -29,9 +29,10 @@ class SessionResumptionPlannerTest {
 
     @Test
     fun `prompt is ordered — open items keep their backlog order`() {
-        val prompt = SessionResumptionPlanner.plan(
-            state(open = listOf("A first", "B second", "C third"))
-        )
+        val prompt =
+            SessionResumptionPlanner.plan(
+                state(open = listOf("A first", "B second", "C third")),
+            )
         assertTrue(
             prompt.indexOf("A first") < prompt.indexOf("B second") &&
                 prompt.indexOf("B second") < prompt.indexOf("C third"),
@@ -49,7 +50,7 @@ class SessionResumptionPlannerTest {
         val prompt = SessionResumptionPlanner.plan(state(done = listOf("a", "b", "c")))
         assertTrue(
             prompt.contains("3"),
-            "done count must appear for progress visibility"
+            "done count must appear for progress visibility",
         )
     }
 
@@ -58,7 +59,7 @@ class SessionResumptionPlannerTest {
         val prompt = SessionResumptionPlanner.plan(state(open = emptyList(), done = emptyList()))
         assertTrue(
             prompt.contains("BRAINSTORM", ignoreCase = true),
-            "no backlog left → brainstorming session expected"
+            "no backlog left → brainstorming session expected",
         )
     }
 
@@ -70,9 +71,10 @@ class SessionResumptionPlannerTest {
 
     @Test
     fun `prompt does not contain stale or done items`() {
-        val prompt = SessionResumptionPlanner.plan(
-            state(open = listOf("only open item"), done = listOf("finished long ago"))
-        )
+        val prompt =
+            SessionResumptionPlanner.plan(
+                state(open = listOf("only open item"), done = listOf("finished long ago")),
+            )
         assertFalse(prompt.contains("finished long ago"), "done items must not leak into prompt")
         assertTrue(prompt.contains("only open item"))
     }

@@ -9,11 +9,12 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class BlogArticleExtractorTest {
-
     private val extractor = BlogArticleExtractor()
 
     @Test
-    fun `extract returns empty list when no session files found`(@TempDir tempDir: Path) {
+    fun `extract returns empty list when no session files found`(
+        @TempDir tempDir: Path,
+    ) {
         val foundryDir = Files.createDirectory(tempDir.resolve("foundry"))
         val publicDir = Files.createDirectory(foundryDir.resolve("public"))
         Files.createDirectory(publicDir.resolve("empty-borough"))
@@ -25,12 +26,15 @@ class BlogArticleExtractorTest {
     }
 
     @Test
-    fun `extract parses single session file`(@TempDir tempDir: Path) {
+    fun `extract parses single session file`(
+        @TempDir tempDir: Path,
+    ) {
         val foundryDir = tempDir.resolve("foundry")
         val sessionsDir = foundryDir.resolve("public/magic-borough/.agents/sessions")
         Files.createDirectories(sessionsDir)
 
-        val sessionContent = """
+        val sessionContent =
+            """
 = Session 042 — EPIC 7 Pipeline LLM — TDD complet
 :docdate: 2026-06-01
 
@@ -57,7 +61,7 @@ Projet magic-borough — N2 pipeline LLM.
 == Prochaine Session
 
 - EPIC 7.3 — Pipeline error recovery (retry circuit breaker)
-""".trimIndent()
+            """.trimIndent()
 
         Files.writeString(sessionsDir.resolve("042-pipeline-llm-tdd.adoc"), sessionContent)
 
@@ -77,18 +81,23 @@ Projet magic-borough — N2 pipeline LLM.
     }
 
     @Test
-    fun `extract returns only sessions from Cercle 4 foundry`(@TempDir tempDir: Path) {
+    fun `extract returns only sessions from Cercle 4 foundry`(
+        @TempDir tempDir: Path,
+    ) {
         val foundryDir = tempDir.resolve("foundry")
 
         val sessionsDir = foundryDir.resolve("public/borough-one/.agents/sessions")
         Files.createDirectories(sessionsDir)
-        Files.writeString(sessionsDir.resolve("001-session.adoc"), """
+        Files.writeString(
+            sessionsDir.resolve("001-session.adoc"),
+            """
 = Session 001 — Test
 :docdate: 2026-06-01
 
 == Contexte
 Public borough session.
-""".trimIndent())
+            """.trimIndent(),
+        )
 
         val result = extractor.extract(foundryDir.toFile())
         assertEquals(1, result.size)
@@ -103,7 +112,9 @@ Public borough session.
     }
 
     @Test
-    fun `extract parses multiple sessions from multiple boroughs`(@TempDir tempDir: Path) {
+    fun `extract parses multiple sessions from multiple boroughs`(
+        @TempDir tempDir: Path,
+    ) {
         val foundryDir = tempDir.resolve("foundry")
 
         val borough1Sessions = foundryDir.resolve("public/b1/.agents/sessions")
@@ -111,7 +122,9 @@ Public borough session.
         Files.createDirectories(borough1Sessions)
         Files.createDirectories(borough2Sessions)
 
-        Files.writeString(borough1Sessions.resolve("001-setup.adoc"), """
+        Files.writeString(
+            borough1Sessions.resolve("001-setup.adoc"),
+            """
 = Session 001 — Setup infra
 :docdate: 2026-06-10
 == Contexte
@@ -122,9 +135,12 @@ b1 initialisation.
 2/2 PASS
 == Prochaine Session
 US-1.2 embeddings
-""".trimIndent())
+            """.trimIndent(),
+        )
 
-        Files.writeString(borough1Sessions.resolve("002-rag.adoc"), """
+        Files.writeString(
+            borough1Sessions.resolve("002-rag.adoc"),
+            """
 = Session 002 — RAG pipeline
 :docdate: 2026-06-11
 == Contexte
@@ -135,9 +151,12 @@ b1 RAG.
 5/5 PASS
 == Prochaine Session
 US-1.3 query
-""".trimIndent())
+            """.trimIndent(),
+        )
 
-        Files.writeString(borough2Sessions.resolve("001-core.adoc"), """
+        Files.writeString(
+            borough2Sessions.resolve("001-core.adoc"),
+            """
 = Session 001 — Core engine
 :docdate: 2026-06-12
 == Contexte
@@ -148,7 +167,8 @@ b2 engine bootstrap.
 3/3 PASS
 == Prochaine Session
 EPIC 2
-""".trimIndent())
+            """.trimIndent(),
+        )
 
         val result = extractor.extract(foundryDir.toFile())
 
@@ -158,17 +178,22 @@ EPIC 2
     }
 
     @Test
-    fun `extract skips non-adoc files in sessions directory`(@TempDir tempDir: Path) {
+    fun `extract skips non-adoc files in sessions directory`(
+        @TempDir tempDir: Path,
+    ) {
         val foundryDir = tempDir.resolve("foundry")
         val sessionsDir = foundryDir.resolve("public/b1/.agents/sessions")
         Files.createDirectories(sessionsDir)
 
-        Files.writeString(sessionsDir.resolve("001-session.adoc"), """
+        Files.writeString(
+            sessionsDir.resolve("001-session.adoc"),
+            """
 = Session 001 — Valid
 :docdate: 2026-06-01
 == Contexte
 ok
-""".trimIndent())
+            """.trimIndent(),
+        )
         Files.writeString(sessionsDir.resolve("readme.txt"), "not an adoc file")
         Files.writeString(sessionsDir.resolve(".gitkeep"), "")
 
@@ -178,16 +203,17 @@ ok
 
     @Test
     fun `BlogArticleData has all required fields`() {
-        val data = BlogArticleData(
-            sessionNumber = "042",
-            sessionTitle = "EPIC 7 Pipeline LLM",
-            sessionDate = "2026-06-01",
-            boroughName = "magic-borough",
-            context = "Projet magic-borough — N2",
-            achievements = "=== EPIC 7.1 — PromptTemplateFactory\n- 5 templates\n- 3/3 PASS",
-            testResults = "7/7 JUnit5 PASS",
-            nextSession = "EPIC 7.3 — Pipeline error recovery"
-        )
+        val data =
+            BlogArticleData(
+                sessionNumber = "042",
+                sessionTitle = "EPIC 7 Pipeline LLM",
+                sessionDate = "2026-06-01",
+                boroughName = "magic-borough",
+                context = "Projet magic-borough — N2",
+                achievements = "=== EPIC 7.1 — PromptTemplateFactory\n- 5 templates\n- 3/3 PASS",
+                testResults = "7/7 JUnit5 PASS",
+                nextSession = "EPIC 7.3 — Pipeline error recovery",
+            )
 
         assertEquals("042", data.sessionNumber)
         assertNotNull(data.sessionTitle)

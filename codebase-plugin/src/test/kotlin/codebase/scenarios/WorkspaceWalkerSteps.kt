@@ -8,13 +8,12 @@ import io.cucumber.java.en.When
 import org.slf4j.LoggerFactory
 
 class WorkspaceWalkerSteps {
-
     private val log = LoggerFactory.getLogger(WorkspaceWalkerSteps::class.java)
     private val ctx = PgVectorTestContext
     private var discoveredFiles = listOf<WorkspaceFile>()
 
     @When("I walk the datasets directory with WorkspaceWalker")
-    fun `walk datasets with WorkspaceWalker`() {
+    fun walkDatasetsWithWorkspaceWalker() {
         val dir = java.io.File("src/test/resources/datasets")
         val walker = WorkspaceWalker(dir)
         discoveredFiles = walker.walk()
@@ -25,7 +24,7 @@ class WorkspaceWalkerSteps {
     }
 
     @Then("at least {int} files are discovered")
-    fun `at least N files discovered`(minExpected: Int) {
+    fun atLeastNFilesDiscovered(minExpected: Int) {
         assert(discoveredFiles.size >= minExpected) {
             "Expected at least $minExpected files, got ${discoveredFiles.size}"
         }
@@ -33,7 +32,7 @@ class WorkspaceWalkerSteps {
     }
 
     @Then("all discovered files have valid extension metadata")
-    fun `valid extension metadata`() {
+    fun validExtensionMetadata() {
         assert(discoveredFiles.isNotEmpty()) { "No files discovered" }
         val validExts = setOf("kt", "adoc", "yml", "yaml", "json")
         for (f in discoveredFiles) {
@@ -45,11 +44,14 @@ class WorkspaceWalkerSteps {
     }
 
     @Then("no files from build, .git, .gradle, or node_modules are included")
-    fun `no artifact files included`() {
-        val artifactPaths = discoveredFiles.filter { f ->
-            f.filePath.contains("/build/") || f.filePath.contains("/.git/") ||
-                f.filePath.contains("/.gradle/") || f.filePath.contains("/node_modules/")
-        }
+    fun noArtifactFilesIncluded() {
+        val artifactPaths =
+            discoveredFiles.filter { f ->
+                f.filePath.contains("/build/") ||
+                    f.filePath.contains("/.git/") ||
+                    f.filePath.contains("/.gradle/") ||
+                    f.filePath.contains("/node_modules/")
+            }
         assert(artifactPaths.isEmpty()) {
             "Found ${artifactPaths.size} artifact file(s) in discovered list: " +
                 artifactPaths.joinToString { it.filePath }
@@ -58,11 +60,14 @@ class WorkspaceWalkerSteps {
     }
 
     @When("I tokenize all dataset files into sentence-level chunks")
-    fun `tokenize all files including adoc`() {
+    fun tokenizeAllFilesIncludingAdoc() {
         val datasetDir = java.io.File(ctx.DATASETS_DIR)
-        val files = datasetDir.listFiles { f ->
-            f.isFile && (f.name.endsWith(".kt") || f.name.endsWith(".adoc") || f.name.endsWith(".yml") || f.name.endsWith(".yaml") || f.name.endsWith(".json"))
-        }?.sortedBy { it.name } ?: throw AssertionError("No files found in ${ctx.DATASETS_DIR}")
+        val files =
+            datasetDir
+                .listFiles { f ->
+                    f.isFile &&
+                        (f.name.endsWith(".kt") || f.name.endsWith(".adoc") || f.name.endsWith(".yml") || f.name.endsWith(".yaml") || f.name.endsWith(".json"))
+                }?.sortedBy { it.name } ?: throw AssertionError("No files found in ${ctx.DATASETS_DIR}")
 
         ctx.fileChunks.clear()
         for (file in files) {
@@ -76,7 +81,7 @@ class WorkspaceWalkerSteps {
     }
 
     @Then("the top result is from an AsciiDoc documentation file")
-    fun `top result is from adoc file`() {
+    fun topResultIsFromAdocFile() {
         val top = ctx.topResults.first()
         assert(top.text.contains(".adoc")) {
             "Top result is not from an adoc file. Text: ${top.text.take(200)}"
@@ -85,7 +90,7 @@ class WorkspaceWalkerSteps {
     }
 
     @Then("the top result is from a Kotlin source file")
-    fun `top result is from kt file`() {
+    fun topResultIsFromKtFile() {
         val top = ctx.topResults.first()
         assert(top.text.contains(".kt")) {
             "Top result is not from a Kotlin source file. Text: ${top.text.take(200)}"

@@ -13,32 +13,37 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PlannerPortTest {
+    private fun sampleContext(): CompositeContext =
+        CompositeContext(
+            eagerSection = "rules",
+            ragSection = "docs",
+            graphifySection = "relations",
+            docsSection = "manuals",
+            config = CompositeContextConfig(),
+        )
 
-    private fun sampleContext(): CompositeContext = CompositeContext(
-        eagerSection = "rules",
-        ragSection = "docs",
-        graphifySection = "relations",
-        docsSection = "manuals",
-        config = CompositeContextConfig()
-    )
-
-    private fun samplePlan(): Plan = Plan(
-        title = "Test plan",
-        epics = listOf(
-            Epic(
-                name = "E1", description = "epic", points = 1,
-                userStories = listOf(UserStory(description = "US1", tasks = emptyList()))
-            )
-        ),
-        totalPoints = 1,
-        estimatedSessions = "1"
-    )
+    private fun samplePlan(): Plan =
+        Plan(
+            title = "Test plan",
+            epics =
+                listOf(
+                    Epic(
+                        name = "E1",
+                        description = "epic",
+                        points = 1,
+                        userStories = listOf(UserStory(description = "US1", tasks = emptyList())),
+                    ),
+                ),
+            totalPoints = 1,
+            estimatedSessions = "1",
+        )
 
     @Test
     fun `port is a fun interface with a single plan method`() {
-        val port = PlannerPort { intention, context ->
-            PlanState(intention = intention, compositeContext = context, plan = samplePlan())
-        }
+        val port =
+            PlannerPort { intention, context ->
+                PlanState(intention = intention, compositeContext = context, plan = samplePlan())
+            }
         val state = port.plan("fix bug", sampleContext())
         assertEquals("fix bug", state.intention)
         assertNotNull(state.plan)
@@ -53,17 +58,18 @@ class PlannerPortTest {
         assertNull(state.plan, "NoOp fallback must not produce a plan")
         assertTrue(
             state.error?.contains("Planner unavailable", ignoreCase = true) == true,
-            "NoOp error should mention planner unavailable but was: ${state.error}"
+            "NoOp error should mention planner unavailable but was: ${state.error}",
         )
     }
 
     @Test
     fun `port preserves the full composite context in the returned state`() {
         val captured = mutableListOf<CompositeContext>()
-        val port = PlannerPort { _, context ->
-            captured.add(context)
-            PlanState(intention = "x", compositeContext = context)
-        }
+        val port =
+            PlannerPort { _, context ->
+                captured.add(context)
+                PlanState(intention = "x", compositeContext = context)
+            }
         port.plan("intention", sampleContext())
         assertEquals(1, captured.size)
         assertEquals("rules", captured[0].eagerSection)

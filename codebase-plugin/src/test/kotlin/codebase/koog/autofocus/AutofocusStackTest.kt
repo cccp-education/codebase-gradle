@@ -8,7 +8,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class AutofocusStackTest {
-
     @Test
     fun `new stack is empty`() {
         val stack = AutofocusStack()

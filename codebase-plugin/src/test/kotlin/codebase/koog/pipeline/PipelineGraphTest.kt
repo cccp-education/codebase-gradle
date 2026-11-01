@@ -22,7 +22,6 @@ import kotlin.test.assertTrue
  * mapping, state preservation, mermaid topology.
  */
 class PipelineGraphTest {
-
     enum class Stage {
         INITIALIZED,
         CONTEXT_PROPOSED,
@@ -52,7 +51,6 @@ class PipelineGraphTest {
             it.copy(output = "generated", stage = Stage.CONTENT_GENERATED)
         },
     ) : PipelineDefinition<SampleState> {
-
         override val name = "sample-pipeline"
 
         val calls = mutableListOf<String>()
@@ -76,11 +74,15 @@ class PipelineGraphTest {
 
         override fun isFailed(state: SampleState): Boolean = state.stage == Stage.FAILED
 
-        override fun onProposeFailure(state: SampleState, cause: Throwable): SampleState =
-            state.copy(stage = Stage.FAILED, error = "ProposeFailed: ${cause.message}")
+        override fun onProposeFailure(
+            state: SampleState,
+            cause: Throwable,
+        ): SampleState = state.copy(stage = Stage.FAILED, error = "ProposeFailed: ${cause.message}")
 
-        override fun onGenerateFailure(state: SampleState, cause: Throwable): SampleState =
-            state.copy(stage = Stage.FAILED, error = "GenerateFailed: ${cause.message}")
+        override fun onGenerateFailure(
+            state: SampleState,
+            cause: Throwable,
+        ): SampleState = state.copy(stage = Stage.FAILED, error = "GenerateFailed: ${cause.message}")
     }
 
     @Test
@@ -111,9 +113,10 @@ class PipelineGraphTest {
 
     @Test
     fun `execute short-circuits when the propose node returns a failed state`() {
-        val definition = RecordingDefinition(
-            proposeResult = { it.copy(stage = Stage.FAILED, error = "already failed") },
-        )
+        val definition =
+            RecordingDefinition(
+                proposeResult = { it.copy(stage = Stage.FAILED, error = "already failed") },
+            )
         val graph = pipelineGraph(definition)
 
         val result = graph.execute(SampleState())
@@ -125,11 +128,12 @@ class PipelineGraphTest {
 
     @Test
     fun `execute skips the generate node when validation is invalid`() {
-        val definition = RecordingDefinition(
-            validateResult = {
-                it.copy(contextValid = false, validationError = "bad plan", stage = Stage.FAILED)
-            },
-        )
+        val definition =
+            RecordingDefinition(
+                validateResult = {
+                    it.copy(contextValid = false, validationError = "bad plan", stage = Stage.FAILED)
+                },
+            )
         val graph = pipelineGraph(definition)
 
         val result = graph.execute(SampleState())
@@ -165,9 +169,13 @@ class PipelineGraphTest {
     @Test
     fun `execute forwards the propose output state to the validate node`() {
         val observed = mutableListOf<SampleState>()
-        val definition = RecordingDefinition(
-            validateResult = { state -> observed.add(state); state.copy(contextValid = true, stage = Stage.CONTEXT_VALIDATED) },
-        )
+        val definition =
+            RecordingDefinition(
+                validateResult = { state ->
+                    observed.add(state)
+                    state.copy(contextValid = true, stage = Stage.CONTEXT_VALIDATED)
+                },
+            )
         val graph = pipelineGraph(definition)
 
         graph.execute(SampleState())
@@ -180,9 +188,13 @@ class PipelineGraphTest {
     @Test
     fun `execute forwards the validated state to the generate node`() {
         val observed = mutableListOf<SampleState>()
-        val definition = RecordingDefinition(
-            generateResult = { state -> observed.add(state); state.copy(output = "generated", stage = Stage.CONTENT_GENERATED) },
-        )
+        val definition =
+            RecordingDefinition(
+                generateResult = { state ->
+                    observed.add(state)
+                    state.copy(output = "generated", stage = Stage.CONTENT_GENERATED)
+                },
+            )
         val graph = pipelineGraph(definition)
 
         graph.execute(SampleState())

@@ -3,7 +3,6 @@ package codebase.koog.agentic
 import codebase.infrastructure.PostgresFixture
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration
 import io.r2dbc.postgresql.PostgresqlConnectionFactory
-import io.r2dbc.spi.Connection
 import io.r2dbc.spi.ConnectionFactory
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.runBlocking
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.Test
 import reactor.core.publisher.Mono
 
 class AgenticChunkRepositoryTest {
-
     companion object {
         lateinit var connectionFactory: ConnectionFactory
         lateinit var repository: AgenticChunkRepository
@@ -26,13 +24,15 @@ class AgenticChunkRepositoryTest {
         @BeforeAll
         @JvmStatic
         fun setup() {
-            val config = PostgresqlConnectionConfiguration.builder()
-                .host(PostgresFixture.host)
-                .port(PostgresFixture.port)
-                .database(PostgresFixture.databaseName)
-                .username(PostgresFixture.username)
-                .password(PostgresFixture.password)
-                .build()
+            val config =
+                PostgresqlConnectionConfiguration
+                    .builder()
+                    .host(PostgresFixture.host)
+                    .port(PostgresFixture.port)
+                    .database(PostgresFixture.databaseName)
+                    .username(PostgresFixture.username)
+                    .password(PostgresFixture.password)
+                    .build()
             connectionFactory = PostgresqlConnectionFactory(config)
             repository = AgenticChunkRepository(connectionFactory)
         }
@@ -63,26 +63,27 @@ class AgenticChunkRepositoryTest {
         circle: Int? = 4,
         chunkType: ChunkType = ChunkType.CONCEPT,
         taxonomySection: TaxonomySection = TaxonomySection.PRINCIPES,
-        confidence: Double = 0.8
+        confidence: Double = 0.8,
     ): OntologizedChunk {
-        val agenticChunk = AgenticChunk(
-            id = id,
-            sourceFile = "TAXONOMIE_WORKSPACE.adoc",
-            sourceLines = "42-48",
-            chunkType = chunkType,
-            content = content,
-            verb = verb,
-            domain = domain,
-            dagLevel = dagLevel,
-            circle = circle,
-            weight = 1.0,
-            checksum = "abc123def456"
-        )
+        val agenticChunk =
+            AgenticChunk(
+                id = id,
+                sourceFile = "TAXONOMIE_WORKSPACE.adoc",
+                sourceLines = "42-48",
+                chunkType = chunkType,
+                content = content,
+                verb = verb,
+                domain = domain,
+                dagLevel = dagLevel,
+                circle = circle,
+                weight = 1.0,
+                checksum = "abc123def456",
+            )
         return OntologizedChunk(
             chunk = agenticChunk,
             taxonomySection = taxonomySection,
             ontologyConfidence = confidence,
-            relatedChunkIds = emptyList()
+            relatedChunkIds = emptyList(),
         )
     }
 
@@ -93,13 +94,17 @@ class AgenticChunkRepositoryTest {
 
             val conn = Mono.from(connectionFactory.create()).awaitSingle()
             try {
-                val tables = Mono.from(
-                    conn.createStatement(
-                        "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('agentic_chunks', 'chunk_relations', 'schema_version')"
-                    ).execute()
-                ).flatMapMany { result ->
-                    result.map { row, _ -> row.get(0, String::class.java)!! }
-                }.collectList().awaitSingle()
+                val tables =
+                    Mono
+                        .from(
+                            conn
+                                .createStatement(
+                                    "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('agentic_chunks', 'chunk_relations', 'schema_version')",
+                                ).execute(),
+                        ).flatMapMany { result ->
+                            result.map { row, _ -> row.get(0, String::class.java)!! }
+                        }.collectList()
+                        .awaitSingle()
 
                 assertTrue(tables.contains("agentic_chunks"), "agentic_chunks table should exist")
                 assertTrue(tables.contains("chunk_relations"), "chunk_relations table should exist")
@@ -136,11 +141,12 @@ class AgenticChunkRepositoryTest {
     fun `should insert chunks in batch`() {
         runBlocking {
             repository.initSchema()
-            val chunks = listOf(
-                buildTestChunk(id = "batch-1", content = "== Principes\n. Fondateur."),
-                buildTestChunk(id = "batch-2", content = "== Taxonomie\n. Quatre Verbes.", taxonomySection = TaxonomySection.TAXONOMIE),
-                buildTestChunk(id = "batch-3", content = "== Format Pivot\n. metadata.json.", taxonomySection = TaxonomySection.FORMAT_PIVOT)
-            )
+            val chunks =
+                listOf(
+                    buildTestChunk(id = "batch-1", content = "== Principes\n. Fondateur."),
+                    buildTestChunk(id = "batch-2", content = "== Taxonomie\n. Quatre Verbes.", taxonomySection = TaxonomySection.TAXONOMIE),
+                    buildTestChunk(id = "batch-3", content = "== Format Pivot\n. metadata.json.", taxonomySection = TaxonomySection.FORMAT_PIVOT),
+                )
 
             val inserted = repository.insertChunks(chunks)
             assertEquals(3, inserted, "Should insert all 3 chunks")
@@ -330,10 +336,11 @@ class AgenticChunkRepositoryTest {
             repository.insertChunk(buildTestChunk(id = "batch-tgt1"))
             repository.insertChunk(buildTestChunk(id = "batch-tgt2"))
 
-            val relations = listOf(
-                ChunkRelation(0, "batch-src", "batch-tgt1", ChunkRelationType.ENFORCES, 0.7, java.time.Instant.now()),
-                ChunkRelation(0, "batch-src", "batch-tgt2", ChunkRelationType.DEPENDS_ON, 0.5, java.time.Instant.now())
-            )
+            val relations =
+                listOf(
+                    ChunkRelation(0, "batch-src", "batch-tgt1", ChunkRelationType.ENFORCES, 0.7, java.time.Instant.now()),
+                    ChunkRelation(0, "batch-src", "batch-tgt2", ChunkRelationType.DEPENDS_ON, 0.5, java.time.Instant.now()),
+                )
 
             val inserted = repository.insertRelations(relations)
             assertEquals(2, inserted, "Should insert 2 relations")
@@ -356,15 +363,17 @@ class AgenticChunkRepositoryTest {
 
             val conn = Mono.from(connectionFactory.create()).awaitSingle()
             try {
-                val hasEmbedding = Mono.from(
-                    conn.createStatement(
-                        "SELECT count(*) FROM agentic_chunks WHERE id = $1 AND embedding IS NOT NULL"
-                    )
-                        .bind("$1", "emb-test")
-                        .execute()
-                ).flatMap { result ->
-                    Mono.from(result.map { row, _ -> row.get(0, Long::class.java)!! })
-                }.awaitSingle()
+                val hasEmbedding =
+                    Mono
+                        .from(
+                            conn
+                                .createStatement(
+                                    "SELECT count(*) FROM agentic_chunks WHERE id = $1 AND embedding IS NOT NULL",
+                                ).bind("$1", "emb-test")
+                                .execute(),
+                        ).flatMap { result ->
+                            Mono.from(result.map { row, _ -> row.get(0, Long::class.java)!! })
+                        }.awaitSingle()
                 assertEquals(1L, hasEmbedding, "Embedding should be non-null")
             } finally {
                 Mono.from(conn.close()).subscribe()
@@ -396,13 +405,14 @@ class AgenticChunkRepositoryTest {
     fun `should store chunk with all nullable fields null`() {
         runBlocking {
             repository.initSchema()
-            val chunk = buildTestChunk(
-                id = "nullable-test",
-                verb = null,
-                domain = null,
-                dagLevel = null,
-                circle = null
-            )
+            val chunk =
+                buildTestChunk(
+                    id = "nullable-test",
+                    verb = null,
+                    domain = null,
+                    dagLevel = null,
+                    circle = null,
+                )
 
             repository.insertChunk(chunk)
             val retrieved = repository.getChunk("nullable-test")
@@ -418,13 +428,14 @@ class AgenticChunkRepositoryTest {
     fun `should store all chunk types`() {
         runBlocking {
             repository.initSchema()
-            val types = listOf(
-                buildTestChunk(id = "type-rule", chunkType = ChunkType.RULE, verb = TaxonomyVerb.INTERDIRE),
-                buildTestChunk(id = "type-concept", chunkType = ChunkType.CONCEPT),
-                buildTestChunk(id = "type-procedure", chunkType = ChunkType.PROCEDURE, verb = TaxonomyVerb.VALIDER),
-                buildTestChunk(id = "type-metadata", chunkType = ChunkType.METADATA, verb = null),
-                buildTestChunk(id = "type-constraint", chunkType = ChunkType.CONSTRAINT, verb = TaxonomyVerb.VALIDER)
-            )
+            val types =
+                listOf(
+                    buildTestChunk(id = "type-rule", chunkType = ChunkType.RULE, verb = TaxonomyVerb.INTERDIRE),
+                    buildTestChunk(id = "type-concept", chunkType = ChunkType.CONCEPT),
+                    buildTestChunk(id = "type-procedure", chunkType = ChunkType.PROCEDURE, verb = TaxonomyVerb.VALIDER),
+                    buildTestChunk(id = "type-metadata", chunkType = ChunkType.METADATA, verb = null),
+                    buildTestChunk(id = "type-constraint", chunkType = ChunkType.CONSTRAINT, verb = TaxonomyVerb.VALIDER),
+                )
 
             repository.insertChunks(types)
             assertEquals(5, repository.countChunks())
@@ -448,8 +459,8 @@ class AgenticChunkRepositoryTest {
                     buildTestChunk(
                         id = "section-$i",
                         content = "== ${section.name}\n. Test content.",
-                        taxonomySection = section
-                    )
+                        taxonomySection = section,
+                    ),
                 )
             }
 

@@ -7,20 +7,19 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ContextZoomerTest {
-
     private val zoomer = ContextZoomer()
 
     private fun makeContext(
         eager: String = "eager content ".repeat(100),
         rag: String = "rag content ".repeat(100),
         graphify: String = "graphify content ".repeat(100),
-        docs: String = "docs content ".repeat(50)
+        docs: String = "docs content ".repeat(50),
     ) = CompositeContext(
         eagerSection = eager.trim(),
         ragSection = rag.trim(),
         graphifySection = graphify.trim(),
         docsSection = docs.trim(),
-        config = CompositeContextConfig()
+        config = CompositeContextConfig(),
     )
 
     @Test
@@ -76,31 +75,34 @@ class ContextZoomerTest {
 
     @Test
     fun `zoom preserves config`() {
-        val config = CompositeContextConfig(
-            totalTokenBudget = 4000,
-            budgetEagerLazy = 0.25,
-            budgetRag = 0.25,
-            budgetGraphify = 0.25,
-            budgetDocs = 0.25
-        )
-        val context = CompositeContext(
-            eagerSection = "eager",
-            ragSection = "rag",
-            graphifySection = "graphify",
-            docsSection = "docs",
-            config = config
-        )
+        val config =
+            CompositeContextConfig(
+                totalTokenBudget = 4000,
+                budgetEagerLazy = 0.25,
+                budgetRag = 0.25,
+                budgetGraphify = 0.25,
+                budgetDocs = 0.25,
+            )
+        val context =
+            CompositeContext(
+                eagerSection = "eager",
+                ragSection = "rag",
+                graphifySection = "graphify",
+                docsSection = "docs",
+                config = config,
+            )
         val result = zoomer.zoom(AutofocusLevel.BIG_PICTURE, context)
         assertEquals(config, result.config)
     }
 
     @Test
     fun `zoom to ARCHITECTURE with small content does not truncate`() {
-        val context = makeContext(
-            eager = "short",
-            rag = "short",
-            graphify = "short"
-        )
+        val context =
+            makeContext(
+                eager = "short",
+                rag = "short",
+                graphify = "short",
+            )
         val result = zoomer.zoom(AutofocusLevel.ARCHITECTURE, context)
         assertEquals("short", result.eagerSection)
         assertEquals("short", result.ragSection)
@@ -109,11 +111,12 @@ class ContextZoomerTest {
 
     @Test
     fun `zoom to MODULE with small content does not truncate`() {
-        val context = makeContext(
-            eager = "short",
-            rag = "short",
-            graphify = "short"
-        )
+        val context =
+            makeContext(
+                eager = "short",
+                rag = "short",
+                graphify = "short",
+            )
         val result = zoomer.zoom(AutofocusLevel.MODULE, context)
         assertEquals("short", result.eagerSection)
         assertEquals("short", result.ragSection)
@@ -122,26 +125,28 @@ class ContextZoomerTest {
 
     @Test
     fun `zoom to IMPLEMENTATION with blank ragSection returns empty`() {
-        val context = CompositeContext(
-            eagerSection = "eager",
-            ragSection = "",
-            graphifySection = "graphify",
-            docsSection = "docs",
-            config = CompositeContextConfig()
-        )
+        val context =
+            CompositeContext(
+                eagerSection = "eager",
+                ragSection = "",
+                graphifySection = "graphify",
+                docsSection = "docs",
+                config = CompositeContextConfig(),
+            )
         val result = zoomer.zoom(AutofocusLevel.IMPLEMENTATION, context)
         assertEquals("", result.ragSection)
     }
 
     @Test
     fun `zoom to IMPLEMENTATION with whitespace ragSection preserves it`() {
-        val context = CompositeContext(
-            eagerSection = "eager",
-            ragSection = "   ",
-            graphifySection = "graphify",
-            docsSection = "docs",
-            config = CompositeContextConfig()
-        )
+        val context =
+            CompositeContext(
+                eagerSection = "eager",
+                ragSection = "   ",
+                graphifySection = "graphify",
+                docsSection = "docs",
+                config = CompositeContextConfig(),
+            )
         val result = zoomer.zoom(AutofocusLevel.IMPLEMENTATION, context)
         assertEquals("   ", result.ragSection)
     }

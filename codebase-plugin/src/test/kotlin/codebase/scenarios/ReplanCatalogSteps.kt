@@ -11,8 +11,9 @@ import io.cucumber.java.en.When
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class ReplanCatalogSteps(private val world: ReplanCatalogWorld) {
-
+class ReplanCatalogSteps(
+    private val world: ReplanCatalogWorld,
+) {
     @Before("@epic_x_5")
     fun reset() {
         world.reset()
@@ -20,48 +21,58 @@ class ReplanCatalogSteps(private val world: ReplanCatalogWorld) {
 
     @Given("a VibecodingGraph with task schemas")
     fun `graph with task schemas`() {
-        world.taskSchemas = listOf(
-            TaskSchema("build", "Compiles the project", "build", "DefaultTask", emptyList()),
-            TaskSchema("test", "Runs unit tests", "verification", "Test", emptyList()),
-            TaskSchema("compileKotlin", "Compiles Kotlin sources", "build", "DefaultTask", emptyList())
-        )
-        world.graph = VibecodingGraph(
-            toolRegistry = ToolRegistry(),
-            taskSchemas = world.taskSchemas
-        )
+        world.taskSchemas =
+            listOf(
+                TaskSchema("build", "Compiles the project", "build", "DefaultTask", emptyList()),
+                TaskSchema("test", "Runs unit tests", "verification", "Test", emptyList()),
+                TaskSchema("compileKotlin", "Compiles Kotlin sources", "build", "DefaultTask", emptyList()),
+            )
+        world.graph =
+            VibecodingGraph(
+                toolRegistry = ToolRegistry(),
+                taskSchemas = world.taskSchemas,
+            )
     }
 
     @Given("a VibecodingGraph without task schemas")
     fun `graph without task schemas`() {
         world.taskSchemas = emptyList()
-        world.graph = VibecodingGraph(
-            toolRegistry = ToolRegistry(),
-            taskSchemas = emptyList()
-        )
+        world.graph =
+            VibecodingGraph(
+                toolRegistry = ToolRegistry(),
+                taskSchemas = emptyList(),
+            )
     }
 
     @Given("a VibecodingGraph with {int} task schemas")
     fun `graph with N task schemas`(count: Int) {
-        world.taskSchemas = (1..count).map { i ->
-            TaskSchema("task$i", "Task number $i", "custom", "DefaultTask", emptyList())
-        }
-        world.graph = VibecodingGraph(
-            toolRegistry = ToolRegistry(),
-            taskSchemas = world.taskSchemas
-        )
+        world.taskSchemas =
+            (1..count).map { i ->
+                TaskSchema("task$i", "Task number $i", "custom", "DefaultTask", emptyList())
+            }
+        world.graph =
+            VibecodingGraph(
+                toolRegistry = ToolRegistry(),
+                taskSchemas = world.taskSchemas,
+            )
     }
 
     @Given("a VibecodingState with error {string} and retryCount {int} and maxRetries {int}")
-    fun `state with error and retries`(error: String, retryCount: Int, maxRetries: Int) {
-        world.state = VibecodingState(
-            intention = "test",
-            workspaceRoot = "/tmp/test",
-            error = error,
-            retryCount = retryCount,
-            maxRetries = maxRetries,
-            currentTaskDescription = "compile",
-            lastToolResult = "BUILD FAILED"
-        )
+    fun `state with error and retries`(
+        error: String,
+        retryCount: Int,
+        maxRetries: Int,
+    ) {
+        world.state =
+            VibecodingState(
+                intention = "test",
+                workspaceRoot = "/tmp/test",
+                error = error,
+                retryCount = retryCount,
+                maxRetries = maxRetries,
+                currentTaskDescription = "compile",
+                lastToolResult = "BUILD FAILED",
+            )
     }
 
     @When("the replan prompt is built")
@@ -86,9 +97,10 @@ class ReplanCatalogSteps(private val world: ReplanCatalogWorld) {
     @Then("the prompt contains at least one task name")
     fun `prompt contains at least one task name`() {
         assertNotNull(world.capturedPrompt)
-        val hasTask = world.taskSchemas.any { schema ->
-            world.capturedPrompt!!.contains(schema.name)
-        }
+        val hasTask =
+            world.taskSchemas.any { schema ->
+                world.capturedPrompt!!.contains(schema.name)
+            }
         assertTrue(hasTask)
     }
 

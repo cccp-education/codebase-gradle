@@ -3,11 +3,9 @@ package codebase.benchmark
 import codebase.benchmark.BenchmarkRunnerMain.ChannelConfig
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class BenchmarkRunnerMainTest {
-
     @Test
     fun `resolveChannels BASELINE returns empty channels`() {
         val config = BenchmarkRunnerMain.resolveChannels("BASELINE", "/tmp")
@@ -73,11 +71,12 @@ class BenchmarkRunnerMainTest {
 
     @Test
     fun `ChannelConfig data class creation with all fields`() {
-        val config = ChannelConfig(
-            channels = listOf("A", "B"),
-            graphPath = "/some/path.json",
-            scopeFilter = "project"
-        )
+        val config =
+            ChannelConfig(
+                channels = listOf("A", "B"),
+                graphPath = "/some/path.json",
+                scopeFilter = "project",
+            )
         assertEquals(2, config.channels.size)
         assertEquals("/some/path.json", config.graphPath)
         assertEquals("project", config.scopeFilter)

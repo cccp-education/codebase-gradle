@@ -1,9 +1,11 @@
 package codebase.scenarios
 
+import codebase.koog.VibecodingGraph
 import codebase.koog.llm.FakeLlmProvider
 import codebase.koog.llm.pool.OllamaLlmProvider
 import codebase.koog.llm.pool.OllamaPool
 import codebase.koog.session.SessionRecord
+import codebase.koog.state.VibecodingState
 import codebase.koog.tracking.TokenTracker
 import contracts.llmpool.LlmInstance
 import contracts.llmpool.LlmInstancePool
@@ -11,8 +13,6 @@ import contracts.llmpool.QuotaConfig
 import contracts.llmpool.ResetPolicy
 import contracts.llmpool.RotationStrategy
 import contracts.vibecoding.registry.ToolRegistry
-import codebase.koog.state.VibecodingState
-import codebase.koog.VibecodingGraph
 import kotlin.test.assertTrue
 
 /**
@@ -26,7 +26,6 @@ import kotlin.test.assertTrue
  * - VibecodingGraph sans graphe augmenté (pas de pgvector/Ollama)
  */
 class VibecodingWorld {
-
     var intention: String = ""
     var maxActions: Int = 10
     var dryRun: Boolean = false
@@ -39,10 +38,11 @@ class VibecodingWorld {
     var fakeLlmProvider: FakeLlmProvider? = null
     var tokenTracker: TokenTracker = TokenTracker()
 
-    var graph: VibecodingGraph = VibecodingGraph(
-        augmentedGraph = null,
-        toolRegistry = ToolRegistry()
-    )
+    var graph: VibecodingGraph =
+        VibecodingGraph(
+            augmentedGraph = null,
+            toolRegistry = ToolRegistry(),
+        )
 
     // ── @epic_v_6 : Ollama Pool ──
 
@@ -80,15 +80,19 @@ class VibecodingWorld {
     /**
      * Configure un pool Ollama avec N instances et un seuil de quota.
      */
-    fun setupOllamaPool(instanceIds: List<String>, threshold: Int) {
-        poolInstances = instanceIds.map { id ->
-            LlmInstance(
-                id = id,
-                baseUrl = "http://localhost:11437",  // fake URL pour Cucumber (pas de vrai Ollama)
-                model = "gpt-oss:120b-cloud",
-                quota = QuotaConfig(limitValue = 10, thresholdPercent = threshold, resetPolicy = ResetPolicy.NEVER)
-            )
-        }
+    fun setupOllamaPool(
+        instanceIds: List<String>,
+        threshold: Int,
+    ) {
+        poolInstances =
+            instanceIds.map { id ->
+                LlmInstance(
+                    id = id,
+                    baseUrl = "http://localhost:11437", // fake URL pour Cucumber (pas de vrai Ollama)
+                    model = "gpt-oss:120b-cloud",
+                    quota = QuotaConfig(limitValue = 10, thresholdPercent = threshold, resetPolicy = ResetPolicy.NEVER),
+                )
+            }
         ollamaPool = OllamaPool(poolInstances, rotationStrategy = RotationStrategy.ROUND_ROBIN)
     }
 
@@ -99,7 +103,7 @@ class VibecodingWorld {
     fun callOllamaProviderMultiple(times: Int) {
         val pool = ollamaPool ?: error("Ollama pool not configured — call setupOllamaPool first")
         repeat(times) {
-            pool.nextInstance()  // exerce le mécanisme de rotation/quota
+            pool.nextInstance() // exerce le mécanisme de rotation/quota
             providerCallCount++
         }
     }
@@ -107,7 +111,10 @@ class VibecodingWorld {
     /**
      * Vérifie que les deux instances ont été utilisées au moins une fois.
      */
-    fun assertBothInstancesUsed(idA: String, idB: String) {
+    fun assertBothInstancesUsed(
+        idA: String,
+        idB: String,
+    ) {
         val pool = ollamaPool as? OllamaPool ?: error("Pool is not an OllamaPool")
         // Avec 5 appels et threshold=2 (20%→seuil 2), instance a atteint quota après 2 appels
         // Instance b reçoit les appels restants (3) → les deux sont utilisées
@@ -134,12 +141,12 @@ class VibecodingWorld {
         val provider = fakeLlmProvider ?: FakeLlmProvider()
         fakeLlmProvider = provider
         tokenTracker = TokenTracker()
-        graph = VibecodingGraph(
-            augmentedGraph = null,
-            toolRegistry = ToolRegistry(),
-            llmProvider = provider,
-            tokenTracker = tokenTracker
-        )
+        graph =
+            VibecodingGraph(
+                augmentedGraph = null,
+                toolRegistry = ToolRegistry(),
+                llmProvider = provider,
+                tokenTracker = tokenTracker,
+            )
     }
 }
-

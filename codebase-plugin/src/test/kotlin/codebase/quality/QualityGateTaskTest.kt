@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class QualityGateTaskTest {
-
     @Test
     fun `task should be registered with correct group and description`() {
         val project = ProjectBuilder.builder().build()
@@ -34,12 +33,14 @@ class QualityGateTaskTest {
     @Test
     fun `task should accept custom property values`() {
         val project = ProjectBuilder.builder().build()
-        val task = project.tasks.register("qualityGate", QualityGateTask::class.java) {
-            it.output.set("val x = 42")
-            it.domain.set("CODING")
-            it.minAcceptableScore.set(0.80)
-            it.enableSentimentCheck.set(false)
-        }.get()
+        val task =
+            project.tasks
+                .register("qualityGate", QualityGateTask::class.java) {
+                    it.output.set("val x = 42")
+                    it.domain.set("CODING")
+                    it.minAcceptableScore.set(0.80)
+                    it.enableSentimentCheck.set(false)
+                }.get()
 
         assertEquals("val x = 42", task.output.get())
         assertEquals("CODING", task.domain.get())
@@ -50,10 +51,12 @@ class QualityGateTaskTest {
     @Test
     fun `execute with clean CODING output should pass`() {
         val project = ProjectBuilder.builder().build()
-        val task = project.tasks.register("qualityGate", QualityGateTask::class.java) {
-            it.output.set("class Calculator { fun add(a: Int, b: Int) = a + b }")
-            it.domain.set("CODING")
-        }.get()
+        val task =
+            project.tasks
+                .register("qualityGate", QualityGateTask::class.java) {
+                    it.output.set("class Calculator { fun add(a: Int, b: Int) = a + b }")
+                    it.domain.set("CODING")
+                }.get()
 
         task.executeQualityGate()
     }
@@ -61,10 +64,12 @@ class QualityGateTaskTest {
     @Test
     fun `execute with PII output should fail`() {
         val project = ProjectBuilder.builder().build()
-        val task = project.tasks.register("qualityGate", QualityGateTask::class.java) {
-            it.output.set("token=ghp_test1234 password=secret")
-            it.domain.set("CODING")
-        }.get()
+        val task =
+            project.tasks
+                .register("qualityGate", QualityGateTask::class.java) {
+                    it.output.set("token=ghp_test1234 password=secret")
+                    it.domain.set("CODING")
+                }.get()
 
         var failed = false
         try {
@@ -78,10 +83,12 @@ class QualityGateTaskTest {
     @Test
     fun `execute with off-topic CONTENT output should fail`() {
         val project = ProjectBuilder.builder().build()
-        val task = project.tasks.register("qualityGate", QualityGateTask::class.java) {
-            it.output.set("@SpringBootApplication class App")
-            it.domain.set("CONTENT")
-        }.get()
+        val task =
+            project.tasks
+                .register("qualityGate", QualityGateTask::class.java) {
+                    it.output.set("@SpringBootApplication class App")
+                    it.domain.set("CONTENT")
+                }.get()
 
         var failed = false
         try {
@@ -95,10 +102,12 @@ class QualityGateTaskTest {
     @Test
     fun `task validation result is accessible after execution`() {
         val project = ProjectBuilder.builder().build()
-        val task = project.tasks.register("qualityGate", QualityGateTask::class.java) {
-            it.output.set("fun sum(a: Int, b: Int) = a + b")
-            it.domain.set("CODING")
-        }.get()
+        val task =
+            project.tasks
+                .register("qualityGate", QualityGateTask::class.java) {
+                    it.output.set("fun sum(a: Int, b: Int) = a + b")
+                    it.domain.set("CODING")
+                }.get()
 
         task.executeQualityGate()
         assertNotNull(task.lastResult)
@@ -109,10 +118,12 @@ class QualityGateTaskTest {
     @Test
     fun `result is null before execution`() {
         val project = ProjectBuilder.builder().build()
-        val task = project.tasks.register("qualityGate", QualityGateTask::class.java) {
-            it.output.set("clean")
-            it.domain.set("CODING")
-        }.get()
+        val task =
+            project.tasks
+                .register("qualityGate", QualityGateTask::class.java) {
+                    it.output.set("clean")
+                    it.domain.set("CODING")
+                }.get()
 
         assertEquals(null, task.lastResult)
     }

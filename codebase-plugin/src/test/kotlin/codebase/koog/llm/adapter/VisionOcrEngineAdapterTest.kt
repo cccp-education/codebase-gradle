@@ -13,9 +13,8 @@ import kotlin.test.assertTrue
  * `VisionProvider` (AI-assisted OCR boundary, EPIC CDX-OCR-CONTRACTS US-3).
  */
 class VisionOcrEngineAdapterTest {
-
     private class RecordingVisionProvider(
-        private val response: String = "= Structured Output"
+        private val response: String = "= Structured Output",
     ) : VisionProvider {
         var lastImageBytes: ByteArray? = null
         var lastMimeType: String? = null
@@ -28,7 +27,7 @@ class VisionOcrEngineAdapterTest {
             mimeType: String,
             language: String,
             model: String,
-            maxTokens: Int
+            maxTokens: Int,
         ): String {
             lastImageBytes = imageBytes
             lastMimeType = mimeType
@@ -43,11 +42,12 @@ class VisionOcrEngineAdapterTest {
     fun `delegates image bytes mime type and language to the vision provider`() {
         val provider = RecordingVisionProvider()
         val adapter = VisionOcrEngineAdapter(provider)
-        val request = OcrRequest(
-            imageData = byteArrayOf(1, 2, 3),
-            format = "image/png",
-            language = "fr"
-        )
+        val request =
+            OcrRequest(
+                imageData = byteArrayOf(1, 2, 3),
+                format = "image/png",
+                language = "fr",
+            )
 
         adapter.process(request)
 
@@ -68,11 +68,12 @@ class VisionOcrEngineAdapterTest {
 
     @Test
     fun `result metadata mirrors the request and configured model`() {
-        val adapter = VisionOcrEngineAdapter(
-            RecordingVisionProvider(),
-            model = "gemini-2.5-pro",
-            maxTokens = 4096
-        )
+        val adapter =
+            VisionOcrEngineAdapter(
+                RecordingVisionProvider(),
+                model = "gemini-2.5-pro",
+                maxTokens = 4096,
+            )
         val request = OcrRequest(imageData = ByteArray(0), format = "image/jpeg", language = "en")
 
         val result = adapter.process(request)
@@ -85,14 +86,15 @@ class VisionOcrEngineAdapterTest {
     }
 
     @Test
-    fun `passes configured model and max tokens to the provider`() = runBlocking {
-        val provider = RecordingVisionProvider()
-        val adapter = VisionOcrEngineAdapter(provider, model = "gpt-oss:120b-cloud", maxTokens = 2048)
-        val request = OcrRequest(imageData = ByteArray(0), format = "image/png", language = "fr")
+    fun `passes configured model and max tokens to the provider`() =
+        runBlocking {
+            val provider = RecordingVisionProvider()
+            val adapter = VisionOcrEngineAdapter(provider, model = "gpt-oss:120b-cloud", maxTokens = 2048)
+            val request = OcrRequest(imageData = ByteArray(0), format = "image/png", language = "fr")
 
-        adapter.process(request)
+            adapter.process(request)
 
-        assertEquals("gpt-oss:120b-cloud", provider.lastModel)
-        assertEquals(2048, provider.lastMaxTokens)
-    }
+            assertEquals("gpt-oss:120b-cloud", provider.lastModel)
+            assertEquals(2048, provider.lastMaxTokens)
+        }
 }

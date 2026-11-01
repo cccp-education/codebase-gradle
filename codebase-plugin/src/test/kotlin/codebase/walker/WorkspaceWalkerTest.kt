@@ -7,9 +7,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class WorkspaceWalkerTest {
-
     @Test
-    fun `walk discovers all files in temp dir`(@TempDir tempDir: Path) {
+    fun `walk discovers all files in temp dir`(
+        @TempDir tempDir: Path,
+    ) {
         val dir = tempDir.toFile()
         dir.resolve("a.kt").writeText("hello")
         dir.resolve("b.adoc").writeText("world")
@@ -22,7 +23,9 @@ class WorkspaceWalkerTest {
     }
 
     @Test
-    fun `walk excludes build directory`(@TempDir tempDir: Path) {
+    fun `walk excludes build directory`(
+        @TempDir tempDir: Path,
+    ) {
         val dir = tempDir.toFile()
         dir.resolve("source.kt").writeText("val x = 1")
         val buildDir = dir.resolve("build")
@@ -38,7 +41,9 @@ class WorkspaceWalkerTest {
     }
 
     @Test
-    fun `walk excludes hidden directories`(@TempDir tempDir: Path) {
+    fun `walk excludes hidden directories`(
+        @TempDir tempDir: Path,
+    ) {
         val dir = tempDir.toFile()
         dir.resolve("visible.kt").writeText("hello")
         val hiddenDir = dir.resolve(".hidden")
@@ -53,7 +58,9 @@ class WorkspaceWalkerTest {
     }
 
     @Test
-    fun `walk excludes git directory`(@TempDir tempDir: Path) {
+    fun `walk excludes git directory`(
+        @TempDir tempDir: Path,
+    ) {
         val dir = tempDir.toFile()
         dir.resolve("main.kt").writeText("fun main()")
         val gitDir = dir.resolve(".git")
@@ -68,7 +75,9 @@ class WorkspaceWalkerTest {
     }
 
     @Test
-    fun `walk excludes gradle directory`(@TempDir tempDir: Path) {
+    fun `walk excludes gradle directory`(
+        @TempDir tempDir: Path,
+    ) {
         val dir = tempDir.toFile()
         dir.resolve("build.gradle.kts").writeText("plugins {}")
         val gradleDir = dir.resolve(".gradle")
@@ -82,7 +91,9 @@ class WorkspaceWalkerTest {
     }
 
     @Test
-    fun `walk excludes node_modules directory`(@TempDir tempDir: Path) {
+    fun `walk excludes node_modules directory`(
+        @TempDir tempDir: Path,
+    ) {
         val dir = tempDir.toFile()
         dir.resolve("package.json").writeText("{}")
         val nodeModules = dir.resolve("node_modules")
@@ -96,7 +107,9 @@ class WorkspaceWalkerTest {
     }
 
     @Test
-    fun `walk excludes kotlin directory`(@TempDir tempDir: Path) {
+    fun `walk excludes kotlin directory`(
+        @TempDir tempDir: Path,
+    ) {
         val dir = tempDir.toFile()
         dir.resolve("App.kt").writeText("fun main()")
         val kotlinDir = dir.resolve(".kotlin")
@@ -111,7 +124,9 @@ class WorkspaceWalkerTest {
     }
 
     @Test
-    fun `WorkspaceFile extension is correct`(@TempDir tempDir: Path) {
+    fun `WorkspaceFile extension is correct`(
+        @TempDir tempDir: Path,
+    ) {
         val dir = tempDir.toFile()
         dir.resolve("test.kt").writeText("val x = 1")
 
@@ -124,7 +139,9 @@ class WorkspaceWalkerTest {
     }
 
     @Test
-    fun `WorkspaceFile fileSize is greater than zero for non-empty file`(@TempDir tempDir: Path) {
+    fun `WorkspaceFile fileSize is greater than zero for non-empty file`(
+        @TempDir tempDir: Path,
+    ) {
         val dir = tempDir.toFile()
         val content = "package codebase\n\nfun main() {\n    println(\"Hello, World!\")\n}\n"
         dir.resolve("main.kt").writeText(content)
@@ -138,7 +155,9 @@ class WorkspaceWalkerTest {
     }
 
     @Test
-    fun `walk returns empty list for empty directory`(@TempDir tempDir: Path) {
+    fun `walk returns empty list for empty directory`(
+        @TempDir tempDir: Path,
+    ) {
         val walker = WorkspaceWalker(tempDir.toFile())
         val files = walker.walk()
 
@@ -146,7 +165,9 @@ class WorkspaceWalkerTest {
     }
 
     @Test
-    fun `walk sorts results by filePath`(@TempDir tempDir: Path) {
+    fun `walk sorts results by filePath`(
+        @TempDir tempDir: Path,
+    ) {
         val dir = tempDir.toFile()
         dir.resolve("c.txt").writeText("c")
         dir.resolve("a.txt").writeText("a")
@@ -161,7 +182,9 @@ class WorkspaceWalkerTest {
     }
 
     @Test
-    fun `walk discovers nested files in non-excluded dirs`(@TempDir tempDir: Path) {
+    fun `walk discovers nested files in non-excluded dirs`(
+        @TempDir tempDir: Path,
+    ) {
         val dir = tempDir.toFile()
         val srcDir = dir.resolve("src")
         srcDir.mkdir()

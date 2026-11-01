@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class OllamaOcrProviderTest {
-
     @Test
     fun `should be instantiable with default parameters`() {
         val provider = OllamaOcrProvider()
@@ -20,11 +19,12 @@ class OllamaOcrProviderTest {
 
     @Test
     fun `should accept custom baseUrl and model`() {
-        val provider = OllamaOcrProvider(
-            baseUrl = "http://localhost:11437",
-            model = "gpt-oss:120b-cloud",
-            timeoutSeconds = 60
-        )
+        val provider =
+            OllamaOcrProvider(
+                baseUrl = "http://localhost:11437",
+                model = "gpt-oss:120b-cloud",
+                timeoutSeconds = 60,
+            )
         assertThat(provider).isNotNull()
     }
 

@@ -13,7 +13,6 @@ import java.io.File
 import java.nio.file.Files
 
 class IngestGovernanceWorld {
-
     private val tempDir: File = Files.createTempDirectory("ingest-governance-world").toFile()
 
     var lastReport: IngestionReport? = null
@@ -38,7 +37,10 @@ class IngestGovernanceWorld {
 
     fun file(path: String): File = File(tempDir, path)
 
-    fun writeFile(path: String, content: String) {
+    fun writeFile(
+        path: String,
+        content: String,
+    ) {
         val target = file(path)
         target.parentFile?.takeIf { it != tempDir }?.mkdirs()
         target.writeText(content)
@@ -51,22 +53,24 @@ class IngestGovernanceWorld {
     fun runTask(
         outputPath: String? = null,
         incremental: Boolean = false,
-        chunkIncremental: Boolean = false
+        chunkIncremental: Boolean = false,
     ) {
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         val outputFile = outputPath?.let { file(it) }
-        val task = project.tasks.register("ingestGovernance", IngestGovernanceTask::class.java) {
-            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
-            it.chunkValidator = chunkValidator
-            if (incremental || chunkIncremental) {
-                it.governanceConfig.set(
-                    GovernanceSummaryConfig(incremental = incremental, chunkIncremental = chunkIncremental)
-                )
-            }
-            if (outputFile != null) {
-                it.outputFile.set(outputFile)
-            }
-        }.get()
+        val task =
+            project.tasks
+                .register("ingestGovernance", IngestGovernanceTask::class.java) {
+                    it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+                    it.chunkValidator = chunkValidator
+                    if (incremental || chunkIncremental) {
+                        it.governanceConfig.set(
+                            GovernanceSummaryConfig(incremental = incremental, chunkIncremental = chunkIncremental),
+                        )
+                    }
+                    if (outputFile != null) {
+                        it.outputFile.set(outputFile)
+                    }
+                }.get()
         task.executeIngest()
         lastReport = task.lastIngestionReport
         lastOutputFile = outputFile
@@ -106,7 +110,10 @@ class IngestGovernanceWorld {
         }
     }
 
-    fun assertSectionTotalGreaterThan(sectionName: String, min: Int) {
+    fun assertSectionTotalGreaterThan(
+        sectionName: String,
+        min: Int,
+    ) {
         val report = lastReport ?: error("No ingestion report")
         val section = GovernanceSection.valueOf(sectionName)
         val count = report.sectionsTotal[section] ?: 0

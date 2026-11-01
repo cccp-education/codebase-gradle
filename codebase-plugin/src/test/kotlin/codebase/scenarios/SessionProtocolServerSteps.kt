@@ -6,12 +6,11 @@ import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import java.util.UUID
 
-class SessionProtocolServerSteps(private val world: SessionProtocolServerWorld) {
-
+class SessionProtocolServerSteps(
+    private val world: SessionProtocolServerWorld,
+) {
     @Given("a SessionProtocolServer is configured with FakeLlmProvider")
     fun `configure server with fake LLM`() {
         world.llmProvider = FakeLlmProvider()
@@ -19,14 +18,15 @@ class SessionProtocolServerSteps(private val world: SessionProtocolServerWorld) 
 
     @Given("a SessionProtocolServer is configured with ThrowingLlmProvider only for prompt containing {string}")
     fun `configure server with conditional throwing LLM`(trigger: String) {
-        world.llmProvider = object : LlmProvider {
-            override suspend fun call(prompt: String): String {
-                if (prompt.contains(trigger)) {
-                    throw RuntimeException("Simulated LLM failure for $trigger")
+        world.llmProvider =
+            object : LlmProvider {
+                override suspend fun call(prompt: String): String {
+                    if (prompt.contains(trigger)) {
+                        throw RuntimeException("Simulated LLM failure for $trigger")
+                    }
+                    return """{"intention":"$prompt","classification":"FEATURE","executedTasks":[],"finished":true}"""
                 }
-                return """{"intention":"$prompt","classification":"FEATURE","executedTasks":[],"finished":true}"""
             }
-        }
     }
 
     @When("I feed the server with JSON-lines:")
@@ -46,11 +46,14 @@ class SessionProtocolServerSteps(private val world: SessionProtocolServerWorld) 
     }
 
     @Then("the response line contains status {string} or {string}")
-    fun `response line contains one of two statuses`(status1: String, status2: String) {
+    fun `response line contains one of two statuses`(
+        status1: String,
+        status2: String,
+    ) {
         val firstLine = world.outputLines.first()
         assertTrue(
             firstLine.contains(status1) || firstLine.contains(status2),
-            "Expected $status1 or $status2 in response: $firstLine"
+            "Expected $status1 or $status2 in response: $firstLine",
         )
     }
 
@@ -68,23 +71,33 @@ class SessionProtocolServerSteps(private val world: SessionProtocolServerWorld) 
     }
 
     @Then("response line {int} has sessionId {string}")
-    fun `response line N has sessionId`(lineNum: Int, expectedId: String) {
+    fun `response line N has sessionId`(
+        lineNum: Int,
+        expectedId: String,
+    ) {
         val line = world.outputLines[lineNum - 1]
         assertTrue(line.contains(expectedId), "Expected sessionId $expectedId in line $lineNum: $line")
     }
 
     @Then("response line {int} has status {string}")
-    fun `response line N has status`(lineNum: Int, expectedStatus: String) {
+    fun `response line N has status`(
+        lineNum: Int,
+        expectedStatus: String,
+    ) {
         val line = world.outputLines[lineNum - 1]
         assertTrue(line.contains(expectedStatus), "Expected status $expectedStatus in line $lineNum: $line")
     }
 
     @Then("response line {int} has status {string} or {string}")
-    fun `response line N has one of two statuses`(lineNum: Int, status1: String, status2: String) {
+    fun `response line N has one of two statuses`(
+        lineNum: Int,
+        status1: String,
+        status2: String,
+    ) {
         val line = world.outputLines[lineNum - 1]
         assertTrue(
             line.contains(status1) || line.contains(status2),
-            "Expected $status1 or $status2 in line $lineNum: $line"
+            "Expected $status1 or $status2 in line $lineNum: $line",
         )
     }
 }

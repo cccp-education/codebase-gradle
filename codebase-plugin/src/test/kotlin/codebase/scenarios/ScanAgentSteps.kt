@@ -9,8 +9,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class ScanAgentSteps(private val world: ScanAgentWorld) {
-
+class ScanAgentSteps(
+    private val world: ScanAgentWorld,
+) {
     @Before("@epic_v_9_3")
     fun reset() {
         world.reset()
@@ -88,7 +89,7 @@ class ScanAgentSteps(private val world: ScanAgentWorld) {
     fun `scanned files contain`(path: String) {
         assertTrue(
             world.scannedFiles.any { it.relativePath == path || it.relativePath.contains(path) },
-            "Expected file path containing '$path' not found in: ${world.scannedFiles.map { it.relativePath }}"
+            "Expected file path containing '$path' not found in: ${world.scannedFiles.map { it.relativePath }}",
         )
     }
 
@@ -96,7 +97,7 @@ class ScanAgentSteps(private val world: ScanAgentWorld) {
     fun `scanned files do not contain`(path: String) {
         assertFalse(
             world.scannedFiles.any { it.relativePath.contains(path) },
-            "Unexpected file path containing '$path' found in: ${world.scannedFiles.map { it.relativePath }}"
+            "Unexpected file path containing '$path' found in: ${world.scannedFiles.map { it.relativePath }}",
         )
     }
 

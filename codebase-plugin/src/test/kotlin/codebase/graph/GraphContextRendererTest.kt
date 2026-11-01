@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test
  * Methodology: DDD/TDD baby steps — RED (unresolved reference) → GREEN.
  */
 class GraphContextRendererTest {
-
     private val subgraph =
         SiteSubgraph(
             nodes =

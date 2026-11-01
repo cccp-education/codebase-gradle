@@ -25,26 +25,30 @@ class SessionProtocolLifecycleWorld {
         prompt: String = "",
         sessionId: String = "",
         maxActions: Int = 3,
-        model: String = ""
+        model: String = "",
     ) {
         val projectDir = Files.createTempDirectory("sp3-cucumber").toFile()
         val customResponseFile = Files.createTempFile("sp3-response", ".json").toFile()
 
-        val project = ProjectBuilder.builder()
-            .withProjectDir(projectDir)
-            .withName("sp3-test")
-            .build()
+        val project =
+            ProjectBuilder
+                .builder()
+                .withProjectDir(projectDir)
+                .withName("sp3-test")
+                .build()
         project.pluginManager.apply("java-base")
 
-        val task = project.tasks.register("sessionProtocol", SessionProtocolTask::class.java) {
-            it.action.set(action)
-            it.maxActions.set(maxActions)
-            it.responseFile.set(customResponseFile)
-            it.workspaceRoot.set(project.layout.projectDirectory.file("."))
-            if (prompt.isNotBlank()) it.prompt.set(prompt)
-            if (sessionId.isNotBlank()) it.sessionId.set(sessionId)
-            if (model.isNotBlank()) it.model.set(model)
-        }.get()
+        val task =
+            project.tasks
+                .register("sessionProtocol", SessionProtocolTask::class.java) {
+                    it.action.set(action)
+                    it.maxActions.set(maxActions)
+                    it.responseFile.set(customResponseFile)
+                    it.workspaceRoot.set(project.layout.projectDirectory.file("."))
+                    if (prompt.isNotBlank()) it.prompt.set(prompt)
+                    if (sessionId.isNotBlank()) it.sessionId.set(sessionId)
+                    if (model.isNotBlank()) it.model.set(model)
+                }.get()
 
         task.llmProvider = FakeLlmProvider()
         task.toolRegistry = ToolRegistry()
