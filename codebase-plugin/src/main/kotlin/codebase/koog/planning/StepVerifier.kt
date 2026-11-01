@@ -11,15 +11,14 @@ import org.slf4j.LoggerFactory
 class StepVerifier(
     private val llmProvider: LlmProvider? = null,
     private val tokenTracker: TokenTracker = TokenTracker(),
-    private val llmTimeoutMs: Long = DEFAULT_LLM_TIMEOUT_MS
+    private val llmTimeoutMs: Long = DEFAULT_LLM_TIMEOUT_MS,
 ) {
-
     private val log = LoggerFactory.getLogger(StepVerifier::class.java)
     private val resultVerifier = TaskResultVerifier()
 
     fun verifyAndAdapt(
         state: VibecodingState,
-        step: VibecodingStep
+        step: VibecodingStep,
     ): VibecodingState {
         val taskResult = resultVerifier.verify(state.lastToolResult, "", step.expectedOutput)
 
@@ -28,7 +27,7 @@ class StepVerifier(
                 log.info("[StepVerifier] Step '{}' SUCCESS", step.description)
                 state.copy(
                     error = null,
-                    retryCount = 0
+                    retryCount = 0,
                 )
             }
             TaskVerdict.FAILED -> {
@@ -36,37 +35,39 @@ class StepVerifier(
                     log.warn("[StepVerifier] Step '{}' maxRetries ({}) exhausted", step.description, step.maxRetries)
                     state.copy(
                         error = "MaxRetriesExhausted: ${taskResult.errorMessage}",
-                        finished = true
+                        finished = true,
                     )
                 } else {
                     log.info("[StepVerifier] Step '{}' FAILED — retry {}/{}", step.description, state.retryCount + 1, step.maxRetries)
-                    val replanned = if (llmProvider != null) {
-                        val replanPrompt = buildReplanPrompt(state, step, taskResult)
-                        tokenTracker.trackPrompt(replanPrompt)
-                        try {
-                            val replanResponse = runBlocking {
-                                withTimeout(llmTimeoutMs) { llmProvider.call(replanPrompt) }
+                    val replanned =
+                        if (llmProvider != null) {
+                            val replanPrompt = buildReplanPrompt(state, step, taskResult)
+                            tokenTracker.trackPrompt(replanPrompt)
+                            try {
+                                val replanResponse =
+                                    runBlocking {
+                                        withTimeout(llmTimeoutMs) { llmProvider.call(replanPrompt) }
+                                    }
+                                tokenTracker.trackCompletion(replanResponse)
+                                log.info("[StepVerifier] Replan response: {} chars", replanResponse.length)
+                                state.copy(
+                                    lastToolResult = "Replan: $replanResponse",
+                                )
+                            } catch (e: TimeoutCancellationException) {
+                                log.warn("[StepVerifier] Replan LLM call timed out after {}ms", llmTimeoutMs)
+                                state.copy(
+                                    lastToolResult = "LLMTimeout: ${llmTimeoutMs}ms exceeded",
+                                )
+                            } catch (e: Exception) {
+                                log.warn("[StepVerifier] Replan LLM call failed: {}", e.message)
+                                state
                             }
-                            tokenTracker.trackCompletion(replanResponse)
-                            log.info("[StepVerifier] Replan response: {} chars", replanResponse.length)
-                            state.copy(
-                                lastToolResult = "Replan: $replanResponse"
-                            )
-                        } catch (e: TimeoutCancellationException) {
-                            log.warn("[StepVerifier] Replan LLM call timed out after {}ms", llmTimeoutMs)
-                            state.copy(
-                                lastToolResult = "LLMTimeout: ${llmTimeoutMs}ms exceeded"
-                            )
-                        } catch (e: Exception) {
-                            log.warn("[StepVerifier] Replan LLM call failed: {}", e.message)
+                        } else {
                             state
                         }
-                    } else {
-                        state
-                    }
                     replanned.copy(
                         retryCount = state.retryCount + 1,
-                        error = null
+                        error = null,
                     )
                 }
             }
@@ -74,14 +75,14 @@ class StepVerifier(
                 log.warn("[StepVerifier] Step '{}' BLOCKED: {}", step.description, taskResult.errorMessage)
                 state.copy(
                     error = "BLOCKED: ${taskResult.errorMessage}",
-                    finished = true
+                    finished = true,
                 )
             }
             TaskVerdict.UNKNOWN -> {
                 log.warn("[StepVerifier] Step '{}' UNKNOWN: {}", step.description, taskResult.errorMessage)
                 state.copy(
                     error = "UNKNOWN: ${taskResult.errorMessage}",
-                    finished = true
+                    finished = true,
                 )
             }
         }
@@ -90,9 +91,9 @@ class StepVerifier(
     private fun buildReplanPrompt(
         state: VibecodingState,
         step: VibecodingStep,
-        taskResult: TaskResult
-    ): String {
-        return buildString {
+        taskResult: TaskResult,
+    ): String =
+        buildString {
             appendLine("Step verification failed — retry ${state.retryCount + 1}/${step.maxRetries}")
             appendLine("Step: ${step.description} (gradle task: ${step.gradleTask})")
             appendLine("Expected: ${step.expectedOutput}")
@@ -105,7 +106,6 @@ class StepVerifier(
             appendLine("The step failed. Propose an alternative approach to recover.")
             appendLine("Suggest a different Gradle task, file edit, or approach. Keep it short.")
         }
-    }
 
     companion object {
         const val DEFAULT_LLM_TIMEOUT_MS: Long = 30_000L

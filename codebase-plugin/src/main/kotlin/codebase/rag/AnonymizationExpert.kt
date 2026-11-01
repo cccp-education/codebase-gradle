@@ -9,7 +9,7 @@ import java.time.Duration
 data class ExpertConfig(
     val baseUrl: String = "http://localhost:11437",
     val modelName: String = "gpt-oss:120b-cloud",
-    val timeoutSeconds: Long = 120
+    val timeoutSeconds: Long = 120,
 )
 
 interface AnonymizationExpert {
@@ -43,7 +43,7 @@ interface AnonymizationExpert {
         - Remplace les noms/prénoms par "Anonymous"
         - Préserve la structure exacte du document (YAML, JSON, XML, code)
         - Ne modifie QUE les valeurs sensibles, jamais les clés ou la syntaxe
-        """
+        """,
     )
     @UserMessage(
         """
@@ -53,26 +53,29 @@ interface AnonymizationExpert {
         {{request.content}}
         
         Retourne UNIQUEMENT le JSON d'anonymisation. Aucun autre texte.
-        """
+        """,
     )
     fun anonymizeRequest(request: AnonymizationRequest): AnonymizationResult
 }
 
 object AnonymizationExpertFactory {
-
     private val log = System.err
 
-    fun create(config: ExpertConfig = ExpertConfig()): AnonymizationExpert {
-        return try {
-            val model = OllamaChatModel.builder()
-                .baseUrl(config.baseUrl)
-                .modelName(config.modelName)
-                .timeout(Duration.ofSeconds(config.timeoutSeconds))
-                .build()
+    fun create(config: ExpertConfig = ExpertConfig()): AnonymizationExpert =
+        try {
+            val model =
+                OllamaChatModel
+                    .builder()
+                    .baseUrl(config.baseUrl)
+                    .modelName(config.modelName)
+                    .timeout(Duration.ofSeconds(config.timeoutSeconds))
+                    .build()
 
-            val expert = AiServices.builder(AnonymizationExpert::class.java)
-                .chatModel(model)
-                .build()
+            val expert =
+                AiServices
+                    .builder(AnonymizationExpert::class.java)
+                    .chatModel(model)
+                    .build()
 
             log.println("[EPIC-2] Expert LLM connecté: ${config.baseUrl}/${config.modelName}")
             expert
@@ -80,15 +83,15 @@ object AnonymizationExpertFactory {
             log.println("[EPIC-2] Fallback déterministe (${e.message?.take(80)})")
             DeterministicExpert
         }
-    }
 }
 
 object DeterministicExpert : AnonymizationExpert {
     override fun anonymizeRequest(request: AnonymizationRequest): AnonymizationResult {
         val result = YamlConfigAnonymizer.anonymize(request.content, request.targetFormat)
 
-        val replacements = listOf("***", "anonymous@acme.com", "Anonymous")
-            .count { it in result }
+        val replacements =
+            listOf("***", "anonymous@acme.com", "Anonymous")
+                .count { it in result }
 
         val categories = mutableListOf<String>()
         val lower = request.content.lowercase()
@@ -104,7 +107,7 @@ object DeterministicExpert : AnonymizationExpert {
             confidenceScore = if (replacements > 0) 0.85 else 1.0,
             detectedPiiCategories = categories,
             replacedCount = replacements,
-            summary = "Déterministe: $replacements PII (${categories.joinToString()}). $cleanLines/$originalLines lignes."
+            summary = "Déterministe: $replacements PII (${categories.joinToString()}). $cleanLines/$originalLines lignes.",
         )
     }
 }

@@ -3,15 +3,20 @@ package codebase.rag
 data class KotlinMetadata(
     val packageName: String?,
     val className: String?,
-    val repoName: String
+    val repoName: String,
 )
 
-class KotlinMetadataExtractor(private val repoName: String) {
-
-    fun extract(filePath: String, content: String): KotlinMetadata {
+class KotlinMetadataExtractor(
+    private val repoName: String,
+) {
+    fun extract(
+        filePath: String,
+        content: String,
+    ): KotlinMetadata {
         val packageName = extractPackageName(content)
-        val className = extractClassName(content)
-            ?: java.io.File(filePath).nameWithoutExtension
+        val className =
+            extractClassName(content)
+                ?: java.io.File(filePath).nameWithoutExtension
         return KotlinMetadata(packageName = packageName, className = className, repoName = repoName)
     }
 

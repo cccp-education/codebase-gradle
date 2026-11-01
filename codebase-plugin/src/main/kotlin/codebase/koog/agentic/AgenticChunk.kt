@@ -1,13 +1,11 @@
 package codebase.koog.agentic
 
-import java.security.MessageDigest
-
 enum class ChunkType {
     RULE,
     CONCEPT,
     PROCEDURE,
     METADATA,
-    CONSTRAINT
+    CONSTRAINT,
 }
 
 enum class TaxonomyVerb {
@@ -16,20 +14,24 @@ enum class TaxonomyVerb {
     TRANSFORMER,
     DEPLOYER,
     INTERDIRE,
-    VALIDER
+    VALIDER,
 }
 
-enum class DagLevel(val level: Int) {
+enum class DagLevel(
+    val level: Int,
+) {
     N0(0),
     N1(1),
     N2(2),
     N3(3),
-    N4(4);
+    N4(4),
+    ;
 
     companion object {
-        fun fromString(s: String): DagLevel? = entries.firstOrNull {
-            it.name.equals(s.trim(), ignoreCase = true)
-        }
+        fun fromString(s: String): DagLevel? =
+            entries.firstOrNull {
+                it.name.equals(s.trim(), ignoreCase = true)
+            }
     }
 }
 
@@ -44,5 +46,5 @@ data class AgenticChunk(
     val dagLevel: DagLevel?,
     val circle: Int?,
     val weight: Double,
-    val checksum: String
+    val checksum: String,
 )

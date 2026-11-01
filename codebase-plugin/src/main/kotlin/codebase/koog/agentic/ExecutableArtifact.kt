@@ -6,79 +6,84 @@ sealed class ArtifactPayload {
     data class PreHookPayload(
         override val toolName: String,
         val forbiddenPatterns: List<String>,
-        val allowedPattern: String? = null
+        val allowedPattern: String? = null,
     ) : ArtifactPayload()
 
     data class PostHookPayload(
         override val toolName: String,
         val forbiddenPatterns: List<String>,
-        val allowedPattern: String? = null
+        val allowedPattern: String? = null,
     ) : ArtifactPayload()
 
     data class GradleTaskPayload(
         override val toolName: String? = "exec_gradle",
         val taskName: String,
         val group: String? = null,
-        val description: String? = null
+        val description: String? = null,
     ) : ArtifactPayload()
 
     data class ValidationPayload(
         override val toolName: String? = "exec_gradle",
-        val checkDescription: String
+        val checkDescription: String,
     ) : ArtifactPayload()
 
     data class ConstraintPayload(
         override val toolName: String? = "exec_gradle",
         val constraintDescription: String,
         val maxTokens: Int? = null,
-        val maxLines: Int? = null
+        val maxLines: Int? = null,
     ) : ArtifactPayload()
 
     data class MetadataPayload(
         override val toolName: String? = null,
         val metadataKey: String,
-        val metadataValue: String
+        val metadataValue: String,
     ) : ArtifactPayload()
 
     data class PromptTemplatePayload(
         override val toolName: String? = null,
         val templateName: String,
-        val promptText: String
+        val promptText: String,
     ) : ArtifactPayload()
 }
 
 data class ExecutionResult(
     val allowed: Boolean,
     val ruleId: String? = null,
-    val reason: String? = null
+    val reason: String? = null,
 )
 
 data class ExecutableArtifact(
     val compiledArtifact: CompiledArtifact,
-    val payload: ArtifactPayload
+    val payload: ArtifactPayload,
 ) {
-    fun execute(toolName: String, arguments: Map<String, String>): ExecutionResult {
-        return when (payload) {
+    fun execute(
+        toolName: String,
+        arguments: Map<String, String>,
+    ): ExecutionResult =
+        when (payload) {
             is ArtifactPayload.PreHookPayload,
-            is ArtifactPayload.PostHookPayload -> executePreHook(toolName, arguments, payload)
+            is ArtifactPayload.PostHookPayload,
+            -> executePreHook(toolName, arguments, payload)
             is ArtifactPayload.ConstraintPayload,
-            is ArtifactPayload.ValidationPayload -> executeValidation(toolName, arguments, payload)
+            is ArtifactPayload.ValidationPayload,
+            -> executeValidation(toolName, arguments, payload)
             else -> ExecutionResult(allowed = true)
         }
-    }
 
     private fun executePreHook(
         toolName: String,
         arguments: Map<String, String>,
-        payload: ArtifactPayload
+        payload: ArtifactPayload,
     ): ExecutionResult {
-        val (toolNamePayload, forbiddenPatterns, allowedPattern) = when (payload) {
-            is ArtifactPayload.PreHookPayload ->
-                Triple(payload.toolName, payload.forbiddenPatterns, payload.allowedPattern)
-            is ArtifactPayload.PostHookPayload ->
-                Triple(payload.toolName, payload.forbiddenPatterns, payload.allowedPattern)
-            else -> return ExecutionResult(allowed = true)
-        }
+        val (toolNamePayload, forbiddenPatterns, allowedPattern) =
+            when (payload) {
+                is ArtifactPayload.PreHookPayload ->
+                    Triple(payload.toolName, payload.forbiddenPatterns, payload.allowedPattern)
+                is ArtifactPayload.PostHookPayload ->
+                    Triple(payload.toolName, payload.forbiddenPatterns, payload.allowedPattern)
+                else -> return ExecutionResult(allowed = true)
+            }
         if (toolNamePayload != toolName) return ExecutionResult(allowed = true)
 
         val taskArg = arguments["task"] ?: arguments["command"] ?: return ExecutionResult(allowed = true)
@@ -95,7 +100,7 @@ data class ExecutableArtifact(
             return ExecutionResult(
                 allowed = false,
                 ruleId = compiledArtifact.sourceChunkId,
-                reason = compiledArtifact.description
+                reason = compiledArtifact.description,
             )
         }
 
@@ -105,23 +110,25 @@ data class ExecutableArtifact(
     private fun executeValidation(
         toolName: String,
         arguments: Map<String, String>,
-        payload: ArtifactPayload
+        payload: ArtifactPayload,
     ): ExecutionResult {
-        val expectedTool = when (payload) {
-            is ArtifactPayload.ValidationPayload -> payload.toolName
-            is ArtifactPayload.ConstraintPayload -> payload.toolName
-            else -> null
-        }
+        val expectedTool =
+            when (payload) {
+                is ArtifactPayload.ValidationPayload -> payload.toolName
+                is ArtifactPayload.ConstraintPayload -> payload.toolName
+                else -> null
+            }
         if (expectedTool != null && expectedTool != toolName) {
             return ExecutionResult(allowed = true)
         }
 
         val taskArg = arguments["task"] ?: arguments["command"] ?: return ExecutionResult(allowed = true)
-        val description = when (payload) {
-            is ArtifactPayload.ValidationPayload -> payload.checkDescription
-            is ArtifactPayload.ConstraintPayload -> payload.constraintDescription
-            else -> ""
-        }
+        val description =
+            when (payload) {
+                is ArtifactPayload.ValidationPayload -> payload.checkDescription
+                is ArtifactPayload.ConstraintPayload -> payload.constraintDescription
+                else -> ""
+            }
 
         return if (taskArg.contains(description, ignoreCase = true)) {
             ExecutionResult(allowed = true)

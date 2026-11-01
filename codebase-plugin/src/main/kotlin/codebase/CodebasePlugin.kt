@@ -50,7 +50,7 @@ class CodebasePlugin : Plugin<Project> {
 
         project.tasks.register(
             "collectFromCodebase",
-            PrepareContextTask::class.java
+            PrepareContextTask::class.java,
         ) {
             it.group = "collect"
             it.description = "Collects per-borough augmented context [REGLES_EAGER]/[CONTEXTE_RAG]/[RELATIONS_GRAPHIFY] into build/context/{name}.context.txt"
@@ -62,7 +62,7 @@ class CodebasePlugin : Plugin<Project> {
 
         project.tasks.register(
             "collectCompositeContext",
-            AssembleWorkspaceContextTask::class.java
+            AssembleWorkspaceContextTask::class.java,
         ) {
             it.group = "collect"
             it.description = "Assembles all build/context/*.context.txt from foundry/ boroughs into a workspace-level composite"
@@ -72,10 +72,11 @@ class CodebasePlugin : Plugin<Project> {
 
         project.tasks.register(
             "generateAugmentedPlan",
-            PlanIntentionTask::class.java
+            PlanIntentionTask::class.java,
         ) {
             it.group = "generate"
-            it.description = "Augmented Planning — classifies intention (pro/flash) then decomposes into EPICs/UserStories/Tasks using CompositeContext (EAGER+RAG+Graphify)"
+            it.description =
+                "Augmented Planning — classifies intention (pro/flash) then decomposes into EPICs/UserStories/Tasks using CompositeContext (EAGER+RAG+Graphify)"
             it.intention.set(project.providers.gradleProperty("intention").orElse(""))
             it.workspaceRoot.set(project.rootDir)
             it.ragQuestion.set(project.providers.gradleProperty("ragQuestion").orElse("architecture du workspace"))
@@ -84,19 +85,29 @@ class CodebasePlugin : Plugin<Project> {
 
         project.tasks.register(
             "vibecode",
-            VibecodingTask::class.java
+            VibecodingTask::class.java,
         ) {
             it.group = "generate"
             it.description = "Vibecoding agent — koog autonomous loop (context → plan → execute → audit)"
             it.workspaceRoot.set(project.rootDir)
             it.intention.set(project.providers.gradleProperty("intention").orElse(""))
-            it.dryRun.set(project.providers.gradleProperty("dryRun").map { it.toBoolean() }.orElse(false))
-            it.maxActions.set(project.providers.gradleProperty("maxActions").map { it.toInt() }.orElse(10))
+            it.dryRun.set(
+                project.providers
+                    .gradleProperty("dryRun")
+                    .map { it.toBoolean() }
+                    .orElse(false),
+            )
+            it.maxActions.set(
+                project.providers
+                    .gradleProperty("maxActions")
+                    .map { it.toInt() }
+                    .orElse(10),
+            )
         }
 
         project.tasks.register(
             "sessionProtocolDaemon",
-            SessionProtocolDaemonTask::class.java
+            SessionProtocolDaemonTask::class.java,
         ) {
             it.group = "generate"
             it.description = "Session protocol daemon — stdin JSON-lines SessionPrompt, stdout SessionResponse, reuses Gradle daemon"
@@ -104,23 +115,32 @@ class CodebasePlugin : Plugin<Project> {
 
         project.tasks.register(
             "autonomousSession",
-            codebase.koog.svo.AutonomousSessionTask::class.java
+            codebase.koog.svo.AutonomousSessionTask::class.java,
         ) { task ->
             task.group = "generate"
-            task.description = "Autonomous vibecoding session — chains augmented-context sessions until the borough backlog is complete (bounded by maxChainedSessions)"
+            task.description =
+                "Autonomous vibecoding session — chains augmented-context sessions until the borough backlog is complete (bounded by maxChainedSessions)"
             task.workspaceRoot.set(project.rootDir)
             task.prompt.set(project.providers.gradleProperty("prompt").orElse(""))
             task.borough.set(project.providers.gradleProperty("borough").orElse(""))
             task.maxChainedSessions.set(
-                project.providers.gradleProperty("maxChainedSessions").map { it.toInt() }.orElse(3)
+                project.providers
+                    .gradleProperty("maxChainedSessions")
+                    .map { it.toInt() }
+                    .orElse(3),
             )
-            task.maxActions.set(project.providers.gradleProperty("maxActions").map { it.toInt() }.orElse(10))
+            task.maxActions.set(
+                project.providers
+                    .gradleProperty("maxActions")
+                    .map { it.toInt() }
+                    .orElse(10),
+            )
             task.model.set(project.providers.gradleProperty("model").orElse(""))
         }
 
         project.tasks.register(
             "ingestGovernance",
-            IngestGovernanceTask::class.java
+            IngestGovernanceTask::class.java,
         ) {
             it.group = "generate"
             it.description = "Ingest governance EAGER files (AGENT.adoc, INDEX.adoc, BACKLOG.adoc) into AgenticIngestor (in-memory stub, EPIC V-LOCAL pont Y)"
@@ -141,13 +161,13 @@ class CodebasePlugin : Plugin<Project> {
                         config = config.copy(chunkIncremental = v.toBoolean())
                     }
                     config
-                }
+                },
             )
         }
 
         project.tasks.register(
             "vibecodingDashboard",
-            DashboardTask::class.java
+            DashboardTask::class.java,
         ) {
             it.group = "tracking"
             it.description = "Dashboard vibecoding — résumé sessions, coûts tokens, filtres confidentialité"
@@ -155,38 +175,67 @@ class CodebasePlugin : Plugin<Project> {
 
         project.tasks.register(
             "qualityGate",
-            QualityGateTask::class.java
+            QualityGateTask::class.java,
         ) {
             it.group = "validate"
             it.description = "Quality gate — validates expert LLM outputs (sentiment + off-topic + PII residual checks)"
             it.output.set(project.providers.gradleProperty("output").orElse(""))
             it.domain.set(project.providers.gradleProperty("domain").orElse("CODING"))
-            it.minAcceptableScore.set(project.providers.gradleProperty("minScore").map { it.toDouble() }.orElse(0.60))
-            it.enableSentimentCheck.set(project.providers.gradleProperty("enableSentiment").map { it.toBoolean() }.orElse(true))
-            it.enableOffTopicCheck.set(project.providers.gradleProperty("enableOffTopic").map { it.toBoolean() }.orElse(true))
-            it.enablePiiCheck.set(project.providers.gradleProperty("enablePii").map { it.toBoolean() }.orElse(true))
+            it.minAcceptableScore.set(
+                project.providers
+                    .gradleProperty("minScore")
+                    .map { it.toDouble() }
+                    .orElse(0.60),
+            )
+            it.enableSentimentCheck.set(
+                project.providers
+                    .gradleProperty("enableSentiment")
+                    .map { it.toBoolean() }
+                    .orElse(true),
+            )
+            it.enableOffTopicCheck.set(
+                project.providers
+                    .gradleProperty("enableOffTopic")
+                    .map { it.toBoolean() }
+                    .orElse(true),
+            )
+            it.enablePiiCheck.set(
+                project.providers
+                    .gradleProperty("enablePii")
+                    .map { it.toBoolean() }
+                    .orElse(true),
+            )
         }
 
         project.tasks.register(
             "endSessionBlog",
-            EndSessionBlogTask::class.java
+            EndSessionBlogTask::class.java,
         ) { task ->
             task.group = "generate"
             task.description = "Blog narration publique — extrait sessions foundry/ et génère articles AsciiDoc JBake dans blog/"
-            task.foundryDir.set(project.rootDir.parentFile.parentFile.resolve("foundry"))
-            task.blogDir.set(project.rootDir.parentFile.parentFile.resolve(
-                "office/sites/cheroliv/jbake/content/blog/2026"
-            ))
+            task.foundryDir.set(
+                project.rootDir.parentFile.parentFile
+                    .resolve("foundry"),
+            )
+            task.blogDir.set(
+                project.rootDir.parentFile.parentFile.resolve(
+                    "office/sites/cheroliv/jbake/content/blog/2026",
+                ),
+            )
             task.nextArticleNumber.set(
-                project.providers.gradleProperty("nextArticleNumber").map { it.toInt() }.orElse(127)
+                project.providers
+                    .gradleProperty("nextArticleNumber")
+                    .map { it.toInt() }
+                    .orElse(127),
             )
         }
 
-        val trainingPluginDir = project.rootDir.parentFile.parentFile
-            .resolve("private/training-gradle/training-plugin")
+        val trainingPluginDir =
+            project.rootDir.parentFile.parentFile
+                .resolve("private/training-gradle/training-plugin")
         project.tasks.register(
             "generateCompositeContext",
-            CodebaseCompositeContextTask::class.java
+            CodebaseCompositeContextTask::class.java,
         ) { task ->
             task.group = "generate"
             task.description = "Composite context N1+N2 : RagVectorStore (codebase.store) + referential content corpus → composite-context.json"
@@ -198,30 +247,34 @@ class CodebasePlugin : Plugin<Project> {
 
         project.tasks.register(
             "ocrDocument",
-            OcrTask::class.java
+            OcrTask::class.java,
         ) { task ->
             task.group = "collect"
             task.description = "OCR assisté IA — extrait le texte structuré d'un document scanné via Gemini Vision"
             val resolvedOcrProvider = project.providers.gradleProperty("ocrProvider").orElse(ocrExt.ocrProvider)
             task.ocrProvider.set(resolvedOcrProvider)
             // lifecycle { logger.lifecycle("[OCR Document Task] ocrProvider: {}", resolvedOcrProvider.getOrElse { "<not set>" }) }
-            
+
             val resolvedOcrLanguage = project.providers.gradleProperty("ocrLanguage").orElse(ocrExt.ocrLanguage)
             task.ocrLanguage.set(resolvedOcrLanguage)
             //             lifecycle { logger.lifecycle("[OCR Document Task] ocrLanguage: {}", resolvedOcrLanguage.getOrElse { "<not set>" }) }
-            
+
             val resolvedGeminiModel = project.providers.gradleProperty("geminiModel").orElse(ocrExt.geminiModel)
             task.geminiModel.set(resolvedGeminiModel)
             //             lifecycle { logger.lifecycle("[OCR Document Task] geminiModel: {}", resolvedGeminiModel.getOrElse { "<not set>" }) }
-            
-            val resolvedMaxTokens = project.providers.gradleProperty("maxTokens").map { it.toInt() }.orElse(ocrExt.maxTokens)
+
+            val resolvedMaxTokens =
+                project.providers
+                    .gradleProperty("maxTokens")
+                    .map { it.toInt() }
+                    .orElse(ocrExt.maxTokens)
             task.maxTokens.set(resolvedMaxTokens)
             //             lifecycle { logger.lifecycle("[OCR Document Task] maxTokens: {}", resolvedMaxTokens.getOrElse { "<not set>" }) }
-            
+
             val resolvedOutputFormat = project.providers.gradleProperty("outputFormat").orElse(ocrExt.outputFormat)
             task.outputFormat.set(resolvedOutputFormat)
             //             lifecycle { logger.lifecycle("[OCR Document Task] outputFormat: {}", resolvedOutputFormat.getOrElse { "<not set>" }) }
-            
+
             // -PinputFile → CLI single-file mode
             val inputFileProp = project.providers.gradleProperty("inputFile")
             if (inputFileProp.isPresent) {
@@ -250,7 +303,10 @@ class CodebasePlugin : Plugin<Project> {
                 //                 lifecycle { logger.lifecycle("[OCR Document Task] ollamaModel: {}", task.ollamaModel.get()) }
             }
             // llm-config.yml → GeminiVisionProvider config
-            val llmConfigFile = project.layout.projectDirectory.file("llm-config.yml").asFile
+            val llmConfigFile =
+                project.layout.projectDirectory
+                    .file("llm-config.yml")
+                    .asFile
             if (llmConfigFile.exists()) {
                 task.llmConfigFile = llmConfigFile
                 //                 lifecycle { logger.lifecycle("[OCR Document Task] llmConfigFile: {}", llmConfigFile.absolutePath) }
@@ -259,7 +315,7 @@ class CodebasePlugin : Plugin<Project> {
 
         project.tasks.register(
             "ocrIngest",
-            OcrIngestTask::class.java
+            OcrIngestTask::class.java,
         ) { task ->
             task.group = "collect"
             task.description = "Ingère les fichiers OCR dans pgvector (chunk → embedding ONNX → RAG)"
@@ -268,25 +324,28 @@ class CodebasePlugin : Plugin<Project> {
 
         project.tasks.register(
             "exposeExperts",
-            ExpertExposureTask::class.java
+            ExpertExposureTask::class.java,
         ) { task ->
             task.group = "generate"
             task.description = "Expose les experts enregistrés via Ollama — génère un manifest JSON consommable par slider/plantuml/bakery"
             task.domains.set(
-                project.providers.gradleProperty("domains")
+                project.providers
+                    .gradleProperty("domains")
                     .map { it.split(",").map { d -> d.trim() } }
-                    .orElse(expertExt.domains)
+                    .orElse(expertExt.domains),
             )
             task.anonymizeEndpoints.set(
-                project.providers.gradleProperty("anonymizeEndpoints")
+                project.providers
+                    .gradleProperty("anonymizeEndpoints")
                     .map { it.toBoolean() }
-                    .orElse(expertExt.anonymizeEndpoints)
+                    .orElse(expertExt.anonymizeEndpoints),
             )
             task.outputFile.set(
                 project.layout.buildDirectory.file(
-                    project.providers.gradleProperty("outputFile")
-                        .orElse(expertExt.outputFile)
-                )
+                    project.providers
+                        .gradleProperty("outputFile")
+                        .orElse(expertExt.outputFile),
+                ),
             )
         }
 
@@ -307,44 +366,48 @@ class CodebasePlugin : Plugin<Project> {
 
         project.tasks.register(
             "prepareFineTuningDataset",
-            PrepareFineTuningDatasetTask::class.java
+            PrepareFineTuningDatasetTask::class.java,
         ) { task ->
             task.group = "finetuning"
             task.description = "Prepares the fine-tuning dataset (Modelfile + corpus globs) for continual pre-training"
             task.baseModel.set(ftBaseModelProp.orElse(fineTuningExt.baseModel))
             task.dataset.set(
-                ftDatasetProp.map { it.split(",").map { d -> d.trim() } }
-                    .orElse(fineTuningExt.dataset)
+                ftDatasetProp
+                    .map { it.split(",").map { d -> d.trim() } }
+                    .orElse(fineTuningExt.dataset),
             )
             task.corpusGlobs.set(
-                ftCorpusGlobsProp.map { it.split(",").map { d -> d.trim() } }
-                    .orElse(fineTuningExt.corpusGlobs)
+                ftCorpusGlobsProp
+                    .map { it.split(",").map { d -> d.trim() } }
+                    .orElse(fineTuningExt.corpusGlobs),
             )
             task.outputModelName.set(ftOutputNameProp.orElse(fineTuningExt.outputModelName))
             task.corpusRatio.set(
-                ftCorpusRatioProp.map { it.toDouble() }.orElse(fineTuningExt.corpusRatio)
+                ftCorpusRatioProp.map { it.toDouble() }.orElse(fineTuningExt.corpusRatio),
             )
             task.outputFile.set(project.layout.buildDirectory.file("finetuning/dataset-prep.txt"))
         }
 
         project.tasks.register(
             "fineTuneExpert",
-            FineTuneExpertTask::class.java
+            FineTuneExpertTask::class.java,
         ) { task ->
             task.group = "finetuning"
             task.description = "Executes the fine-tuning pipeline (continual pre-training) and produces a GGUF model + report"
             task.baseModel.set(ftBaseModelProp.orElse(fineTuningExt.baseModel))
             task.dataset.set(
-                ftDatasetProp.map { it.split(",").map { d -> d.trim() } }
-                    .orElse(fineTuningExt.dataset)
+                ftDatasetProp
+                    .map { it.split(",").map { d -> d.trim() } }
+                    .orElse(fineTuningExt.dataset),
             )
             task.corpusGlobs.set(
-                ftCorpusGlobsProp.map { it.split(",").map { d -> d.trim() } }
-                    .orElse(fineTuningExt.corpusGlobs)
+                ftCorpusGlobsProp
+                    .map { it.split(",").map { d -> d.trim() } }
+                    .orElse(fineTuningExt.corpusGlobs),
             )
             task.outputModelName.set(ftOutputNameProp.orElse(fineTuningExt.outputModelName))
             task.corpusRatio.set(
-                ftCorpusRatioProp.map { it.toDouble() }.orElse(fineTuningExt.corpusRatio)
+                ftCorpusRatioProp.map { it.toDouble() }.orElse(fineTuningExt.corpusRatio),
             )
             task.ollamaBaseUrl.set(ftOllamaBaseUrlProp.orElse("http://localhost:11437"))
             task.outputReport.set(project.layout.buildDirectory.file("finetuning/report.txt"))
@@ -354,7 +417,7 @@ class CodebasePlugin : Plugin<Project> {
 
         project.tasks.register(
             "publishExpertToOllama",
-            PublishExpertToOllamaTask::class.java
+            PublishExpertToOllamaTask::class.java,
         ) { task ->
             task.group = "finetuning"
             task.description = "Registers the fine-tuned expert in ExpertRegistry and generates the exposure manifest JSON"
@@ -363,9 +426,10 @@ class CodebasePlugin : Plugin<Project> {
             task.domainLabel.set(ftDomainLabelProp.orElse(""))
             task.baseUrl.set(ftOllamaBaseUrlProp.orElse("http://localhost:11437"))
             task.anonymizeEndpoints.set(
-                project.providers.gradleProperty("codebase.finetuning.anonymizeEndpoints")
+                project.providers
+                    .gradleProperty("codebase.finetuning.anonymizeEndpoints")
                     .map { it.toBoolean() }
-                    .orElse(true)
+                    .orElse(true),
             )
             task.manifestOutput.set(project.layout.buildDirectory.file("finetuning/expert-manifest.json"))
             task.dependsOn("fineTuneExpert")

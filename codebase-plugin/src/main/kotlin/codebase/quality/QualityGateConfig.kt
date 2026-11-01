@@ -6,7 +6,7 @@ data class QualityGateConfig(
     val enableSentimentCheck: Boolean = true,
     val enableOffTopicCheck: Boolean = true,
     val enablePiiCheck: Boolean = true,
-    val retryFeedbackPrefix: String = "Tu as été rappelé à l'ordre pour hors-sujet. Concentre-toi."
+    val retryFeedbackPrefix: String = "Tu as été rappelé à l'ordre pour hors-sujet. Concentre-toi.",
 ) {
     init {
         require(minAcceptableScore in 0.0..1.0) { "minAcceptableScore must be in [0.0, 1.0], got $minAcceptableScore" }

@@ -12,7 +12,6 @@ import java.util.Locale
  * OCR text unknowingly.
  */
 object DoubtExposure {
-
     /** Stable marker prepended to doubtful chunk lines. */
     const val DOUBT_MARKER = "[DOUBTFUL"
 
@@ -25,7 +24,10 @@ object DoubtExposure {
      *        instead of annotated (default: false — annotate and keep)
      * @return context lines, one per retained chunk
      */
-    fun expose(results: List<RetrieveResult>, excludeDoubtful: Boolean = false): List<String> {
+    fun expose(
+        results: List<RetrieveResult>,
+        excludeDoubtful: Boolean = false,
+    ): List<String> {
         val retained = if (excludeDoubtful) results.filterNot { it.doubtful } else results
         return retained.map { r ->
             if (r.doubtful) {

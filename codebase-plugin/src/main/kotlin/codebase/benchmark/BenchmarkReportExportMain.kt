@@ -15,7 +15,6 @@ object BenchmarkReportExportMain {
             return
         }
 
-
         File(inputFile.parentFile, "report-$scenarioId.adoc").apply {
             writeText(exportAsciiDoc(inputFile.readText(), scenarioId))
             println(absolutePath)

@@ -30,23 +30,23 @@ data class SessionResumptionState(
  *   (chaînage SVO-5, cadrage global augmenté).
  */
 object SessionResumptionPlanner {
-
-    fun plan(state: SessionResumptionState): String = buildString {
-        appendLine("= Resumption prompt — ${state.borough}")
-        appendLine()
-        if (state.openItems.isEmpty()) {
-            appendLine("The backlog is complete. BRAINSTORM session expected:")
-            appendLine("start a new augmented-context brainstorming on the borough vision")
-            appendLine("(autofocus BIG_PICTURE, cadrage global).")
-        } else {
-            appendLine("Objective of the next session — work the backlog, first item first:")
+    fun plan(state: SessionResumptionState): String =
+        buildString {
+            appendLine("= Resumption prompt — ${state.borough}")
             appendLine()
-            state.openItems.forEachIndexed { index, item ->
-                appendLine("  ${index + 1}. $item")
+            if (state.openItems.isEmpty()) {
+                appendLine("The backlog is complete. BRAINSTORM session expected:")
+                appendLine("start a new augmented-context brainstorming on the borough vision")
+                appendLine("(autofocus BIG_PICTURE, cadrage global).")
+            } else {
+                appendLine("Objective of the next session — work the backlog, first item first:")
+                appendLine()
+                state.openItems.forEachIndexed { index, item ->
+                    appendLine("  ${index + 1}. $item")
+                }
             }
+            appendLine()
+            appendLine("Last session intention: ${state.lastIntention}")
+            appendLine("Items completed so far: ${state.doneItems.size}")
         }
-        appendLine()
-        appendLine("Last session intention: ${state.lastIntention}")
-        appendLine("Items completed so far: ${state.doneItems.size}")
-    }
 }

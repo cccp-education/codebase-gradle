@@ -10,7 +10,7 @@ enum class ChunkValidationErrorType {
     MISSING_CHECKSUM,
     CHECKSUM_MISMATCH,
     NEGATIVE_WEIGHT,
-    WEIGHT_EXCEEDS_ONE
+    WEIGHT_EXCEEDS_ONE,
 }
 
 data class ChunkValidationError(
@@ -19,16 +19,15 @@ data class ChunkValidationError(
     val lineStart: Int?,
     val lineEnd: Int?,
     val errorType: ChunkValidationErrorType,
-    val message: String
+    val message: String,
 )
 
 data class ValidationResult(
     val valid: Boolean,
-    val errors: List<ChunkValidationError>
+    val errors: List<ChunkValidationError>,
 )
 
 open class ChunkValidator {
-
     open fun validate(chunk: AgenticChunk): ValidationResult {
         val errors = mutableListOf<ChunkValidationError>()
 
@@ -62,7 +61,7 @@ open class ChunkValidator {
     private fun error(
         chunk: AgenticChunk,
         errorType: ChunkValidationErrorType,
-        message: String
+        message: String,
     ): ChunkValidationError {
         val (lineStart, lineEnd) = parseLineRange(chunk.sourceLines)
         return ChunkValidationError(
@@ -71,7 +70,7 @@ open class ChunkValidator {
             lineStart = lineStart,
             lineEnd = lineEnd,
             errorType = errorType,
-            message = message
+            message = message,
         )
     }
 

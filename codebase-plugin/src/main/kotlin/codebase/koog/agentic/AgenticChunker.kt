@@ -3,8 +3,10 @@ package codebase.koog.agentic
 import java.security.MessageDigest
 
 class AgenticChunker {
-
-    fun chunk(content: String, sourceFile: String): List<AgenticChunk> {
+    fun chunk(
+        content: String,
+        sourceFile: String,
+    ): List<AgenticChunk> {
         if (content.isBlank()) return emptyList()
 
         val lines = content.lines()
@@ -17,8 +19,9 @@ class AgenticChunker {
         for ((index, line) in lines.withIndex()) {
             val lineNumber = index + 1
 
-            val isSectionHeader = (line.startsWith("== ") && !line.startsWith("=== ")) ||
-                (line.startsWith("= ") && !line.startsWith("== "))
+            val isSectionHeader =
+                (line.startsWith("== ") && !line.startsWith("=== ")) ||
+                    (line.startsWith("= ") && !line.startsWith("== "))
 
             if (isSectionHeader) {
                 if (sectionBuffer.isNotBlank()) {
@@ -42,7 +45,12 @@ class AgenticChunker {
         return chunks
     }
 
-    private fun processSection(sectionContent: String, sectionTitle: String, startLine: Int, sourceFile: String): List<AgenticChunk> {
+    private fun processSection(
+        sectionContent: String,
+        sectionTitle: String,
+        startLine: Int,
+        sourceFile: String,
+    ): List<AgenticChunk> {
         val chunks = mutableListOf<AgenticChunk>()
 
         val rules = extractRules(sectionContent, sectionTitle, startLine, sourceFile)
@@ -64,30 +72,38 @@ class AgenticChunker {
         chunks.addAll(paragraphs)
 
         if (chunks.isEmpty() && sectionContent.isNotBlank()) {
-            chunks.add(buildChunk(
-                content = sectionContent.trim(),
-                sourceFile = sourceFile,
-                sourceLines = "$startLine-${startLine + sectionContent.lines().size - 1}",
-                chunkType = ChunkType.CONCEPT,
-                verb = extractVerbFromContent(sectionContent),
-                sectionTitle = sectionTitle
-            ))
+            chunks.add(
+                buildChunk(
+                    content = sectionContent.trim(),
+                    sourceFile = sourceFile,
+                    sourceLines = "$startLine-${startLine + sectionContent.lines().size - 1}",
+                    chunkType = ChunkType.CONCEPT,
+                    verb = extractVerbFromContent(sectionContent),
+                    sectionTitle = sectionTitle,
+                ),
+            )
         }
 
         return chunks
     }
 
-    private fun extractRules(content: String, sectionTitle: String, startLine: Int, sourceFile: String): List<AgenticChunk> {
+    private fun extractRules(
+        content: String,
+        sectionTitle: String,
+        startLine: Int,
+        sourceFile: String,
+    ): List<AgenticChunk> {
         val rules = mutableListOf<AgenticChunk>()
-        val rulePatterns = listOf(
-            "INTERDICTION FORMELLE",
-            "INTERDICTION",
-            "INTERDIRE",
-            "NE DOIT JAMAIS",
-            "NE JAMAIS",
-            "OBLIGATOIRE",
-            "INTERDIT"
-        )
+        val rulePatterns =
+            listOf(
+                "INTERDICTION FORMELLE",
+                "INTERDICTION",
+                "INTERDIRE",
+                "NE DOIT JAMAIS",
+                "NE JAMAIS",
+                "OBLIGATOIRE",
+                "INTERDIT",
+            )
 
         val lines = content.lines()
         for ((i, line) in lines.withIndex()) {
@@ -96,14 +112,16 @@ class AgenticChunker {
                     val contextLines = buildContextBlock(lines, i, 2)
                     val lineRange = "${startLine + i}-${startLine + i + contextLines.lines().size - 1}"
                     val chunkContent = contextLines.trim()
-                    rules.add(buildChunk(
-                        content = chunkContent,
-                        sourceFile = sourceFile,
-                        sourceLines = lineRange,
-                        chunkType = ChunkType.RULE,
-                        verb = TaxonomyVerb.INTERDIRE,
-                        sectionTitle = sectionTitle
-                    ))
+                    rules.add(
+                        buildChunk(
+                            content = chunkContent,
+                            sourceFile = sourceFile,
+                            sourceLines = lineRange,
+                            chunkType = ChunkType.RULE,
+                            verb = TaxonomyVerb.INTERDIRE,
+                            sectionTitle = sectionTitle,
+                        ),
+                    )
                     break
                 }
             }
@@ -111,7 +129,12 @@ class AgenticChunker {
         return rules
     }
 
-    private fun extractProcedures(content: String, sectionTitle: String, startLine: Int, sourceFile: String): List<AgenticChunk> {
+    private fun extractProcedures(
+        content: String,
+        sectionTitle: String,
+        startLine: Int,
+        sourceFile: String,
+    ): List<AgenticChunk> {
         val chunks = mutableListOf<AgenticChunk>()
         val lines = content.lines()
 
@@ -148,14 +171,16 @@ class AgenticChunker {
                 val lineRange = "${startLine + startIdx}-${startLine + startIdx + blockLines.size - 1}"
                 val chunkContent = blockLines.joinToString("\n").trim()
                 val verb = extractVerbFromProcedure(chunkContent)
-                chunks.add(buildChunk(
-                    content = chunkContent,
-                    sourceFile = sourceFile,
-                    sourceLines = lineRange,
-                    chunkType = ChunkType.PROCEDURE,
-                    verb = verb,
-                    sectionTitle = sectionTitle
-                ))
+                chunks.add(
+                    buildChunk(
+                        content = chunkContent,
+                        sourceFile = sourceFile,
+                        sourceLines = lineRange,
+                        chunkType = ChunkType.PROCEDURE,
+                        verb = verb,
+                        sectionTitle = sectionTitle,
+                    ),
+                )
             }
         }
         return chunks
@@ -166,25 +191,33 @@ class AgenticChunker {
             content.contains("check", ignoreCase = true) ||
             content.contains("compile", ignoreCase = true) ||
             content.contains("valider", ignoreCase = true)
-        ) return TaxonomyVerb.VALIDER
+        ) {
+            return TaxonomyVerb.VALIDER
+        }
 
         return TaxonomyVerb.entries.firstOrNull { verb ->
             content.contains(verb.name, ignoreCase = true)
         }
     }
 
-    private fun extractConstraints(content: String, sectionTitle: String, startLine: Int, sourceFile: String): List<AgenticChunk> {
+    private fun extractConstraints(
+        content: String,
+        sectionTitle: String,
+        startLine: Int,
+        sourceFile: String,
+    ): List<AgenticChunk> {
         val chunks = mutableListOf<AgenticChunk>()
-        val constraintPatterns = listOf(
-            "Maximum",
-            "max ",
-            "limite",
-            "Contexte leger",
-            "1 fichier a la fois",
-            "50k tokens",
-            "~3000 lignes",
-            "5 sessions de 20 minutes"
-        )
+        val constraintPatterns =
+            listOf(
+                "Maximum",
+                "max ",
+                "limite",
+                "Contexte leger",
+                "1 fichier a la fois",
+                "50k tokens",
+                "~3000 lignes",
+                "5 sessions de 20 minutes",
+            )
 
         val lines = content.lines()
         for ((i, line) in lines.withIndex()) {
@@ -192,14 +225,16 @@ class AgenticChunker {
                 if (line.contains(pattern, ignoreCase = true)) {
                     val contextLines = buildContextBlock(lines, i, 1)
                     val lineRange = "${startLine + i}-${startLine + i + contextLines.lines().size - 1}"
-                    chunks.add(buildChunk(
-                        content = contextLines.trim(),
-                        sourceFile = sourceFile,
-                        sourceLines = lineRange,
-                        chunkType = ChunkType.CONSTRAINT,
-                        verb = TaxonomyVerb.VALIDER,
-                        sectionTitle = sectionTitle
-                    ))
+                    chunks.add(
+                        buildChunk(
+                            content = contextLines.trim(),
+                            sourceFile = sourceFile,
+                            sourceLines = lineRange,
+                            chunkType = ChunkType.CONSTRAINT,
+                            verb = TaxonomyVerb.VALIDER,
+                            sectionTitle = sectionTitle,
+                        ),
+                    )
                     break
                 }
             }
@@ -207,7 +242,12 @@ class AgenticChunker {
         return chunks
     }
 
-    private fun extractMetadata(content: String, sectionTitle: String, startLine: Int, sourceFile: String): List<AgenticChunk> {
+    private fun extractMetadata(
+        content: String,
+        sectionTitle: String,
+        startLine: Int,
+        sourceFile: String,
+    ): List<AgenticChunk> {
         val chunks = mutableListOf<AgenticChunk>()
         val lines = content.lines()
 
@@ -227,19 +267,26 @@ class AgenticChunker {
             val firstIdx = metadataLines.first().first
             val lastIdx = metadataLines.last().first
             val lineRange = "${startLine + firstIdx}-${startLine + lastIdx}"
-            chunks.add(buildChunk(
-                content = blockLines.joinToString("\n").trim(),
-                sourceFile = sourceFile,
-                sourceLines = lineRange,
-                chunkType = ChunkType.METADATA,
-                verb = null,
-                sectionTitle = sectionTitle
-            ))
+            chunks.add(
+                buildChunk(
+                    content = blockLines.joinToString("\n").trim(),
+                    sourceFile = sourceFile,
+                    sourceLines = lineRange,
+                    chunkType = ChunkType.METADATA,
+                    verb = null,
+                    sectionTitle = sectionTitle,
+                ),
+            )
         }
         return chunks
     }
 
-    private fun extractParagraphs(content: String, sectionTitle: String, startLine: Int, sourceFile: String): List<AgenticChunk> {
+    private fun extractParagraphs(
+        content: String,
+        sectionTitle: String,
+        startLine: Int,
+        sourceFile: String,
+    ): List<AgenticChunk> {
         val chunks = mutableListOf<AgenticChunk>()
         val lines = content.lines()
 
@@ -248,18 +295,20 @@ class AgenticChunker {
 
             if (trimmed.isEmpty() || trimmed.startsWith("=") || trimmed.startsWith(":") || trimmed.startsWith("_")) continue
 
-            val isRule = trimmed.contains("INTERDICTION", ignoreCase = true) ||
-                trimmed.contains("NE DOIT JAMAIS", ignoreCase = true) ||
-                trimmed.contains("NE JAMAIS", ignoreCase = true) ||
-                trimmed.contains("OBLIGATOIRE", ignoreCase = true) ||
-                trimmed.contains("INTERDIT", ignoreCase = true)
+            val isRule =
+                trimmed.contains("INTERDICTION", ignoreCase = true) ||
+                    trimmed.contains("NE DOIT JAMAIS", ignoreCase = true) ||
+                    trimmed.contains("NE JAMAIS", ignoreCase = true) ||
+                    trimmed.contains("OBLIGATOIRE", ignoreCase = true) ||
+                    trimmed.contains("INTERDIT", ignoreCase = true)
             val isProcedure = trimmed.matches(Regex("^\\.\\s+.+")) || trimmed.matches(Regex("^\\[\\s*[x ]\\s*\\].+"))
-            val isConstraint = trimmed.contains("Maximum", ignoreCase = true) ||
-                trimmed.contains("limite", ignoreCase = true) ||
-                trimmed.contains("50k tokens", ignoreCase = true) ||
-                trimmed.contains("~3000 lignes", ignoreCase = true) ||
-                trimmed.contains("1 fichier a la fois", ignoreCase = true) ||
-                trimmed.contains("Contexte leger", ignoreCase = true)
+            val isConstraint =
+                trimmed.contains("Maximum", ignoreCase = true) ||
+                    trimmed.contains("limite", ignoreCase = true) ||
+                    trimmed.contains("50k tokens", ignoreCase = true) ||
+                    trimmed.contains("~3000 lignes", ignoreCase = true) ||
+                    trimmed.contains("1 fichier a la fois", ignoreCase = true) ||
+                    trimmed.contains("Contexte leger", ignoreCase = true)
             val isConceptBullet = trimmed.matches(Regex("^\\.\\s+.+"))
 
             if (isRule || isProcedure || isConstraint || isConceptBullet) continue
@@ -273,32 +322,41 @@ class AgenticChunker {
             val lineRange = "${startLine + i}-${startLine + i}"
             val chunkContent = paraLines.joinToString("\n").trim()
 
-            chunks.add(buildChunk(
-                content = chunkContent,
-                sourceFile = sourceFile,
-                sourceLines = lineRange,
-                chunkType = ChunkType.CONCEPT,
-                verb = extractVerbFromContent(chunkContent),
-                sectionTitle = sectionTitle
-            ))
+            chunks.add(
+                buildChunk(
+                    content = chunkContent,
+                    sourceFile = sourceFile,
+                    sourceLines = lineRange,
+                    chunkType = ChunkType.CONCEPT,
+                    verb = extractVerbFromContent(chunkContent),
+                    sectionTitle = sectionTitle,
+                ),
+            )
         }
 
         return chunks
     }
 
-    private fun extractConcepts(content: String, sectionTitle: String, startLine: Int, sourceFile: String): List<AgenticChunk> {
+    private fun extractConcepts(
+        content: String,
+        sectionTitle: String,
+        startLine: Int,
+        sourceFile: String,
+    ): List<AgenticChunk> {
         val chunks = mutableListOf<AgenticChunk>()
 
         if (sectionTitle.isNotBlank()) {
             val conceptContent = buildSectionSummary(content, sectionTitle)
-            chunks.add(buildChunk(
-                content = conceptContent,
-                sourceFile = sourceFile,
-                sourceLines = "$startLine-${startLine + content.lines().size - 1}",
-                chunkType = ChunkType.CONCEPT,
-                verb = extractVerbFromContent(content),
-                sectionTitle = sectionTitle
-            ))
+            chunks.add(
+                buildChunk(
+                    content = conceptContent,
+                    sourceFile = sourceFile,
+                    sourceLines = "$startLine-${startLine + content.lines().size - 1}",
+                    chunkType = ChunkType.CONCEPT,
+                    verb = extractVerbFromContent(content),
+                    sectionTitle = sectionTitle,
+                ),
+            )
         }
 
         val lines = content.lines()
@@ -307,21 +365,26 @@ class AgenticChunker {
             if (trimmed.startsWith(". ") && trimmed.length > 3) {
                 val contextLines = buildContextBlock(lines, i, 1)
                 val lineRange = "${startLine + i}-${startLine + i + contextLines.lines().size - 1}"
-                chunks.add(buildChunk(
-                    content = contextLines.trim(),
-                    sourceFile = sourceFile,
-                    sourceLines = lineRange,
-                    chunkType = ChunkType.CONCEPT,
-                    verb = extractVerbFromContent(contextLines),
-                    sectionTitle = sectionTitle
-                ))
+                chunks.add(
+                    buildChunk(
+                        content = contextLines.trim(),
+                        sourceFile = sourceFile,
+                        sourceLines = lineRange,
+                        chunkType = ChunkType.CONCEPT,
+                        verb = extractVerbFromContent(contextLines),
+                        sectionTitle = sectionTitle,
+                    ),
+                )
             }
         }
 
         return chunks
     }
 
-    private fun buildSectionSummary(content: String, sectionTitle: String): String {
+    private fun buildSectionSummary(
+        content: String,
+        sectionTitle: String,
+    ): String {
         val lines = content.lines()
         val summaryLines = mutableListOf<String>()
         summaryLines.add("== $sectionTitle")
@@ -335,7 +398,11 @@ class AgenticChunker {
         return summaryLines.joinToString("\n").trim()
     }
 
-    private fun buildContextBlock(lines: List<String>, centerIndex: Int, radius: Int): String {
+    private fun buildContextBlock(
+        lines: List<String>,
+        centerIndex: Int,
+        radius: Int,
+    ): String {
         val start = maxOf(0, centerIndex - radius)
         val end = minOf(lines.size, centerIndex + radius + 1)
         return lines.subList(start, end).joinToString("\n")
@@ -344,7 +411,12 @@ class AgenticChunker {
     private fun extractVerbFromContent(content: String): TaxonomyVerb? {
         val lower = content.lowercase()
         return when {
-            lower.contains("interdiction") || lower.contains("interdire") || lower.contains("ne doit jamais") || lower.contains("ne jamais") -> TaxonomyVerb.INTERDIRE
+            lower.contains(
+                "interdiction",
+            ) ||
+                lower.contains("interdire") ||
+                lower.contains("ne doit jamais") ||
+                lower.contains("ne jamais") -> TaxonomyVerb.INTERDIRE
             lower.contains("generate") || lower.contains("generer") || lower.contains("produit") -> TaxonomyVerb.GENERER
             lower.contains("collect") || lower.contains("importe") || lower.contains("acquisition") -> TaxonomyVerb.COLLECTER
             lower.contains("transform") || lower.contains("convertit") || lower.contains("conversion") -> TaxonomyVerb.TRANSFORMER
@@ -355,34 +427,35 @@ class AgenticChunker {
     }
 
     private fun extractDomain(sourceFile: String): String? {
-        val domainPatterns = mapOf(
-            "codebase" to "codebase",
-            "planner" to "planner",
-            "codex" to "codex",
-            "training" to "training",
-            "quizz" to "quizz",
-            "runner" to "runner",
-            "capsule" to "capsule",
-            "hyperframes" to "hyperframes",
-            "readme" to "readme",
-            "document" to "document",
-            "bakery" to "bakery",
-            "slider" to "slider",
-            "plantuml" to "plantuml",
-            "graphify" to "graphify",
-            "api-key-pool" to "api-key-pool",
-            "workspace-bom" to "workspace-bom",
-            "workspace" to "workspace",
-            "waiter" to "waiter",
-            "agile" to "agile",
-            "ticket" to "ticket",
-            "review" to "review",
-            "flow" to "flow",
-            "jhipster" to "jhipster",
-            "magic-stick" to "magic-stick",
-            "newpipe" to "newpipe",
-            "notebook" to "notebook"
-        )
+        val domainPatterns =
+            mapOf(
+                "codebase" to "codebase",
+                "planner" to "planner",
+                "codex" to "codex",
+                "training" to "training",
+                "quizz" to "quizz",
+                "runner" to "runner",
+                "capsule" to "capsule",
+                "hyperframes" to "hyperframes",
+                "readme" to "readme",
+                "document" to "document",
+                "bakery" to "bakery",
+                "slider" to "slider",
+                "plantuml" to "plantuml",
+                "graphify" to "graphify",
+                "api-key-pool" to "api-key-pool",
+                "workspace-bom" to "workspace-bom",
+                "workspace" to "workspace",
+                "waiter" to "waiter",
+                "agile" to "agile",
+                "ticket" to "ticket",
+                "review" to "review",
+                "flow" to "flow",
+                "jhipster" to "jhipster",
+                "magic-stick" to "magic-stick",
+                "newpipe" to "newpipe",
+                "notebook" to "notebook",
+            )
         val lower = sourceFile.lowercase()
         for ((key, domain) in domainPatterns) {
             if (lower.contains(key)) return domain
@@ -421,7 +494,7 @@ class AgenticChunker {
         sourceLines: String,
         chunkType: ChunkType,
         verb: TaxonomyVerb?,
-        sectionTitle: String
+        sectionTitle: String,
     ): AgenticChunk {
         val domain = extractDomain(sourceFile)
         val dagLevel = extractDagLevel(content)
@@ -441,7 +514,7 @@ class AgenticChunker {
             dagLevel = dagLevel,
             circle = circle,
             weight = weight,
-            checksum = checksum
+            checksum = checksum,
         )
     }
 }

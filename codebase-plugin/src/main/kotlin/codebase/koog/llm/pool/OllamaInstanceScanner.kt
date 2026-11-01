@@ -21,21 +21,24 @@ import contracts.llmpool.QuotaConfig
 class OllamaInstanceScanner(
     private val scanner: InstanceScanner = HttpInstanceScanner(),
     private val environmentReader: EnvironmentReader = EnvironmentReader { System.getenv(it) },
-    private val portRange: IntRange = DEFAULT_PORT_RANGE
+    private val portRange: IntRange = DEFAULT_PORT_RANGE,
 ) {
-
     suspend fun scan(): List<LlmInstance> {
-        val explicitPorts = environmentReader.get(OLLAMA_POOL_PORTS_ENV)
-            ?.takeIf { it.isNotBlank() }
-            ?.let { parsePorts(it) }
+        val explicitPorts =
+            environmentReader
+                .get(OLLAMA_POOL_PORTS_ENV)
+                ?.takeIf { it.isNotBlank() }
+                ?.let { parsePorts(it) }
 
         val ports = explicitPorts ?: portRange.toList()
         val modelCycle = AUTHORIZED_MODELS
 
-        val liveInstances = ports.mapIndexed { index, port ->
-            val model = modelCycle[index % modelCycle.size]
-            scanner.probe(DEFAULT_HOST, port, model)
-        }.filterNotNull()
+        val liveInstances =
+            ports
+                .mapIndexed { index, port ->
+                    val model = modelCycle[index % modelCycle.size]
+                    scanner.probe(DEFAULT_HOST, port, model)
+                }.filterNotNull()
 
         return liveInstances.map { instance ->
             instance.copy(quota = DEFAULT_QUOTA)
@@ -48,12 +51,12 @@ class OllamaInstanceScanner(
         private val DEFAULT_PORT_RANGE = 11437..11465
         private val DEFAULT_QUOTA = QuotaConfig()
 
-        internal val AUTHORIZED_MODELS = listOf(
-            "gpt-oss:120b-cloud",
-            "gemma4:31b-cloud"
-        )
+        internal val AUTHORIZED_MODELS =
+            listOf(
+                "gpt-oss:120b-cloud",
+                "gemma4:31b-cloud",
+            )
 
-        internal fun parsePorts(raw: String): List<Int> =
-            raw.split(",").map { it.trim().toInt() }
+        internal fun parsePorts(raw: String): List<Int> = raw.split(",").map { it.trim().toInt() }
     }
 }

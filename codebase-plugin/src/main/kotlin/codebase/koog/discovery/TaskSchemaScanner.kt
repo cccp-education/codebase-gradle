@@ -4,15 +4,15 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.options.Option
 
-class TaskSchemaScanner(private val project: Project) {
-
+class TaskSchemaScanner(
+    private val project: Project,
+) {
     fun scanAll(): List<TaskSchema> =
         project.tasks.mapNotNull { task ->
             fromTask(task)
         }
 
-    fun scanByGroup(group: String): List<TaskSchema> =
-        scanAll().filter { it.group == group }
+    fun scanByGroup(group: String): List<TaskSchema> = scanAll().filter { it.group == group }
 
     private fun fromTask(task: Task): TaskSchema? {
         val group = task.group ?: return null
@@ -22,7 +22,7 @@ class TaskSchemaScanner(private val project: Project) {
             description = task.description ?: "",
             group = group,
             type = task.javaClass.simpleName,
-            options = options
+            options = options,
         )
     }
 
@@ -36,18 +36,16 @@ class TaskSchemaScanner(private val project: Project) {
         return allMethods
             .filter { method ->
                 method.isAnnotationPresent(Option::class.java) &&
-                method.parameterCount == 0
-            }
-            .map { method ->
+                    method.parameterCount == 0
+            }.map { method ->
                 val annotation = method.getAnnotation(Option::class.java)
                 TaskOption(
                     name = annotation.option,
                     description = annotation.description,
                     required = false,
-                    type = resolveType(method.genericReturnType)
+                    type = resolveType(method.genericReturnType),
                 )
-            }
-            .distinctBy { it.name }
+            }.distinctBy { it.name }
     }
 
     private fun resolveType(genericType: java.lang.reflect.Type): String {

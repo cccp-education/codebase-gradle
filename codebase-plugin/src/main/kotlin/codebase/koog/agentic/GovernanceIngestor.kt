@@ -12,18 +12,18 @@ import java.io.File
  * Cette classe est instanciable directement et ne dépend pas de Gradle.
  */
 class GovernanceIngestor(
-    private val chunkValidator: ChunkValidator = ChunkValidator()
+    private val chunkValidator: ChunkValidator = ChunkValidator(),
 ) {
-
     fun ingest(workspaceRoot: File): IngestResult {
         val files = collectGovernanceFiles(workspaceRoot)
 
         val repository = InMemoryAgenticChunkRepository()
-        val ingestor = AgenticIngestor(
-            repository = repository,
-            governanceOntologizer = GovernanceOntologizer(),
-            chunkValidator = chunkValidator
-        )
+        val ingestor =
+            AgenticIngestor(
+                repository = repository,
+                governanceOntologizer = GovernanceOntologizer(),
+                chunkValidator = chunkValidator,
+            )
 
         val report = kotlinx.coroutines.runBlocking { ingestor.ingest(files) }
         val executor = if (report.executables.isNotEmpty()) AgenticExecutor(report.executables) else null
@@ -36,16 +36,21 @@ class GovernanceIngestor(
      * Ingestion incrémentale : ne traite que les fichiers dont le [relativePath]
      * est dans [pathsToIngest]. Les autres fichiers sont ignorés pour ce tour.
      */
-    fun ingestFiltered(workspaceRoot: File, pathsToIngest: Set<String>): IngestResult {
-        val files = collectGovernanceFiles(workspaceRoot)
-            .filter { (relativePath, _) -> relativePath in pathsToIngest }
+    fun ingestFiltered(
+        workspaceRoot: File,
+        pathsToIngest: Set<String>,
+    ): IngestResult {
+        val files =
+            collectGovernanceFiles(workspaceRoot)
+                .filter { (relativePath, _) -> relativePath in pathsToIngest }
 
         val repository = InMemoryAgenticChunkRepository()
-        val ingestor = AgenticIngestor(
-            repository = repository,
-            governanceOntologizer = GovernanceOntologizer(),
-            chunkValidator = chunkValidator
-        )
+        val ingestor =
+            AgenticIngestor(
+                repository = repository,
+                governanceOntologizer = GovernanceOntologizer(),
+                chunkValidator = chunkValidator,
+            )
 
         val report = kotlinx.coroutines.runBlocking { ingestor.ingest(files) }
         val executor = if (report.executables.isNotEmpty()) AgenticExecutor(report.executables) else null
@@ -67,6 +72,6 @@ class GovernanceIngestor(
     data class IngestResult(
         val report: IngestionReport,
         val executor: AgenticExecutor?,
-        val chunkSnapshot: ChunkSnapshot
+        val chunkSnapshot: ChunkSnapshot,
     )
 }

@@ -2,8 +2,9 @@ package codebase.koog.discovery
 
 import org.gradle.api.Project
 
-class SchemaCache(private val project: Project) {
-
+class SchemaCache(
+    private val project: Project,
+) {
     private var cached: List<TaskSchema>? = null
     private var dirty: Boolean = true
 

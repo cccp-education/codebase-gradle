@@ -31,5 +31,5 @@ data class DocumentChunk(
     val entities: List<String> = emptyList(),
     val overlapNext: String? = null,
     val license: String = "UNKNOWN",
-    val pages: List<Int> = emptyList()
+    val pages: List<Int> = emptyList(),
 )

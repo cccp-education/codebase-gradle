@@ -17,15 +17,15 @@ import contracts.llmpool.LlmInstance
  * Modèles cyclés parmi les 2 modèles cloud autorisés par AGENT.adoc.
  */
 object OllamaInstanceFactory {
-
     /** Plage par défaut des ports hôte mappés sur les conteneurs Ollama. */
     val DEFAULT_PORT_RANGE = 11437..11465
 
     /** 2 modèles cloud autorisés, cyclés sur les ports. */
-    val AUTHORIZED_MODELS = listOf(
-        "gpt-oss:120b-cloud",
-        "gemma4:31b-cloud"
-    )
+    val AUTHORIZED_MODELS =
+        listOf(
+            "gpt-oss:120b-cloud",
+            "gemma4:31b-cloud",
+        )
 
     /**
      * Crée une liste d'instances Ollama Cloud, une par port.
@@ -44,7 +44,7 @@ object OllamaInstanceFactory {
                 id = id,
                 baseUrl = "http://localhost:$port",
                 model = AUTHORIZED_MODELS[index % AUTHORIZED_MODELS.size],
-                volumeTag = id
+                volumeTag = id,
             )
         }
     }

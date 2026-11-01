@@ -11,5 +11,5 @@ data class GovernanceSummaryConfig(
     val outputEnabled: Boolean = true,
     val reportFormat: String = "json",
     val incremental: Boolean = false,
-    val chunkIncremental: Boolean = false
+    val chunkIncremental: Boolean = false,
 )

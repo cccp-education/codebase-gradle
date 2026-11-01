@@ -4,13 +4,12 @@ import java.security.MessageDigest
 
 data class ScannedFileEntry(
     val relativePath: String,
-    val checksum: String
+    val checksum: String,
 )
 
 data class GovernanceFileSnapshot(
-    val entries: List<ScannedFileEntry>
+    val entries: List<ScannedFileEntry>,
 ) {
-
     fun paths(): Set<String> = entries.map { it.relativePath }.toSet()
 
     fun checksumOf(path: String): String? = entries.firstOrNull { it.relativePath == path }?.checksum

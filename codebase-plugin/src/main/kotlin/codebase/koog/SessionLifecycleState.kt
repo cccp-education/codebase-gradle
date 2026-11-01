@@ -8,11 +8,11 @@ data class SessionLifecycleState(
     val parentSessionId: String?,
     val lastResponseJson: String?,
     val createdAt: java.time.Instant,
-    val updatedAt: java.time.Instant
+    val updatedAt: java.time.Instant,
 )
 
 enum class LifecycleStatus {
     CREATED,
     RUNNING,
-    CLOSED
+    CLOSED,
 }

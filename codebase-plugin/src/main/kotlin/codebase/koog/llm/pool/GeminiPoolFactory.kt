@@ -16,7 +16,6 @@ import contracts.llmpool.RotationStrategy
  * en query param, un modèle Gemini multimodal, et un quota par défaut.
  */
 object GeminiPoolFactory {
-
     private const val DEFAULT_MODEL = "gemini-2.5-flash"
     private const val ENV_PREFIX = "GEMINI_API_KEY_"
     private const val BASE_URL_TEMPLATE =
@@ -26,28 +25,31 @@ object GeminiPoolFactory {
         keys: List<String>,
         model: String = DEFAULT_MODEL,
         rotationStrategy: RotationStrategy = RotationStrategy.ROUND_ROBIN,
-        idPrefix: String = "gemini-key"
+        idPrefix: String = "gemini-key",
     ): GeminiKeyPool {
-        val instances = keys.mapIndexed { index, key ->
-            LlmInstance(
-                id = "$idPrefix-$index",
-                baseUrl = BASE_URL_TEMPLATE
-                    .replace("{model}", model)
-                    .replace("{key}", key),
-                model = model,
-                quota = QuotaConfig(resetPolicy = ResetPolicy.NEVER)
-            )
-        }
+        val instances =
+            keys.mapIndexed { index, key ->
+                LlmInstance(
+                    id = "$idPrefix-$index",
+                    baseUrl =
+                        BASE_URL_TEMPLATE
+                            .replace("{model}", model)
+                            .replace("{key}", key),
+                    model = model,
+                    quota = QuotaConfig(resetPolicy = ResetPolicy.NEVER),
+                )
+            }
         return GeminiKeyPool(instances, rotationStrategy)
     }
 
     fun fromEnvVars(
         env: Map<String, String>,
         model: String = DEFAULT_MODEL,
-        rotationStrategy: RotationStrategy = RotationStrategy.ROUND_ROBIN
+        rotationStrategy: RotationStrategy = RotationStrategy.ROUND_ROBIN,
     ): GeminiKeyPool {
-        val keys = (1..MAX_ENV_INDEX)
-            .mapNotNull { n -> env["${ENV_PREFIX}$n"]?.takeIf { it.isNotBlank() } }
+        val keys =
+            (1..MAX_ENV_INDEX)
+                .mapNotNull { n -> env["${ENV_PREFIX}$n"]?.takeIf { it.isNotBlank() } }
         return fromKeys(keys, model, rotationStrategy)
     }
 

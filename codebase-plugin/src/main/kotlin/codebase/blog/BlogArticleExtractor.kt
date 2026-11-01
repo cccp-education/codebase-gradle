@@ -10,11 +10,10 @@ data class BlogArticleData(
     val context: String,
     val achievements: String,
     val testResults: String,
-    val nextSession: String
+    val nextSession: String,
 )
 
 class BlogArticleExtractor {
-
     fun extract(foundryDir: File): List<BlogArticleData> {
         val results = mutableListOf<BlogArticleData>()
 
@@ -40,16 +39,23 @@ class BlogArticleExtractor {
     private fun parseSessionFile(
         content: String,
         boroughName: String,
-        fileName: String
+        fileName: String,
     ): BlogArticleData? {
         val lines = content.lines()
         val titleLine = lines.firstOrNull()?.removePrefix("= ")?.trim() ?: return null
-        val sessionNumber = fileName.removeSuffix(".adoc").split("-").firstOrNull()
-            ?.takeIf { it.all { c -> c.isDigit() } } ?: "000"
+        val sessionNumber =
+            fileName
+                .removeSuffix(".adoc")
+                .split("-")
+                .firstOrNull()
+                ?.takeIf { it.all { c -> c.isDigit() } } ?: "000"
         val sessionTitle = titleLine.substringAfter("— ").trim().ifBlank { titleLine }
 
-        val date = lines.firstOrNull { it.startsWith(":docdate:") }
-            ?.removePrefix(":docdate:")?.trim() ?: ""
+        val date =
+            lines
+                .firstOrNull { it.startsWith(":docdate:") }
+                ?.removePrefix(":docdate:")
+                ?.trim() ?: ""
 
         val context = extractSection(lines, "Contexte")
         val realisations = extractSection(lines, "Realise")
@@ -64,15 +70,19 @@ class BlogArticleExtractor {
             context = context,
             achievements = realisations,
             testResults = resultats,
-            nextSession = prochain
+            nextSession = prochain,
         )
     }
 
-    private fun extractSection(lines: List<String>, sectionKeyword: String): String {
-        val startIdx = lines.indexOfFirst {
-            val trimmed = it.trimStart('=', ' ')
-            trimmed.startsWith(sectionKeyword, ignoreCase = true)
-        }
+    private fun extractSection(
+        lines: List<String>,
+        sectionKeyword: String,
+    ): String {
+        val startIdx =
+            lines.indexOfFirst {
+                val trimmed = it.trimStart('=', ' ')
+                trimmed.startsWith(sectionKeyword, ignoreCase = true)
+            }
         if (startIdx < 0) return ""
 
         var nextSectionIdx = startIdx + 1
@@ -82,7 +92,8 @@ class BlogArticleExtractor {
             nextSectionIdx++
         }
 
-        return lines.subList(startIdx + 1, nextSectionIdx)
+        return lines
+            .subList(startIdx + 1, nextSectionIdx)
             .joinToString("\n")
             .trim()
     }

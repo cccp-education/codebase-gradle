@@ -1,7 +1,7 @@
 package codebase.rag
 
-import contracts.context.CompositeContextConfig
 import codebase.walker.WorkspaceWalker
+import contracts.context.CompositeContextConfig
 import org.slf4j.LoggerFactory
 import java.io.File
 
@@ -12,8 +12,9 @@ object AugmentOpencodeMain {
     fun main(args: Array<String>) {
         val ragQuestion = if (args.isNotEmpty()) args[0] else "architecture du workspace"
         val cfg = PgVectorConfig.fromEnv()
-        val workspaceRoot = System.getenv("CODEBASE_ROOT_DIR")?.let { File(it) }
-            ?: File(".").absoluteFile.parentFile.parentFile
+        val workspaceRoot =
+            System.getenv("CODEBASE_ROOT_DIR")?.let { File(it) }
+                ?: File(".").absoluteFile.parentFile.parentFile
         val outputFile = File("/tmp/opencode-context.txt")
 
         StdoutFormatter.banner("Augment Opencode — US-9.12 (Pipeline complet)")
@@ -56,7 +57,10 @@ object AugmentOpencodeMain {
         log.info("augmentOpencode complete: {} bytes", fileSize)
     }
 
-    private fun indexWorkspace(rootDir: File, store: VectorStore) {
+    private fun indexWorkspace(
+        rootDir: File,
+        store: VectorStore,
+    ) {
         val sourceExtensions = listOf("kt", "adoc", "kts")
         val configExtensions = listOf("yml", "yaml", "json")
 
@@ -69,22 +73,27 @@ object AugmentOpencodeMain {
 
         for (wf in files) {
             val file = File(wf.filePath)
-            val rawText = try {
-                file.readText()
-            } catch (e: Exception) {
-                log.warn("Cannot read {}: {}", wf.filePath, e.message)
-                continue
-            }
-            val text = if (wf.extension in configExtensions) {
-                YamlConfigAnonymizer.anonymize(rawText, wf.extension)
-            } else rawText
+            val rawText =
+                try {
+                    file.readText()
+                } catch (e: Exception) {
+                    log.warn("Cannot read {}: {}", wf.filePath, e.message)
+                    continue
+                }
+            val text =
+                if (wf.extension in configExtensions) {
+                    YamlConfigAnonymizer.anonymize(rawText, wf.extension)
+                } else {
+                    rawText
+                }
 
             val chunks = ChunkTokenizer.splitIntoSentenceLevelChunks(text)
-            val metadata = if (wf.extension == "kt") {
-                metadataExtractor.extract(wf.filePath, rawText)
-            } else {
-                KotlinMetadata(packageName = null, className = null, repoName = rootDir.name)
-            }
+            val metadata =
+                if (wf.extension == "kt") {
+                    metadataExtractor.extract(wf.filePath, rawText)
+                } else {
+                    KotlinMetadata(packageName = null, className = null, repoName = rootDir.name)
+                }
             store.insertDocument(wf.fileName, wf.filePath, wf.fileSize, chunks, metadata.packageName, metadata.className, metadata.repoName)
             totalChunks += chunks.size
         }

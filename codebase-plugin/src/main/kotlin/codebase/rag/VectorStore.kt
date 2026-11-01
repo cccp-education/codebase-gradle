@@ -5,7 +5,7 @@ import java.sql.DriverManager
 class VectorStore(
     private val jdbcUrl: String,
     private val jdbcUser: String,
-    private val jdbcPassword: String
+    private val jdbcPassword: String,
 ) {
     /**
      * Initializes the schema idempotently and non-destructively.
@@ -34,7 +34,8 @@ class VectorStore(
                 stmt.execute("CREATE EXTENSION IF NOT EXISTS vector")
                 stmt.execute("DROP TABLE IF EXISTS chunks CASCADE")
                 stmt.execute("DROP TABLE IF EXISTS documents CASCADE")
-                stmt.execute("""
+                stmt.execute(
+                    """
                     CREATE TABLE documents (
                         id BIGSERIAL PRIMARY KEY,
                         file_name TEXT NOT NULL,
@@ -46,8 +47,10 @@ class VectorStore(
                         repo_name TEXT,
                         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                     )
-                """.trimIndent())
-                stmt.execute("""
+                    """.trimIndent(),
+                )
+                stmt.execute(
+                    """
                     CREATE TABLE chunks (
                         id BIGSERIAL PRIMARY KEY,
                         document_id BIGINT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
@@ -57,7 +60,8 @@ class VectorStore(
                         embedding vector(384),
                         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                     )
-                """.trimIndent())
+                    """.trimIndent(),
+                )
             }
         }
     }
@@ -66,7 +70,8 @@ class VectorStore(
         connection().use { conn ->
             conn.createStatement().use { stmt ->
                 stmt.execute("CREATE EXTENSION IF NOT EXISTS vector")
-                stmt.execute("""
+                stmt.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS documents (
                         id BIGSERIAL PRIMARY KEY,
                         file_name TEXT NOT NULL,
@@ -78,8 +83,10 @@ class VectorStore(
                         repo_name TEXT,
                         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                     )
-                """.trimIndent())
-                stmt.execute("""
+                    """.trimIndent(),
+                )
+                stmt.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS chunks (
                         id BIGSERIAL PRIMARY KEY,
                         document_id BIGINT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
@@ -89,7 +96,8 @@ class VectorStore(
                         embedding vector(384),
                         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                     )
-                """.trimIndent())
+                    """.trimIndent(),
+                )
             }
         }
     }
@@ -101,42 +109,47 @@ class VectorStore(
         chunks: List<String>,
         packageName: String? = null,
         className: String? = null,
-        repoName: String? = null
+        repoName: String? = null,
     ): Long {
         connection().use { conn ->
             val docId: Long
-            conn.prepareStatement(
-                "INSERT INTO documents (file_name, file_path, file_size, chunk_count, package_name, class_name, repo_name) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id"
-            ).use { stmt ->
-                stmt.setString(1, fileName)
-                stmt.setString(2, filePath)
-                stmt.setLong(3, fileSize)
-                stmt.setInt(4, chunks.size)
-                stmt.setString(5, packageName)
-                stmt.setString(6, className)
-                stmt.setString(7, repoName)
-                stmt.executeQuery().use { rs ->
-                    rs.next()
-                    docId = rs.getLong(1)
+            conn
+                .prepareStatement(
+                    "INSERT INTO documents (file_name, file_path, file_size, chunk_count, package_name, class_name, repo_name) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id",
+                ).use { stmt ->
+                    stmt.setString(1, fileName)
+                    stmt.setString(2, filePath)
+                    stmt.setLong(3, fileSize)
+                    stmt.setInt(4, chunks.size)
+                    stmt.setString(5, packageName)
+                    stmt.setString(6, className)
+                    stmt.setString(7, repoName)
+                    stmt.executeQuery().use { rs ->
+                        rs.next()
+                        docId = rs.getLong(1)
+                    }
                 }
-            }
-            conn.prepareStatement(
-                "INSERT INTO chunks (document_id, chunk_index, chunk_text, token_count) VALUES (?, ?, ?, ?)"
-            ).use { stmt ->
-                chunks.forEachIndexed { index, chunkText ->
-                    stmt.setLong(1, docId)
-                    stmt.setInt(2, index)
-                    stmt.setString(3, chunkText)
-                    stmt.setInt(4, ChunkTokenizer.estimateTokenCount(chunkText))
-                    stmt.addBatch()
+            conn
+                .prepareStatement(
+                    "INSERT INTO chunks (document_id, chunk_index, chunk_text, token_count) VALUES (?, ?, ?, ?)",
+                ).use { stmt ->
+                    chunks.forEachIndexed { index, chunkText ->
+                        stmt.setLong(1, docId)
+                        stmt.setInt(2, index)
+                        stmt.setString(3, chunkText)
+                        stmt.setInt(4, ChunkTokenizer.estimateTokenCount(chunkText))
+                        stmt.addBatch()
+                    }
+                    stmt.executeBatch()
                 }
-                stmt.executeBatch()
-            }
             return docId
         }
     }
 
-    fun updateEmbedding(chunkId: Long, vectorStr: String) {
+    fun updateEmbedding(
+        chunkId: Long,
+        vectorStr: String,
+    ) {
         connection().use { conn ->
             conn.prepareStatement("UPDATE chunks SET embedding = ?::vector WHERE id = ?").use { stmt ->
                 stmt.setString(1, vectorStr)
@@ -159,40 +172,47 @@ class VectorStore(
         return records
     }
 
-    fun querySimilar(queryVectorStr: String, topK: Int = 5, fileExtension: String? = null): List<QueryResult> {
+    fun querySimilar(
+        queryVectorStr: String,
+        topK: Int = 5,
+        fileExtension: String? = null,
+    ): List<QueryResult> {
         connection().use { conn ->
             val extFilter = if (fileExtension != null) "AND d.file_name LIKE ?" else ""
-            conn.prepareStatement("""
-                SELECT c.id, c.chunk_text, d.file_name,
-                       1 - (c.embedding <=> ?::vector) AS similarity
-                FROM chunks c
-                JOIN documents d ON c.document_id = d.id
-                WHERE c.embedding IS NOT NULL
-                $extFilter
-                ORDER BY c.embedding <=> ?::vector
-                LIMIT ?
-            """.trimIndent()).use { stmt ->
-                var idx = 1
-                stmt.setString(idx++, queryVectorStr)
-                if (fileExtension != null) {
-                    stmt.setString(idx++, "%.${fileExtension}")
-                }
-                stmt.setString(idx++, queryVectorStr)
-                stmt.setInt(idx, topK)
-                return stmt.executeQuery().use { rs ->
-                    val results = mutableListOf<QueryResult>()
-                    while (rs.next()) {
-                        results.add(
-                            QueryResult(
-                                chunkId = rs.getLong("id"),
-                                text = "(${rs.getString("file_name")}) ${rs.getString("chunk_text")}",
-                                similarity = rs.getDouble("similarity")
-                            )
-                        )
+            conn
+                .prepareStatement(
+                    """
+                    SELECT c.id, c.chunk_text, d.file_name,
+                           1 - (c.embedding <=> ?::vector) AS similarity
+                    FROM chunks c
+                    JOIN documents d ON c.document_id = d.id
+                    WHERE c.embedding IS NOT NULL
+                    $extFilter
+                    ORDER BY c.embedding <=> ?::vector
+                    LIMIT ?
+                    """.trimIndent(),
+                ).use { stmt ->
+                    var idx = 1
+                    stmt.setString(idx++, queryVectorStr)
+                    if (fileExtension != null) {
+                        stmt.setString(idx++, "%.$fileExtension")
                     }
-                    results
+                    stmt.setString(idx++, queryVectorStr)
+                    stmt.setInt(idx, topK)
+                    return stmt.executeQuery().use { rs ->
+                        val results = mutableListOf<QueryResult>()
+                        while (rs.next()) {
+                            results.add(
+                                QueryResult(
+                                    chunkId = rs.getLong("id"),
+                                    text = "(${rs.getString("file_name")}) ${rs.getString("chunk_text")}",
+                                    similarity = rs.getDouble("similarity"),
+                                ),
+                            )
+                        }
+                        results
+                    }
                 }
-            }
         }
     }
 
@@ -219,9 +239,10 @@ class VectorStore(
     fun hasOrphanChunks(): Boolean {
         connection().use { conn ->
             conn.createStatement().use { stmt ->
-                val rs = stmt.executeQuery(
-                    "SELECT COUNT(*) FROM chunks c LEFT JOIN documents d ON c.document_id = d.id WHERE d.id IS NULL"
-                )
+                val rs =
+                    stmt.executeQuery(
+                        "SELECT COUNT(*) FROM chunks c LEFT JOIN documents d ON c.document_id = d.id WHERE d.id IS NULL",
+                    )
                 rs.next()
                 return rs.getInt(1) > 0
             }
@@ -250,28 +271,29 @@ class VectorStore(
 
     fun findByPackage(packageName: String): List<DocRecord> {
         connection().use { conn ->
-            conn.prepareStatement(
-                "SELECT id, file_name, file_path, file_size, package_name, class_name, repo_name FROM documents WHERE package_name = ?"
-            ).use { stmt ->
-                stmt.setString(1, packageName)
-                return stmt.executeQuery().use { rs ->
-                    val results = mutableListOf<DocRecord>()
-                    while (rs.next()) {
-                        results.add(
-                            DocRecord(
-                                id = rs.getLong("id"),
-                                fileName = rs.getString("file_name"),
-                                filePath = rs.getString("file_path"),
-                                fileSize = rs.getLong("file_size"),
-                                packageName = rs.getString("package_name"),
-                                className = rs.getString("class_name"),
-                                repoName = rs.getString("repo_name")
+            conn
+                .prepareStatement(
+                    "SELECT id, file_name, file_path, file_size, package_name, class_name, repo_name FROM documents WHERE package_name = ?",
+                ).use { stmt ->
+                    stmt.setString(1, packageName)
+                    return stmt.executeQuery().use { rs ->
+                        val results = mutableListOf<DocRecord>()
+                        while (rs.next()) {
+                            results.add(
+                                DocRecord(
+                                    id = rs.getLong("id"),
+                                    fileName = rs.getString("file_name"),
+                                    filePath = rs.getString("file_path"),
+                                    fileSize = rs.getLong("file_size"),
+                                    packageName = rs.getString("package_name"),
+                                    className = rs.getString("class_name"),
+                                    repoName = rs.getString("repo_name"),
+                                ),
                             )
-                        )
+                        }
+                        results
                     }
-                    results
                 }
-            }
         }
     }
 
@@ -285,11 +307,11 @@ data class DocRecord(
     val fileSize: Long,
     val packageName: String? = null,
     val className: String? = null,
-    val repoName: String? = null
+    val repoName: String? = null,
 )
 
 data class QueryResult(
     val chunkId: Long,
     val text: String,
-    val similarity: Double
+    val similarity: Double,
 )

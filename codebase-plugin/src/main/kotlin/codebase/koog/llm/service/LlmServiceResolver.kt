@@ -15,7 +15,6 @@ import codebase.koog.llm.LlmProviderResolver.resolve
  * Scope (US-8.1): codebase only, additive.
  */
 object LlmServiceResolver {
-
     /**
      * Resolves an [LlmProvider] for the given [model].
      *

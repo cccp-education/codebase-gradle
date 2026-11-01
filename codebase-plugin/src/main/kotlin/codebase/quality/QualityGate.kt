@@ -4,10 +4,12 @@ class QualityGate(
     val sentimentAnalyzer: QualityChecker = DeterministicSentimentAnalyzer(),
     val offTopicDetector: DeterministicOffTopicDetector = DeterministicOffTopicDetector(),
     val piiDetector: QualityChecker = DeterministicPiiResidualDetector(),
-    val config: QualityGateConfig = QualityGateConfig()
+    val config: QualityGateConfig = QualityGateConfig(),
 ) {
-
-    fun evaluate(output: String, domain: Domain): QualityAssessment {
+    fun evaluate(
+        output: String,
+        domain: Domain,
+    ): QualityAssessment {
         val results = mutableListOf<QualityCheckResult>()
 
         if (config.enableSentimentCheck) {
@@ -26,7 +28,7 @@ class QualityGate(
         return QualityAssessment(
             overallVerdict = overall,
             results = results,
-            domain = domain
+            domain = domain,
         )
     }
 

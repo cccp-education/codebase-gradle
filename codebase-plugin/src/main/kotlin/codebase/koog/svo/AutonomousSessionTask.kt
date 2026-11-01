@@ -42,7 +42,6 @@ import java.io.File
  */
 @DisableCachingByDefault(because = "Vibecoding LLM agent — non-deterministic LLM calls, non-cacheable")
 abstract class AutonomousSessionTask : DefaultTask() {
-
     private val log = LoggerFactory.getLogger(AutonomousSessionTask::class.java)
 
     @get:Input
@@ -90,19 +89,20 @@ abstract class AutonomousSessionTask : DefaultTask() {
         val cliPrompt = prompt.getOrElse("").takeIf { it.isNotBlank() }
         val loop = buildVibecodingLoop(root)
 
-        val report = AutonomousSessionOrchestrator.orchestrate(
-            borough = boroughName,
-            prompt = cliPrompt,
-            projectDir = root,
-            maxChainedSessions = maxChainedSessions.get(),
-            maxActionsPerSession = maxActions.get(),
-            runSession = { state ->
-                val result = loop.execute(state)
-                if (result.error != null) throw RuntimeException("Vibecoding failed: ${result.error}")
-                "finished=${result.finished} executed=${result.executedTasks.joinToString(",")}"
-            },
-            auditAppend = { line -> appendAudit(root, line) },
-        )
+        val report =
+            AutonomousSessionOrchestrator.orchestrate(
+                borough = boroughName,
+                prompt = cliPrompt,
+                projectDir = root,
+                maxChainedSessions = maxChainedSessions.get(),
+                maxActionsPerSession = maxActions.get(),
+                runSession = { state ->
+                    val result = loop.execute(state)
+                    if (result.error != null) throw RuntimeException("Vibecoding failed: ${result.error}")
+                    "finished=${result.finished} executed=${result.executedTasks.joinToString(",")}"
+                },
+                auditAppend = { line -> appendAudit(root, line) },
+            )
 
         logger.lifecycle("[autonomousSession] borough={} sessions={} stop={}", report.borough, report.sessionsExecuted, report.stopReason)
         report.brainstormingIntention?.let {
@@ -122,7 +122,8 @@ abstract class AutonomousSessionTask : DefaultTask() {
      */
     fun resolvePlannerPort(): codebase.koog.plannerport.PlannerPort =
         codebase.koog.svo.PlannerPortResolver.resolve(
-            project.gradle.sharedServices.registrations.toList(),
+            project.gradle.sharedServices.registrations
+                .toList(),
         )
 
     /**
@@ -148,12 +149,13 @@ abstract class AutonomousSessionTask : DefaultTask() {
             ToolInfo(
                 "list_tasks",
                 "List available Gradle tasks with descriptions and options. Use 'group' arg to filter by task group, 'keyword' arg to search by name or description.",
-            )
+            ),
         )
         toolRegistry.registerHandler("list_tasks") { _, arguments, _ ->
             val group = arguments["group"].takeUnless { it.isNullOrBlank() }
             val keyword = arguments["keyword"].takeUnless { it.isNullOrBlank() }
-            codebase.koog.discovery.TaskListFormatter.format(cache.schemas(), group = group, keyword = keyword)
+            codebase.koog.discovery.TaskListFormatter
+                .format(cache.schemas(), group = group, keyword = keyword)
         }
 
         log.info("[autonomousSession] vibecoding loop built — {} gradle_* tools", schemas.size)
@@ -171,7 +173,10 @@ abstract class AutonomousSessionTask : DefaultTask() {
         )
     }
 
-    private fun appendAudit(root: File, line: String) {
+    private fun appendAudit(
+        root: File,
+        line: String,
+    ) {
         val auditDir = File(root, "build/vibecoding")
         auditDir.mkdirs()
         File(auditDir, "audit.jsonl").appendText(line)

@@ -3,7 +3,6 @@ package codebase.koog.agentic
 import java.io.File
 
 interface GovernanceStateStore {
-
     fun load(): GovernanceFileSnapshot?
 
     fun save(snapshot: GovernanceFileSnapshot)
@@ -11,8 +10,9 @@ interface GovernanceStateStore {
     fun clear()
 }
 
-class JsonGovernanceStateStore(private val stateFile: File) : GovernanceStateStore {
-
+class JsonGovernanceStateStore(
+    private val stateFile: File,
+) : GovernanceStateStore {
     override fun load(): GovernanceFileSnapshot? {
         if (!stateFile.exists()) return null
         val text = stateFile.readText(Charsets.UTF_8).trim()
@@ -34,17 +34,18 @@ class JsonGovernanceStateStore(private val stateFile: File) : GovernanceStateSto
         if (stateFile.exists()) stateFile.delete()
     }
 
-    private fun toJson(snapshot: GovernanceFileSnapshot): String = buildString {
-        appendLine("{")
-        appendLine("  \"entries\": [")
-        snapshot.entries.withIndex().forEach { (index, entry) ->
-            append("    { \"relativePath\": \"${escape(entry.relativePath)}\", \"checksum\": \"${escape(entry.checksum)}\" }")
-            if (index < snapshot.entries.size - 1) append(",")
-            appendLine()
+    private fun toJson(snapshot: GovernanceFileSnapshot): String =
+        buildString {
+            appendLine("{")
+            appendLine("  \"entries\": [")
+            snapshot.entries.withIndex().forEach { (index, entry) ->
+                append("    { \"relativePath\": \"${escape(entry.relativePath)}\", \"checksum\": \"${escape(entry.checksum)}\" }")
+                if (index < snapshot.entries.size - 1) append(",")
+                appendLine()
+            }
+            appendLine("  ]")
+            append("}")
         }
-        appendLine("  ]")
-        append("}")
-    }
 
     private fun parseJson(text: String): GovernanceFileSnapshot? {
         val entries = mutableListOf<ScannedFileEntry>()
@@ -60,7 +61,8 @@ class JsonGovernanceStateStore(private val stateFile: File) : GovernanceStateSto
         return GovernanceFileSnapshot(entries)
     }
 
-    private fun escape(value: String): String = value
-        .replace("\\", "\\\\")
-        .replace("\"", "\\\"")
+    private fun escape(value: String): String =
+        value
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
 }

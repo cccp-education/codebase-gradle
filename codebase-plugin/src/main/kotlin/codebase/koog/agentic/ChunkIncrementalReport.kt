@@ -12,9 +12,8 @@ data class ChunkIncrementalReport(
     val chunksAdded: List<String>,
     val chunksModified: List<String>,
     val chunksRemoved: List<String>,
-    val chunksUnchanged: List<String>
+    val chunksUnchanged: List<String>,
 ) {
-
     val chunksAddedCount: Int get() = chunksAdded.size
 
     val chunksModifiedCount: Int get() = chunksModified.size
@@ -26,11 +25,12 @@ data class ChunkIncrementalReport(
     fun hasChanges(): Boolean = chunksAdded.isNotEmpty() || chunksModified.isNotEmpty() || chunksRemoved.isNotEmpty()
 
     companion object {
-        fun from(diff: ChunkDiff): ChunkIncrementalReport = ChunkIncrementalReport(
-            chunksAdded = diff.added,
-            chunksModified = diff.modified,
-            chunksRemoved = diff.removed,
-            chunksUnchanged = diff.unchanged
-        )
+        fun from(diff: ChunkDiff): ChunkIncrementalReport =
+            ChunkIncrementalReport(
+                chunksAdded = diff.added,
+                chunksModified = diff.modified,
+                chunksRemoved = diff.removed,
+                chunksUnchanged = diff.unchanged,
+            )
     }
 }

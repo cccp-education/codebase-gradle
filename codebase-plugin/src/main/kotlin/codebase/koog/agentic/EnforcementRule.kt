@@ -6,16 +6,20 @@ data class EnforcementRule(
     val forbiddenPattern: String,
     val allowedPattern: String?,
     val toolName: String,
-    val description: String
+    val description: String,
 )
 
 data class EnforcementResult(
     val allowed: Boolean,
     val blockedBy: String?,
-    val reason: String?
+    val reason: String?,
 ) {
     companion object {
         fun allowed() = EnforcementResult(true, null, null)
-        fun blocked(ruleId: String, reason: String) = EnforcementResult(false, ruleId, reason)
+
+        fun blocked(
+            ruleId: String,
+            reason: String,
+        ) = EnforcementResult(false, ruleId, reason)
     }
 }

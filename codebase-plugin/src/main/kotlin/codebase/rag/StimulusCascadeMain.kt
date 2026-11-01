@@ -17,22 +17,23 @@ object StimulusCascadeMain {
         val dryRun = args.any { it == "--dry-run" }
         val blogMode = args.any { it == "--blog" }
 
-        val dumpContent: String = if (args.isNotEmpty()) {
-            val dumpArg = args.firstOrNull { !it.startsWith("--") } ?: ""
-            if (File(dumpArg).exists()) {
-                File(dumpArg).readText(Charsets.UTF_8)
-            } else if (dumpArg.isNotBlank()) {
-                dumpArg
+        val dumpContent: String =
+            if (args.isNotEmpty()) {
+                val dumpArg = args.firstOrNull { !it.startsWith("--") } ?: ""
+                if (File(dumpArg).exists()) {
+                    File(dumpArg).readText(Charsets.UTF_8)
+                } else if (dumpArg.isNotBlank()) {
+                    dumpArg
+                } else {
+                    System.err.println("Usage: diluteBrainDump <brain-dump-text-or-file> [workspaceRoot] [outputDir] [--dry-run] [--blog]")
+                    System.err.println("       Passe le brain dump en argument (chaine de caracteres ou chemin de fichier)")
+                    return
+                }
             } else {
                 System.err.println("Usage: diluteBrainDump <brain-dump-text-or-file> [workspaceRoot] [outputDir] [--dry-run] [--blog]")
                 System.err.println("       Passe le brain dump en argument (chaine de caracteres ou chemin de fichier)")
                 return
             }
-        } else {
-            System.err.println("Usage: diluteBrainDump <brain-dump-text-or-file> [workspaceRoot] [outputDir] [--dry-run] [--blog]")
-            System.err.println("       Passe le brain dump en argument (chaine de caracteres ou chemin de fichier)")
-            return
-        }
 
         StdoutFormatter.banner("EPIC 10 — STIMULUS Cascade : Brain Dump → Classification → Routing → Archivage")
         StdoutFormatter.ctx("Model         : $modelName ($baseUrl)")
@@ -43,12 +44,13 @@ object StimulusCascadeMain {
         StdoutFormatter.ctx("Source size   : ${dumpContent.length} caracteres")
         StdoutFormatter.separator()
 
-        val cascade = StimulusCascade(
-            baseUrl = baseUrl,
-            modelName = modelName,
-            workspaceRoot = workspaceRoot,
-            dryRun = dryRun
-        )
+        val cascade =
+            StimulusCascade(
+                baseUrl = baseUrl,
+                modelName = modelName,
+                workspaceRoot = workspaceRoot,
+                dryRun = dryRun,
+            )
 
         val report = cascade.execute(dumpContent)
 
@@ -72,7 +74,9 @@ object StimulusCascadeMain {
         StdoutFormatter.separator()
 
         if (report.visionCount > 0) {
-            StdoutFormatter.result("Pipeline STIMULUS TERMINE — ${report.visionCount} sections VISION routees, ${report.opinionCount} sections OPINION confinees ✅")
+            StdoutFormatter.result(
+                "Pipeline STIMULUS TERMINE — ${report.visionCount} sections VISION routees, ${report.opinionCount} sections OPINION confinees ✅",
+            )
         } else {
             StdoutFormatter.result("Pipeline STIMULUS TERMINE — ${report.sections.size} sections (0 VISION, ${report.opinionCount} OPINION confinees)")
         }
@@ -118,9 +122,11 @@ object StimulusCascadeMain {
     }
 
     private fun findNextArticleNumber(blogDir: File): Int {
-        val existing = blogDir.listFiles()
-            ?.mapNotNull { f -> """^(\d{4})_""".toRegex().find(f.name)?.groupValues?.get(1)?.toIntOrNull() }
-            ?.toList() ?: emptyList()
+        val existing =
+            blogDir
+                .listFiles()
+                ?.mapNotNull { f -> """^(\d{4})_""".toRegex().find(f.name)?.groupValues?.get(1)?.toIntOrNull() }
+                ?.toList() ?: emptyList()
         return if (existing.isEmpty()) 127 else (existing.maxOrNull() ?: 127) + 1
     }
 }

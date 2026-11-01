@@ -50,7 +50,6 @@ import java.io.File
  */
 @DisableCachingByDefault(because = "OCR IA — appel LLM non-déterministe, non-cacheable")
 abstract class OcrTask : DefaultTask() {
-
     /**
      * Moteur OCR injectable.
      * En test : `FakeOcrEngine`. En production : `GeminiVisionEngine` (OCR-2).
@@ -165,9 +164,10 @@ abstract class OcrTask : DefaultTask() {
         }
 
         val lang = ocrLanguage.orNull ?: "fr"
-        val model = geminiModel.orNull
-            ?: geminiConfig?.resolveModel()
-            ?: "gemini-2.5-flash"
+        val model =
+            geminiModel.orNull
+                ?: geminiConfig?.resolveModel()
+                ?: "gemini-2.5-flash"
         val tokens = maxTokens.orNull ?: 8192
         val format = outputFormat.orNull ?: "asciidoc"
         val ollamaUrl = ollamaBaseUrl.orNull ?: "http://localhost:11437"
@@ -178,22 +178,31 @@ abstract class OcrTask : DefaultTask() {
         if (files.isEmpty()) {
             throw IllegalArgumentException(
                 "Aucun fichier d'entrée spécifié. Utilisez -PinputFile=/path/to/file " +
-                "ou -PinputDir=/path/to/dir pour le mode batch"
+                    "ou -PinputDir=/path/to/dir pour le mode batch",
             )
         }
 
-        val outputDir = project.layout.buildDirectory.dir("ocr").get().asFile
+        val outputDir =
+            project.layout.buildDirectory
+                .dir("ocr")
+                .get()
+                .asFile
         outputDir.mkdirs()
 
-        val ext = when (format) {
-            "markdown" -> ".md"
-            "text" -> ".txt"
-            else -> ".adoc"
-        }
+        val ext =
+            when (format) {
+                "markdown" -> ".md"
+                "text" -> ".txt"
+                else -> ".adoc"
+            }
 
         logger.lifecycle(
             "[OCR] Démarrage batch : {} fichier(s), langue={}, fournisseur={}, modèle={}, maxTokens={}",
-            files.size, lang, provider, model, tokens
+            files.size,
+            lang,
+            provider,
+            model,
+            tokens,
         )
 
         val totalFiles = files.size
@@ -211,7 +220,11 @@ abstract class OcrTask : DefaultTask() {
 
         if (metricsCollector.isNotEmpty()) {
             val report = OcrMetricsReport.generateAsciiDoc(metricsCollector.toList())
-            val reportDir = project.layout.buildDirectory.dir("reports/ocr").get().asFile
+            val reportDir =
+                project.layout.buildDirectory
+                    .dir("reports/ocr")
+                    .get()
+                    .asFile
             reportDir.mkdirs()
             val reportFile = File(reportDir, "ocr-metrics.adoc")
             reportFile.writeText(report, Charsets.UTF_8)
@@ -247,7 +260,7 @@ abstract class OcrTask : DefaultTask() {
         ollamaVisionModel: String,
         outputDir: File,
         ext: String,
-        totalFiles: Int
+        totalFiles: Int,
     ) {
         logger.lifecycle("[OCR] Traitement : {}", file.name)
         logger.lifecycle("[OCR] File absolute path: {}", file.absolutePath)
@@ -266,51 +279,57 @@ abstract class OcrTask : DefaultTask() {
         logger.lifecycle("[OCR] MimeType: {}", mimeType)
 
         val startTime = System.currentTimeMillis()
-        val result = if (isImage) {
-            executeImageOcr(file, mimeType, lang, model, tokens, provider, ollamaUrl, ollamaVisionModel)
-        } else {
-            executeTextOcr(file, lang, model, tokens)
-        }
+        val result =
+            if (isImage) {
+                executeImageOcr(file, mimeType, lang, model, tokens, provider, ollamaUrl, ollamaVisionModel)
+            } else {
+                executeTextOcr(file, lang, model, tokens)
+            }
         val ocrDuration = System.currentTimeMillis() - startTime
 
         val effectiveModel = if (provider == "ollama") ollamaVisionModel else model
 
-        val (finalResult, replacements, categories) = if (anonymizeOutput.orNull == true) {
-            val anonymized = TextAnonymizer.anonymize(result)
-            val replaced = TextAnonymizer.countReplacements(result, anonymized)
-            val cats = TextAnonymizer.detectedCategories(result)
-            logger.lifecycle("[OCR] Anonymisation : {} remplacement(s), catégories={}", replaced, cats)
-            Triple(anonymized, replaced, cats)
-        } else Triple(result, 0, emptyList<String>())
+        val (finalResult, replacements, categories) =
+            if (anonymizeOutput.orNull == true) {
+                val anonymized = TextAnonymizer.anonymize(result)
+                val replaced = TextAnonymizer.countReplacements(result, anonymized)
+                val cats = TextAnonymizer.detectedCategories(result)
+                logger.lifecycle("[OCR] Anonymisation : {} remplacement(s), catégories={}", replaced, cats)
+                Triple(anonymized, replaced, cats)
+            } else {
+                Triple(result, 0, emptyList<String>())
+            }
 
         val baseName = file.nameWithoutExtension
-        val outputPath = if (outputFile.isPresent && totalFiles == 1) {
-            outputFile.get().asFile
-        } else {
-            File(outputDir, "${baseName}_ocr$ext")
-        }
+        val outputPath =
+            if (outputFile.isPresent && totalFiles == 1) {
+                outputFile.get().asFile
+            } else {
+                File(outputDir, "${baseName}_ocr$ext")
+            }
 
         outputPath.writeText(finalResult, Charsets.UTF_8)
         logger.lifecycle("[OCR] Résultat écrit dans : {}", outputPath.absolutePath)
 
-        val metrics = OcrMetricsCalculator.buildMetrics(
-            fileName = file.name,
-            fileSizeBytes = file.length(),
-            isImage = isImage,
-            provider = provider,
-            model = effectiveModel,
-            language = lang,
-            ocrDurationMs = ocrDuration,
-            outputLengthChars = finalResult.length,
-            anonymizationReplacements = replacements,
-            anonymizationCategories = categories
-        )
+        val metrics =
+            OcrMetricsCalculator.buildMetrics(
+                fileName = file.name,
+                fileSizeBytes = file.length(),
+                isImage = isImage,
+                provider = provider,
+                model = effectiveModel,
+                language = lang,
+                ocrDurationMs = ocrDuration,
+                outputLengthChars = finalResult.length,
+                anonymizationReplacements = replacements,
+                anonymizationCategories = categories,
+            )
         metricsCollector.add(metrics)
         logger.lifecycle(
             "[OCR] Métriques {} : durée={}, coût={}",
             file.name,
             OcrMetricsCalculator.formatDurationMs(ocrDuration),
-            "${"%.6f".format(java.util.Locale.US, metrics.estimatedCostUsd)} USD"
+            "${"%.6f".format(java.util.Locale.US, metrics.estimatedCostUsd)} USD",
         )
     }
 
@@ -340,7 +359,7 @@ abstract class OcrTask : DefaultTask() {
         maxTokens: Int,
         provider: String,
         ollamaUrl: String,
-        ollamaVisionModel: String
+        ollamaVisionModel: String,
     ): String {
         logger.lifecycle("[OCR] Mode image détecté : mimeType={}, provider={}", mimeType, provider)
 
@@ -348,8 +367,9 @@ abstract class OcrTask : DefaultTask() {
 
         return when (provider) {
             "ollama" -> {
-                val ollamaProvider = ollamaOcrProvider
-                    ?: OllamaOcrProvider(baseUrl = ollamaUrl, model = ollamaVisionModel)
+                val ollamaProvider =
+                    ollamaOcrProvider
+                        ?: OllamaOcrProvider(baseUrl = ollamaUrl, model = ollamaVisionModel)
                 runBlocking {
                     ollamaProvider.processImage(imageBytes, mimeType, language, ollamaVisionModel, maxTokens)
                 }
@@ -363,8 +383,9 @@ abstract class OcrTask : DefaultTask() {
                 } catch (e: Exception) {
                     logger.warn("[OCR] Gemini failed: {} — fallback to Ollama", e.message)
                     try {
-                        val ollamaProvider = ollamaOcrProvider
-                            ?: OllamaOcrProvider(baseUrl = ollamaUrl, model = ollamaVisionModel)
+                        val ollamaProvider =
+                            ollamaOcrProvider
+                                ?: OllamaOcrProvider(baseUrl = ollamaUrl, model = ollamaVisionModel)
                         runBlocking {
                             ollamaProvider.processImage(imageBytes, mimeType, language, ollamaVisionModel, maxTokens)
                         }
@@ -414,7 +435,7 @@ abstract class OcrTask : DefaultTask() {
         file: File,
         language: String,
         model: String,
-        maxTokens: Int
+        maxTokens: Int,
     ): String {
         logger.lifecycle("[OCR] Mode texte détecté")
         val content = file.readText(Charsets.UTF_8)
@@ -433,20 +454,19 @@ abstract class OcrTask : DefaultTask() {
 
         private val IMAGE_EXTENSIONS = setOf("png", "jpg", "jpeg", "gif", "bmp", "tiff", "pdf")
 
-        private val MIME_MAP = mapOf(
-            "png" to "image/png",
-            "jpg" to "image/jpeg",
-            "jpeg" to "image/jpeg",
-            "gif" to "image/gif",
-            "bmp" to "image/bmp",
-            "tiff" to "image/tiff",
-            "pdf" to "application/pdf"
-        )
+        private val MIME_MAP =
+            mapOf(
+                "png" to "image/png",
+                "jpg" to "image/jpeg",
+                "jpeg" to "image/jpeg",
+                "gif" to "image/gif",
+                "bmp" to "image/bmp",
+                "tiff" to "image/tiff",
+                "pdf" to "application/pdf",
+            )
 
-        fun isImageFile(file: File): Boolean =
-            file.extension.lowercase() in IMAGE_EXTENSIONS
+        fun isImageFile(file: File): Boolean = file.extension.lowercase() in IMAGE_EXTENSIONS
 
-        fun detectMimeType(extension: String): String =
-            MIME_MAP[extension.lowercase()] ?: "application/octet-stream"
+        fun detectMimeType(extension: String): String = MIME_MAP[extension.lowercase()] ?: "application/octet-stream"
     }
 }

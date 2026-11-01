@@ -14,7 +14,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
  */
 data class LlmConfig(
     @JsonProperty("ai")
-    val ai: AiConfig = AiConfig()
+    val ai: AiConfig = AiConfig(),
 ) {
     companion object {
         private val mapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
@@ -26,20 +26,17 @@ data class LlmConfig(
 data class AiConfig(
     @JsonProperty("ollama")
     val ollama: OllamaConfig = OllamaConfig(),
-
     @JsonProperty("gemini")
-    val gemini: GeminiConfig = GeminiConfig()
+    val gemini: GeminiConfig = GeminiConfig(),
 )
 
 data class OllamaConfig(
     @JsonProperty("baseUrl")
     val baseUrl: String = "http://localhost:11437",
-
     @JsonProperty("model")
     val model: String = "gpt-oss:120b-cloud",
-
     @JsonProperty("envVar")
-    val envVar: String? = null  // OLLAMA_BASE_URL, OLLAMA_MODEL
+    val envVar: String? = null, // OLLAMA_BASE_URL, OLLAMA_MODEL
 ) {
     fun resolveBaseUrl(): String = resolveEnvVar(envVar, baseUrl)
 
@@ -49,20 +46,20 @@ data class OllamaConfig(
 data class GeminiConfig(
     @JsonProperty("envVar")
     val envVar: String = "GEMINI_API_KEY",
-
     @JsonProperty("model")
     val model: String = "gemini-1.5-flash",
-
     @JsonProperty("baseUrl")
-    val baseUrl: String = "https://generativelanguage.googleapis.com/v1beta"
+    val baseUrl: String = "https://generativelanguage.googleapis.com/v1beta",
 ) {
-    fun resolveApiKey(): String =
-        System.getenv(envVar) ?: error("$envVar environment variable not set")
+    fun resolveApiKey(): String = System.getenv(envVar) ?: error("$envVar environment variable not set")
 
     fun resolveModel(): String = model
 }
 
-private fun resolveEnvVar(envVar: String?, default: String): String {
+private fun resolveEnvVar(
+    envVar: String?,
+    default: String,
+): String {
     if (envVar == null) return default
     return System.getenv(envVar) ?: default
 }

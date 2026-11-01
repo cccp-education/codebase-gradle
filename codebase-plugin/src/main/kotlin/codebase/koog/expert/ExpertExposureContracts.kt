@@ -4,7 +4,7 @@ data class ExpertExposureEntry(
     val domain: ExpertDomain,
     val modelName: String,
     val baseUrl: String,
-    val timeoutSeconds: Long
+    val timeoutSeconds: Long,
 ) {
     companion object {
         fun from(registration: ExpertRegistration): ExpertExposureEntry =
@@ -12,26 +12,24 @@ data class ExpertExposureEntry(
                 domain = registration.domain,
                 modelName = registration.modelName,
                 baseUrl = registration.baseUrl,
-                timeoutSeconds = registration.timeoutSeconds
+                timeoutSeconds = registration.timeoutSeconds,
             )
     }
 
-    fun anonymize(): ExpertExposureEntry =
-        copy(baseUrl = "***anonymized***")
+    fun anonymize(): ExpertExposureEntry = copy(baseUrl = "***anonymized***")
 }
 
 data class ExpertExposureManifest(
     val version: String,
     val generatedAt: String,
-    val experts: List<ExpertExposureEntry>
+    val experts: List<ExpertExposureEntry>,
 ) {
-    fun anonymize(): ExpertExposureManifest =
-        copy(experts = experts.map { it.anonymize() })
+    fun anonymize(): ExpertExposureManifest = copy(experts = experts.map { it.anonymize() })
 }
 
 data class ExpertExposureConfig(
     val domains: List<String> = emptyList(),
     val outputFormat: String = "json",
     val anonymizeEndpoints: Boolean = true,
-    val outputFile: String = "build/experts/exposure-manifest.json"
+    val outputFile: String = "build/experts/exposure-manifest.json",
 )

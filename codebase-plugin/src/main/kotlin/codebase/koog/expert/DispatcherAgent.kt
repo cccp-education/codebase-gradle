@@ -5,13 +5,12 @@ import codebase.koog.llm.LlmProvider
 class DispatcherAgent(
     private val dispatcherLlm: LlmProvider,
     private val expertRegistry: ExpertRegistry,
-    private val expertAgentFactory: (ExpertRegistration) -> ExpertAgent
+    private val expertAgentFactory: (ExpertRegistration) -> ExpertAgent,
 ) {
-
     suspend fun execute(
         taskId: String,
         prompt: String,
-        domainHints: List<ExpertDomain> = expertRegistry.listDomains()
+        domainHints: List<ExpertDomain> = expertRegistry.listDomains(),
     ): DispatcherResult {
         val decomposition = decompose(taskId, prompt, domainHints)
         val responses = dispatchSubtasks(decomposition)
@@ -21,17 +20,18 @@ class DispatcherAgent(
             taskId = taskId,
             decomposition = decomposition,
             expertResponses = responses,
-            synthesis = synthesis
+            synthesis = synthesis,
         )
     }
 
     private suspend fun decompose(
         taskId: String,
         prompt: String,
-        domains: List<ExpertDomain>
+        domains: List<ExpertDomain>,
     ): DispatcherDecomposition {
         val domainList = domains.joinToString("\n") { "- ${it.name}: ${it.label}" }
-        val decompositionPrompt = """
+        val decompositionPrompt =
+            """
             You are a task dispatcher. Decompose the following complex task into subtasks,
             assigning each to the most appropriate expert domain from the available list.
             
@@ -51,7 +51,7 @@ class DispatcherAgent(
             - "priority": integer (1=highest)
             
             Return ONLY the JSON array. No other text.
-        """.trimIndent()
+            """.trimIndent()
 
         val rawResponse = dispatcherLlm.call(decompositionPrompt)
         return parseDecomposition(taskId, prompt, rawResponse, domains)
@@ -61,32 +61,33 @@ class DispatcherAgent(
         taskId: String,
         originalPrompt: String,
         rawResponse: String,
-        domains: List<ExpertDomain>
+        domains: List<ExpertDomain>,
     ): DispatcherDecomposition {
-        val subtasks = try {
-            val jsonStart = rawResponse.indexOf('[')
-            val jsonEnd = rawResponse.lastIndexOf(']') + 1
-            if (jsonStart >= 0 && jsonEnd > jsonStart) {
-                val jsonArray = rawResponse.substring(jsonStart, jsonEnd)
-                parseSubtasksFromJson(jsonArray, domains)
-            } else {
+        val subtasks =
+            try {
+                val jsonStart = rawResponse.indexOf('[')
+                val jsonEnd = rawResponse.lastIndexOf(']') + 1
+                if (jsonStart >= 0 && jsonEnd > jsonStart) {
+                    val jsonArray = rawResponse.substring(jsonStart, jsonEnd)
+                    parseSubtasksFromJson(jsonArray, domains)
+                } else {
+                    fallbackSingleSubtask(taskId, originalPrompt, domains)
+                }
+            } catch (e: Exception) {
                 fallbackSingleSubtask(taskId, originalPrompt, domains)
             }
-        } catch (e: Exception) {
-            fallbackSingleSubtask(taskId, originalPrompt, domains)
-        }
 
         return DispatcherDecomposition(
             taskId = taskId,
             originalPrompt = originalPrompt,
             subtasks = subtasks,
-            reasoning = "Decomposed into ${subtasks.size} subtask(s)"
+            reasoning = "Decomposed into ${subtasks.size} subtask(s)",
         )
     }
 
     private fun parseSubtasksFromJson(
         jsonArray: String,
-        domains: List<ExpertDomain>
+        domains: List<ExpertDomain>,
     ): List<DispatcherSubtask> {
         val domainMap = domains.associateBy { it.name }
         val results = mutableListOf<DispatcherSubtask>()
@@ -110,8 +111,8 @@ class DispatcherAgent(
                         prompt = prompt,
                         expectedOutputFormat = expectedFormat,
                         validationCriteria = criteria,
-                        priority = priority
-                    )
+                        priority = priority,
+                    ),
                 )
             }
         }
@@ -124,7 +125,7 @@ class DispatcherAgent(
     private fun fallbackSingleSubtask(
         taskId: String,
         prompt: String,
-        domains: List<ExpertDomain>
+        domains: List<ExpertDomain>,
     ): List<DispatcherSubtask> {
         val defaultDomain = domains.firstOrNull()?.name ?: "general"
         return listOf(
@@ -135,15 +136,13 @@ class DispatcherAgent(
                 prompt = prompt,
                 expectedOutputFormat = "text",
                 validationCriteria = emptyList(),
-                priority = 1
-            )
+                priority = 1,
+            ),
         )
     }
 
-    private suspend fun dispatchSubtasks(
-        decomposition: DispatcherDecomposition
-    ): List<ExpertCallResponse> {
-        return decomposition.subtasks.map { subtask ->
+    private suspend fun dispatchSubtasks(decomposition: DispatcherDecomposition): List<ExpertCallResponse> =
+        decomposition.subtasks.map { subtask ->
             val domain = ExpertDomain(subtask.domainName, "")
             val registration = expertRegistry.resolveByName(subtask.domainName)
 
@@ -155,28 +154,28 @@ class DispatcherAgent(
                     confidenceScore = 0.0,
                     tokenUsage = ExpertTokenUsage(0, 0, 0),
                     validationPassed = false,
-                    error = "No expert registered for domain: ${subtask.domainName}"
+                    error = "No expert registered for domain: ${subtask.domainName}",
                 )
             } else {
                 val agent = expertAgentFactory(registration)
-                val request = ExpertCallRequest(
-                    taskId = subtask.id,
-                    domain = domain,
-                    subtaskType = subtask.subtaskType,
-                    context = ExpertCallContext(),
-                    prompt = subtask.prompt,
-                    expectedOutputFormat = subtask.expectedOutputFormat,
-                    validationCriteria = subtask.validationCriteria
-                )
+                val request =
+                    ExpertCallRequest(
+                        taskId = subtask.id,
+                        domain = domain,
+                        subtaskType = subtask.subtaskType,
+                        context = ExpertCallContext(),
+                        prompt = subtask.prompt,
+                        expectedOutputFormat = subtask.expectedOutputFormat,
+                        validationCriteria = subtask.validationCriteria,
+                    )
                 agent.call(request)
             }
         }
-    }
 
     private suspend fun synthesize(
         taskId: String,
         originalPrompt: String,
-        responses: List<ExpertCallResponse>
+        responses: List<ExpertCallResponse>,
     ): String {
         val successful = responses.filter { it.validationPassed }
         val failed = responses.filter { !it.validationPassed }
@@ -186,11 +185,13 @@ class DispatcherAgent(
                 failed.joinToString("; ") { "${it.domain.name}: ${it.error}" }
         }
 
-        val expertOutputs = successful.joinToString("\n\n") { response ->
-            "=== Expert: ${response.domain.name} ===\n${response.output}"
-        }
+        val expertOutputs =
+            successful.joinToString("\n\n") { response ->
+                "=== Expert: ${response.domain.name} ===\n${response.output}"
+            }
 
-        val synthesisPrompt = """
+        val synthesisPrompt =
+            """
             You are a synthesis agent. Combine the following expert outputs into a coherent,
             unified response for the original task.
             
@@ -202,7 +203,7 @@ class DispatcherAgent(
             ${if (failed.isNotEmpty()) "Note: ${failed.size} expert(s) failed: ${failed.joinToString { it.domain.name }}" else ""}
             
             Synthesize a single, coherent response. Return ONLY the synthesis.
-        """.trimIndent()
+            """.trimIndent()
 
         return try {
             dispatcherLlm.call(synthesisPrompt)
@@ -215,7 +216,7 @@ class DispatcherAgent(
         val taskId: String,
         val decomposition: DispatcherDecomposition,
         val expertResponses: List<ExpertCallResponse>,
-        val synthesis: String
+        val synthesis: String,
     )
 
     companion object {
@@ -228,10 +229,22 @@ class DispatcherAgent(
 
             for (char in json) {
                 when {
-                    escape -> { current.append(char); escape = false }
-                    char == '\\' -> { current.append(char); escape = true }
-                    char == '"' -> { inString = !inString; current.append(char) }
-                    !inString && char == '{' -> { depth++; current.append(char) }
+                    escape -> {
+                        current.append(char)
+                        escape = false
+                    }
+                    char == '\\' -> {
+                        current.append(char)
+                        escape = true
+                    }
+                    char == '"' -> {
+                        inString = !inString
+                        current.append(char)
+                    }
+                    !inString && char == '{' -> {
+                        depth++
+                        current.append(char)
+                    }
                     !inString && char == '}' -> {
                         depth--
                         current.append(char)
@@ -246,22 +259,41 @@ class DispatcherAgent(
             return items
         }
 
-        internal fun extractJsonString(json: String, key: String): String? {
+        internal fun extractJsonString(
+            json: String,
+            key: String,
+        ): String? {
             val regex = Regex("\"$key\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"")
-            return regex.find(json)?.groupValues?.get(1)?.replace("\\\"", "\"")?.replace("\\\\", "\\")
+            return regex
+                .find(json)
+                ?.groupValues
+                ?.get(1)
+                ?.replace("\\\"", "\"")
+                ?.replace("\\\\", "\\")
         }
 
-        internal fun extractJsonArray(json: String, key: String): List<String> {
+        internal fun extractJsonArray(
+            json: String,
+            key: String,
+        ): List<String> {
             val regex = Regex("\"$key\"\\s*:\\s*\\[([^]]*)\\]")
             val match = regex.find(json)?.groupValues?.get(1) ?: return emptyList()
-            return Regex("\"((?:[^\"\\\\]|\\\\.)*)\"").findAll(match)
+            return Regex("\"((?:[^\"\\\\]|\\\\.)*)\"")
+                .findAll(match)
                 .map { it.groupValues[1].replace("\\\"", "\"") }
                 .toList()
         }
 
-        internal fun extractJsonInt(json: String, key: String): Int? {
+        internal fun extractJsonInt(
+            json: String,
+            key: String,
+        ): Int? {
             val regex = Regex("\"$key\"\\s*:\\s*(\\d+)")
-            return regex.find(json)?.groupValues?.get(1)?.toIntOrNull()
+            return regex
+                .find(json)
+                ?.groupValues
+                ?.get(1)
+                ?.toIntOrNull()
         }
     }
 }

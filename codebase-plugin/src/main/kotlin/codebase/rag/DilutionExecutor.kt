@@ -11,12 +11,12 @@ data class DilutionResult(
     val sectionInjected: String,
     val success: Boolean,
     val backupPath: String?,
-    val error: String?
+    val error: String?,
 )
 
 class DilutionExecutor(
     private val workspaceRoot: String,
-    private val dryRun: Boolean = false
+    private val dryRun: Boolean = false,
 ) {
     private val log = LoggerFactory.getLogger(DilutionExecutor::class.java)
     private val dateFmt = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.FRENCH)
@@ -29,7 +29,7 @@ class DilutionExecutor(
                 sectionInjected = "",
                 success = false,
                 backupPath = null,
-                error = "Aucune cible de dilution (section classifiée OPINION)"
+                error = "Aucune cible de dilution (section classifiée OPINION)",
             )
         }
 
@@ -40,7 +40,7 @@ class DilutionExecutor(
                 sectionInjected = target.suggestedSection,
                 success = false,
                 backupPath = null,
-                error = "Fichier cible introuvable: ${docFile.absolutePath}"
+                error = "Fichier cible introuvable: ${docFile.absolutePath}",
             )
         }
 
@@ -59,7 +59,7 @@ class DilutionExecutor(
                 sectionInjected = target.suggestedSection,
                 success = false,
                 backupPath = null,
-                error = "${e.javaClass.simpleName}: ${e.message}"
+                error = "${e.javaClass.simpleName}: ${e.message}",
             )
         }
     }
@@ -67,7 +67,7 @@ class DilutionExecutor(
     private fun handleDryRun(
         docFile: File,
         originalContent: String,
-        target: DilutionTarget
+        target: DilutionTarget,
     ): DilutionResult {
         val sectionExists = findSectionStart(originalContent, target.suggestedSection)
         if (sectionExists == null) {
@@ -80,7 +80,7 @@ class DilutionExecutor(
             sectionInjected = target.suggestedSection,
             success = true,
             backupPath = null,
-            error = null
+            error = null,
         )
     }
 
@@ -88,7 +88,7 @@ class DilutionExecutor(
         docFile: File,
         originalContent: String,
         record: DilutionRecord,
-        target: DilutionTarget
+        target: DilutionTarget,
     ): DilutionResult {
         val backupPath = createBackup(docFile)
 
@@ -106,7 +106,7 @@ class DilutionExecutor(
             sectionInjected = target.suggestedSection,
             success = true,
             backupPath = backupPath,
-            error = null
+            error = null,
         )
     }
 
@@ -118,13 +118,17 @@ class DilutionExecutor(
         return backupFile.absolutePath
     }
 
-    internal fun findSectionStart(content: String, sectionTitle: String): Int? {
+    internal fun findSectionStart(
+        content: String,
+        sectionTitle: String,
+    ): Int? {
         val cleanTitle = sectionTitle.trim().removePrefix("==").trim()
-        val patterns = listOf(
-            Regex("""^== \Q$cleanTitle\E\s*$""", RegexOption.MULTILINE),
-            Regex("""^===\s+\Q$cleanTitle\E\s*$""", RegexOption.MULTILINE),
-            Regex("""^====\s+\Q$cleanTitle\E\s*$""", RegexOption.MULTILINE)
-        )
+        val patterns =
+            listOf(
+                Regex("""^== \Q$cleanTitle\E\s*$""", RegexOption.MULTILINE),
+                Regex("""^===\s+\Q$cleanTitle\E\s*$""", RegexOption.MULTILINE),
+                Regex("""^====\s+\Q$cleanTitle\E\s*$""", RegexOption.MULTILINE),
+            )
         for (pattern in patterns) {
             val match = pattern.find(content) ?: continue
             val endOfLine = content.indexOf('\n', match.range.last)
@@ -135,31 +139,32 @@ class DilutionExecutor(
 
     internal fun formatDilutedSection(record: DilutionRecord): String {
         val date = record.timestamp.toLocalDate().format(dateFmt)
-        val lines = listOf(
-            "",
-            "=== ${record.sectionTitle}",
-            "",
-            record.content.trim(),
-            "",
-            "[discrete]",
-            "==== _Metadonnees de dilution_",
-            "",
-            "[cols=\"2,3\"]",
-            "|===",
-            "| Date | $date",
-            "| Classification | ${record.classification} (confiance: ${String.format(Locale.FRENCH, "%.2f", record.confidence)})",
-            "| Rationale classification | ${record.classificationRationale}",
-            "| Rationale routage | ${record.dilutionTarget?.rationale ?: "—"}",
-            "|===",
-            ""
-        )
+        val lines =
+            listOf(
+                "",
+                "=== ${record.sectionTitle}",
+                "",
+                record.content.trim(),
+                "",
+                "[discrete]",
+                "==== _Metadonnees de dilution_",
+                "",
+                "[cols=\"2,3\"]",
+                "|===",
+                "| Date | $date",
+                "| Classification | ${record.classification} (confiance: ${String.format(Locale.FRENCH, "%.2f", record.confidence)})",
+                "| Rationale classification | ${record.classificationRationale}",
+                "| Rationale routage | ${record.dilutionTarget?.rationale ?: "—"}",
+                "|===",
+                "",
+            )
         return lines.joinToString("\n")
     }
 
     internal fun injectSection(
         content: String,
         formattedSection: String,
-        suggestedSection: String
+        suggestedSection: String,
     ): String {
         val insertionPoint = findSectionStart(content, suggestedSection)
         return if (insertionPoint != null) {
@@ -171,7 +176,10 @@ class DilutionExecutor(
         }
     }
 
-    private fun updateTraceabilityTable(content: String, record: DilutionRecord): String {
+    private fun updateTraceabilityTable(
+        content: String,
+        record: DilutionRecord,
+    ): String {
         val tableHeader = "=== Stimuli diluted in this document"
         val tableMarker = "[cols=\"1,1,3\"]"
         val closingMarker = "|==="
@@ -191,23 +199,28 @@ class DilutionExecutor(
         val afterTable = content.substring(tableEnd)
 
         val date = record.timestamp.toLocalDate().format(dateFmt)
-        val sourceName = record.dilutionTarget?.let {
-            it.targetDocument.label.take(20)
-        } ?: record.sectionTitle.take(40)
+        val sourceName =
+            record.dilutionTarget?.let {
+                it.targetDocument.label.take(20)
+            } ?: record.sectionTitle.take(40)
         val newRow = "| ${record.sectionTitle.take(30)} | $date | ${record.sectionTitle}"
 
         val updatedTable = beforeTable.trimEnd() + "\n$newRow\n" + closingMarker + "\n"
         return updatedTable + afterTable.trimStart()
     }
 
-    private fun injectTraceabilityTable(content: String, record: DilutionRecord): String {
+    private fun injectTraceabilityTable(
+        content: String,
+        record: DilutionRecord,
+    ): String {
         val lastSectionEnd = findLastSectionEnd(content)
         val before = content.substring(0, lastSectionEnd)
         val after = content.substring(lastSectionEnd)
 
         val date = record.timestamp.toLocalDate().format(dateFmt)
 
-        val table = """
+        val table =
+            """
 |
 == Traceability
 |
@@ -233,11 +246,12 @@ class DilutionExecutor(
 
         val afterSectionContent = content.substring(lastSectionStart)
         val nextHeading = Regex("""^={1,4}\s""", RegexOption.MULTILINE).find(afterSectionContent)
-        val nextHeadingIdx = if (nextHeading != null) {
-            lastSectionStart + nextHeading.range.first
-        } else {
-            content.length
-        }
+        val nextHeadingIdx =
+            if (nextHeading != null) {
+                lastSectionStart + nextHeading.range.first
+            } else {
+                content.length
+            }
 
         return nextHeadingIdx
     }

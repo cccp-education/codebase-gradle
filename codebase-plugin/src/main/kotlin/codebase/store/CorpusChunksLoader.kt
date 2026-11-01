@@ -12,10 +12,8 @@ import java.io.File
  * state, no network, single responsibility (file → typed chunks).
  */
 object CorpusChunksLoader {
-
     private val json = Json { ignoreUnknownKeys = true }
 
     /** Parses the chunks file (JSON array of [DocumentChunk]). */
-    fun load(file: File): List<DocumentChunk> =
-        json.decodeFromString<List<DocumentChunk>>(file.readText())
+    fun load(file: File): List<DocumentChunk> = json.decodeFromString<List<DocumentChunk>>(file.readText())
 }

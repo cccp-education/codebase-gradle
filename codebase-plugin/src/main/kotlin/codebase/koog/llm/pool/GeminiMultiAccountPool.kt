@@ -1,7 +1,6 @@
 package codebase.koog.llm.pool
 
 import contracts.llmpool.LlmInstance
-import contracts.llmpool.RotationStrategy
 
 /**
  * Pool multi-comptes Gemini : 1 [GeminiKeyPool] par compte Google.
@@ -16,9 +15,8 @@ import contracts.llmpool.RotationStrategy
  * @param accountPools map accountId → GeminiKeyPool
  */
 class GeminiMultiAccountPool(
-    private val accountPools: Map<String, GeminiKeyPool>
+    private val accountPools: Map<String, GeminiKeyPool>,
 ) {
-
     private val accountIds = accountPools.keys.toList()
     private var currentAccountIndex = 0
 
@@ -45,11 +43,10 @@ class GeminiMultiAccountPool(
         }
     }
 
-    fun isRateLimited(instance: LlmInstance): Boolean {
-        return accountPools.values.any { pool ->
+    fun isRateLimited(instance: LlmInstance): Boolean =
+        accountPools.values.any { pool ->
             pool.instances().any { it.id == instance.id } && pool.isRateLimited(instance)
         }
-    }
 
     fun resetUsage() {
         accountPools.values.forEach { it.resetUsage() }
@@ -64,14 +61,15 @@ class GeminiMultiAccountPool(
 
         fun fromEnvVars(
             env: Map<String, String>,
-            model: String = "gemini-2.5-flash"
+            model: String = "gemini-2.5-flash",
         ): GeminiMultiAccountPool {
             val accounts = mutableMapOf<String, GeminiKeyPool>()
             for (accountId in 1..MAX_ACCOUNT_INDEX) {
-                val keys = (1..MAX_KEY_INDEX).mapNotNull { keyIndex ->
-                    env["${ENV_PREFIX}${accountId}${ENV_KEY_SUFFIX}${keyIndex}"]
-                        ?.takeIf { it.isNotBlank() }
-                }
+                val keys =
+                    (1..MAX_KEY_INDEX).mapNotNull { keyIndex ->
+                        env["${ENV_PREFIX}${accountId}${ENV_KEY_SUFFIX}$keyIndex"]
+                            ?.takeIf { it.isNotBlank() }
+                    }
                 if (keys.isNotEmpty()) {
                     accounts["account-$accountId"] =
                         GeminiPoolFactory.fromKeys(keys, model = model, idPrefix = "gemini-acct$accountId")

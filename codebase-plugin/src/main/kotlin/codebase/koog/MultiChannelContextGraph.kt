@@ -1,20 +1,18 @@
 package codebase.koog
 
-import contracts.context.ChannelBudget
-import contracts.context.CompositeContextConfig
-import contracts.context.ContextChannel
-import codebase.graph.GraphifyContextProvider
 import ai.koog.agents.core.agent.asMermaidDiagram
 import ai.koog.agents.core.agent.entity.AIAgentGraphStrategy
 import ai.koog.agents.core.agent.entity.ToolSelectionStrategy
 import ai.koog.agents.core.dsl.builder.node
 import ai.koog.agents.core.dsl.builder.strategy
+import codebase.graph.GraphifyContextProvider
 import codebase.rag.EmbeddingPipeline
 import codebase.rag.OpencodeInjector
 import codebase.rag.PgVectorConfig
 import codebase.rag.VectorQueryService
-import codebase.rag.VectorStore
 import codebase.store.RagVectorStore
+import contracts.context.ChannelBudget
+import contracts.context.ContextChannel
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -26,7 +24,7 @@ data class MultiChannelState(
     val budget: ChannelBudget = ChannelBudget(),
     val channels: List<ContextChannel> = emptyList(),
     val assembledContext: String = "",
-    val error: String? = null
+    val error: String? = null,
 ) {
     val eager: ContextChannel? get() = channels.find { it is ContextChannel.Eager }
     val rag: ContextChannel? get() = channels.find { it is ContextChannel.Rag }
@@ -38,40 +36,40 @@ data class MultiChannelState(
 class MultiChannelContextGraph(
     private val graphFile: File? = null,
 ) {
-
     private val log = LoggerFactory.getLogger(MultiChannelContextGraph::class.java)
 
-    val graph: AIAgentGraphStrategy<MultiChannelState, MultiChannelState> = strategy<MultiChannelState, MultiChannelState>(
-        name = "multi-channel-context",
-        toolSelectionStrategy = ToolSelectionStrategy.NONE
-    ) {
-        val collectEager by node<MultiChannelState, MultiChannelState> { state ->
-            collectEagerNode(state)
-        }
+    val graph: AIAgentGraphStrategy<MultiChannelState, MultiChannelState> =
+        strategy<MultiChannelState, MultiChannelState>(
+            name = "multi-channel-context",
+            toolSelectionStrategy = ToolSelectionStrategy.NONE,
+        ) {
+            val collectEager by node<MultiChannelState, MultiChannelState> { state ->
+                collectEagerNode(state)
+            }
 
-        val collectRag by node<MultiChannelState, MultiChannelState> { state ->
-            collectRagNode(state)
-        }
+            val collectRag by node<MultiChannelState, MultiChannelState> { state ->
+                collectRagNode(state)
+            }
 
-        val collectGraphify by node<MultiChannelState, MultiChannelState> { state ->
-            collectGraphifyNode(state)
-        }
+            val collectGraphify by node<MultiChannelState, MultiChannelState> { state ->
+                collectGraphifyNode(state)
+            }
 
-        val collectDocs by node<MultiChannelState, MultiChannelState> { state ->
-            collectDocsNode(state)
-        }
+            val collectDocs by node<MultiChannelState, MultiChannelState> { state ->
+                collectDocsNode(state)
+            }
 
-        val assemble by node<MultiChannelState, MultiChannelState> { state ->
-            assembleNode(state)
-        }
+            val assemble by node<MultiChannelState, MultiChannelState> { state ->
+                assembleNode(state)
+            }
 
-        edge(nodeStart forwardTo collectEager onCondition { _ -> true } transformed { it })
-        edge(collectEager forwardTo collectRag onCondition { _ -> true } transformed { it })
-        edge(collectRag forwardTo collectGraphify onCondition { _ -> true } transformed { it })
-        edge(collectGraphify forwardTo collectDocs onCondition { _ -> true } transformed { it })
-        edge(collectDocs forwardTo assemble onCondition { _ -> true } transformed { it })
-        edge(assemble forwardTo nodeFinish onCondition { _ -> true } transformed { it })
-    }
+            edge(nodeStart forwardTo collectEager onCondition { _ -> true } transformed { it })
+            edge(collectEager forwardTo collectRag onCondition { _ -> true } transformed { it })
+            edge(collectRag forwardTo collectGraphify onCondition { _ -> true } transformed { it })
+            edge(collectGraphify forwardTo collectDocs onCondition { _ -> true } transformed { it })
+            edge(collectDocs forwardTo assemble onCondition { _ -> true } transformed { it })
+            edge(assemble forwardTo nodeFinish onCondition { _ -> true } transformed { it })
+        }
 
     fun execute(initialState: MultiChannelState): MultiChannelState {
         var state = safeStep(initialState) { collectEagerNode(it) }
@@ -84,24 +82,28 @@ class MultiChannelContextGraph(
 
         state = safeStep(state) { assembleNode(it) }
 
-        log.info("MultiChannelContextGraph: assembled {} channels -> {} chars (budget={} tokens)",
+        log.info(
+            "MultiChannelContextGraph: assembled {} channels -> {} chars (budget={} tokens)",
             state.channels.count { it.content.isNotEmpty() },
             state.assembledContext.length,
-            ContextChannel.DEFAULT_TOKEN_BUDGET)
+            ContextChannel.DEFAULT_TOKEN_BUDGET,
+        )
 
         return state
     }
 
     fun asMermaidDiagram(): String = runBlocking { graph.asMermaidDiagram() }
 
-    private fun safeStep(state: MultiChannelState, step: (MultiChannelState) -> MultiChannelState): MultiChannelState {
-        return try {
+    private fun safeStep(
+        state: MultiChannelState,
+        step: (MultiChannelState) -> MultiChannelState,
+    ): MultiChannelState =
+        try {
             step(state)
         } catch (e: Exception) {
             log.warn("[MultiChannelContextGraph] step failed (resilient): {}", e.message)
             state.copy(error = state.error ?: "StepFailed: ${e.message}")
         }
-    }
 
     private fun collectEagerNode(state: MultiChannelState): MultiChannelState {
         val rootDir = File(state.workspaceRoot)
@@ -112,20 +114,21 @@ class MultiChannelContextGraph(
 
     private fun collectRagNode(state: MultiChannelState): MultiChannelState {
         val rootDir = File(state.workspaceRoot)
-        val content = try {
-            val cfg = PgVectorConfig.fromEnv()
-            val store = cfg.toVectorStore()
-            store.initSchema()
-            val embeddingPipeline = EmbeddingPipeline(store)
-            val queryService = VectorQueryService(store, embeddingPipeline)
-            val ragResults = queryService.query(state.intention, topK = 10)
-            ragResults.joinToString("\n") { r ->
-                "[sim=${"%.3f".format(Locale.US, r.similarity)}] ${r.text.take(300)}"
+        val content =
+            try {
+                val cfg = PgVectorConfig.fromEnv()
+                val store = cfg.toVectorStore()
+                store.initSchema()
+                val embeddingPipeline = EmbeddingPipeline(store)
+                val queryService = VectorQueryService(store, embeddingPipeline)
+                val ragResults = queryService.query(state.intention, topK = 10)
+                ragResults.joinToString("\n") { r ->
+                    "[sim=${"%.3f".format(Locale.US, r.similarity)}] ${r.text.take(300)}"
+                }
+            } catch (e: Exception) {
+                log.debug("[collectRag] pgvector unavailable: {}", e.message)
+                "[RAG] pgvector indisponible — section non generee"
             }
-        } catch (e: Exception) {
-            log.debug("[collectRag] pgvector unavailable: {}", e.message)
-            "[RAG] pgvector indisponible — section non generee"
-        }
         val channel = ContextChannel.Rag(content).truncateToTokens(state.budget.ragTokens)
         return state.copy(channels = state.channels + channel)
     }
@@ -138,17 +141,21 @@ class MultiChannelContextGraph(
     }
 
     private fun collectDocsNode(state: MultiChannelState): MultiChannelState {
-        val content = try {
-            val codexStore = RagVectorStore()
-            val results = codexStore.searchBlocking(state.intention, topK = 5)
-            if (results.isEmpty()) "[Docs] Aucun resultat dans le corpus codex"
-            else results.joinToString("\n\n") { r ->
-                "[Docs] source=${r.sourceDocument} section=${r.sectionPath} sim=${"%.3f".format(Locale.US, r.similarity)}\n${r.chunkText.take(500)}"
+        val content =
+            try {
+                val codexStore = RagVectorStore()
+                val results = codexStore.searchBlocking(state.intention, topK = 5)
+                if (results.isEmpty()) {
+                    "[Docs] Aucun resultat dans le corpus codex"
+                } else {
+                    results.joinToString("\n\n") { r ->
+                        "[Docs] source=${r.sourceDocument} section=${r.sectionPath} sim=${"%.3f".format(Locale.US, r.similarity)}\n${r.chunkText.take(500)}"
+                    }
+                }
+            } catch (e: Exception) {
+                log.debug("[collectDocs] codex store unavailable: {}", e.message)
+                "[Docs] RagVectorStore indisponible — ${e.message}"
             }
-        } catch (e: Exception) {
-            log.debug("[collectDocs] codex store unavailable: {}", e.message)
-            "[Docs] RagVectorStore indisponible — ${e.message}"
-        }
         val channel = ContextChannel.Docs(content).truncateToTokens(state.budget.docsTokens)
         return state.copy(channels = state.channels + channel)
     }
@@ -173,11 +180,12 @@ class MultiChannelContextGraph(
             if (!agentsDir.isDirectory) return@forEach
 
             for (eagerFile in listOf("INDEX.adoc", "PROMPT_REPRISE.adoc")) {
-                val eagerPath = if (eagerFile == "PROMPT_REPRISE.adoc") {
-                    projectDir.resolve(eagerFile)
-                } else {
-                    agentsDir.resolve(eagerFile)
-                }
+                val eagerPath =
+                    if (eagerFile == "PROMPT_REPRISE.adoc") {
+                        projectDir.resolve(eagerFile)
+                    } else {
+                        agentsDir.resolve(eagerFile)
+                    }
                 if (!eagerPath.isFile) continue
 
                 try {

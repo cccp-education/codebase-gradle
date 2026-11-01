@@ -4,7 +4,7 @@ data class ExpertRegistration(
     val domain: ExpertDomain,
     val modelName: String,
     val baseUrl: String = "http://localhost:11437",
-    val timeoutSeconds: Long = 120
+    val timeoutSeconds: Long = 120,
 )
 
 class ExpertRegistry {
@@ -18,14 +18,11 @@ class ExpertRegistry {
         registrations.forEach { register(it) }
     }
 
-    fun resolve(domain: ExpertDomain): ExpertRegistration? =
-        experts[domain.name]
+    fun resolve(domain: ExpertDomain): ExpertRegistration? = experts[domain.name]
 
-    fun resolveByName(domainName: String): ExpertRegistration? =
-        experts[domainName]
+    fun resolveByName(domainName: String): ExpertRegistration? = experts[domainName]
 
-    fun listDomains(): List<ExpertDomain> =
-        experts.values.map { it.domain }
+    fun listDomains(): List<ExpertDomain> = experts.values.map { it.domain }
 
     fun size(): Int = experts.size
 

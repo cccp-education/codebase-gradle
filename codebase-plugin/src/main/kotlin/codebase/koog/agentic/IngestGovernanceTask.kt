@@ -1,23 +1,21 @@
 package codebase.koog.agentic
 
-import kotlinx.coroutines.runBlocking
+import contracts.vibecoding.registry.EnforcementHook
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.options.Option
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.options.Option
 import org.gradle.work.DisableCachingByDefault
 import org.slf4j.LoggerFactory
-import contracts.vibecoding.registry.EnforcementHook
 import java.io.File
 
 @DisableCachingByDefault(because = "Ingest governance — in-memory stub, non-deterministic chunk ids")
 abstract class IngestGovernanceTask : DefaultTask() {
-
     private val log = LoggerFactory.getLogger(IngestGovernanceTask::class.java)
 
     @get:Internal
@@ -73,7 +71,7 @@ abstract class IngestGovernanceTask : DefaultTask() {
     private fun formatEnforcementResult(result: ExecutionResult): String =
         listOfNotNull(
             result.reason,
-            result.ruleId?.let { "ruleId=$it" }
+            result.ruleId?.let { "ruleId=$it" },
         ).joinToString(" | ")
 
     init {
@@ -85,14 +83,20 @@ abstract class IngestGovernanceTask : DefaultTask() {
 
     @TaskAction
     fun executeIngest() {
-        val root = workspaceRoot.asFile.getOrNull()
-            ?: error("workspaceRoot must be set")
+        val root =
+            workspaceRoot.asFile.getOrNull()
+                ?: error("workspaceRoot must be set")
         val config = governanceConfig.getOrElse(GovernanceSummaryConfig())
-        val output = when {
-            outputFile.asFile.isPresent -> outputFile.asFile.orNull
-            config.outputEnabled -> project.layout.buildDirectory.file("reports/ingest-governance.json").get().asFile
-            else -> null
-        }
+        val output =
+            when {
+                outputFile.asFile.isPresent -> outputFile.asFile.orNull
+                config.outputEnabled ->
+                    project.layout.buildDirectory
+                        .file("reports/ingest-governance.json")
+                        .get()
+                        .asFile
+                else -> null
+            }
         executeIngest(root, config, output)
     }
 
@@ -103,11 +107,15 @@ abstract class IngestGovernanceTask : DefaultTask() {
      * Version rétrocompatible sans [GovernanceSummaryConfig] : strictValidation est lu
      * depuis la propriété Gradle interne.
      */
-    fun executeIngest(root: File, output: File?) {
+    fun executeIngest(
+        root: File,
+        output: File?,
+    ) {
         val baseConfig = governanceConfig.getOrElse(GovernanceSummaryConfig())
-        val config = baseConfig.copy(
-            strictValidation = strictValidation.getOrElse(false) || baseConfig.strictValidation
-        )
+        val config =
+            baseConfig.copy(
+                strictValidation = strictValidation.getOrElse(false) || baseConfig.strictValidation,
+            )
         executeIngest(root, config, output)
     }
 
@@ -122,14 +130,22 @@ abstract class IngestGovernanceTask : DefaultTask() {
         return names
     }
 
-    private fun executeIngest(root: File, config: GovernanceSummaryConfig, output: File?) {
+    private fun executeIngest(
+        root: File,
+        config: GovernanceSummaryConfig,
+        output: File?,
+    ) {
         val scanAgent = ScanAgent()
         val scanned = scanAgent.scan(root)
         val currentSnapshot = GovernanceFileSnapshot.fromScanned(scanned)
 
-        val stateStore = JsonGovernanceStateStore(
-            project.layout.buildDirectory.file("governance/governance-state.json").get().asFile
-        )
+        val stateStore =
+            JsonGovernanceStateStore(
+                project.layout.buildDirectory
+                    .file("governance/governance-state.json")
+                    .get()
+                    .asFile,
+            )
 
         val pathsToIngest: Set<String>
         val incrementalReport: IncrementalReport?
@@ -139,54 +155,67 @@ abstract class IngestGovernanceTask : DefaultTask() {
             val detector = GovernanceFileChangeDetector()
             val diff = detector.diff(previous, currentSnapshot)
             pathsToIngest = diff.pathsToIngest().toSet()
-            incrementalReport = IncrementalReport(
-                added = diff.added,
-                modified = diff.modified,
-                removed = diff.removed,
-                unchanged = diff.unchanged,
-                skippedDueToIncremental = diff.unchanged
-            )
+            incrementalReport =
+                IncrementalReport(
+                    added = diff.added,
+                    modified = diff.modified,
+                    removed = diff.removed,
+                    unchanged = diff.unchanged,
+                    skippedDueToIncremental = diff.unchanged,
+                )
             log.info(
                 "[IngestGovernance] Incremental — added={}, modified={}, removed={}, unchanged={}, toIngest={}",
-                diff.added.size, diff.modified.size, diff.removed.size, diff.unchanged.size, pathsToIngest.size
+                diff.added.size,
+                diff.modified.size,
+                diff.removed.size,
+                diff.unchanged.size,
+                pathsToIngest.size,
             )
         } else {
             pathsToIngest = scanned.map { it.relativePath }.toSet()
             incrementalReport = null
         }
 
-        val result = if (config.incremental && pathsToIngest.isEmpty()) {
-            log.info("[IngestGovernance] Incremental mode — no file changes detected, skipping ingestion")
-            GovernanceIngestor.IngestResult(IngestionReport(0, 0, 0, 0, 0), null, ChunkSnapshot.empty())
-        } else if (config.incremental) {
-            GovernanceIngestor(chunkValidator).ingestFiltered(root, pathsToIngest)
-        } else {
-            GovernanceIngestor(chunkValidator).ingest(root)
-        }
+        val result =
+            if (config.incremental && pathsToIngest.isEmpty()) {
+                log.info("[IngestGovernance] Incremental mode — no file changes detected, skipping ingestion")
+                GovernanceIngestor.IngestResult(IngestionReport(0, 0, 0, 0, 0), null, ChunkSnapshot.empty())
+            } else if (config.incremental) {
+                GovernanceIngestor(chunkValidator).ingestFiltered(root, pathsToIngest)
+            } else {
+                GovernanceIngestor(chunkValidator).ingest(root)
+            }
 
         lastIngestionReport = result.report
         lastExecutor = result.executor
         lastIncrementalReport = incrementalReport
 
-        val chunkIncrementalReport: ChunkIncrementalReport? = if (config.chunkIncremental) {
-            val chunkStateStore = JsonChunkStateStore(
-                project.layout.buildDirectory.file("governance/chunk-state.json").get().asFile
-            )
-            val previousChunkSnapshot = chunkStateStore.load() ?: ChunkSnapshot.empty()
-            val currentChunkSnapshot = mergeChunkSnapshots(previousChunkSnapshot, result.chunkSnapshot, incrementalReport)
-            val chunkDetector = ChunkChangeDetector()
-            val chunkDiff = chunkDetector.diff(previousChunkSnapshot, currentChunkSnapshot)
-            val report = ChunkIncrementalReport.from(chunkDiff)
-            chunkStateStore.save(currentChunkSnapshot)
-            log.info(
-                "[IngestGovernance] Chunk Incremental — added={}, modified={}, removed={}, unchanged={}",
-                report.chunksAdded.size, report.chunksModified.size,
-                report.chunksRemoved.size, report.chunksUnchanged.size
-            )
-            report
-        } else {
-            null
-        }
+        val chunkIncrementalReport: ChunkIncrementalReport? =
+            if (config.chunkIncremental) {
+                val chunkStateStore =
+                    JsonChunkStateStore(
+                        project.layout.buildDirectory
+                            .file("governance/chunk-state.json")
+                            .get()
+                            .asFile,
+                    )
+                val previousChunkSnapshot = chunkStateStore.load() ?: ChunkSnapshot.empty()
+                val currentChunkSnapshot = mergeChunkSnapshots(previousChunkSnapshot, result.chunkSnapshot, incrementalReport)
+                val chunkDetector = ChunkChangeDetector()
+                val chunkDiff = chunkDetector.diff(previousChunkSnapshot, currentChunkSnapshot)
+                val report = ChunkIncrementalReport.from(chunkDiff)
+                chunkStateStore.save(currentChunkSnapshot)
+                log.info(
+                    "[IngestGovernance] Chunk Incremental — added={}, modified={}, removed={}, unchanged={}",
+                    report.chunksAdded.size,
+                    report.chunksModified.size,
+                    report.chunksRemoved.size,
+                    report.chunksUnchanged.size,
+                )
+                report
+            } else {
+                null
+            }
         lastChunkIncrementalReport = chunkIncrementalReport
 
         val taskNames = registerCompiledTasks(result.report.executables)
@@ -196,8 +225,11 @@ abstract class IngestGovernanceTask : DefaultTask() {
 
         log.info(
             "[IngestGovernance] Report — scanned={}, added={}, skipped={}, modified={}, compiled={}",
-            result.report.filesScanned, result.report.chunksAdded, result.report.chunksSkipped,
-            result.report.chunksModified, result.report.artifactsCompiled
+            result.report.filesScanned,
+            result.report.chunksAdded,
+            result.report.chunksSkipped,
+            result.report.chunksModified,
+            result.report.artifactsCompiled,
         )
         if (result.report.sectionsAdded.isNotEmpty()) {
             log.info("[IngestGovernance] Sections added: {}", result.report.sectionsAdded)
@@ -212,7 +244,7 @@ abstract class IngestGovernanceTask : DefaultTask() {
         if (effectiveStrict && result.report.invalidChunks.isNotEmpty()) {
             throw GradleException(
                 "IngestGovernance failed strict validation: ${result.report.invalidChunks.size} invalid chunk(s) detected. " +
-                "See report for details (error types: ${result.report.validationErrors.groupingBy { it.errorType }.eachCount()})"
+                    "See report for details (error types: ${result.report.validationErrors.groupingBy { it.errorType }.eachCount()})",
             )
         }
 
@@ -226,121 +258,130 @@ abstract class IngestGovernanceTask : DefaultTask() {
     private fun buildReportJson(
         report: IngestionReport,
         incremental: IncrementalReport? = null,
-        chunkIncremental: ChunkIncrementalReport? = null
-    ): String = buildString {
-        appendLine("{")
-        appendLine("  \"filesScanned\": ${report.filesScanned},")
-        appendLine("  \"chunksAdded\": ${report.chunksAdded},")
-        appendLine("  \"chunksSkipped\": ${report.chunksSkipped},")
-        appendLine("  \"chunksModified\": ${report.chunksModified},")
-        appendLine("  \"chunksInvalid\": ${report.chunksInvalid},")
-        appendLine("  \"artifactsCompiled\": ${report.artifactsCompiled},")
-        appendLine("  \"sectionsAdded\": ${mapToJson(report.sectionsAdded)},")
-        appendLine("  \"sectionsTotal\": ${mapToJson(report.sectionsTotal)},")
-        appendLine("  \"validationErrorsByType\": ${validationErrorsByTypeToJson(report.validationErrors)},")
-        appendLine("  \"validationErrors\": ${validationErrorsToJson(report.validationErrors)},")
-        appendLine("  \"invalidChunks\": ${invalidChunksToJson(report.invalidChunks)}")
-        if (incremental != null) {
-            appendLine(",")
-            appendLine("  \"incremental\": ${incrementalToJson(incremental)}")
-        } else if (chunkIncremental == null) {
-            appendLine()
-        } else {
-            appendLine(",")
+        chunkIncremental: ChunkIncrementalReport? = null,
+    ): String =
+        buildString {
+            appendLine("{")
+            appendLine("  \"filesScanned\": ${report.filesScanned},")
+            appendLine("  \"chunksAdded\": ${report.chunksAdded},")
+            appendLine("  \"chunksSkipped\": ${report.chunksSkipped},")
+            appendLine("  \"chunksModified\": ${report.chunksModified},")
+            appendLine("  \"chunksInvalid\": ${report.chunksInvalid},")
+            appendLine("  \"artifactsCompiled\": ${report.artifactsCompiled},")
+            appendLine("  \"sectionsAdded\": ${mapToJson(report.sectionsAdded)},")
+            appendLine("  \"sectionsTotal\": ${mapToJson(report.sectionsTotal)},")
+            appendLine("  \"validationErrorsByType\": ${validationErrorsByTypeToJson(report.validationErrors)},")
+            appendLine("  \"validationErrors\": ${validationErrorsToJson(report.validationErrors)},")
+            appendLine("  \"invalidChunks\": ${invalidChunksToJson(report.invalidChunks)}")
+            if (incremental != null) {
+                appendLine(",")
+                appendLine("  \"incremental\": ${incrementalToJson(incremental)}")
+            } else if (chunkIncremental == null) {
+                appendLine()
+            } else {
+                appendLine(",")
+            }
+            if (chunkIncremental != null) {
+                appendLine("  \"chunkIncremental\": ${chunkIncrementalToJson(chunkIncremental)}")
+            }
+            appendLine("}")
         }
-        if (chunkIncremental != null) {
-            appendLine("  \"chunkIncremental\": ${chunkIncrementalToJson(chunkIncremental)}")
+
+    private fun incrementalToJson(report: IncrementalReport): String =
+        buildString {
+            appendLine("{")
+            appendLine("    \"added\": ${stringListToJson(report.added)},")
+            appendLine("    \"modified\": ${stringListToJson(report.modified)},")
+            appendLine("    \"removed\": ${stringListToJson(report.removed)},")
+            appendLine("    \"unchanged\": ${stringListToJson(report.unchanged)},")
+            appendLine("    \"skippedDueToIncremental\": ${stringListToJson(report.skippedDueToIncremental)}")
+            append("  }")
         }
-        appendLine("}")
-    }
 
-    private fun incrementalToJson(report: IncrementalReport): String = buildString {
-        appendLine("{")
-        appendLine("    \"added\": ${stringListToJson(report.added)},")
-        appendLine("    \"modified\": ${stringListToJson(report.modified)},")
-        appendLine("    \"removed\": ${stringListToJson(report.removed)},")
-        appendLine("    \"unchanged\": ${stringListToJson(report.unchanged)},")
-        appendLine("    \"skippedDueToIncremental\": ${stringListToJson(report.skippedDueToIncremental)}")
-        append("  }")
-    }
-
-    private fun chunkIncrementalToJson(report: ChunkIncrementalReport): String = buildString {
-        appendLine("{")
-        appendLine("    \"chunksAdded\": ${stringListToJson(report.chunksAdded)},")
-        appendLine("    \"chunksModified\": ${stringListToJson(report.chunksModified)},")
-        appendLine("    \"chunksRemoved\": ${stringListToJson(report.chunksRemoved)},")
-        appendLine("    \"chunksUnchanged\": ${stringListToJson(report.chunksUnchanged)}")
-        append("  }")
-    }
-
-    private fun stringListToJson(list: List<String>): String = buildString {
-        append("[")
-        list.withIndex().forEach { (index, value) ->
-            append("\"${escapeJson(value)}\"")
-            if (index < list.size - 1) append(", ")
+    private fun chunkIncrementalToJson(report: ChunkIncrementalReport): String =
+        buildString {
+            appendLine("{")
+            appendLine("    \"chunksAdded\": ${stringListToJson(report.chunksAdded)},")
+            appendLine("    \"chunksModified\": ${stringListToJson(report.chunksModified)},")
+            appendLine("    \"chunksRemoved\": ${stringListToJson(report.chunksRemoved)},")
+            appendLine("    \"chunksUnchanged\": ${stringListToJson(report.chunksUnchanged)}")
+            append("  }")
         }
-        append("]")
-    }
 
-    private fun validationErrorsToJson(errors: List<ChunkValidationError>): String = buildString {
-        append("[")
-        errors.withIndex().forEach { (index, error) ->
+    private fun stringListToJson(list: List<String>): String =
+        buildString {
+            append("[")
+            list.withIndex().forEach { (index, value) ->
+                append("\"${escapeJson(value)}\"")
+                if (index < list.size - 1) append(", ")
+            }
+            append("]")
+        }
+
+    private fun validationErrorsToJson(errors: List<ChunkValidationError>): String =
+        buildString {
+            append("[")
+            errors.withIndex().forEach { (index, error) ->
+                append("{")
+                append("\"sourceFile\": \"${escapeJson(error.sourceFile)}\", ")
+                append("\"sourceLines\": \"${escapeJson(error.sourceLines)}\", ")
+                append("\"lineStart\": ${error.lineStart ?: "null"}, ")
+                append("\"lineEnd\": ${error.lineEnd ?: "null"}, ")
+                append("\"errorType\": \"${error.errorType.name}\", ")
+                append("\"message\": \"${escapeJson(error.message)}\"")
+                append("}")
+                if (index < errors.size - 1) append(", ")
+            }
+            append("]")
+        }
+
+    private fun validationErrorsByTypeToJson(errors: List<ChunkValidationError>): String =
+        buildString {
+            val counts = errors.groupingBy { it.errorType }.eachCount()
             append("{")
-            append("\"sourceFile\": \"${escapeJson(error.sourceFile)}\", ")
-            append("\"sourceLines\": \"${escapeJson(error.sourceLines)}\", ")
-            append("\"lineStart\": ${error.lineStart ?: "null"}, ")
-            append("\"lineEnd\": ${error.lineEnd ?: "null"}, ")
-            append("\"errorType\": \"${error.errorType.name}\", ")
-            append("\"message\": \"${escapeJson(error.message)}\"")
+            val entries = counts.entries.toList()
+            for ((index, entry) in entries.withIndex()) {
+                append("\"${entry.key.name}\": ${entry.value}")
+                if (index < entries.size - 1) append(", ")
+            }
             append("}")
-            if (index < errors.size - 1) append(", ")
         }
-        append("]")
-    }
 
-    private fun validationErrorsByTypeToJson(errors: List<ChunkValidationError>): String = buildString {
-        val counts = errors.groupingBy { it.errorType }.eachCount()
-        append("{")
-        val entries = counts.entries.toList()
-        for ((index, entry) in entries.withIndex()) {
-            append("\"${entry.key.name}\": ${entry.value}")
-            if (index < entries.size - 1) append(", ")
+    private fun invalidChunksToJson(invalidChunks: List<InvalidChunk>): String =
+        buildString {
+            append("[")
+            invalidChunks.withIndex().forEach { (index, invalidChunk) ->
+                append("{")
+                append("\"id\": \"${escapeJson(invalidChunk.id)}\", ")
+                append("\"sourceFile\": \"${escapeJson(invalidChunk.sourceFile)}\", ")
+                append("\"sourceLines\": \"${escapeJson(invalidChunk.sourceLines)}\", ")
+                append("\"content\": \"${escapeJson(invalidChunk.content)}\", ")
+                append("\"quarantinedAt\": \"${invalidChunk.quarantinedAt}\", ")
+                append("\"errors\": ${validationErrorsToJson(invalidChunk.errors)}")
+                append("}")
+                if (index < invalidChunks.size - 1) append(", ")
+            }
+            append("]")
         }
-        append("}")
-    }
 
-    private fun invalidChunksToJson(invalidChunks: List<InvalidChunk>): String = buildString {
-        append("[")
-        invalidChunks.withIndex().forEach { (index, invalidChunk) ->
+    private fun escapeJson(value: String): String =
+        value
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t")
+
+    private fun mapToJson(map: Map<GovernanceSection, Int>): String =
+        buildString {
             append("{")
-            append("\"id\": \"${escapeJson(invalidChunk.id)}\", ")
-            append("\"sourceFile\": \"${escapeJson(invalidChunk.sourceFile)}\", ")
-            append("\"sourceLines\": \"${escapeJson(invalidChunk.sourceLines)}\", ")
-            append("\"content\": \"${escapeJson(invalidChunk.content)}\", ")
-            append("\"quarantinedAt\": \"${invalidChunk.quarantinedAt}\", ")
-            append("\"errors\": ${validationErrorsToJson(invalidChunk.errors)}")
+            val entries = map.entries.toList()
+            for ((index, entry) in entries.withIndex()) {
+                append("\"${entry.key.name}\": ${entry.value}")
+                if (index < entries.size - 1) append(", ")
+            }
             append("}")
-            if (index < invalidChunks.size - 1) append(", ")
         }
-        append("]")
-    }
-
-    private fun escapeJson(value: String): String = value
-        .replace("\\", "\\\\")
-        .replace("\"", "\\\"")
-        .replace("\n", "\\n")
-        .replace("\r", "\\r")
-        .replace("\t", "\\t")
-
-    private fun mapToJson(map: Map<GovernanceSection, Int>): String = buildString {
-        append("{")
-        val entries = map.entries.toList()
-        for ((index, entry) in entries.withIndex()) {
-            append("\"${entry.key.name}\": ${entry.value}")
-            if (index < entries.size - 1) append(", ")
-        }
-        append("}")
-    }
 
     /**
      * Reconstruit la snapshot de chunks courante en fusionnant l'état précédent
@@ -358,7 +399,7 @@ abstract class IngestGovernanceTask : DefaultTask() {
     private fun mergeChunkSnapshots(
         previous: ChunkSnapshot,
         current: ChunkSnapshot,
-        fileIncremental: IncrementalReport?
+        fileIncremental: IncrementalReport?,
     ): ChunkSnapshot {
         if (fileIncremental == null) return current
         val removedPaths = fileIncremental.removed.toSet() + fileIncremental.modified.toSet()

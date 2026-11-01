@@ -8,7 +8,7 @@ enum class ArtifactType {
     VALIDATION,
     METADATA,
     PROMPT_TEMPLATE,
-    CONSTRAINT_CHECK
+    CONSTRAINT_CHECK,
 }
 
 data class CompiledArtifact(
@@ -17,5 +17,5 @@ data class CompiledArtifact(
     val description: String,
     val targetHint: String?,
     val confidence: Double,
-    val payload: ArtifactPayload? = null
+    val payload: ArtifactPayload? = null,
 )

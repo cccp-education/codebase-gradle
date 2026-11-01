@@ -1,7 +1,5 @@
 package codebase.ocr
 
-import java.io.File
-
 /**
  * Moteur d'OCR — abstraction injectable.
  *
@@ -21,5 +19,10 @@ fun interface OcrEngine {
      * @param maxTokens Limite de tokens pour la requête
      * @return Texte structuré au format AsciiDoc
      */
-    fun process(input: String, language: String, model: String, maxTokens: Int): String
+    fun process(
+        input: String,
+        language: String,
+        model: String,
+        maxTokens: Int,
+    ): String
 }

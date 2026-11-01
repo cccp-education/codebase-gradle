@@ -16,17 +16,20 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.text.Charsets.UTF_8
 
-enum class TargetDocument(val path: String, val label: String) {
+enum class TargetDocument(
+    val path: String,
+    val label: String,
+) {
     WORKSPACE_VISION("WORKSPACE_VISION.adoc", "Vision & Architecture"),
     WORKSPACE_AS_PRODUCT("WORKSPACE_AS_PRODUCT.adoc", "Produit & Business Model"),
     WHAT_THE_GAMES_BEEN_MISSING("WHAT_THE_GAMES_BEEN_MISSING.adoc", "Brainstorming & Idees"),
-    WORKSPACE_ORGANIZATION("WORKSPACE_ORGANIZATION.adoc", "Organisation & Structure")
+    WORKSPACE_ORGANIZATION("WORKSPACE_ORGANIZATION.adoc", "Organisation & Structure"),
 }
 
 data class DilutionTarget(
     val targetDocument: TargetDocument,
     val suggestedSection: String,
-    val rationale: String
+    val rationale: String,
 )
 
 data class DilutionRecord(
@@ -37,7 +40,7 @@ data class DilutionRecord(
     val confidence: Double,
     val dilutionTarget: DilutionTarget?,
     val classificationRationale: String,
-    val timestamp: LocalDateTime = now()
+    val timestamp: LocalDateTime = now(),
 )
 
 data class StimulusCascadeReport(
@@ -47,7 +50,7 @@ data class StimulusCascadeReport(
     val visionCount: Int = 0,
     val opinionCount: Int = 0,
     val dilutedCount: Int = 0,
-    val timestamp: LocalDateTime = now()
+    val timestamp: LocalDateTime = now(),
 )
 
 class StimulusCascade(
@@ -56,19 +59,21 @@ class StimulusCascade(
     private val timeoutSeconds: Long = 120,
     workspaceRoot: String = "",
     private val visionArchiveDir: String = "configuration/vision-archive",
-    private val dryRun: Boolean = false
+    private val dryRun: Boolean = false,
 ) {
     private val log = LoggerFactory.getLogger(StimulusCascade::class.java)
     private val classifier: VisionOpinionClassifier = VisionOpinionClassifier(baseUrl, modelName, timeoutSeconds)
     private val workspaceDir: File = if (workspaceRoot.isBlank()) File(".") else File(workspaceRoot)
     private val tsFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmm")
-    private val dilutor: DilutionExecutor = DilutionExecutor(
-        workspaceRoot = workspaceRoot.ifBlank { "." },
-        dryRun = dryRun
-    )
+    private val dilutor: DilutionExecutor =
+        DilutionExecutor(
+            workspaceRoot = workspaceRoot.ifBlank { "." },
+            dryRun = dryRun,
+        )
     private val dilutionResults = mutableListOf<DilutionResult>()
 
-    private val routingSystemPrompt = """
+    private val routingSystemPrompt =
+        """
 Tu es un routeur de contenu du workspace. Ta mission est de determiner dans quel document racine du workspace une section de contenu doit etre integree.
 
 Les 4 documents racines :
@@ -87,9 +92,13 @@ Pour le contenu fourni, reponds UNIQUEMENT au format JSON (sans texte avant ni a
   "suggestedSection": "titre de la section ou inserer (ex: == Regles de Gouvernance)",
   "rationale": "explication en 30 mots maximum"
 }
-""".trimIndent()
+        """.trimIndent()
 
-    data class ParsedSection(val id: String, val title: String, val content: String)
+    data class ParsedSection(
+        val id: String,
+        val title: String,
+        val content: String,
+    )
 
     fun execute(brainDump: String): StimulusCascadeReport {
         val sourceHash = sha256(brainDump)
@@ -111,62 +120,65 @@ Pour le contenu fourni, reponds UNIQUEMENT au format JSON (sans texte avant ni a
         var dilutedCount = 0
 
         for (section in rawSections) {
-            val cs = ContentSection(
-                id = section.id,
-                content = section.content,
-                expectedClassification = ContentClassification.VISION
-            )
+            val cs =
+                ContentSection(
+                    id = section.id,
+                    content = section.content,
+                    expectedClassification = ContentClassification.VISION,
+                )
             val result = classifier.classify(cs)
 
-            val record = when (result.classification) {
-                ContentClassification.VISION -> {
-                    visionCount++
-                    ctx("[${section.id}] VISION (${String.format(Locale.FRENCH, "%.2f", result.confidence)}) → routage vers document cible...")
+            val record =
+                when (result.classification) {
+                    ContentClassification.VISION -> {
+                        visionCount++
+                        ctx("[${section.id}] VISION (${String.format(Locale.FRENCH, "%.2f", result.confidence)}) → routage vers document cible...")
 
-                    val target = routeSection(section)
-                    dilutedCount++
+                        val target = routeSection(section)
+                        dilutedCount++
 
-                    ctx("  Cible : ${target.targetDocument.path} → ${target.suggestedSection}")
+                        ctx("  Cible : ${target.targetDocument.path} → ${target.suggestedSection}")
 
-                    val rec = DilutionRecord(
-                        sectionId = section.id,
-                        sectionTitle = section.title,
-                        content = section.content,
-                        classification = ContentClassification.VISION,
-                        confidence = result.confidence,
-                        dilutionTarget = target,
-                        classificationRationale = result.rationale,
-                        timestamp = timestamp
-                    )
+                        val rec =
+                            DilutionRecord(
+                                sectionId = section.id,
+                                sectionTitle = section.title,
+                                content = section.content,
+                                classification = ContentClassification.VISION,
+                                confidence = result.confidence,
+                                dilutionTarget = target,
+                                classificationRationale = result.rationale,
+                                timestamp = timestamp,
+                            )
 
-                    StdoutFormatter.plan("  Injection dans ${target.targetDocument.path}...")
-                    val dilResult = dilutor.execute(rec)
-                    dilutionResults.add(dilResult)
+                        StdoutFormatter.plan("  Injection dans ${target.targetDocument.path}...")
+                        val dilResult = dilutor.execute(rec)
+                        dilutionResults.add(dilResult)
 
-                    if (dilResult.success) {
-                        StdoutFormatter.result("  ✅ Dilué dans ${dilResult.documentPath} (backup: ${dilResult.backupPath ?: "DRY RUN"})")
-                    } else {
-                        StdoutFormatter.error("  ❌ Echec dilution: ${dilResult.error}")
+                        if (dilResult.success) {
+                            StdoutFormatter.result("  ✅ Dilué dans ${dilResult.documentPath} (backup: ${dilResult.backupPath ?: "DRY RUN"})")
+                        } else {
+                            StdoutFormatter.error("  ❌ Echec dilution: ${dilResult.error}")
+                        }
+
+                        rec
                     }
+                    ContentClassification.OPINION -> {
+                        opinionCount++
+                        ctx("[${section.id}] OPINION (${String.format(Locale.FRENCH, "%.2f", result.confidence)}) → confinement (pas de dilution)")
 
-                    rec
+                        DilutionRecord(
+                            sectionId = section.id,
+                            sectionTitle = section.title,
+                            content = section.content,
+                            classification = ContentClassification.OPINION,
+                            confidence = result.confidence,
+                            dilutionTarget = null,
+                            classificationRationale = result.rationale,
+                            timestamp = timestamp,
+                        )
+                    }
                 }
-                ContentClassification.OPINION -> {
-                    opinionCount++
-                    ctx("[${section.id}] OPINION (${String.format(Locale.FRENCH, "%.2f", result.confidence)}) → confinement (pas de dilution)")
-
-                    DilutionRecord(
-                        sectionId = section.id,
-                        sectionTitle = section.title,
-                        content = section.content,
-                        classification = ContentClassification.OPINION,
-                        confidence = result.confidence,
-                        dilutionTarget = null,
-                        classificationRationale = result.rationale,
-                        timestamp = timestamp
-                    )
-                }
-            }
             classifiedSections.add(record)
         }
 
@@ -174,17 +186,24 @@ Pour le contenu fourni, reponds UNIQUEMENT au format JSON (sans texte avant ni a
         StdoutFormatter.result("Sections totales     : ${classifiedSections.size}")
         StdoutFormatter.result("Classees VISION      : $visionCount (diluees)")
         StdoutFormatter.result("Classees OPINION     : $opinionCount (confinees)")
-        StdoutFormatter.result("Documents cibles     : ${classifiedSections.filter { it.dilutionTarget != null }.map { it.dilutionTarget!!.targetDocument.path }.distinct().joinToString(", ")}")
-
-        val report = StimulusCascadeReport(
-            source = brainDump,
-            sourceHash = sourceHash,
-            sections = classifiedSections,
-            visionCount = visionCount,
-            opinionCount = opinionCount,
-            dilutedCount = dilutedCount,
-            timestamp = timestamp
+        StdoutFormatter.result(
+            "Documents cibles     : ${classifiedSections.filter {
+                it.dilutionTarget != null
+            }.map { it.dilutionTarget!!.targetDocument.path }.distinct().joinToString(
+                ", ",
+            )}",
         )
+
+        val report =
+            StimulusCascadeReport(
+                source = brainDump,
+                sourceHash = sourceHash,
+                sections = classifiedSections,
+                visionCount = visionCount,
+                opinionCount = opinionCount,
+                dilutedCount = dilutedCount,
+                timestamp = timestamp,
+            )
 
         if (!dryRun) {
             StdoutFormatter.plan("Archivage horodate dans vision-archive/...")
@@ -203,7 +222,12 @@ Pour le contenu fourni, reponds UNIQUEMENT au format JSON (sans texte avant ni a
 
         if (matches.isEmpty()) {
             val cleanText = text.trim()
-            val firstLine = cleanText.lines().firstOrNull()?.trim()?.removePrefix("= ") ?: "Brain dump"
+            val firstLine =
+                cleanText
+                    .lines()
+                    .firstOrNull()
+                    ?.trim()
+                    ?.removePrefix("= ") ?: "Brain dump"
             return listOf(ParsedSection("S1", firstLine, cleanText))
         }
 
@@ -220,21 +244,25 @@ Pour le contenu fourni, reponds UNIQUEMENT au format JSON (sans texte avant ni a
     }
 
     private fun routeSection(section: ParsedSection): DilutionTarget {
-        val model = OllamaChatModel.builder()
-            .baseUrl(baseUrl)
-            .modelName(modelName)
-            .timeout(Duration.ofSeconds(timeoutSeconds))
-            .build()
+        val model =
+            OllamaChatModel
+                .builder()
+                .baseUrl(baseUrl)
+                .modelName(modelName)
+                .timeout(Duration.ofSeconds(timeoutSeconds))
+                .build()
 
-        val userContent = """
+        val userContent =
+            """
 Titre : ${section.title}
 Contenu : ${section.content.take(2000)}
-""".trimIndent()
+            """.trimIndent()
 
-        val messages = listOf(
-            SystemMessage.from(routingSystemPrompt),
-            UserMessage.from(userContent)
-        )
+        val messages =
+            listOf(
+                SystemMessage.from(routingSystemPrompt),
+                UserMessage.from(userContent),
+            )
 
         return try {
             val request = ChatRequest.builder().messages(messages).build()
@@ -246,21 +274,30 @@ Contenu : ${section.content.take(2000)}
             DilutionTarget(
                 targetDocument = TargetDocument.WHAT_THE_GAMES_BEEN_MISSING,
                 suggestedSection = "== Stimuli non routes",
-                rationale = "Fallback: erreur LLM — ${e.message}"
+                rationale = "Fallback: erreur LLM — ${e.message}",
             )
         }
     }
 
-    internal fun parseRoutingResponse(section: ParsedSection, raw: String): DilutionTarget {
-        val json = raw.removePrefix("```json").removePrefix("```").removeSuffix("```").trim()
+    internal fun parseRoutingResponse(
+        section: ParsedSection,
+        raw: String,
+    ): DilutionTarget {
+        val json =
+            raw
+                .removePrefix("```json")
+                .removePrefix("```")
+                .removeSuffix("```")
+                .trim()
 
-        val targetDoc = when {
-            json.contains("WORKSPACE_AS_PRODUCT") -> TargetDocument.WORKSPACE_AS_PRODUCT
-            json.contains("WORKSPACE_ORGANIZATION") -> TargetDocument.WORKSPACE_ORGANIZATION
-            json.contains("WORKSPACE_VISION") -> TargetDocument.WORKSPACE_VISION
-            json.contains("WHAT_THE_GAMES_BEEN_MISSING") -> TargetDocument.WHAT_THE_GAMES_BEEN_MISSING
-            else -> TargetDocument.WORKSPACE_VISION
-        }
+        val targetDoc =
+            when {
+                json.contains("WORKSPACE_AS_PRODUCT") -> TargetDocument.WORKSPACE_AS_PRODUCT
+                json.contains("WORKSPACE_ORGANIZATION") -> TargetDocument.WORKSPACE_ORGANIZATION
+                json.contains("WORKSPACE_VISION") -> TargetDocument.WORKSPACE_VISION
+                json.contains("WHAT_THE_GAMES_BEEN_MISSING") -> TargetDocument.WHAT_THE_GAMES_BEEN_MISSING
+                else -> TargetDocument.WORKSPACE_VISION
+            }
 
         val sectionMatch = Regex("\"suggestedSection\"\\s*:\\s*\"([^\"]+)\"").find(json)
         val suggestedSection = sectionMatch?.groupValues?.get(1) ?: "== Nouveau contenu (${section.id})"
@@ -271,7 +308,7 @@ Contenu : ${section.content.take(2000)}
         return DilutionTarget(
             targetDocument = targetDoc,
             suggestedSection = suggestedSection,
-            rationale = rationale
+            rationale = rationale,
         )
     }
 
@@ -354,10 +391,11 @@ Contenu : ${section.content.take(2000)}
         sb.appendLine("|===")
         sb.appendLine()
 
-        val targetDocs = report.sections
-            .filter { it.dilutionTarget != null }
-            .map { it.dilutionTarget!!.targetDocument }
-            .distinct()
+        val targetDocs =
+            report.sections
+                .filter { it.dilutionTarget != null }
+                .map { it.dilutionTarget!!.targetDocument }
+                .distinct()
         if (targetDocs.isNotEmpty()) {
             sb.appendLine(".Documents cibles impactes")
             sb.appendLine("[cols=\"2,3\"]")
@@ -378,7 +416,13 @@ Contenu : ${section.content.take(2000)}
         sb.appendLine("| ID | Titre | Statut | Confiance | Document Cible (si VISION) | Justification")
         for (rec in report.sections) {
             val target = if (rec.dilutionTarget != null) "${rec.dilutionTarget.targetDocument.path} / ${rec.dilutionTarget.suggestedSection}" else "—"
-            sb.appendLine("| ${rec.sectionId} | ${rec.sectionTitle} | ${rec.classification} | ${String.format(Locale.FRENCH, "%.2f", rec.confidence)} | $target | ${rec.classificationRationale}")
+            sb.appendLine(
+                "| ${rec.sectionId} | ${rec.sectionTitle} | ${rec.classification} | ${String.format(
+                    Locale.FRENCH,
+                    "%.2f",
+                    rec.confidence,
+                )} | $target | ${rec.classificationRationale}",
+            )
         }
         sb.appendLine("|===")
         sb.appendLine()

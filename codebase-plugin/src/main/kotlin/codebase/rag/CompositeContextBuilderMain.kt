@@ -21,7 +21,9 @@ object CompositeContextBuilderMain {
         StdoutFormatter.banner("Composite Context Builder — US-9.10")
 
         StdoutFormatter.ctx("RAG question: $ragQuestion")
-        StdoutFormatter.ctx("Token budget : ${config.totalTokenBudget} (EAGER ${config.eagerLazyTokens}, RAG ${config.ragTokens}, Graphify ${config.graphifyTokens}, overhead ${config.overheadTokens})")
+        StdoutFormatter.ctx(
+            "Token budget : ${config.totalTokenBudget} (EAGER ${config.eagerLazyTokens}, RAG ${config.ragTokens}, Graphify ${config.graphifyTokens}, overhead ${config.overheadTokens})",
+        )
 
         val composite = builder.build(ragQuestion)
 
@@ -38,7 +40,11 @@ object CompositeContextBuilderMain {
         println(composite.graphifySection)
 
         StdoutFormatter.separator()
-        log.info("CompositeContext built: EAGER={} chars, RAG={} chars, Graphify={} chars",
-            composite.eagerSection.length, composite.ragSection.length, composite.graphifySection.length)
+        log.info(
+            "CompositeContext built: EAGER={} chars, RAG={} chars, Graphify={} chars",
+            composite.eagerSection.length,
+            composite.ragSection.length,
+            composite.graphifySection.length,
+        )
     }
 }

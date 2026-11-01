@@ -28,7 +28,6 @@ import org.gradle.api.provider.Property
  * ```
  */
 abstract class CodebaseOcrExtension {
-
     /**
      * Fournisseur IA pour l'OCR.
      * Valeurs supportées : `"gemini"`, `"ollama"`, `"gemini+ollama"` (fallback IA).

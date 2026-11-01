@@ -11,6 +11,6 @@ interface VisionProvider {
         mimeType: String,
         language: String = "fr",
         model: String = "gemini-2.5-flash",
-        maxTokens: Int = 8192
+        maxTokens: Int = 8192,
     ): String
 }

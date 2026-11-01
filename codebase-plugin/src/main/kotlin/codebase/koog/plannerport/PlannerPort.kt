@@ -20,7 +20,6 @@ import contracts.context.CompositeContext
  * adapter is registered — testable without LLM.
  */
 fun interface PlannerPort {
-
     /**
      * Decomposes an [intention] into a [Plan] using the augmented
      * [context] (EAGER + RAG + Graphify + Docs channels).
@@ -30,7 +29,10 @@ fun interface PlannerPort {
      * unexpected exceptions propagate — the calling graph owns the
      * degraded fallback.
      */
-    fun plan(intention: String, context: CompositeContext): PlanState
+    fun plan(
+        intention: String,
+        context: CompositeContext,
+    ): PlanState
 
     companion object {
         /**
@@ -38,15 +40,16 @@ fun interface PlannerPort {
          * failed [PlanState] — degraded, never crashes, never produces
          * a plan.
          */
-        val NoOp: PlannerPort = PlannerPort { intention, context ->
-            PlanState(
-                intention = intention,
-                compositeContext = context,
-                classification = "simple",
-                planJson = "",
-                plan = null,
-                error = "Planner unavailable — no adapter registered on PlannerPort"
-            )
-        }
+        val NoOp: PlannerPort =
+            PlannerPort { intention, context ->
+                PlanState(
+                    intention = intention,
+                    compositeContext = context,
+                    classification = "simple",
+                    planJson = "",
+                    plan = null,
+                    error = "Planner unavailable — no adapter registered on PlannerPort",
+                )
+            }
     }
 }

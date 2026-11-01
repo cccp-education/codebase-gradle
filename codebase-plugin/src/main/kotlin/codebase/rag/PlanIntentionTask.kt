@@ -1,8 +1,8 @@
 package codebase.rag
 
+import codebase.koog.KoogAugmentedContextGraph
 import codebase.koog.planning.PlanState
 import codebase.koog.state.AugmentedState
-import codebase.koog.KoogAugmentedContextGraph
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
@@ -20,7 +20,6 @@ import java.time.Instant
 
 @DisableCachingByDefault(because = "LLM output is probabilistic — never cache")
 abstract class PlanIntentionTask : DefaultTask() {
-
     @get:Input
     abstract val intention: Property<String>
 
@@ -50,10 +49,11 @@ abstract class PlanIntentionTask : DefaultTask() {
         logger.lifecycle("[generatePlan] Workspace : {}", rootDir.absolutePath)
 
         // Construire l'état initial
-        val initialState = AugmentedState(
-            intention = intent,
-            workspaceRoot = rootDir.absolutePath
-        )
+        val initialState =
+            AugmentedState(
+                intention = intent,
+                workspaceRoot = rootDir.absolutePath,
+            )
 
         // Exécuter le pipeline KoogAugmentedContextGraph (buildContext → classify → plan)
         val graph = KoogAugmentedContextGraph()
@@ -63,7 +63,7 @@ abstract class PlanIntentionTask : DefaultTask() {
             "[generatePlan] Classification : {} (error={}, planError={})",
             resultState.classification,
             resultState.error ?: "none",
-            resultState.planError ?: "none"
+            resultState.planError ?: "none",
         )
 
         // Générer le metadata.json du plan (méta-communication typée Niveau 2)
@@ -71,8 +71,10 @@ abstract class PlanIntentionTask : DefaultTask() {
         if (planMetadata != null) {
             val metadataFile = output.parentFile.resolve("${rootDir.name}-plan-metadata.json")
             metadataFile.parentFile.mkdirs()
-            val jsonMapper = com.fasterxml.jackson.module.kotlin.jacksonObjectMapper()
-                .enable(com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT)
+            val jsonMapper =
+                com.fasterxml.jackson.module.kotlin
+                    .jacksonObjectMapper()
+                    .enable(com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT)
             metadataFile.writeText(jsonMapper.writeValueAsString(planMetadata))
             logger.lifecycle("[generatePlan] metadata.json écrit dans {}", metadataFile.absolutePath)
 
@@ -93,19 +95,22 @@ abstract class PlanIntentionTask : DefaultTask() {
 
         // Afficher un résumé sur stdout
         println()
-        println("=" .repeat(60))
+        println("=".repeat(60))
         println("PLAN — $intent")
-        println("=" .repeat(60))
+        println("=".repeat(60))
         println(formattedOutput)
-        println("=" .repeat(60))
+        println("=".repeat(60))
     }
 
-    private fun formatOutput(intention: String, result: AugmentedState): String {
+    private fun formatOutput(
+        intention: String,
+        result: AugmentedState,
+    ): String {
         val sb = StringBuilder()
-        sb.appendLine("=" .repeat(60))
+        sb.appendLine("=".repeat(60))
         sb.appendLine("PLAN — $intention")
         sb.appendLine("Classification : ${result.classification}")
-        sb.appendLine("=" .repeat(60))
+        sb.appendLine("=".repeat(60))
         sb.appendLine()
 
         if (result.error != null && result.plan == null) {
@@ -116,35 +121,39 @@ abstract class PlanIntentionTask : DefaultTask() {
         } else {
             val plan = result.plan
             if (plan != null) {
-            sb.appendLine("Titre    : ${plan.title}")
-            sb.appendLine("EPICs    : ${plan.epics.size}")
-            sb.appendLine("Points   : ${plan.totalPoints}")
-            sb.appendLine("Sessions : ${plan.estimatedSessions}")
-            sb.appendLine()
-            for ((epicIdx, epic) in plan.epics.withIndex()) {
-                sb.appendLine("--- EPIC ${epicIdx + 1} : ${epic.name} (${epic.points} pts) ---")
-                sb.appendLine("  ${epic.description}")
+                sb.appendLine("Titre    : ${plan.title}")
+                sb.appendLine("EPICs    : ${plan.epics.size}")
+                sb.appendLine("Points   : ${plan.totalPoints}")
+                sb.appendLine("Sessions : ${plan.estimatedSessions}")
                 sb.appendLine()
-                for ((usIdx, us) in epic.userStories.withIndex()) {
-                    sb.appendLine("  US-${epicIdx + 1}.${usIdx + 1} : ${us.description}")
-                    for (task in us.tasks) {
-                        sb.appendLine("    - ${task.description}")
-                        sb.appendLine("      ${task.gradleTask}")
-                    }
+                for ((epicIdx, epic) in plan.epics.withIndex()) {
+                    sb.appendLine("--- EPIC ${epicIdx + 1} : ${epic.name} (${epic.points} pts) ---")
+                    sb.appendLine("  ${epic.description}")
                     sb.appendLine()
+                    for ((usIdx, us) in epic.userStories.withIndex()) {
+                        sb.appendLine("  US-${epicIdx + 1}.${usIdx + 1} : ${us.description}")
+                        for (task in us.tasks) {
+                            sb.appendLine("    - ${task.description}")
+                            sb.appendLine("      ${task.gradleTask}")
+                        }
+                        sb.appendLine()
+                    }
                 }
-            }
             } else {
-            sb.appendLine("Aucun plan généré (ni erreur, ni résultat).")
-            if (result.planError != null) {
-                sb.appendLine("Cause : ${result.planError}")
-            }
+                sb.appendLine("Aucun plan généré (ni erreur, ni résultat).")
+                if (result.planError != null) {
+                    sb.appendLine("Cause : ${result.planError}")
+                }
             }
         }
         return sb.toString()
     }
 
-    private fun indexWorkspaceSources(rootDir: File, store: VectorStore, boroughName: String) {
+    private fun indexWorkspaceSources(
+        rootDir: File,
+        store: VectorStore,
+        boroughName: String,
+    ) {
         logger.lifecycle("[generatePlan] Indexation des sources de {}...", boroughName)
         val walker = codebase.walker.WorkspaceWalker(rootDir)
         val sourceExtensions = listOf("kt", "adoc", "kts")
@@ -156,22 +165,27 @@ abstract class PlanIntentionTask : DefaultTask() {
 
         for (wf in files) {
             val file = File(wf.filePath)
-            val rawText = try {
-                file.readText()
-            } catch (e: Exception) {
-                logger.warn("Cannot read {}: {}", wf.filePath, e.message)
-                continue
-            }
-            val text = if (wf.extension in configExtensions) {
-                YamlConfigAnonymizer.anonymize(rawText, wf.extension)
-            } else rawText
+            val rawText =
+                try {
+                    file.readText()
+                } catch (e: Exception) {
+                    logger.warn("Cannot read {}: {}", wf.filePath, e.message)
+                    continue
+                }
+            val text =
+                if (wf.extension in configExtensions) {
+                    YamlConfigAnonymizer.anonymize(rawText, wf.extension)
+                } else {
+                    rawText
+                }
 
             val chunks = ChunkTokenizer.splitIntoSentenceLevelChunks(text)
-            val metadata = if (wf.extension == "kt") {
-                metadataExtractor.extract(wf.filePath, rawText)
-            } else {
-                KotlinMetadata(packageName = null, className = null, repoName = boroughName)
-            }
+            val metadata =
+                if (wf.extension == "kt") {
+                    metadataExtractor.extract(wf.filePath, rawText)
+                } else {
+                    KotlinMetadata(packageName = null, className = null, repoName = boroughName)
+                }
             store.insertDocument(wf.fileName, wf.filePath, wf.fileSize, chunks, metadata.packageName, metadata.className, metadata.repoName)
             totalChunks += chunks.size
         }
@@ -202,7 +216,7 @@ fun PlanState.toPlanMetadata(source: String = "codebase"): PlanMetadata? {
         epics = p.epics.size,
         totalPoints = p.totalPoints,
         classification = "",
-        estimatedSessions = p.estimatedSessions
+        estimatedSessions = p.estimatedSessions,
     )
 }
 
@@ -218,6 +232,6 @@ fun AugmentedState.toPlanMetadata(source: String = "codebase"): PlanMetadata? {
         epics = p.epics.size,
         totalPoints = p.totalPoints,
         classification = "",
-        estimatedSessions = p.estimatedSessions
+        estimatedSessions = p.estimatedSessions,
     )
 }

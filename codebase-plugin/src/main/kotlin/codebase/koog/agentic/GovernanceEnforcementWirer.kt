@@ -14,11 +14,10 @@ import java.io.File
  * Cet objet est testable unitairement car il ne dépend pas du Gradle Project.
  */
 object GovernanceEnforcementWirer {
-
     fun wire(
         toolRegistry: ToolRegistry,
         workspaceRoot: File,
-        validator: ChunkValidator = ChunkValidator()
+        validator: ChunkValidator = ChunkValidator(),
     ): ToolRegistry {
         val result = GovernanceIngestor(validator).ingest(workspaceRoot)
         val executor = result.executor ?: return toolRegistry
@@ -27,7 +26,7 @@ object GovernanceEnforcementWirer {
             enforcementHook = { toolName, arguments ->
                 val check = executor.check(toolName, arguments)
                 if (check.allowed) null else formatReason(check)
-            }
+            },
         ).also { wired ->
             for (name in toolRegistry.toolNames()) {
                 wired.register(toolRegistry.get(name))
@@ -38,6 +37,6 @@ object GovernanceEnforcementWirer {
     private fun formatReason(result: ExecutionResult): String =
         listOfNotNull(
             result.reason,
-            result.ruleId?.let { "ruleId=$it" }
+            result.ruleId?.let { "ruleId=$it" },
         ).joinToString(" | ")
 }

@@ -35,27 +35,28 @@ import java.nio.file.Path
  */
 class OllamaFineTunerAdapter(
     private val registryClient: OllamaRegistryClient,
-    private val ggufOutputDir: Path
+    private val ggufOutputDir: Path,
 ) : FineTuningPipeline {
-
     private val log = LoggerFactory.getLogger(OllamaFineTunerAdapter::class.java)
 
     override fun fineTune(request: FineTuningRequest): FineTuningResult {
         return try {
             val modelfile = buildModelfile(request)
-            val createResponse = registryClient.createModel(
-                CreateModelRequest(
-                    modelName = request.outputModelName,
-                    modelfile = modelfile
+            val createResponse =
+                registryClient.createModel(
+                    CreateModelRequest(
+                        modelName = request.outputModelName,
+                        modelfile = modelfile,
+                    ),
                 )
-            )
             if (!createResponse.isOk) {
                 return degraded(request, "create failed: ${describe(createResponse)}")
             }
 
-            val pushResponse = registryClient.pushModel(
-                PushModelRequest(modelName = request.outputModelName)
-            )
+            val pushResponse =
+                registryClient.pushModel(
+                    PushModelRequest(modelName = request.outputModelName),
+                )
             if (!pushResponse.isOk) {
                 return degraded(request, "push failed: ${describe(pushResponse)}")
             }
@@ -63,13 +64,14 @@ class OllamaFineTunerAdapter(
             val ggufPath = writeGgufMarker(request)
             log.info(
                 "[OllamaFineTunerAdapter] fine-tune success: model={}, ggufPath={}",
-                request.outputModelName, ggufPath
+                request.outputModelName,
+                ggufPath,
             )
             FineTuningResult.Success(
                 outputModelName = request.outputModelName,
                 ggufPath = ggufPath.toString(),
                 iterations = 1,
-                validationScore = 1.0
+                validationScore = 1.0,
             )
         } catch (e: Exception) {
             log.warn("[OllamaFineTunerAdapter] degraded: ${e.message}")
@@ -78,9 +80,12 @@ class OllamaFineTunerAdapter(
     }
 
     private fun buildModelfile(request: FineTuningRequest): String {
-        val corpusLine = if (request.corpusRatio > 0.0) {
-            "# continual pre-training corpus ratio: ${request.corpusRatio}\n# dataset: ${request.dataset.joinToString(", ")}\n"
-        } else ""
+        val corpusLine =
+            if (request.corpusRatio > 0.0) {
+                "# continual pre-training corpus ratio: ${request.corpusRatio}\n# dataset: ${request.dataset.joinToString(", ")}\n"
+            } else {
+                ""
+            }
         return buildString {
             append("FROM ").append(request.baseModel).append('\n')
             append(corpusLine)
@@ -96,13 +101,17 @@ class OllamaFineTunerAdapter(
         return ggufPath
     }
 
-    private fun degraded(request: FineTuningRequest, reason: String): FineTuningResult.Failure {
+    private fun degraded(
+        request: FineTuningRequest,
+        reason: String,
+    ): FineTuningResult.Failure {
         log.warn("[OllamaFineTunerAdapter] degraded mode: reason={}, dataset={}", reason, request.dataset)
         return FineTuningResult.Failure(reason = reason, originalDataset = request.dataset)
     }
 
-    private fun describe(response: RegistryResponse): String = when (response) {
-        is RegistryResponse.Ok -> "ok(${response.statusCode})"
-        is RegistryResponse.Fail -> "fail(${response.statusCode}): ${response.body}"
-    }
+    private fun describe(response: RegistryResponse): String =
+        when (response) {
+            is RegistryResponse.Ok -> "ok(${response.statusCode})"
+            is RegistryResponse.Fail -> "fail(${response.statusCode}): ${response.body}"
+        }
 }

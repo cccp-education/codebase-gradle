@@ -11,15 +11,17 @@ data class InvalidChunk(
     val sourceLines: String,
     val content: String,
     val errors: List<ChunkValidationError>,
-    val quarantinedAt: Instant
+    val quarantinedAt: Instant,
 )
 
 /**
  * Port DDD de stockage des chunks invalides.
  */
 interface InvalidChunkRepository {
-
-    suspend fun insertQuarantine(chunk: AgenticChunk, errors: List<ChunkValidationError>): Boolean
+    suspend fun insertQuarantine(
+        chunk: AgenticChunk,
+        errors: List<ChunkValidationError>,
+    ): Boolean
 
     suspend fun listQuarantined(limit: Int = 100): List<InvalidChunk>
 

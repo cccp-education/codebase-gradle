@@ -56,7 +56,6 @@ class FineTuningGraph(
     private val llm: FineTuningLlm,
     private val pipeline: FineTuningPipeline,
 ) {
-
     private val log = LoggerFactory.getLogger(FineTuningGraph::class.java)
 
     val graph: AIAgentGraphStrategy<FineTuningState, FineTuningState> =
@@ -104,27 +103,29 @@ class FineTuningGraph(
      * when validation score is below threshold and the budget is not exhausted.
      */
     fun execute(initialState: FineTuningState): FineTuningState {
-        var state = try {
-            proposeNode(initialState)
-        } catch (e: Exception) {
-            log.warn("[FineTuningGraph] propose failed: {}", e.message)
-            return initialState.copy(
-                stage = FineTuningStage.FAILED,
-                error = "ProposeFailed: ${e.message}",
-            )
-        }
+        var state =
+            try {
+                proposeNode(initialState)
+            } catch (e: Exception) {
+                log.warn("[FineTuningGraph] propose failed: {}", e.message)
+                return initialState.copy(
+                    stage = FineTuningStage.FAILED,
+                    error = "ProposeFailed: ${e.message}",
+                )
+            }
 
         var iter = 0
         while (iter <= initialState.maxIterations) {
-            state = try {
-                trainNode(state)
-            } catch (e: Exception) {
-                log.warn("[FineTuningGraph] train failed: {}", e.message)
-                return state.copy(
-                    stage = FineTuningStage.FAILED,
-                    error = "TrainFailed: ${e.message}",
-                )
-            }
+            state =
+                try {
+                    trainNode(state)
+                } catch (e: Exception) {
+                    log.warn("[FineTuningGraph] train failed: {}", e.message)
+                    return state.copy(
+                        stage = FineTuningStage.FAILED,
+                        error = "TrainFailed: ${e.message}",
+                    )
+                }
 
             if (state.trainResult is FineTuningResult.Failure) {
                 return state.copy(
@@ -133,15 +134,16 @@ class FineTuningGraph(
                 )
             }
 
-            state = try {
-                validateNode(state)
-            } catch (e: Exception) {
-                log.warn("[FineTuningGraph] validate failed: {}", e.message)
-                return state.copy(
-                    stage = FineTuningStage.FAILED,
-                    error = "ValidateFailed: ${e.message}",
-                )
-            }
+            state =
+                try {
+                    validateNode(state)
+                } catch (e: Exception) {
+                    log.warn("[FineTuningGraph] validate failed: {}", e.message)
+                    return state.copy(
+                        stage = FineTuningStage.FAILED,
+                        error = "ValidateFailed: ${e.message}",
+                    )
+                }
 
             if (state.validationScore >= state.validationThreshold) {
                 return state.copy(stage = FineTuningStage.CONVERGED)
@@ -155,23 +157,24 @@ class FineTuningGraph(
                 )
             }
 
-            state = try {
-                proposeNode(
-                    state.copy(
-                        iteration = iter,
-                        proposal = "",
-                        trainResult = null,
-                        validationScore = 0.0,
-                        stage = FineTuningStage.INITIALIZED,
-                    ),
-                )
-            } catch (e: Exception) {
-                log.warn("[FineTuningGraph] re-propose failed: {}", e.message)
-                return state.copy(
-                    stage = FineTuningStage.FAILED,
-                    error = "ProposeFailed: ${e.message}",
-                )
-            }
+            state =
+                try {
+                    proposeNode(
+                        state.copy(
+                            iteration = iter,
+                            proposal = "",
+                            trainResult = null,
+                            validationScore = 0.0,
+                            stage = FineTuningStage.INITIALIZED,
+                        ),
+                    )
+                } catch (e: Exception) {
+                    log.warn("[FineTuningGraph] re-propose failed: {}", e.message)
+                    return state.copy(
+                        stage = FineTuningStage.FAILED,
+                        error = "ProposeFailed: ${e.message}",
+                    )
+                }
         }
 
         return state.copy(
@@ -193,9 +196,10 @@ class FineTuningGraph(
     }
 
     private fun trainNode(state: FineTuningState): FineTuningState {
-        val adjustedRequest = state.request.copy(
-            corpusRatio = adjustedCorpusRatio(state),
-        )
+        val adjustedRequest =
+            state.request.copy(
+                corpusRatio = adjustedCorpusRatio(state),
+            )
         val result = pipeline.fineTune(adjustedRequest)
         return state.copy(
             trainResult = result,
@@ -220,9 +224,11 @@ class FineTuningGraph(
      * falls back to the request's current ratio.
      */
     private fun adjustedCorpusRatio(state: FineTuningState): Double {
-        val match = Regex("(\\d+\\.?\\d*)").findAll(state.proposal)
-            .mapNotNull { it.value.toDoubleOrNull() }
-            .firstOrNull { it in 0.0..1.0 }
+        val match =
+            Regex("(\\d+\\.?\\d*)")
+                .findAll(state.proposal)
+                .mapNotNull { it.value.toDoubleOrNull() }
+                .firstOrNull { it in 0.0..1.0 }
         return match ?: state.request.corpusRatio
     }
 }

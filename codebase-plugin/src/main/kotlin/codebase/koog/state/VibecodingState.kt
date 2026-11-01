@@ -34,21 +34,29 @@ data class VibecodingState(
     /** Z-5 Autofocus: contexte composite brut (RAG/EAGER/Graphify/Docs) — transient, non persisté */
     val compositeContext: CompositeContext? = null,
     /** Z-5 Autofocus: contexte zoomé filtré par niveau — transient, non persisté */
-    val zoomedContext: CompositeContext? = null
+    val zoomedContext: CompositeContext? = null,
 ) {
     val isFinal: Boolean get() = finished || iteration >= maxActions
 
     fun nextIteration(): VibecodingState = copy(iteration = iteration + 1)
-    fun withPlan(planJson: String, plan: Plan?, classification: String): VibecodingState =
-        copy(planJson = planJson, plan = plan, classification = classification)
+
+    fun withPlan(
+        planJson: String,
+        plan: Plan?,
+        classification: String,
+    ): VibecodingState = copy(planJson = planJson, plan = plan, classification = classification)
+
     fun finish(): VibecodingState = copy(finished = true)
+
     /** V-6: avec retryCount, l'erreur est récupérable (ne force pas finished) */
-    fun withRecoverableError(error: String): VibecodingState =
-        copy(error = error, retryCount = retryCount + 1, finished = false)
+    fun withRecoverableError(error: String): VibecodingState = copy(error = error, retryCount = retryCount + 1, finished = false)
+
     /** Erreur fatale: termine la session */
     fun withError(error: String): VibecodingState = copy(error = error, finished = true)
+
     /** V-6: clear l'erreur après un retry réussi */
     fun clearError(): VibecodingState = copy(error = null)
+
     /** V-6: incrémente le compteur de retry sans erreur (comptabilité) */
     fun incrementRetry(): VibecodingState = copy(retryCount = retryCount + 1)
 }

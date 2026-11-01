@@ -13,7 +13,7 @@ import java.time.Duration
 data class CircleClassification(
     val predictedCircle: Int = -1,
     val confidenceScore: Double = 0.0,
-    val reasoning: String = ""
+    val reasoning: String = "",
 )
 
 interface SpatialPerceptionExpert {
@@ -40,7 +40,7 @@ interface SpatialPerceptionExpert {
           "confidenceScore": 0.92,
           "reasoning": "Ce document décrit un plugin Gradle open source avec licence Apache 2.0 — cercle 4 typique."
         }
-        """
+        """,
     )
     @UserMessage(
         """
@@ -52,29 +52,44 @@ interface SpatialPerceptionExpert {
         {{documentExcerpt}}
         
         Retourne UNIQUEMENT le JSON avec predictedCircle (0-4), confidenceScore (0.0-1.0) et reasoning.
-        """
+        """,
     )
-    fun classify(@V("context") context: String, @V("documentExcerpt") documentExcerpt: String): CircleClassification
+    fun classify(
+        @V("context") context: String,
+        @V("documentExcerpt") documentExcerpt: String,
+    ): CircleClassification
 }
 
 interface SpatialPerceptionExpertFactory {
-    fun create(baseUrl: String, modelName: String, timeoutSeconds: Long): SpatialPerceptionExpert
+    fun create(
+        baseUrl: String,
+        modelName: String,
+        timeoutSeconds: Long,
+    ): SpatialPerceptionExpert
 }
 
 object BenchmarkExpertFactory : SpatialPerceptionExpertFactory {
     private val log = LoggerFactory.getLogger(BenchmarkExpertFactory::class.java)
 
-    override fun create(baseUrl: String, modelName: String, timeoutSeconds: Long): SpatialPerceptionExpert {
-        return try {
-            val model = OllamaChatModel.builder()
-                .baseUrl(baseUrl)
-                .modelName(modelName)
-                .timeout(Duration.ofSeconds(timeoutSeconds))
-                .build()
+    override fun create(
+        baseUrl: String,
+        modelName: String,
+        timeoutSeconds: Long,
+    ): SpatialPerceptionExpert =
+        try {
+            val model =
+                OllamaChatModel
+                    .builder()
+                    .baseUrl(baseUrl)
+                    .modelName(modelName)
+                    .timeout(Duration.ofSeconds(timeoutSeconds))
+                    .build()
 
-            val expert = AiServices.builder(SpatialPerceptionExpert::class.java)
-                .chatModel(model)
-                .build()
+            val expert =
+                AiServices
+                    .builder(SpatialPerceptionExpert::class.java)
+                    .chatModel(model)
+                    .build()
 
             log.info("Spatial expert connected: {}/{}", baseUrl, modelName)
             expert
@@ -82,94 +97,94 @@ object BenchmarkExpertFactory : SpatialPerceptionExpertFactory {
             log.error("Failed to connect LLM: {}", e.message?.take(80))
             throw e
         }
-    }
 }
 
 data class ClassificationRequest(
     val documentExcerpt: String = "",
-    val context: String = ""
+    val context: String = "",
 )
 
 data class SampleDocument(
     val id: String = "",
     val expectedCircle: Int = 0,
-    val content: String = ""
+    val content: String = "",
 )
 
 object BenchmarkFixtures {
-    val samples: List<SampleDocument> = listOf(
-        SampleDocument(
-            "C0-strategie",
-            0,
-            """
-            WORKSPACE_AS_PRODUCT.adoc — Ce document décrit la vision du workspace comme produit.
-            L'idée est de transformer l'écosystème de plugins Gradle en SaaS provisionnable.
-            Stratégie de pricing : freemium avec paliers à 49€/mois (individuel) et 499€/mois (pro).
-            """.trimIndent()
-        ),
-        SampleDocument(
-            "C1-tokens",
-            1,
-            """
-            configuration/codebase.yml — Fichier de configuration contenant des secrets.
-            ollama.baseUrl=http://localhost:11437
-            anthropic.defaultKey=chatbot
-            anthropic.accounts[0].keys[prod]=sk-ant-api03-xxxxxxxxxxxxx
-            github.token=ghp_xxxxxxxxxxxxxxxxxxxx
-            """.trimIndent()
-        ),
-        SampleDocument(
-            "C2-content",
-            2,
-            """
-            office/contents/kit-editorial.adoc — Kit de contenu générique.
-            Contient des exercices pratiques, des études de cas, et des grilles de validation.
-            Format : AsciiDoc structuré selon la convention over configuration.
-            """.trimIndent()
-        ),
-        SampleDocument(
-            "C3-closed",
-            3,
-            """
-            foundry/private/proprietary-algo/ — Code source closed-source, licence commerciale.
-            Algorithme de matching propriétaire pour lecteurs-auteurs.
-            Utilise un graphe bipartite pondéré avec heuristique brevetée (dépôt INPI n°2026-XXXXX).
-            Licence : commerciale, redistribution interdite. Tarif : 2500€/an/licence.
-            """.trimIndent()
-        ),
-        SampleDocument(
-            "C4-plugin",
-            4,
-            """
-            foundry/public/plantuml-gradle/ — Plugin Gradle open source pour génération de diagrammes.
-            Licence Apache 2.0 (SPDX: Apache-2.0).
-            Utilise LangChain4j + Ollama pour générer des diagrammes PlantUML via RAG.
-            Tests : 138 sessions agent, Cucumber BDD, JUnit 5, TestContainers.
-            Dépendances : graphify-gradle (N0), codebase-gradle (N1). DAG N2.
-            """.trimIndent()
-        ),
-        SampleDocument(
-            "C4-readme",
-            4,
-            """
-            build.gradle.kts — Script de build Gradle open source.
-            plugins { kotlin("jvm") version "2.1.0" }
-            dependencies { implementation("dev.langchain4j:langchain4j:1.12.2") }
-            tasks.register("verifyReadMeToAnonymizedYaml") { ... }
-            Licence : Apache 2.0 — tout le code dans foundry/public/ est public.
-            """.trimIndent()
-        ),
-        SampleDocument(
-            "C2-livre",
-            2,
-            """
-            office/books-collection/kotlin-in-action.pdf — Livre technique Kotlin.
-            Chapitre 6 : Types nullables et safety. Elvis operator ?:, safe call ?., let().
-            Les data classes Kotlin génèrent automatiquement equals(), hashCode(), toString(), copy().
-            Exercice 6.3 : implémenter une sealed class pour un résultat HTTP (Success/Error/Loading).
-            """.trimIndent()
+    val samples: List<SampleDocument> =
+        listOf(
+            SampleDocument(
+                "C0-strategie",
+                0,
+                """
+                WORKSPACE_AS_PRODUCT.adoc — Ce document décrit la vision du workspace comme produit.
+                L'idée est de transformer l'écosystème de plugins Gradle en SaaS provisionnable.
+                Stratégie de pricing : freemium avec paliers à 49€/mois (individuel) et 499€/mois (pro).
+                """.trimIndent(),
+            ),
+            SampleDocument(
+                "C1-tokens",
+                1,
+                """
+                configuration/codebase.yml — Fichier de configuration contenant des secrets.
+                ollama.baseUrl=http://localhost:11437
+                anthropic.defaultKey=chatbot
+                anthropic.accounts[0].keys[prod]=sk-ant-api03-xxxxxxxxxxxxx
+                github.token=ghp_xxxxxxxxxxxxxxxxxxxx
+                """.trimIndent(),
+            ),
+            SampleDocument(
+                "C2-content",
+                2,
+                """
+                office/contents/kit-editorial.adoc — Kit de contenu générique.
+                Contient des exercices pratiques, des études de cas, et des grilles de validation.
+                Format : AsciiDoc structuré selon la convention over configuration.
+                """.trimIndent(),
+            ),
+            SampleDocument(
+                "C3-closed",
+                3,
+                """
+                foundry/private/proprietary-algo/ — Code source closed-source, licence commerciale.
+                Algorithme de matching propriétaire pour lecteurs-auteurs.
+                Utilise un graphe bipartite pondéré avec heuristique brevetée (dépôt INPI n°2026-XXXXX).
+                Licence : commerciale, redistribution interdite. Tarif : 2500€/an/licence.
+                """.trimIndent(),
+            ),
+            SampleDocument(
+                "C4-plugin",
+                4,
+                """
+                foundry/public/plantuml-gradle/ — Plugin Gradle open source pour génération de diagrammes.
+                Licence Apache 2.0 (SPDX: Apache-2.0).
+                Utilise LangChain4j + Ollama pour générer des diagrammes PlantUML via RAG.
+                Tests : 138 sessions agent, Cucumber BDD, JUnit 5, TestContainers.
+                Dépendances : graphify-gradle (N0), codebase-gradle (N1). DAG N2.
+                """.trimIndent(),
+            ),
+            SampleDocument(
+                "C4-readme",
+                4,
+                """
+                build.gradle.kts — Script de build Gradle open source.
+                plugins { kotlin("jvm") version "2.1.0" }
+                dependencies { implementation("dev.langchain4j:langchain4j:1.12.2") }
+                tasks.register("verifyReadMeToAnonymizedYaml") { ... }
+                Licence : Apache 2.0 — tout le code dans foundry/public/ est public.
+                """.trimIndent(),
+            ),
+            SampleDocument(
+                "C2-livre",
+                2,
+                """
+                office/books-collection/kotlin-in-action.pdf — Livre technique Kotlin.
+                Chapitre 6 : Types nullables et safety. Elvis operator ?:, safe call ?., let().
+                Les data classes Kotlin génèrent automatiquement equals(), hashCode(), toString(), copy().
+                Exercice 6.3 : implémenter une sealed class pour un résultat HTTP (Success/Error/Loading).
+                """.trimIndent(),
+            ),
         )
-    )
 }
 
 /**
@@ -179,23 +194,24 @@ object BenchmarkFixtures {
  */
 object ContextFiller {
     fun technicalDocumentationParagraph(tokenCount: Int): String {
-        val sentences = listOf(
-            "Le système d'orchestration dispatcher+experts s'appuie sur LangChain4j 1.12.2 pour la communication avec les modèles LLM locaux via Ollama.",
-            "L'architecture DAG N0→N1→N2→N3 garantit que les plugins de niveau supérieur ne créent pas de dépendances cycliques avec les plugins de niveau inférieur.",
-            "Le pattern builder Gradle utilise convention plugins et precompiled script plugins pour standardiser les configurations de build à travers les 8 plugins de l'écosystème.",
-            "La couche d'abstraction BYOK (Bring Your Own Key) supporte 7 providers LLM : Anthropic, Gemini, HuggingFace, Mistral, Ollama, Grok et Groq, chacun avec multi-compte et expiration.",
-            "Le pipeline d'embedding utilise AllMiniLmL6V2 via ONNX Runtime pour générer des vecteurs 384 dimensions stockés dans pgvector avec index IVFFlat pour la recherche de similarité cosinus.",
-            "Les tests Cucumber BDD suivent le pattern Given-When-Then avec TestContainers pour provisionner un PostgreSQL éphémère contenant l'extension pgvector chargée automatiquement.",
-            "Le pattern STIMULUS formalise la cascade de dilution automatique : détection de brain dump → mapping vers documents cibles → insertion contextuelle → archivage → suppression du stimulus.",
-            "La classification Vision/Opinion via LangGraph4j utilise des conditional edges pour router les sections VISION vers la dilution publique et les sections OPINION vers le confinement privé.",
-            "L'anonymisation RGPD multi-niveaux détecte les PII (tokens, emails, passwords) dans 5 formats (YAML, JSON, XML, properties, .env) avec fallback déterministe si le LLM est indisponible.",
-            "Le serveur JBake intégré compile les templates Thymeleaf avec données YAML pour générer des sites statiques déployables via GitHub Pages avec workflow CI/CD automatisé.",
-            "La task Gradle indexCodebase scanne récursivement le workspace, extrait le contenu des fichiers .kt/.adoc/.yml/.json, anonymise les secrets, tokenize en chunks de 500 tokens avec overlap 50, et indexe dans pgvector.",
-            "Le fine-tuning des experts spécialisés utilise la méthode continual pre-training avec 10% du corpus cible, validée par l'article ACL 2024 arXiv 2311.08545.",
-            "Le dispatcher gemma4:31b-cloud décompose les tâches complexes en sous-tâches atomiques distribuées par batch aux experts spécialisés, avec collecte et synthèse des résultats.",
-            "La boucle de qualité ONNX valide chaque output expert via analyse de sentiment, détection de hors-sujet et contrôle de cohérence avant transmission au dispatcher pour la synthèse finale.",
-            "Le protocole de mesure EPIC 4 évalue la dégradation de la perception spatiale du LLM à 10K, 30K, 60K, 100K et 128K tokens avec 5 scénarios de couverture incrémentale des canaux convergents."
-        )
+        val sentences =
+            listOf(
+                "Le système d'orchestration dispatcher+experts s'appuie sur LangChain4j 1.12.2 pour la communication avec les modèles LLM locaux via Ollama.",
+                "L'architecture DAG N0→N1→N2→N3 garantit que les plugins de niveau supérieur ne créent pas de dépendances cycliques avec les plugins de niveau inférieur.",
+                "Le pattern builder Gradle utilise convention plugins et precompiled script plugins pour standardiser les configurations de build à travers les 8 plugins de l'écosystème.",
+                "La couche d'abstraction BYOK (Bring Your Own Key) supporte 7 providers LLM : Anthropic, Gemini, HuggingFace, Mistral, Ollama, Grok et Groq, chacun avec multi-compte et expiration.",
+                "Le pipeline d'embedding utilise AllMiniLmL6V2 via ONNX Runtime pour générer des vecteurs 384 dimensions stockés dans pgvector avec index IVFFlat pour la recherche de similarité cosinus.",
+                "Les tests Cucumber BDD suivent le pattern Given-When-Then avec TestContainers pour provisionner un PostgreSQL éphémère contenant l'extension pgvector chargée automatiquement.",
+                "Le pattern STIMULUS formalise la cascade de dilution automatique : détection de brain dump → mapping vers documents cibles → insertion contextuelle → archivage → suppression du stimulus.",
+                "La classification Vision/Opinion via LangGraph4j utilise des conditional edges pour router les sections VISION vers la dilution publique et les sections OPINION vers le confinement privé.",
+                "L'anonymisation RGPD multi-niveaux détecte les PII (tokens, emails, passwords) dans 5 formats (YAML, JSON, XML, properties, .env) avec fallback déterministe si le LLM est indisponible.",
+                "Le serveur JBake intégré compile les templates Thymeleaf avec données YAML pour générer des sites statiques déployables via GitHub Pages avec workflow CI/CD automatisé.",
+                "La task Gradle indexCodebase scanne récursivement le workspace, extrait le contenu des fichiers .kt/.adoc/.yml/.json, anonymise les secrets, tokenize en chunks de 500 tokens avec overlap 50, et indexe dans pgvector.",
+                "Le fine-tuning des experts spécialisés utilise la méthode continual pre-training avec 10% du corpus cible, validée par l'article ACL 2024 arXiv 2311.08545.",
+                "Le dispatcher gemma4:31b-cloud décompose les tâches complexes en sous-tâches atomiques distribuées par batch aux experts spécialisés, avec collecte et synthèse des résultats.",
+                "La boucle de qualité ONNX valide chaque output expert via analyse de sentiment, détection de hors-sujet et contrôle de cohérence avant transmission au dispatcher pour la synthèse finale.",
+                "Le protocole de mesure EPIC 4 évalue la dégradation de la perception spatiale du LLM à 10K, 30K, 60K, 100K et 128K tokens avec 5 scénarios de couverture incrémentale des canaux convergents.",
+            )
         val builder = StringBuilder()
         var remaining = tokenCount
         while (remaining > 0) {
@@ -209,8 +225,7 @@ object ContextFiller {
         return builder.toString()
     }
 
-    fun fillerForThreshold(targetTokens: Int): String =
-        technicalDocumentationParagraph(targetTokens)
+    fun fillerForThreshold(targetTokens: Int): String = technicalDocumentationParagraph(targetTokens)
 
     fun eagerLazyContext(targetTokens: Int): String {
         val sb = StringBuilder()
@@ -284,11 +299,14 @@ class BenchmarkRunner(
     private val pgUser: String? = null,
     private val pgPassword: String? = null,
     private val graphJsonPath: String? = null,
-    private val scopeFilter: String? = null
+    private val scopeFilter: String? = null,
 ) {
     private val log = LoggerFactory.getLogger(BenchmarkRunner::class.java)
 
-    fun run(scenarioId: String, scenarioChannels: List<String>): String {
+    fun run(
+        scenarioId: String,
+        scenarioChannels: List<String>,
+    ): String {
         val expert = BenchmarkExpertFactory.create(baseUrl, modelName, timeoutSeconds)
         val samples = BenchmarkFixtures.samples
         val thresholds = listOf(10000, 30000, 60000, 100000, 128000)
@@ -296,20 +314,26 @@ class BenchmarkRunner(
 
         val useRag = scenarioChannels.contains("RAG")
         val useGraphify = scenarioChannels.contains("Graphify")
-        val vectorStore = if (useRag && pgJdbcUrl != null) {
-            RagVectorStore()
-        } else null
-        log.info("RAG channel active — unified RagVectorStore (codebase.store N1 socle)")
-        val graphModel = if (useGraphify && graphJsonPath != null) {
-            val f = File(graphJsonPath)
-            if (f.exists()) {
-                log.info("Graphify channel active — loading graph.json from {}", graphJsonPath)
-                GraphContextBuilder.load(f)
+        val vectorStore =
+            if (useRag && pgJdbcUrl != null) {
+                RagVectorStore()
             } else {
-                log.warn("Graphify channel active but graph.json not found at {}", graphJsonPath)
                 null
             }
-        } else null
+        log.info("RAG channel active — unified RagVectorStore (codebase.store N1 socle)")
+        val graphModel =
+            if (useGraphify && graphJsonPath != null) {
+                val f = File(graphJsonPath)
+                if (f.exists()) {
+                    log.info("Graphify channel active — loading graph.json from {}", graphJsonPath)
+                    GraphContextBuilder.load(f)
+                } else {
+                    log.warn("Graphify channel active but graph.json not found at {}", graphJsonPath)
+                    null
+                }
+            } else {
+                null
+            }
 
         val results = mutableListOf<String>()
 
@@ -323,30 +347,35 @@ class BenchmarkRunner(
 
                 log.debug("{} @ {} — classifying {} (context={} chars)", scenarioId, label, sample.id, context.length)
 
-                val classification = try {
-                    expert.classify(context, sample.content)
-                } catch (e: Exception) {
-                    log.error("{} classification failed for {}: {}", scenarioId, sample.id, e.message?.take(100))
-                    continue
-                }
+                val classification =
+                    try {
+                        expert.classify(context, sample.content)
+                    } catch (e: Exception) {
+                        log.error("{} classification failed for {}: {}", scenarioId, sample.id, e.message?.take(100))
+                        continue
+                    }
 
                 if (classification.predictedCircle != sample.expectedCircle) {
                     errors++
                     crossings.add(
                         """{"documentId":"${sample.id}","expectedCircle":${sample.expectedCircle},""" +
-                        """"actualCircle":${classification.predictedCircle},"confidenceScore":${classification.confidenceScore},""" +
-                        """"excerpt":"${sample.content.take(100).replace("\n"," ").replace("\"","\\\"")}"}"""
+                            """"actualCircle":${classification.predictedCircle},"confidenceScore":${classification.confidenceScore},""" +
+                            """"excerpt":"${sample.content.take(100).replace("\n"," ").replace("\"","\\\"")}"}""",
                     )
                 }
             }
 
             val errorRate = if (samples.isNotEmpty()) errors.toDouble() / samples.size else 0.0
             results.add(
-                """{"threshold":"$label","totalSamples":${samples.size},"errorRate":$errorRate,"boundaryCrossings":[${crossings.joinToString(",")}]}"""
+                """{"threshold":"$label","totalSamples":${samples.size},"errorRate":$errorRate,"boundaryCrossings":[${crossings.joinToString(",")}]}""",
             )
         }
 
-        val summary = "Scenario $scenarioId (${scenarioChannels.ifEmpty { listOf("BASELINE") }.joinToString("+")}) execute sur ${thresholds.size} seuils, ${samples.size} echantillons/seuil."
+        val summary = "Scenario $scenarioId (${scenarioChannels.ifEmpty {
+            listOf(
+                "BASELINE",
+            )
+        }.joinToString("+")}) execute sur ${thresholds.size} seuils, ${samples.size} echantillons/seuil."
 
         val channelsJson = scenarioChannels.joinToString(", ") { "\"$it\"" }
         return """{"scenario":"$scenarioId","channels":[$channelsJson],"summary":"$summary","results":[${results.joinToString(",")}]}"""
@@ -357,7 +386,7 @@ class BenchmarkRunner(
         sample: SampleDocument,
         targetTokens: Int,
         vectorStore: RagVectorStore?,
-        graphModel: GraphModel?
+        graphModel: GraphModel?,
     ): String {
         val isBaseline = channels.isEmpty()
         val channelCount = channels.size.coerceAtLeast(1)
@@ -381,10 +410,12 @@ class BenchmarkRunner(
         if (channels.contains("RAG") && vectorStore != null) {
             sb.appendLine("=== RAG Context (pgvector) ===")
             try {
-                val queryText = if (scopeFilter == "project")
-                    "codebase benchmark gradle plugin opencode augmentation"
-                else
-                    "cercles de confiance workspace foundry office configuration"
+                val queryText =
+                    if (scopeFilter == "project") {
+                        "codebase benchmark gradle plugin opencode augmentation"
+                    } else {
+                        "cercles de confiance workspace foundry office configuration"
+                    }
                 val results = vectorStore.searchBlocking(queryText, topK = 10)
                 for (r in results) {
                     val chunkTokens = r.chunkText.length / 4
@@ -400,29 +431,34 @@ class BenchmarkRunner(
 
         if (channels.contains("Graphify") && graphModel != null) {
             sb.appendLine("=== Graphify Context (knowledge graph) ===")
-            val samplePath = when (sample.id) {
-                "C0-strategie" -> "WORKSPACE_AS_PRODUCT.adoc"
-                "C4-plugin" -> "foundry/public/plantuml-gradle"
-                "C4-readme" -> "foundry/public/codebase-gradle"
-                else -> ""
-            }
-            if (samplePath.isNotEmpty()) {
-                val filteredModel = if (scopeFilter == "project") {
-                    val projectNodes = graphModel.nodes.filter { it.id.startsWith("foundry/public/codebase-gradle") }
-                    val projectIds = projectNodes.map { it.id }.toSet()
-                    val projectEdges = graphModel.edges.filter { it.source in projectIds || it.target in projectIds }
-                    GraphModel(nodes = projectNodes, edges = projectEdges)
-                } else {
-                    graphModel
+            val samplePath =
+                when (sample.id) {
+                    "C0-strategie" -> "WORKSPACE_AS_PRODUCT.adoc"
+                    "C4-plugin" -> "foundry/public/plantuml-gradle"
+                    "C4-readme" -> "foundry/public/codebase-gradle"
+                    else -> ""
                 }
+            if (samplePath.isNotEmpty()) {
+                val filteredModel =
+                    if (scopeFilter == "project") {
+                        val projectNodes = graphModel.nodes.filter { it.id.startsWith("foundry/public/codebase-gradle") }
+                        val projectIds = projectNodes.map { it.id }.toSet()
+                        val projectEdges = graphModel.edges.filter { it.source in projectIds || it.target in projectIds }
+                        GraphModel(nodes = projectNodes, edges = projectEdges)
+                    } else {
+                        graphModel
+                    }
                 val neighborhood = GraphContextBuilder.neighborhood(filteredModel, samplePath)
                 sb.append(neighborhood)
                 sb.appendLine()
                 graphTokens = neighborhood.length / 4
             } else {
-                val filteredModel = if (scopeFilter == "project")
-                    GraphModel(nodes = graphModel.nodes.filter { it.id.startsWith("foundry/public/codebase-gradle") }, edges = emptyList())
-                else graphModel
+                val filteredModel =
+                    if (scopeFilter == "project") {
+                        GraphModel(nodes = graphModel.nodes.filter { it.id.startsWith("foundry/public/codebase-gradle") }, edges = emptyList())
+                    } else {
+                        graphModel
+                    }
                 sb.appendLine("Graph summary: ${filteredModel.nodes.size} nodes, ${filteredModel.edges.size} edges")
                 val topDirs = filteredModel.nodes.filter { it.type == "directory" }.take(6)
                 for (d in topDirs) sb.appendLine("  - ${d.label} [${d.id}]")

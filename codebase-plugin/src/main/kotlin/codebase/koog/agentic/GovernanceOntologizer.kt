@@ -7,11 +7,10 @@ enum class GovernanceSection {
     HISTORIQUE,
     COVERAGE,
     MISSION,
-    UNKNOWN
+    UNKNOWN,
 }
 
 class GovernanceOntologizer {
-
     fun classify(chunk: AgenticChunk): GovernanceSection {
         val filename = chunk.sourceFile.substringAfterLast('/')
         return when (filename) {

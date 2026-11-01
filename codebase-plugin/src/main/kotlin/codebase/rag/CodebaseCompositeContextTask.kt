@@ -15,7 +15,6 @@ import java.time.Instant
 
 @DisableCachingByDefault(because = "pgvector RAG + RagVectorStore (codebase.store) — external dependencies, non-cacheable")
 abstract class CodebaseCompositeContextTask : DefaultTask() {
-
     @get:Input
     @get:Optional
     abstract val query: Property<String>
@@ -54,17 +53,18 @@ abstract class CodebaseCompositeContextTask : DefaultTask() {
 
         if (trainingBuildFile.exists()) {
             logger.lifecycle("[codebase] Appel training-gradle → generateCompositeContext")
-            val proc = ProcessBuilder(
-                listOf("./gradlew", "-q", "generateCompositeContext", "-Pquery=$q", "-PtopK=$k")
-            )
-                .directory(File(trainingDir))
-                .redirectErrorStream(true)
-                .start()
+            val proc =
+                ProcessBuilder(
+                    listOf("./gradlew", "-q", "generateCompositeContext", "-Pquery=$q", "-PtopK=$k"),
+                ).directory(File(trainingDir))
+                    .redirectErrorStream(true)
+                    .start()
             val exit = proc.waitFor()
 
             val trainingJson = File(trainingDir, "build/training/composite-context.json")
             if (exit == 0 && trainingJson.exists()) {
                 val json = mapper.readValue(trainingJson, Map::class.java)
+
                 @Suppress("UNCHECKED_CAST")
                 val entries = json["entries"] as? List<Map<String, Any>> ?: emptyList()
                 trainingEntries.addAll(entries)
@@ -77,16 +77,17 @@ abstract class CodebaseCompositeContextTask : DefaultTask() {
         }
 
         val allEntries = codexEntries + trainingEntries
-        val result = mapOf(
-            "source" to "codebase",
-            "query" to q,
-            "topK" to k,
-            "entries" to allEntries,
-            "count" to allEntries.size,
-            "codexCount" to codexEntries.size,
-            "trainingCount" to trainingEntries.size,
-            "timestamp" to System.currentTimeMillis()
-        )
+        val result =
+            mapOf(
+                "source" to "codebase",
+                "query" to q,
+                "topK" to k,
+                "entries" to allEntries,
+                "count" to allEntries.size,
+                "codexCount" to codexEntries.size,
+                "trainingCount" to trainingEntries.size,
+                "timestamp" to System.currentTimeMillis(),
+            )
 
         val output = outputFile.asFile.get()
         output.parentFile.mkdirs()
@@ -96,17 +97,27 @@ abstract class CodebaseCompositeContextTask : DefaultTask() {
         val metadataFile = File(output.parentFile, "metadata.json")
         mapper.writerWithDefaultPrettyPrinter().writeValue(metadataFile, metadata)
 
-        logger.lifecycle("[codebase] generateCompositeContext — {} entries (codex:{} + training:{}) → {}",
-            allEntries.size, codexEntries.size, trainingEntries.size, output.absolutePath)
+        logger.lifecycle(
+            "[codebase] generateCompositeContext — {} entries (codex:{} + training:{}) → {}",
+            allEntries.size,
+            codexEntries.size,
+            trainingEntries.size,
+            output.absolutePath,
+        )
     }
 
-    private fun metadataMap(total: Int, codexN: Int, trainingN: Int): Map<String, Any> = mapOf(
-        "source" to "codebase",
-        "type" to "composite-context",
-        "sessions" to total,
-        "generatedAt" to Instant.now().toString(),
-        "model" to "onnx-local",
-        "version" to "1.0",
-        "dependencies" to listOf("brooklyn", "newark")
-    )
+    private fun metadataMap(
+        total: Int,
+        codexN: Int,
+        trainingN: Int,
+    ): Map<String, Any> =
+        mapOf(
+            "source" to "codebase",
+            "type" to "composite-context",
+            "sessions" to total,
+            "generatedAt" to Instant.now().toString(),
+            "model" to "onnx-local",
+            "version" to "1.0",
+            "dependencies" to listOf("brooklyn", "newark"),
+        )
 }

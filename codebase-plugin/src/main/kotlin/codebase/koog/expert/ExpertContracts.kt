@@ -2,7 +2,7 @@ package codebase.koog.expert
 
 data class ExpertDomain(
     val name: String,
-    val label: String
+    val label: String,
 )
 
 data class ExpertCallRequest(
@@ -12,13 +12,13 @@ data class ExpertCallRequest(
     val context: ExpertCallContext,
     val prompt: String,
     val expectedOutputFormat: String,
-    val validationCriteria: List<String>
+    val validationCriteria: List<String>,
 )
 
 data class ExpertCallContext(
     val maxTokens: Int = 2000,
     val relevantSchemas: List<String> = emptyList(),
-    val relevantFiles: List<String> = emptyList()
+    val relevantFiles: List<String> = emptyList(),
 )
 
 data class ExpertCallResponse(
@@ -28,11 +28,11 @@ data class ExpertCallResponse(
     val confidenceScore: Double,
     val tokenUsage: ExpertTokenUsage,
     val validationPassed: Boolean,
-    val error: String? = null
+    val error: String? = null,
 )
 
 data class ExpertTokenUsage(
     val promptTokens: Int,
     val completionTokens: Int,
-    val totalTokens: Int
+    val totalTokens: Int,
 )

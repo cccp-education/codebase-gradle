@@ -1,7 +1,6 @@
 package codebase.koog.svo
 
 import codebase.koog.plannerport.PlannerPort
-import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceRegistration
 
 /**
@@ -22,16 +21,14 @@ import org.gradle.api.services.BuildServiceRegistration
  * in unit tests (pattern `SessionPromptResolver`).
  */
 object PlannerPortResolver {
-
     /** Canonical shared-services name — mirrors `planning.adapter.PlannerPortBuildService.SERVICE_NAME`. */
     const val CANONICAL_SERVICE_NAME: String = "plannerPortService"
 
-    fun resolve(
-        registrations: List<BuildServiceRegistration<*, *>>,
-    ): PlannerPort {
-        val matching = registrations
-            .filter { it.name == CANONICAL_SERVICE_NAME }
-            .mapNotNull { registration -> extractPort(registration) }
+    fun resolve(registrations: List<BuildServiceRegistration<*, *>>): PlannerPort {
+        val matching =
+            registrations
+                .filter { it.name == CANONICAL_SERVICE_NAME }
+                .mapNotNull { registration -> extractPort(registration) }
         return matching.firstOrNull() ?: PlannerPort.NoOp
     }
 
@@ -40,12 +37,14 @@ object PlannerPortResolver {
      * duck-typed to keep zero `planning.*` import on the N1 side: unknown
      * shapes (plain BuildService, absent instance) degrade to null → NoOp.
      */
-    private fun extractPort(registration: BuildServiceRegistration<*, *>): PlannerPort? = try {
-        val service = registration.getService().get() ?: return null
-        val portMethod = service.javaClass.methods.firstOrNull { m -> m.name == "port" && m.parameterCount == 0 }
-            ?: return null
-        (portMethod.invoke(service) as? PlannerPort)
-    } catch (_: Exception) {
-        null
-    }
+    private fun extractPort(registration: BuildServiceRegistration<*, *>): PlannerPort? =
+        try {
+            val service = registration.getService().get() ?: return null
+            val portMethod =
+                service.javaClass.methods.firstOrNull { m -> m.name == "port" && m.parameterCount == 0 }
+                    ?: return null
+            (portMethod.invoke(service) as? PlannerPort)
+        } catch (_: Exception) {
+            null
+        }
 }

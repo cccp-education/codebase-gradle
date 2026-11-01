@@ -1,75 +1,78 @@
 package codebase.koog
 
-import contracts.context.CompositeContext
-import contracts.context.CompositeContextConfig
-import codebase.koog.plannerport.PlannerPort
-import codebase.koog.planning.PlanState
-import codebase.koog.state.AugmentedState
 import ai.koog.agents.core.agent.asMermaidDiagram
 import ai.koog.agents.core.agent.entity.AIAgentGraphStrategy
 import ai.koog.agents.core.agent.entity.ToolSelectionStrategy
 import ai.koog.agents.core.dsl.builder.node
 import ai.koog.agents.core.dsl.builder.strategy
+import codebase.koog.plannerport.PlannerPort
+import codebase.koog.planning.PlanState
+import codebase.koog.state.AugmentedState
 import codebase.rag.CompositeContextBuilder
 import codebase.rag.EmbeddingPipeline
 import codebase.rag.PgVectorConfig
 import codebase.store.RagVectorStore
+import contracts.context.CompositeContext
+import contracts.context.CompositeContextConfig
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import java.io.File
 
 class KoogAugmentedContextGraph(
-    val plannerPort: PlannerPort = PlannerPort.NoOp
+    val plannerPort: PlannerPort = PlannerPort.NoOp,
 ) {
-
     private val log = LoggerFactory.getLogger(KoogAugmentedContextGraph::class.java)
 
-    val graph: AIAgentGraphStrategy<AugmentedState, AugmentedState> = strategy<AugmentedState, AugmentedState>(
-        name = "augmented-planning",
-        toolSelectionStrategy = ToolSelectionStrategy.NONE
-    ) {
-        val buildContext by node<AugmentedState, AugmentedState> { state ->
-            buildContextNode(state)
-        }
+    val graph: AIAgentGraphStrategy<AugmentedState, AugmentedState> =
+        strategy<AugmentedState, AugmentedState>(
+            name = "augmented-planning",
+            toolSelectionStrategy = ToolSelectionStrategy.NONE,
+        ) {
+            val buildContext by node<AugmentedState, AugmentedState> { state ->
+                buildContextNode(state)
+            }
 
-        val classify by node<AugmentedState, AugmentedState> { state ->
-            classifyNode(state)
-        }
+            val classify by node<AugmentedState, AugmentedState> { state ->
+                classifyNode(state)
+            }
 
-        val plan by node<AugmentedState, AugmentedState> { state ->
-            planNode(state)
-        }
+            val plan by node<AugmentedState, AugmentedState> { state ->
+                planNode(state)
+            }
 
-        edge(nodeStart forwardTo buildContext onCondition { _ -> true } transformed { it })
-        edge(buildContext forwardTo classify onCondition { _ -> true } transformed { it })
-        edge(classify forwardTo plan onCondition { _ -> true } transformed { it })
-        edge(plan forwardTo nodeFinish onCondition { _ -> true } transformed { it })
-    }
+            edge(nodeStart forwardTo buildContext onCondition { _ -> true } transformed { it })
+            edge(buildContext forwardTo classify onCondition { _ -> true } transformed { it })
+            edge(classify forwardTo plan onCondition { _ -> true } transformed { it })
+            edge(plan forwardTo nodeFinish onCondition { _ -> true } transformed { it })
+        }
 
     fun execute(initialState: AugmentedState): AugmentedState {
-        var state = try {
-            buildContextNode(initialState)
-        } catch (e: Exception) {
-            log.debug("[KoogAugmentedContextGraph] buildContext failed (pgvector down?): {}", e.message)
-            initialState.copy(compositeContext = null, error = "BuildContextFailed: ${e.message}")
-        }
+        var state =
+            try {
+                buildContextNode(initialState)
+            } catch (e: Exception) {
+                log.debug("[KoogAugmentedContextGraph] buildContext failed (pgvector down?): {}", e.message)
+                initialState.copy(compositeContext = null, error = "BuildContextFailed: ${e.message}")
+            }
 
-        state = try {
-            classifyNode(state)
-        } catch (e: Exception) {
-            log.warn("[KoogAugmentedContextGraph] classify failed: {}", e.message)
-            state.copy(classification = "simple", error = state.error ?: "ClassifyFailed: ${e.message}")
-        }
+        state =
+            try {
+                classifyNode(state)
+            } catch (e: Exception) {
+                log.warn("[KoogAugmentedContextGraph] classify failed: {}", e.message)
+                state.copy(classification = "simple", error = state.error ?: "ClassifyFailed: ${e.message}")
+            }
 
-        state = try {
-            planNode(state)
-        } catch (e: Exception) {
-            log.error("[KoogAugmentedContextGraph] plan failed: {}", e.message)
-            state.copy(
-                planError = "PlanExecutionFailed: ${e.message}",
-                error = "PlanExecutionFailed: ${e.message}"
-            )
-        }
+        state =
+            try {
+                planNode(state)
+            } catch (e: Exception) {
+                log.error("[KoogAugmentedContextGraph] plan failed: {}", e.message)
+                state.copy(
+                    planError = "PlanExecutionFailed: ${e.message}",
+                    error = "PlanExecutionFailed: ${e.message}",
+                )
+            }
 
         return state
     }
@@ -78,20 +81,22 @@ class KoogAugmentedContextGraph(
 
     private fun buildContextNode(state: AugmentedState): AugmentedState {
         val context = buildCompositeContext(state.workspaceRoot, state.intention)
-        val partialContext = context.ragSection.contains("indisponible", ignoreCase = true) ||
-            context.docsSection.contains("indisponible", ignoreCase = true)
+        val partialContext =
+            context.ragSection.contains("indisponible", ignoreCase = true) ||
+                context.docsSection.contains("indisponible", ignoreCase = true)
         return state.copy(
             compositeContext = context,
-            error = if (partialContext) "ContextBuildPartial" else null
+            error = if (partialContext) "ContextBuildPartial" else null,
         )
     }
 
     private fun classifyNode(state: AugmentedState): AugmentedState {
-        val classification = if (state.compositeContext != null) {
-            classifyIntention(state.intention)
-        } else {
-            "simple"
-        }
+        val classification =
+            if (state.compositeContext != null) {
+                classifyIntention(state.intention)
+            } else {
+                "simple"
+            }
         return state.copy(classification = classification)
     }
 
@@ -100,31 +105,35 @@ class KoogAugmentedContextGraph(
         return if (ctx == null) {
             state.copy(
                 planError = "CompositeContext unavailable — cannot generate plan",
-                error = "ContextBuildFailed"
+                error = "ContextBuildFailed",
             )
         } else {
             // SVO-1 : plan via le port N1 (planner N2 = adapter branché par wiring Gradle).
             // Aucun adapter → NoOp : dégradé propre (planError), jamais de crash.
-            val planState = try {
-                plannerPort.plan(state.intention, ctx)
-            } catch (e: Exception) {
-                log.error("[KoogAugmentedContextGraph] plannerPort failed: {}", e.message)
-                PlanState(
-                    intention = state.intention,
-                    compositeContext = ctx,
-                    error = "PlannerPortFailed: ${e.message}"
-                )
-            }
+            val planState =
+                try {
+                    plannerPort.plan(state.intention, ctx)
+                } catch (e: Exception) {
+                    log.error("[KoogAugmentedContextGraph] plannerPort failed: {}", e.message)
+                    PlanState(
+                        intention = state.intention,
+                        compositeContext = ctx,
+                        error = "PlannerPortFailed: ${e.message}",
+                    )
+                }
             state.copy(
                 planJson = planState.planJson,
                 plan = planState.plan,
                 planError = planState.error,
-                error = state.error ?: planState.error
+                error = state.error ?: planState.error,
             )
         }
     }
 
-    private fun buildCompositeContext(workspaceRoot: String, question: String): CompositeContext {
+    private fun buildCompositeContext(
+        workspaceRoot: String,
+        question: String,
+    ): CompositeContext {
         val rootDir = File(workspaceRoot)
         val config = CompositeContextConfig()
         val cfg = PgVectorConfig.fromEnv()
@@ -142,8 +151,8 @@ class KoogAugmentedContextGraph(
         return builder.build(question)
     }
 
-    private fun classifyIntention(intention: String): String {
-        return if (intention.length > 80 ||
+    private fun classifyIntention(intention: String): String =
+        if (intention.length > 80 ||
             intention.contains("cross-borough", ignoreCase = true) ||
             intention.contains("multi-plugins", ignoreCase = true) ||
             intention.contains("architecture", ignoreCase = true)
@@ -152,5 +161,4 @@ class KoogAugmentedContextGraph(
         } else {
             "simple"
         }
-    }
 }

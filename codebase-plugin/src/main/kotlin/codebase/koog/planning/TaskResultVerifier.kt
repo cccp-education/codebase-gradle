@@ -4,20 +4,25 @@ enum class TaskVerdict {
     SUCCESS,
     FAILED,
     BLOCKED,
-    UNKNOWN
+    UNKNOWN,
 }
 
 data class TaskResult(
     val verdict: TaskVerdict,
-    val errorMessage: String = ""
+    val errorMessage: String = "",
 )
 
 class TaskResultVerifier {
+    fun verify(
+        stdout: String,
+        stderr: String,
+    ): TaskResult = verify(stdout, stderr, DEFAULT_EXPECTED_OUTPUT)
 
-    fun verify(stdout: String, stderr: String): TaskResult =
-        verify(stdout, stderr, DEFAULT_EXPECTED_OUTPUT)
-
-    fun verify(stdout: String, stderr: String, expectedOutput: String): TaskResult {
+    fun verify(
+        stdout: String,
+        stderr: String,
+        expectedOutput: String,
+    ): TaskResult {
         val combined = "$stdout\n$stderr".lowercase()
         val expected = expectedOutput.lowercase()
 
@@ -28,9 +33,10 @@ class TaskResultVerifier {
         val isCustomExpected = expected != DEFAULT_EXPECTED_OUTPUT_LOWER
 
         if (isCustomExpected) {
-            val hasBuildFailed = combined.contains("build failed") ||
-                combined.contains("compilation error") ||
-                hasActualFailure(combined)
+            val hasBuildFailed =
+                combined.contains("build failed") ||
+                    combined.contains("compilation error") ||
+                    hasActualFailure(combined)
             if (hasBuildFailed) {
                 return TaskResult(TaskVerdict.FAILED, stderr.ifBlank { stdout })
             }

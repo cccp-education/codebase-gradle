@@ -15,13 +15,13 @@ package codebase.store
  * R2DBC attendu par chaque template.
  */
 object StoreStatements {
-
     /** DDL d'initialisation du schéma pgvector (extension + 2 tables). */
-    fun initSchema(): List<String> = listOf(
-        "CREATE EXTENSION IF NOT EXISTS vector",
-        "CREATE TABLE IF NOT EXISTS codex_documents (id BIGSERIAL PRIMARY KEY, source_document TEXT NOT NULL, chunk_count INTEGER NOT NULL, license TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW())",
-        "CREATE TABLE IF NOT EXISTS codex_chunks (id BIGSERIAL PRIMARY KEY, document_id BIGINT REFERENCES codex_documents(id) ON DELETE CASCADE, chunk_index INTEGER NOT NULL, chunk_text TEXT NOT NULL, section_path TEXT NOT NULL, heading_level INTEGER DEFAULT 0, pages TEXT, embedding vector(384), created_at TIMESTAMPTZ DEFAULT NOW())"
-    )
+    fun initSchema(): List<String> =
+        listOf(
+            "CREATE EXTENSION IF NOT EXISTS vector",
+            "CREATE TABLE IF NOT EXISTS codex_documents (id BIGSERIAL PRIMARY KEY, source_document TEXT NOT NULL, chunk_count INTEGER NOT NULL, license TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW())",
+            "CREATE TABLE IF NOT EXISTS codex_chunks (id BIGSERIAL PRIMARY KEY, document_id BIGINT REFERENCES codex_documents(id) ON DELETE CASCADE, chunk_index INTEGER NOT NULL, chunk_text TEXT NOT NULL, section_path TEXT NOT NULL, heading_level INTEGER DEFAULT 0, pages TEXT, embedding vector(384), created_at TIMESTAMPTZ DEFAULT NOW())",
+        )
 
     /**
      * DDL additif des métadonnées de doute (EPIC OCR-QUALITY US-4).
@@ -32,10 +32,11 @@ object StoreStatements {
      * connu) restent lus comme "confiants" : avg_confidence=1.0,
      * confidence=1.0, doubtful=FALSE.
      */
-    fun doubtSchema(): List<String> = listOf(
-        "ALTER TABLE codex_documents ADD COLUMN IF NOT EXISTS avg_confidence DOUBLE PRECISION NOT NULL DEFAULT 1.0",
-        "ALTER TABLE codex_chunks ADD COLUMN IF NOT EXISTS confidence DOUBLE PRECISION NOT NULL DEFAULT 1.0, ADD COLUMN IF NOT EXISTS doubtful BOOLEAN NOT NULL DEFAULT FALSE"
-    )
+    fun doubtSchema(): List<String> =
+        listOf(
+            "ALTER TABLE codex_documents ADD COLUMN IF NOT EXISTS avg_confidence DOUBLE PRECISION NOT NULL DEFAULT 1.0",
+            "ALTER TABLE codex_chunks ADD COLUMN IF NOT EXISTS confidence DOUBLE PRECISION NOT NULL DEFAULT 1.0, ADD COLUMN IF NOT EXISTS doubtful BOOLEAN NOT NULL DEFAULT FALSE",
+        )
 
     /**
      * DDL additif de la provenance de page (EPIC CB-PAGE-PROVENANCE US-1).
@@ -45,16 +46,16 @@ object StoreStatements {
      * `pages NULL` → `emptyList()` au retrieval. Représentation comma-joined
      * (`"40,41"`), alignée sur `training-gradle` (D2).
      */
-    fun provenanceSchema(): List<String> = listOf(
-        "ALTER TABLE codex_chunks ADD COLUMN IF NOT EXISTS pages TEXT"
-    )
+    fun provenanceSchema(): List<String> =
+        listOf(
+            "ALTER TABLE codex_chunks ADD COLUMN IF NOT EXISTS pages TEXT",
+        )
 
     /**
      * INSERT du document source avec RETURNING id.
      * Binds : (1=source_document, 2=chunk_count, 3=license).
      */
-    fun insertDocument(): String =
-        "INSERT INTO codex_documents (source_document, chunk_count, license) VALUES ($1, $2, $3) RETURNING id"
+    fun insertDocument(): String = "INSERT INTO codex_documents (source_document, chunk_count, license) VALUES ($1, $2, $3) RETURNING id"
 
     /**
      * INSERT d'un chunk avec métadonnées de doute et provenance de page
@@ -84,8 +85,10 @@ object StoreStatements {
      * @param chunkId l'id du chunk (Long généré par PostgreSQL, safe)
      * @return le SQL d'UPDATE de l'embedding
      */
-    fun updateEmbedding(vectorLiteral: String, chunkId: Long): String =
-        "UPDATE codex_chunks SET embedding = '[${vectorLiteral.trim('[', ']')}]'::vector WHERE id = $chunkId"
+    fun updateEmbedding(
+        vectorLiteral: String,
+        chunkId: Long,
+    ): String = "UPDATE codex_chunks SET embedding = '[${vectorLiteral.trim('[', ']')}]'::vector WHERE id = $chunkId"
 
     /** Nombre de binds attendus pour [insertDocument]. */
     fun insertDocumentBindCount(): Int = 3

@@ -1,15 +1,15 @@
 package contracts.vibecoding.registry
 
-import contracts.vibecoding.tools.ToolkitIsMissingException
-import contracts.vibecoding.tools.ExecShellTool
 import contracts.vibecoding.tools.ExecGradleTool
+import contracts.vibecoding.tools.ExecShellTool
+import contracts.vibecoding.tools.ToolkitIsMissingException
 import java.io.File
 import java.nio.file.Paths
 import java.time.Instant
 
 data class ToolInfo(
     val name: String,
-    val description: String
+    val description: String,
 )
 
 data class AuditEntry(
@@ -19,7 +19,7 @@ data class AuditEntry(
     val dryRun: Boolean,
     val result: String,
     val error: String? = null,
-    val workspaceRoot: String = ""
+    val workspaceRoot: String = "",
 )
 
 /**
@@ -41,7 +41,7 @@ class ToolRegistry(
     private val tools: MutableMap<String, ToolInfo> = mutableMapOf(),
     private val auditTrail: MutableList<AuditEntry> = mutableListOf(),
     private val handlers: MutableMap<String, ToolHandler> = mutableMapOf(),
-    private val enforcementHook: EnforcementHook? = null
+    private val enforcementHook: EnforcementHook? = null,
 ) {
     companion object {
         const val MAX_READ_FILE_SIZE: Long = 10 * 1024 * 1024 // 10 MB
@@ -63,12 +63,14 @@ class ToolRegistry(
         tools[tool.name] = tool
     }
 
-    fun registerHandler(toolName: String, handler: ToolHandler) {
+    fun registerHandler(
+        toolName: String,
+        handler: ToolHandler,
+    ) {
         handlers[toolName] = handler
     }
 
-    fun get(name: String): ToolInfo =
-        tools[name] ?: throw ToolkitIsMissingException(name)
+    fun get(name: String): ToolInfo = tools[name] ?: throw ToolkitIsMissingException(name)
 
     fun toolCount(): Int = tools.size
 
@@ -80,27 +82,38 @@ class ToolRegistry(
         auditTrail.clear()
     }
 
-    fun execute(toolName: String, arguments: Map<String, String>, workspaceRoot: String, dryRun: Boolean = false): String {
+    fun execute(
+        toolName: String,
+        arguments: Map<String, String>,
+        workspaceRoot: String,
+        dryRun: Boolean = false,
+    ): String {
         val start = Instant.now()
         enforcementHook?.invoke(toolName, arguments)?.let { reason ->
             val message = "ENFORCEMENT BLOCKED [$toolName]: $reason"
             auditTrail.add(AuditEntry(start, toolName, arguments, dryRun, result = "", error = message, workspaceRoot = workspaceRoot))
             throw SecurityException(message)
         }
-        val result = try {
-            executeInternal(toolName, arguments, workspaceRoot, dryRun)
-        } catch (e: SecurityException) {
-            auditTrail.add(AuditEntry(start, toolName, arguments, dryRun, result = "", error = e.message, workspaceRoot = workspaceRoot))
-            throw e
-        } catch (e: Exception) {
-            auditTrail.add(AuditEntry(start, toolName, arguments, dryRun, result = "", error = e.message, workspaceRoot = workspaceRoot))
-            throw e
-        }
+        val result =
+            try {
+                executeInternal(toolName, arguments, workspaceRoot, dryRun)
+            } catch (e: SecurityException) {
+                auditTrail.add(AuditEntry(start, toolName, arguments, dryRun, result = "", error = e.message, workspaceRoot = workspaceRoot))
+                throw e
+            } catch (e: Exception) {
+                auditTrail.add(AuditEntry(start, toolName, arguments, dryRun, result = "", error = e.message, workspaceRoot = workspaceRoot))
+                throw e
+            }
         auditTrail.add(AuditEntry(start, toolName, arguments, dryRun, result = result.take(500), workspaceRoot = workspaceRoot))
         return result
     }
 
-    private fun executeInternal(toolName: String, arguments: Map<String, String>, workspaceRoot: String, dryRun: Boolean): String {
+    private fun executeInternal(
+        toolName: String,
+        arguments: Map<String, String>,
+        workspaceRoot: String,
+        dryRun: Boolean,
+    ): String {
         handlers[toolName]?.let { handler ->
             return if (dryRun) "DRY RUN: $toolName($arguments)" else handler(toolName, arguments, workspaceRoot)
         }
@@ -112,7 +125,7 @@ class ToolRegistry(
                 val maxSize = MAX_READ_FILE_SIZE
                 if (file.length() > maxSize) {
                     throw SecurityException(
-                        "File too large: ${file.length()} bytes exceeds 10 MB limit (${file.absolutePath})"
+                        "File too large: ${file.length()} bytes exceeds 10 MB limit (${file.absolutePath})",
                     )
                 }
                 file.readText().take(MAX_OUTPUT_CHARS)
@@ -122,7 +135,7 @@ class ToolRegistry(
                 val content = arguments["content"] ?: throw IllegalArgumentException("write_file requires 'content'")
                 if (content.length > MAX_WRITE_CHARS) {
                     throw IllegalArgumentException(
-                        "write_file content exceeds $MAX_WRITE_CHARS chars (${content.length})"
+                        "write_file content exceeds $MAX_WRITE_CHARS chars (${content.length})",
                     )
                 }
                 val file = resolvePath(path, workspaceRoot)
@@ -137,7 +150,7 @@ class ToolRegistry(
                 val newString = arguments["newString"] ?: throw IllegalArgumentException("edit_file requires 'newString'")
                 if (newString.length > MAX_WRITE_CHARS) {
                     throw IllegalArgumentException(
-                        "edit_file newString exceeds $MAX_WRITE_CHARS chars (${newString.length})"
+                        "edit_file newString exceeds $MAX_WRITE_CHARS chars (${newString.length})",
                     )
                 }
                 val file = resolvePath(path, workspaceRoot)
@@ -148,7 +161,7 @@ class ToolRegistry(
                 val updated = original.replace(oldString, newString)
                 if (updated.length > MAX_WRITE_CHARS) {
                     throw IllegalArgumentException(
-                        "edit_file resulting content exceeds $MAX_WRITE_CHARS chars (${updated.length})"
+                        "edit_file resulting content exceeds $MAX_WRITE_CHARS chars (${updated.length})",
                     )
                 }
                 file.writeText(updated)
@@ -175,7 +188,10 @@ class ToolRegistry(
         }
     }
 
-    private fun resolvePath(path: String, workspaceRoot: String): File {
+    private fun resolvePath(
+        path: String,
+        workspaceRoot: String,
+    ): File {
         val rootPath = Paths.get(workspaceRoot).normalize().toAbsolutePath()
         val resolvedPath = rootPath.resolve(path).normalize().toAbsolutePath()
         if (!resolvedPath.startsWith(rootPath)) {

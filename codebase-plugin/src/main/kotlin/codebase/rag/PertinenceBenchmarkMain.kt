@@ -31,11 +31,12 @@ object PertinenceBenchmarkMain {
 
         plan("Lancement du benchmark sur ${PertinenceQuestions.all.size} questions metier...")
 
-        val runner = PertinenceBenchmarkRunner(
-            baseUrl = baseUrl,
-            modelName = modelName,
-            contextFilePath = contextFilePath
-        )
+        val runner =
+            PertinenceBenchmarkRunner(
+                baseUrl = baseUrl,
+                modelName = modelName,
+                contextFilePath = contextFilePath,
+            )
         val report = runner.run()
 
         separator()

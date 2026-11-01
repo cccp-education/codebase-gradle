@@ -5,14 +5,12 @@ import codebase.koog.session.SessionRepository
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
-class Dashboard(private val repository: SessionRepository) {
-    suspend fun totalCost(): Double {
-        return repository.allSessions().sumOf { it.estimatedCost ?: 0.0 }
-    }
+class Dashboard(
+    private val repository: SessionRepository,
+) {
+    suspend fun totalCost(): Double = repository.allSessions().sumOf { it.estimatedCost ?: 0.0 }
 
-    suspend fun totalSessions(): Int {
-        return repository.countSessions()
-    }
+    suspend fun totalSessions(): Int = repository.countSessions()
 
     suspend fun sessionsInLastDays(days: Int): Int {
         val since = Instant.now().minus(days.toLong(), ChronoUnit.DAYS)
@@ -25,11 +23,11 @@ class Dashboard(private val repository: SessionRepository) {
         return sessions.sumOf { it.estimatedCost ?: 0.0 } / sessions.size
     }
 
-    suspend fun topExpensiveSessions(limit: Int = 5): List<SessionRecord> {
-        return repository.allSessions()
+    suspend fun topExpensiveSessions(limit: Int = 5): List<SessionRecord> =
+        repository
+            .allSessions()
             .sortedByDescending { it.estimatedCost ?: 0.0 }
             .take(limit)
-    }
 
     suspend fun summary(): DashboardSummary {
         val sessions = repository.allSessions()
@@ -59,25 +57,23 @@ class Dashboard(private val repository: SessionRepository) {
             mostExpensiveSession = mostExpensive,
             lastSession = lastSession,
             confidentialityCosts = confidentialityCosts,
-            confidentialitySessions = confidentialitySessions
+            confidentialitySessions = confidentialitySessions,
         )
     }
 
-    suspend fun listSessions(limit: Int = 50): List<SessionRecord> {
-        return repository.allSessions().take(limit)
-    }
+    suspend fun listSessions(limit: Int = 50): List<SessionRecord> = repository.allSessions().take(limit)
 
-    suspend fun costByConfidentialityLevel(): Map<String, Double> {
-        return repository.allSessions()
+    suspend fun costByConfidentialityLevel(): Map<String, Double> =
+        repository
+            .allSessions()
             .groupBy { it.confidentialityLevel.ifEmpty { "unknown" } }
             .mapValues { (_, sessions) -> sessions.sumOf { s -> s.estimatedCost ?: 0.0 } }
-    }
 
-    suspend fun sessionsByConfidentialityLevel(): Map<String, Int> {
-        return repository.allSessions()
+    suspend fun sessionsByConfidentialityLevel(): Map<String, Int> =
+        repository
+            .allSessions()
             .groupBy { it.confidentialityLevel.ifEmpty { "unknown" } }
             .mapValues { (_, sessions) -> sessions.size }
-    }
 }
 
 data class DashboardSummary(
@@ -91,5 +87,5 @@ data class DashboardSummary(
     val mostExpensiveSession: SessionRecord?,
     val lastSession: SessionRecord?,
     val confidentialityCosts: Map<String, Double>,
-    val confidentialitySessions: Map<String, Int>
+    val confidentialitySessions: Map<String, Int>,
 )

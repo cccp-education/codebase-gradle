@@ -29,9 +29,8 @@ import java.util.concurrent.ConcurrentHashMap
  * Timeout : 60s max par appel LLM.
  */
 class OllamaLlmProvider(
-    private val pool: LlmInstancePool
+    private val pool: LlmInstancePool,
 ) : LlmProvider {
-
     private val log = LoggerFactory.getLogger(OllamaLlmProvider::class.java)
     private val timeout = Duration.ofSeconds(60)
 
@@ -51,17 +50,23 @@ class OllamaLlmProvider(
         }
     }
 
-    private suspend fun callOnInstance(instance: LlmInstance, prompt: String): String {
+    private suspend fun callOnInstance(
+        instance: LlmInstance,
+        prompt: String,
+    ): String {
         log.info(
             "[OllamaLlmProvider] Selected instance: id={}, baseUrl={}, model={}",
-            instance.id, instance.baseUrl, instance.model
+            instance.id,
+            instance.baseUrl,
+            instance.model,
         )
         val model = getOrCreateModel(instance)
         log.info("[OllamaLlmProvider] Calling Ollama: model={}, promptLength={}", instance.model, prompt.length)
 
-        val response = withContext(Dispatchers.IO) {
-            model.chat(prompt)
-        }
+        val response =
+            withContext(Dispatchers.IO) {
+                model.chat(prompt)
+            }
         log.info("[OllamaLlmProvider] Ollama response received: length={}", response.length)
         return response
     }
@@ -70,7 +75,8 @@ class OllamaLlmProvider(
         val cacheKey = cacheKey(instance)
         return modelCache.getOrPut(cacheKey) {
             log.info("[OllamaLlmProvider] Creating OllamaChatModel: baseUrl={}, model={}", instance.baseUrl, instance.model)
-            OllamaChatModel.builder()
+            OllamaChatModel
+                .builder()
                 .baseUrl(instance.baseUrl)
                 .modelName(instance.model)
                 .timeout(timeout)

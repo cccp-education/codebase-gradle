@@ -11,7 +11,6 @@ import org.gradle.work.DisableCachingByDefault
 
 @DisableCachingByDefault(because = "Quality gate validation — rule engine, non-cacheable")
 abstract class QualityGateTask : DefaultTask() {
-
     @get:Input
     @get:Optional
     @get:Option(option = "output", description = "Expert text output to validate")
@@ -61,12 +60,13 @@ abstract class QualityGateTask : DefaultTask() {
     fun executeQualityGate() {
         val text = output.get()
         val dom = parseDomain(domain.get())
-        val config = QualityGateConfig(
-            minAcceptableScore = minAcceptableScore.get(),
-            enableSentimentCheck = enableSentimentCheck.get(),
-            enableOffTopicCheck = enableOffTopicCheck.get(),
-            enablePiiCheck = enablePiiCheck.get()
-        )
+        val config =
+            QualityGateConfig(
+                minAcceptableScore = minAcceptableScore.get(),
+                enableSentimentCheck = enableSentimentCheck.get(),
+                enableOffTopicCheck = enableOffTopicCheck.get(),
+                enablePiiCheck = enablePiiCheck.get(),
+            )
 
         val gate = QualityGate(config = config)
         val assessment = gate.evaluate(text, dom)
@@ -78,12 +78,11 @@ abstract class QualityGateTask : DefaultTask() {
         }
     }
 
-    private fun parseDomain(domainStr: String): Domain {
-        return try {
+    private fun parseDomain(domainStr: String): Domain =
+        try {
             Domain.valueOf(domainStr.uppercase())
         } catch (_: IllegalArgumentException) {
             logger.warn("Unknown domain '$domainStr', defaulting to CODING")
             Domain.CODING
         }
-    }
 }

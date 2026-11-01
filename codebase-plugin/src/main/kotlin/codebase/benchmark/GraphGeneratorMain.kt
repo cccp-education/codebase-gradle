@@ -9,7 +9,10 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
-import kotlin.io.path.*
+import kotlin.io.path.extension
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.toPath
 
 object GraphGeneratorMain {
     private val log = LoggerFactory.getLogger(GraphGeneratorMain::class.java)
@@ -23,21 +26,31 @@ object GraphGeneratorMain {
         val excludeNames = setOf(".git", "build", ".gradle", "node_modules", ".kotlin", "target", ".idea", "__pycache__")
 
         val allPaths = mutableListOf<Path>()
-        Files.walkFileTree(rootDir.toPath(), object : SimpleFileVisitor<Path>() {
-            override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
-                if (dir.fileName.toString() in excludeNames) return FileVisitResult.SKIP_SUBTREE
-                return FileVisitResult.CONTINUE
-            }
+        Files.walkFileTree(
+            rootDir.toPath(),
+            object : SimpleFileVisitor<Path>() {
+                override fun preVisitDirectory(
+                    dir: Path,
+                    attrs: BasicFileAttributes,
+                ): FileVisitResult {
+                    if (dir.fileName.toString() in excludeNames) return FileVisitResult.SKIP_SUBTREE
+                    return FileVisitResult.CONTINUE
+                }
 
-            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                allPaths.add(file)
-                return FileVisitResult.CONTINUE
-            }
+                override fun visitFile(
+                    file: Path,
+                    attrs: BasicFileAttributes,
+                ): FileVisitResult {
+                    allPaths.add(file)
+                    return FileVisitResult.CONTINUE
+                }
 
-            override fun visitFileFailed(file: Path, exc: java.io.IOException): FileVisitResult {
-                return FileVisitResult.SKIP_SUBTREE
-            }
-        })
+                override fun visitFileFailed(
+                    file: Path,
+                    exc: java.io.IOException,
+                ): FileVisitResult = FileVisitResult.SKIP_SUBTREE
+            },
+        )
 
         val root = rootDir.toPath()
 
@@ -57,11 +70,12 @@ object GraphGeneratorMain {
                     label = filePath.fileName.toString(),
                     type = "file",
                     community = community,
-                    metadata = mapOf(
-                        "extension" to (filePath.extension ?: ""),
-                        "size" to Files.size(filePath)
-                    )
-                )
+                    metadata =
+                        mapOf(
+                            "extension" to (filePath.extension ?: ""),
+                            "size" to Files.size(filePath),
+                        ),
+                ),
             )
 
             if (parentRelative !in dirNodes && parentRelative.isNotEmpty()) {
@@ -71,8 +85,8 @@ object GraphGeneratorMain {
                         id = parentRelative,
                         label = filePath.parent.fileName.toString(),
                         type = "directory",
-                        community = community
-                    )
+                        community = community,
+                    ),
                 )
             }
 
@@ -91,11 +105,12 @@ object GraphGeneratorMain {
                                 source = relative,
                                 target = "package://$imp",
                                 type = "import",
-                                label = imp
-                            )
+                                label = imp,
+                            ),
                         )
                     }
-                } catch (_: Exception) {}
+                } catch (_: Exception) {
+                }
             }
         }
 
@@ -106,7 +121,10 @@ object GraphGeneratorMain {
         log.info("Graph generated: {} nodes, {} edges -> {}", nodes.size, edges.size, outputFile.absolutePath)
     }
 
-    private fun findRepoName(path: Path, root: Path): String? {
+    private fun findRepoName(
+        path: Path,
+        root: Path,
+    ): String? {
         var parent: Path? = path.parent
         while (parent != null && parent != root && parent != root.parent) {
             if (Files.isDirectory(parent.resolve(".git")) || Files.isRegularFile(parent.resolve(".git"))) {

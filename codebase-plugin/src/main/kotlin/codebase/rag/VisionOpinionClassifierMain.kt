@@ -30,9 +30,12 @@ object VisionOpinionClassifierMain {
         StdoutFormatter.result("Erreurs              : ${report.errors}")
         StdoutFormatter.result("Confiance moyenne    : ${"%.2f".format(report.averageConfidence)}")
 
-        val accuracy = if (report.sections.isNotEmpty())
-            (report.sections.size - report.errors).toDouble() / report.sections.size
-        else 0.0
+        val accuracy =
+            if (report.sections.isNotEmpty()) {
+                (report.sections.size - report.errors).toDouble() / report.sections.size
+            } else {
+                0.0
+            }
         StdoutFormatter.result("Precision            : ${"%.1f".format(accuracy * 100)}%")
 
         StdoutFormatter.separator()
@@ -103,9 +106,12 @@ object VisionOpinionClassifierMain {
         sb.appendLine("--")
         sb.appendLine()
 
-        val accuracy = if (report.sections.isNotEmpty())
-            (report.sections.size - report.errors).toDouble() / report.sections.size * 100
-        else 0.0
+        val accuracy =
+            if (report.sections.isNotEmpty()) {
+                (report.sections.size - report.errors).toDouble() / report.sections.size * 100
+            } else {
+                0.0
+            }
 
         sb.appendLine("== Synthese")
         sb.appendLine()

@@ -9,11 +9,9 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
-import java.io.File
 
 @DisableCachingByDefault(because = "Workspace context changes between boroughs — never cache")
 abstract class AssembleWorkspaceContextTask : DefaultTask() {
-
     @get:InputDirectory
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val foundryDir: DirectoryProperty
@@ -27,17 +25,20 @@ abstract class AssembleWorkspaceContextTask : DefaultTask() {
         val output = outputFile.get().asFile
         output.parentFile.mkdirs()
 
-        val contextFiles = foundry.listFiles { it.isDirectory }
-            ?.sortedBy { it.name }
-            ?.flatMap { boroughDir ->
-                val contextDir = boroughDir.resolve("build/context")
-                if (!contextDir.isDirectory) return@flatMap emptyList()
-                contextDir.listFiles { it.isFile && it.extension == "txt" }
-                    ?.filter { it.name.endsWith(".context.txt") }
-                    ?.map { boroughDir.name to it }
-                    ?: emptyList()
-            }
-            ?: emptyList()
+        val contextFiles =
+            foundry
+                .listFiles { it.isDirectory }
+                ?.sortedBy { it.name }
+                ?.flatMap { boroughDir ->
+                    val contextDir = boroughDir.resolve("build/context")
+                    if (!contextDir.isDirectory) return@flatMap emptyList()
+                    contextDir
+                        .listFiles { it.isFile && it.extension == "txt" }
+                        ?.filter { it.name.endsWith(".context.txt") }
+                        ?.map { boroughDir.name to it }
+                        ?: emptyList()
+                }
+                ?: emptyList()
 
         if (contextFiles.isEmpty()) {
             logger.warn("[collectCompositeContext] No context files found — check build/context/ in boroughs")
@@ -70,7 +71,11 @@ abstract class AssembleWorkspaceContextTask : DefaultTask() {
         val result = sb.toString()
         output.writeText(result)
 
-        logger.lifecycle("[collectCompositeContext] {} boroughs agreges, {} bytes -> {}",
-            contextFiles.size, totalBytes, output.absolutePath)
+        logger.lifecycle(
+            "[collectCompositeContext] {} boroughs agreges, {} bytes -> {}",
+            contextFiles.size,
+            totalBytes,
+            output.absolutePath,
+        )
     }
 }

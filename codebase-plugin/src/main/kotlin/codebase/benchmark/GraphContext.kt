@@ -12,7 +12,7 @@ data class GraphNode(
     val label: String,
     val type: String,
     val community: String? = null,
-    val metadata: Map<String, Any> = emptyMap()
+    val metadata: Map<String, Any> = emptyMap(),
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -20,13 +20,13 @@ data class GraphEdge(
     val source: String,
     val target: String,
     val type: String,
-    val label: String? = null
+    val label: String? = null,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class GraphModel(
     val nodes: List<GraphNode> = emptyList(),
-    val edges: List<GraphEdge> = emptyList()
+    val edges: List<GraphEdge> = emptyList(),
 )
 
 object GraphContextBuilder {
@@ -37,7 +37,11 @@ object GraphContextBuilder {
         return mapper.readValue<GraphModel>(graphFile)
     }
 
-    fun neighborhood(model: GraphModel, nodeId: String, maxDepth: Int = 2): String {
+    fun neighborhood(
+        model: GraphModel,
+        nodeId: String,
+        maxDepth: Int = 2,
+    ): String {
         val targetNode = model.nodes.find { it.id == nodeId } ?: return ""
         val relatedEdges = model.edges.filter { it.source == nodeId || it.target == nodeId }
         val relatedNodeIds = relatedEdges.flatMap { listOf(it.source, it.target) }.toSet() - nodeId

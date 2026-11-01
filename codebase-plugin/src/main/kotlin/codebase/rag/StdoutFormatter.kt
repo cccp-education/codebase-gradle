@@ -1,17 +1,26 @@
 package codebase.rag
 
 object StdoutFormatter {
-
-    fun section(tag: Tag, content: String) {
+    fun section(
+        tag: Tag,
+        content: String,
+    ) {
         println("$tag $content")
     }
 
     fun ctx(content: String) = section(Tag.CTX, content)
+
     fun plan(content: String) = section(Tag.PLAN, content)
+
     fun result(content: String) = section(Tag.RESULT, content)
+
     fun error(content: String) = section(Tag.ERROR, content)
 
-    fun log(ctx: String, plan: String, result: String) {
+    fun log(
+        ctx: String,
+        plan: String,
+        result: String,
+    ) {
         ctx(ctx)
         plan(plan)
         result(result)
@@ -28,7 +37,9 @@ object StdoutFormatter {
     fun separator() = println("─".repeat(60))
 
     @JvmInline
-    value class Tag(val label: String) {
+    value class Tag(
+        val label: String,
+    ) {
         override fun toString(): String = "[$label]"
 
         companion object {

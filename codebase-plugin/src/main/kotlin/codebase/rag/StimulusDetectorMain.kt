@@ -8,9 +8,10 @@ object StimulusDetectorMain {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        val workspaceRoot = args.getOrNull(0)
-            ?: System.getenv("WORKSPACE_ROOT")
-            ?: System.getProperty("user.dir")
+        val workspaceRoot =
+            args.getOrNull(0)
+                ?: System.getenv("WORKSPACE_ROOT")
+                ?: System.getProperty("user.dir")
         val outputDirPath = args.getOrNull(1) ?: "build/stimulus-reports"
         val staleOnly = args.any { it == "--stale-only" }
 

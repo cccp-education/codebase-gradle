@@ -15,9 +15,8 @@ import contracts.llmpool.LlmInstancePool
  * Ce wrapper ne contient pas de logique LLM — il délègue l'appel via [call].
  */
 class OllamaPoolKeyAdapter(
-    private val pool: LlmInstancePool
+    private val pool: LlmInstancePool,
 ) : LlmInstancePool by pool {
-
     private val inactive = mutableSetOf<String>()
 
     /**
@@ -30,9 +29,11 @@ class OllamaPoolKeyAdapter(
             throw IllegalStateException("Ollama pool is empty — no instances configured")
         }
 
-        val candidates = pool.instances()
-            .filter { it.id !in inactive }
-            .filter { !pool.isQuotaExceeded(it) }
+        val candidates =
+            pool
+                .instances()
+                .filter { it.id !in inactive }
+                .filter { !pool.isQuotaExceeded(it) }
 
         if (candidates.isEmpty()) {
             throw IllegalStateException("All Ollama instances are unavailable (inactive or quota exceeded)")
@@ -66,11 +67,12 @@ class OllamaPoolKeyAdapter(
     fun <T> callWithRotation(block: (LlmInstance) -> T): T {
         val errors = mutableListOf<Pair<String, String>>()
         repeat(pool.size()) {
-            val instance = try {
-                nextInstance()
-            } catch (e: IllegalStateException) {
-                throw buildExhaustedException(errors, e)
-            }
+            val instance =
+                try {
+                    nextInstance()
+                } catch (e: IllegalStateException) {
+                    throw buildExhaustedException(errors, e)
+                }
 
             try {
                 return block(instance)
@@ -120,16 +122,17 @@ class OllamaPoolKeyAdapter(
 
     private fun buildExhaustedException(
         errors: List<Pair<String, String>>,
-        cause: Throwable? = null
+        cause: Throwable? = null,
     ): IllegalStateException {
-        val summary = if (errors.isEmpty()) {
-            "No Ollama instance could handle the request"
-        } else {
-            errors.joinToString(
-                prefix = "All Ollama instances failed: ",
-                separator = "; "
-            ) { "${it.first}: ${it.second}" }
-        }
+        val summary =
+            if (errors.isEmpty()) {
+                "No Ollama instance could handle the request"
+            } else {
+                errors.joinToString(
+                    prefix = "All Ollama instances failed: ",
+                    separator = "; ",
+                ) { "${it.first}: ${it.second}" }
+            }
         return IllegalStateException(summary, cause)
     }
 }

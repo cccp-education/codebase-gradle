@@ -13,7 +13,6 @@ package codebase.finetuning
  * Domaine pur (pas de Gradle/coroutine) — unit-testable avec fakes.
  */
 sealed interface FineTuningResult {
-
     val isSuccess: Boolean
     val isFailure: Boolean
 
@@ -32,7 +31,7 @@ sealed interface FineTuningResult {
         val outputModelName: String,
         val ggufPath: String,
         val iterations: Int,
-        val validationScore: Double
+        val validationScore: Double,
     ) : FineTuningResult {
         init {
             require(outputModelName.isNotBlank()) { "outputModelName must not be blank" }
@@ -56,7 +55,7 @@ sealed interface FineTuningResult {
      */
     data class Failure(
         val reason: String,
-        val originalDataset: List<String>
+        val originalDataset: List<String>,
     ) : FineTuningResult {
         init {
             require(reason.isNotBlank()) { "reason must not be blank" }
@@ -72,11 +71,13 @@ sealed interface FineTuningResult {
             outputModelName: String,
             ggufPath: String,
             iterations: Int = 1,
-            validationScore: Double = 1.0
+            validationScore: Double = 1.0,
         ): FineTuningResult = Success(outputModelName, ggufPath, iterations, validationScore)
 
         /** Raccourci factory — degraded avec dataset préservé. */
-        fun failure(reason: String, originalDataset: List<String>): FineTuningResult =
-            Failure(reason, originalDataset)
+        fun failure(
+            reason: String,
+            originalDataset: List<String>,
+        ): FineTuningResult = Failure(reason, originalDataset)
     }
 }

@@ -1,8 +1,11 @@
 package codebase.rag
 
 object ChunkTokenizer {
-
-    fun splitIntoSentenceLevelChunks(text: String, maxTokens: Int = 512, overlapTokens: Int = 50): List<String> {
+    fun splitIntoSentenceLevelChunks(
+        text: String,
+        maxTokens: Int = 512,
+        overlapTokens: Int = 50,
+    ): List<String> {
         val segments = splitIntoSegments(text)
         val results = mutableListOf<String>()
         val current = StringBuilder()
@@ -44,12 +47,14 @@ object ChunkTokenizer {
         return segments
     }
 
-    fun buildOverlap(text: String, overlapTokens: Int): String {
+    fun buildOverlap(
+        text: String,
+        overlapTokens: Int,
+    ): String {
         val words = text.split(Regex("\\s+"))
         val overlapWords = (overlapTokens * 0.75).toInt().coerceAtMost(words.size)
         return words.takeLast(overlapWords.coerceAtLeast(1)).joinToString(" ") + "\n\n"
     }
 
-    fun estimateTokenCount(text: String): Int =
-        (text.trim().length / 3.5).toInt().coerceAtLeast(1)
+    fun estimateTokenCount(text: String): Int = (text.trim().length / 3.5).toInt().coerceAtLeast(1)
 }

@@ -21,7 +21,6 @@ package codebase.finetuning
  * le caller garde un état valide (economy of ink).
  */
 fun interface FineTuningPipeline {
-
     /**
      * Exécute un fine-tuning pour la [request].
      *

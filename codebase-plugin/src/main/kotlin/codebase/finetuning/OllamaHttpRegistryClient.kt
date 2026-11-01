@@ -28,36 +28,51 @@ import java.time.Duration
  */
 class OllamaHttpRegistryClient(
     private val baseUrl: String = "http://localhost:11437",
-    private val timeoutSeconds: Long = 120
+    private val timeoutSeconds: Long = 120,
 ) : OllamaRegistryClient {
-
     private val log = LoggerFactory.getLogger(OllamaHttpRegistryClient::class.java)
     private val mapper = ObjectMapper()
-    private val httpClient: HttpClient = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(timeoutSeconds))
-        .build()
+    private val httpClient: HttpClient =
+        HttpClient
+            .newBuilder()
+            .connectTimeout(Duration.ofSeconds(timeoutSeconds))
+            .build()
 
     override fun createModel(request: CreateModelRequest): RegistryResponse =
-        post("$baseUrl/api/create", mapOf(
-            "name" to request.modelName,
-            "modelfile" to request.modelfile,
-            "stream" to request.stream
-        ), op = "create")
+        post(
+            "$baseUrl/api/create",
+            mapOf(
+                "name" to request.modelName,
+                "modelfile" to request.modelfile,
+                "stream" to request.stream,
+            ),
+            op = "create",
+        )
 
     override fun pushModel(request: PushModelRequest): RegistryResponse =
-        post("$baseUrl/api/push", mapOf(
-            "name" to request.modelName,
-            "stream" to request.stream
-        ), op = "push")
+        post(
+            "$baseUrl/api/push",
+            mapOf(
+                "name" to request.modelName,
+                "stream" to request.stream,
+            ),
+            op = "push",
+        )
 
-    private fun post(uri: String, body: Map<String, Any?>, op: String): RegistryResponse {
+    private fun post(
+        uri: String,
+        body: Map<String, Any?>,
+        op: String,
+    ): RegistryResponse {
         val json = mapper.writeValueAsString(body)
-        val httpRequest = HttpRequest.newBuilder()
-            .uri(URI.create(uri))
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(json))
-            .timeout(Duration.ofSeconds(timeoutSeconds))
-            .build()
+        val httpRequest =
+            HttpRequest
+                .newBuilder()
+                .uri(URI.create(uri))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .timeout(Duration.ofSeconds(timeoutSeconds))
+                .build()
         return try {
             val response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString())
             val status = response.statusCode()

@@ -1,12 +1,12 @@
 package codebase.koog
 
+import codebase.koog.agentic.GovernanceEnforcementWirer
+import codebase.koog.governance.GovernanceContextLoader
 import codebase.koog.llm.LlmProvider
 import contracts.session.AgentContext
 import contracts.session.SessionResponse
 import contracts.session.SessionStatus
 import contracts.vibecoding.registry.ToolRegistry
-import codebase.koog.agentic.GovernanceEnforcementWirer
-import codebase.koog.governance.GovernanceContextLoader
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
@@ -26,7 +26,6 @@ import java.util.UUID
 
 @DisableCachingByDefault(because = "Session protocol — LLM calls non-deterministic, non-cacheable")
 abstract class SessionProtocolTask : DefaultTask() {
-
     private val log = LoggerFactory.getLogger(SessionProtocolTask::class.java)
 
     @get:Internal
@@ -96,11 +95,13 @@ abstract class SessionProtocolTask : DefaultTask() {
         action.convention("create")
     }
 
-    private fun resolveLifecycleManager(): SessionProtocolLifecycleManager {
-        return lifecycleManager ?: SessionProtocolLifecycleManager(
-            project.layout.buildDirectory.dir("session-protocol").get().asFile
+    private fun resolveLifecycleManager(): SessionProtocolLifecycleManager =
+        lifecycleManager ?: SessionProtocolLifecycleManager(
+            project.layout.buildDirectory
+                .dir("session-protocol")
+                .get()
+                .asFile,
         )
-    }
 
     @TaskAction
     fun executeProtocol() {
@@ -119,11 +120,12 @@ abstract class SessionProtocolTask : DefaultTask() {
         val explicitSessionId = sessionId.getOrElse("").takeUnless { it.isBlank() }
 
         val lifecycleMgr = resolveLifecycleManager()
-        val lifecycleState = lifecycleMgr.create(
-            prompt = promptText,
-            model = model.getOrElse("").takeIf { it.isNotBlank() },
-            sessionId = explicitSessionId
-        )
+        val lifecycleState =
+            lifecycleMgr.create(
+                prompt = promptText,
+                model = model.getOrElse("").takeIf { it.isNotBlank() },
+                sessionId = explicitSessionId,
+            )
 
         val response = executeVibecoding(promptText, UUID.fromString(lifecycleState.sessionId))
 
@@ -176,12 +178,16 @@ abstract class SessionProtocolTask : DefaultTask() {
         log.info("[SessionProtocol] Listed {} sessions -> {}", sessions.size, outputFile.absolutePath)
     }
 
-    private fun executeVibecoding(promptText: String, sid: UUID): SessionResponse {
-        val agentContext = if (contextFile.isPresent) {
-            parseContextFile(contextFile.get().asFile)
-        } else {
-            loadGovernanceContext()
-        }
+    private fun executeVibecoding(
+        promptText: String,
+        sid: UUID,
+    ): SessionResponse {
+        val agentContext =
+            if (contextFile.isPresent) {
+                parseContextFile(contextFile.get().asFile)
+            } else {
+                loadGovernanceContext()
+            }
         lastAgentContext = agentContext
 
         log.info("[SessionProtocol] Executing session {} — prompt={}", sid, promptText)
@@ -194,19 +200,20 @@ abstract class SessionProtocolTask : DefaultTask() {
             toolRegistry = wiredToolRegistry
         }
 
-        val engine = SessionProtocolEngine(
-            toolRegistry = toolRegistry,
-            llmProvider = llmProvider,
-            eventStream = eventStream,
-            liveContextInjector = liveContextInjector
-        )
+        val engine =
+            SessionProtocolEngine(
+                toolRegistry = toolRegistry,
+                llmProvider = llmProvider,
+                eventStream = eventStream,
+                liveContextInjector = liveContextInjector,
+            )
         return engine.executeVibecoding(
             promptText = promptText,
             workspaceRootPath = workspaceRoot.asFile.get().absolutePath,
             maxActions = maxActions.get(),
             sessionId = sid,
             agentContext = agentContext,
-            model = model.getOrElse("").takeIf { it.isNotBlank() }
+            model = model.getOrElse("").takeIf { it.isNotBlank() },
         )
     }
 
@@ -226,24 +233,28 @@ abstract class SessionProtocolTask : DefaultTask() {
         return sid
     }
 
-    private fun resolveOutputFile(): File {
-        return if (responseFile.isPresent) {
+    private fun resolveOutputFile(): File =
+        if (responseFile.isPresent) {
             responseFile.get().asFile
         } else {
-            val dir = project.layout.buildDirectory.dir("session-protocol").get().asFile
+            val dir =
+                project.layout.buildDirectory
+                    .dir("session-protocol")
+                    .get()
+                    .asFile
             dir.mkdirs()
             File(dir, "session-response.json")
         }
-    }
 
     private fun buildListResponse(sessions: List<SessionLifecycleState>): SessionResponse {
-        val lines = sessions.map { s ->
-            "[${s.status.name}] ${s.sessionId.take(8)}... | ${s.prompt.take(60)} | model=${s.model ?: "default"} | created=${s.createdAt}"
-        }
+        val lines =
+            sessions.map { s ->
+                "[${s.status.name}] ${s.sessionId.take(8)}... | ${s.prompt.take(60)} | model=${s.model ?: "default"} | created=${s.createdAt}"
+            }
         return SessionResponse(
             sessionId = UUID.randomUUID(),
             output = if (lines.isEmpty()) "No sessions found." else lines.joinToString("\n"),
-            status = SessionStatus.COMPLETED
+            status = SessionStatus.COMPLETED,
         )
     }
 
@@ -261,7 +272,9 @@ abstract class SessionProtocolTask : DefaultTask() {
     private fun parseContextFile(file: File): AgentContext {
         val content = file.readText(Charsets.UTF_8)
         return try {
-            val mapper = com.fasterxml.jackson.databind.ObjectMapper()
+            val mapper =
+                com.fasterxml.jackson.databind
+                    .ObjectMapper()
             mapper.readValue(content, AgentContext::class.java)
         } catch (e: Exception) {
             log.warn("[SessionProtocol] Failed to parse context file: {}", e.message)
@@ -270,7 +283,9 @@ abstract class SessionProtocolTask : DefaultTask() {
     }
 
     private fun buildResponseJson(response: SessionResponse): String {
-        val mapper = com.fasterxml.jackson.databind.ObjectMapper()
+        val mapper =
+            com.fasterxml.jackson.databind
+                .ObjectMapper()
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response)
     }
 }

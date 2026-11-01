@@ -29,7 +29,6 @@ data class ResolvedSessionPrompt(
  * Gradle, no LLM — unit-testable (pattern `BacklogDetector`).
  */
 object SessionPromptResolver {
-
     fun resolve(
         cliPrompt: String?,
         borough: String,
@@ -38,19 +37,21 @@ object SessionPromptResolver {
         if (!cliPrompt.isNullOrBlank()) {
             return ResolvedSessionPrompt(prompt = cliPrompt, source = SessionPromptSource.TRANSFERRED)
         }
-        val governance = projectDir?.takeIf { it.isDirectory }?.let { dir ->
-            try {
-                GovernanceContextLoader().load(dir)
-            } catch (_: Exception) {
-                null
+        val governance =
+            projectDir?.takeIf { it.isDirectory }?.let { dir ->
+                try {
+                    GovernanceContextLoader().load(dir)
+                } catch (_: Exception) {
+                    null
+                }
             }
-        }
         return ResolvedSessionPrompt(
-            prompt = buildDefaultPrompt(
-                borough = borough,
-                backlogItems = governance?.backlogItems.orEmpty(),
-                promptReprise = projectDir?.let { readPromptReprise(it) }.orEmpty(),
-            ),
+            prompt =
+                buildDefaultPrompt(
+                    borough = borough,
+                    backlogItems = governance?.backlogItems.orEmpty(),
+                    promptReprise = projectDir?.let { readPromptReprise(it) }.orEmpty(),
+                ),
             source = SessionPromptSource.BOROUGH_DEFAULT,
         )
     }
@@ -62,47 +63,49 @@ object SessionPromptResolver {
      * as `CompositeContextBuilder.buildScoped`.
      */
     private fun readPromptReprise(projectDir: File): String {
-        val candidates = buildList {
-            add(projectDir.resolve("PROMPT_REPRISE.adoc"))
-            projectDir.listFiles()?.filter { it.isDirectory }?.forEach {
-                add(File(it, "PROMPT_REPRISE.adoc"))
+        val candidates =
+            buildList {
+                add(projectDir.resolve("PROMPT_REPRISE.adoc"))
+                projectDir.listFiles()?.filter { it.isDirectory }?.forEach {
+                    add(File(it, "PROMPT_REPRISE.adoc"))
+                }
             }
-        }
-        return candidates.firstOrNull { it.isFile }
+        return candidates
+            .firstOrNull { it.isFile }
             ?.let { file ->
                 runCatching { file.readText(Charsets.UTF_8).take(PROMPT_REPRISE_BUDGET) }.getOrNull()
-            }
-            .orEmpty()
+            }.orEmpty()
     }
 
     private fun buildDefaultPrompt(
         borough: String,
         backlogItems: List<String>,
         promptReprise: String,
-    ): String = buildString {
-        appendLine("= Autonomous session — $borough")
-        appendLine()
-        appendLine("Default borough prompt: work the backlog, first open item first.")
-        appendLine("Objective: keep the borough backlog shrinking; stop when the")
-        appendLine("backlog is complete (Brainstorming chain-up is handled by the orchestrator).")
-        if (promptReprise.isNotBlank()) {
+    ): String =
+        buildString {
+            appendLine("= Autonomous session — $borough")
             appendLine()
-            appendLine("--- PROMPT_REPRISE.adoc ---")
-            appendLine(promptReprise)
-            appendLine("--- end PROMPT_REPRISE.adoc ---")
-        }
-        if (backlogItems.isNotEmpty()) {
-            appendLine()
-            appendLine("Backlog open items:")
-            backlogItems.forEachIndexed { index, item ->
-                appendLine("  ${index + 1}. $item")
+            appendLine("Default borough prompt: work the backlog, first open item first.")
+            appendLine("Objective: keep the borough backlog shrinking; stop when the")
+            appendLine("backlog is complete (Brainstorming chain-up is handled by the orchestrator).")
+            if (promptReprise.isNotBlank()) {
+                appendLine()
+                appendLine("--- PROMPT_REPRISE.adoc ---")
+                appendLine(promptReprise)
+                appendLine("--- end PROMPT_REPRISE.adoc ---")
             }
-        } else {
-            appendLine()
-            appendLine("No open backlog item detected — treat this session as an")
-            appendLine("augmented-context brainstorming on the borough vision.")
+            if (backlogItems.isNotEmpty()) {
+                appendLine()
+                appendLine("Backlog open items:")
+                backlogItems.forEachIndexed { index, item ->
+                    appendLine("  ${index + 1}. $item")
+                }
+            } else {
+                appendLine()
+                appendLine("No open backlog item detected — treat this session as an")
+                appendLine("augmented-context brainstorming on the borough vision.")
+            }
         }
-    }
 
     private const val PROMPT_REPRISE_BUDGET = 2_000
 }

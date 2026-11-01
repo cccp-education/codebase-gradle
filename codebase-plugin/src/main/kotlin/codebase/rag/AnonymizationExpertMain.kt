@@ -19,24 +19,26 @@ object AnonymizationExpertMain {
         val outputFile = if (args.size >= 2) File(args[1]) else File("build/anonymized-output.yml")
         val content = inputFile.readText()
         val extension = inputFile.extension.lowercase()
-        val format = when (extension) {
-            "yml", "yaml" -> "yaml"
-            "json" -> "json"
-            "xml" -> "xml"
-            "sql" -> "sql"
-            "adoc" -> "adoc"
-            "kt" -> "kotlin"
-            else -> "text"
-        }
+        val format =
+            when (extension) {
+                "yml", "yaml" -> "yaml"
+                "json" -> "json"
+                "xml" -> "xml"
+                "sql" -> "sql"
+                "adoc" -> "adoc"
+                "kt" -> "kotlin"
+                else -> "text"
+            }
 
         System.err.println("[EPIC-2] Anonymisation de ${inputFile.name} (format=$format)")
 
         val expert = AnonymizationExpertFactory.create()
-        val request = AnonymizationRequest(
-            sourcePath = inputFile.absolutePath,
-            content = content,
-            targetFormat = format
-        )
+        val request =
+            AnonymizationRequest(
+                sourcePath = inputFile.absolutePath,
+                content = content,
+                targetFormat = format,
+            )
 
         val result = expert.anonymizeRequest(request)
 

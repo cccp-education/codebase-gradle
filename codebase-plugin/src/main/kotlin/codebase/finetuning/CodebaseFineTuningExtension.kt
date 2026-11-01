@@ -21,7 +21,6 @@ import org.gradle.api.provider.Property
  * pure domain objects so tasks can stay thin.
  */
 abstract class CodebaseFineTuningExtension {
-
     abstract val baseModel: Property<String>
     abstract val dataset: ListProperty<String>
     abstract val outputModelName: Property<String>
@@ -50,13 +49,14 @@ abstract class CodebaseFineTuningExtension {
      * Maps the hyperparameter fields to a pure [FineTuningConfig].
      * Used by `fineTuneExpert` to build the [FineTuningState].
      */
-    fun toConfig(): FineTuningConfig = FineTuningConfig(
-        epochs = epochs.get(),
-        learningRate = learningRate.get(),
-        batchSize = batchSize.get(),
-        corpusGlobs = corpusGlobs.get(),
-        continualPreTrainingRatio = corpusRatio.get()
-    )
+    fun toConfig(): FineTuningConfig =
+        FineTuningConfig(
+            epochs = epochs.get(),
+            learningRate = learningRate.get(),
+            batchSize = batchSize.get(),
+            corpusGlobs = corpusGlobs.get(),
+            continualPreTrainingRatio = corpusRatio.get(),
+        )
 
     /**
      * Maps the request fields to a pure [FineTuningRequest].
@@ -74,7 +74,7 @@ abstract class CodebaseFineTuningExtension {
             baseModel = baseModel.get(),
             dataset = resolvedDataset,
             outputModelName = outputModelName.get(),
-            corpusRatio = corpusRatio.get()
+            corpusRatio = corpusRatio.get(),
         )
     }
 }

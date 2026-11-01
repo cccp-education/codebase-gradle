@@ -15,5 +15,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DoubtfulChunk(
     val chunk: DocumentChunk,
-    val doubt: DoubtMetadata = DoubtMetadata()
+    val doubt: DoubtMetadata = DoubtMetadata(),
 )

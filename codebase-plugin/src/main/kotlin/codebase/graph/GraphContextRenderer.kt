@@ -18,17 +18,17 @@ package codebase.graph
  * ```
  */
 object GraphContextRenderer {
-
-    fun render(subgraph: SiteSubgraph): String = buildString {
-        appendLine("[Graphify] subgraph: ${subgraph.nodeCount} nodes, ${subgraph.edgeCount} edges, ${subgraph.communityCount} communities")
-        for (node in subgraph.nodes) {
-            appendLine("- node ${node.id} [type=${node.type}, community=${node.community}]")
-        }
-        for (edge in subgraph.edges) {
-            appendLine("- edge ${edge.source} -> ${edge.target} [type=${edge.type}]")
-        }
-        for (community in subgraph.communities) {
-            appendLine("- community ${community.id} (${community.size} nodes)")
-        }
-    }.trimEnd()
+    fun render(subgraph: SiteSubgraph): String =
+        buildString {
+            appendLine("[Graphify] subgraph: ${subgraph.nodeCount} nodes, ${subgraph.edgeCount} edges, ${subgraph.communityCount} communities")
+            for (node in subgraph.nodes) {
+                appendLine("- node ${node.id} [type=${node.type}, community=${node.community}]")
+            }
+            for (edge in subgraph.edges) {
+                appendLine("- edge ${edge.source} -> ${edge.target} [type=${edge.type}]")
+            }
+            for (community in subgraph.communities) {
+                appendLine("- community ${community.id} (${community.size} nodes)")
+            }
+        }.trimEnd()
 }

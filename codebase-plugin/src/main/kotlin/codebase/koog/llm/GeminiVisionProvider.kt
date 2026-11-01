@@ -16,9 +16,8 @@ import java.util.Base64
 
 open class GeminiVisionProvider(
     private val config: GeminiConfig = GeminiConfig(),
-    private val keyPool: GeminiKeyPool? = null
+    private val keyPool: GeminiKeyPool? = null,
 ) : VisionProvider {
-
     private val log = LoggerFactory.getLogger(GeminiVisionProvider::class.java)
 
     private var cachedModel: GoogleAiGeminiChatModel? = null
@@ -26,35 +25,43 @@ open class GeminiVisionProvider(
     private var cachedMaxTokens: Int = -1
     private var currentInstance: LlmInstance? = null
 
-    override open suspend fun processImage(
+    open override suspend fun processImage(
         imageBytes: ByteArray,
         mimeType: String,
         language: String,
         model: String,
-        maxTokens: Int
+        maxTokens: Int,
     ): String {
         val instance = keyPool?.nextInstance()
         currentInstance = instance
-        val apiKey = instance?.baseUrl?.substringAfter("key=")?.takeIf { it.isNotBlank() }
-            ?: config.resolveApiKey()
+        val apiKey =
+            instance?.baseUrl?.substringAfter("key=")?.takeIf { it.isNotBlank() }
+                ?: config.resolveApiKey()
 
         log.info(
             "[GeminiVision] Processing image: mimeType={}, language={}, model={}, maxTokens={}, imageSize={}bytes, keyId={}",
-            mimeType, language, model, maxTokens, imageBytes.size, instance?.id ?: "default"
+            mimeType,
+            language,
+            model,
+            maxTokens,
+            imageBytes.size,
+            instance?.id ?: "default",
         )
 
         val currentModel = resolveModel(model, maxTokens, apiKey)
         val ocrPrompt = buildOcrPrompt(language, model)
         val base64Image = Base64.getEncoder().encodeToString(imageBytes)
-        val userMessage = UserMessage.from(
-            ImageContent(base64Image, mimeType),
-            TextContent(ocrPrompt)
-        )
+        val userMessage =
+            UserMessage.from(
+                ImageContent(base64Image, mimeType),
+                TextContent(ocrPrompt),
+            )
 
         return try {
-            val response = withContext(Dispatchers.IO) {
-                currentModel.chat(userMessage)
-            }
+            val response =
+                withContext(Dispatchers.IO) {
+                    currentModel.chat(userMessage)
+                }
             val text = response.aiMessage().text()
             log.info("[GeminiVision] Response received: length={}", text.length)
             text
@@ -67,28 +74,38 @@ open class GeminiVisionProvider(
                 }
             }
             throw IllegalStateException(
-                "Gemini Vision OCR failed for model=$model: ${e.message}", e
+                "Gemini Vision OCR failed for model=$model: ${e.message}",
+                e,
             )
         }
     }
 
-    private fun resolveModel(modelName: String, maxTokens: Int, apiKey: String): GoogleAiGeminiChatModel {
+    private fun resolveModel(
+        modelName: String,
+        maxTokens: Int,
+        apiKey: String,
+    ): GoogleAiGeminiChatModel {
         if (modelName == cachedModelName && maxTokens == cachedMaxTokens && cachedModel != null) {
             return cachedModel!!
         }
         log.info("[GeminiVision] Initializing model: model={}, maxOutputTokens={}", modelName, maxTokens)
-        val newModel = GoogleAiGeminiChatModel.builder()
-            .apiKey(apiKey)
-            .modelName(modelName)
-            .maxOutputTokens(maxTokens)
-            .build()
+        val newModel =
+            GoogleAiGeminiChatModel
+                .builder()
+                .apiKey(apiKey)
+                .modelName(modelName)
+                .maxOutputTokens(maxTokens)
+                .build()
         cachedModel = newModel
         cachedModelName = modelName
         cachedMaxTokens = maxTokens
         return newModel
     }
 
-    private fun buildOcrPrompt(language: String, model: String): String {
+    private fun buildOcrPrompt(
+        language: String,
+        model: String,
+    ): String {
         val date = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
         return """
             Tu es un expert OCR. Analyse l'image ci-dessous et extrait TOUT le texte visible.
@@ -105,6 +122,6 @@ open class GeminiVisionProvider(
             - Si l'image est floue ou illisible, indiquer "[OCR] Zone illisible" en commentaire
             - Conserver la mise en page logique (colonnes, tableaux)
             - Indiquer la confiance estimée en commentaire (// Confiance: haute/moyenne/basse)
-        """.trimMargin()
+            """.trimMargin()
     }
 }

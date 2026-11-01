@@ -16,5 +16,5 @@ data class OcrMetrics(
     val estimatedCostUsd: Double,
     val chunkCount: Int = 0,
     val ingestDurationMs: Long = 0,
-    val embeddingDurationMs: Long = 0
+    val embeddingDurationMs: Long = 0,
 )

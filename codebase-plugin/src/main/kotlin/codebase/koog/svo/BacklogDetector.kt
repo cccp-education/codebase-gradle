@@ -15,13 +15,14 @@ data class BacklogItem(
     val done: Boolean,
     val stale: Boolean,
 ) {
-    fun summary(): String = when {
-        line.startsWith("|") -> {
-            val cells = line.trim('|').split('|').map { it.trim() }
-            if (cells.size >= 2) "${cells[0]} ${cells[1]}" else line.trim('|').trim()
+    fun summary(): String =
+        when {
+            line.startsWith("|") -> {
+                val cells = line.trim('|').split('|').map { it.trim() }
+                if (cells.size >= 2) "${cells[0]} ${cells[1]}" else line.trim('|').trim()
+            }
+            else -> line.replace(CHECKBOX_MARK, "").trim()
         }
-        else -> line.replace(CHECKBOX_MARK, "").trim()
-    }
 
     private companion object {
         val CHECKBOX_MARK = Regex("^\\*\\s*\\[.\\]\\s*")
@@ -36,18 +37,19 @@ data class BacklogItem(
  * checkboxes (`* [ ]`) and AsciiDoc US tables (`| US | desc | pts | Statut |`).
  */
 object BacklogDetector {
-
     private val CHECKBOX = Regex("^\\*\\s*\\[( |x|X)\\]\\s*(.*)$")
 
     private val HEADING = Regex("^(=+)\\s+(.*)$")
 
-    private val COMPLETION_MARKER = Regex(
-        "(?i)(✅|stale|termin[eé]s?|termine|caduque|abandonn[eé]s?|cl[oô]tur[eé]s?|retrait[eé]s?|migr[eé]s?|historique)"
-    )
+    private val COMPLETION_MARKER =
+        Regex(
+            "(?i)(✅|stale|termin[eé]s?|termine|caduque|abandonn[eé]s?|cl[oô]tur[eé]s?|retrait[eé]s?|migr[eé]s?|historique)",
+        )
 
-    private val ACTIVE_MARKER = Regex(
-        "(?i)(🟡|⏳|en cours|à faire|a faire|à planifier|a planifier|en pause)"
-    )
+    private val ACTIVE_MARKER =
+        Regex(
+            "(?i)(🟡|⏳|en cours|à faire|a faire|à planifier|a planifier|en pause)",
+        )
 
     private val TABLE_DELIMITER = Regex("^\\|={3,}$")
 
@@ -87,11 +89,12 @@ object BacklogDetector {
             if (line.startsWith("* [")) {
                 val match = CHECKBOX.matchEntire(line)
                 if (match != null) {
-                    items += BacklogItem(
-                        line = line,
-                        done = !match.groupValues[1].isBlank(),
-                        stale = stale,
-                    )
+                    items +=
+                        BacklogItem(
+                            line = line,
+                            done = !match.groupValues[1].isBlank(),
+                            stale = stale,
+                        )
                 }
                 continue
             }
@@ -105,19 +108,19 @@ object BacklogDetector {
                 if (match != null) {
                     val status = match.groupValues[3]
                     val done = COMPLETION_MARKER.containsMatchIn(status)
-                    items += BacklogItem(
-                        line = line,
-                        done = done,
-                        stale = stale && !ACTIVE_MARKER.containsMatchIn(status),
-                    )
+                    items +=
+                        BacklogItem(
+                            line = line,
+                            done = done,
+                            stale = stale && !ACTIVE_MARKER.containsMatchIn(status),
+                        )
                 }
             }
         }
         return items
     }
 
-    fun openItems(items: List<BacklogItem>): List<BacklogItem> =
-        items.filter { !it.done && !it.stale }
+    fun openItems(items: List<BacklogItem>): List<BacklogItem> = items.filter { !it.done && !it.stale }
 
     fun isComplete(items: List<BacklogItem>): Boolean = openItems(items).isEmpty()
 }

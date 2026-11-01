@@ -4,13 +4,12 @@ data class ChunkSnapshotEntry(
     val id: String,
     val sourceFile: String,
     val sourceLines: String,
-    val checksum: String
+    val checksum: String,
 )
 
 data class ChunkSnapshot(
-    val entries: List<ChunkSnapshotEntry>
+    val entries: List<ChunkSnapshotEntry>,
 ) {
-
     fun ids(): Set<String> = entries.map { it.id }.toSet()
 
     fun entryOf(id: String): ChunkSnapshotEntry? = entries.firstOrNull { it.id == id }

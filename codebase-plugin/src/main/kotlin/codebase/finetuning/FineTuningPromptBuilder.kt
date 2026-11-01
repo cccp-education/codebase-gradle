@@ -9,7 +9,6 @@ package codebase.finetuning
  * EPIC FT-PIPELINE US-3 (pattern `slider.pipeline.DeckPromptBuilder`).
  */
 interface FineTuningPromptBuilder {
-
     /**
      * Prompt for the `propose` node — asks the LLM to suggest a corpus-ratio
      * adjustment (or other hyperparameter tweak) from the running [state].

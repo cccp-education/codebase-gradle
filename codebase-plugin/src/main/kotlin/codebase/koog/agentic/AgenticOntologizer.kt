@@ -1,7 +1,6 @@
 package codebase.koog.agentic
 
 class AgenticOntologizer {
-
     fun ontologize(chunks: List<AgenticChunk>): List<OntologizedChunk> {
         if (chunks.isEmpty()) return emptyList()
 
@@ -17,8 +16,8 @@ class AgenticOntologizer {
                     chunk = chunk,
                     taxonomySection = section,
                     ontologyConfidence = confidence,
-                    relatedChunkIds = relatedIds
-                )
+                    relatedChunkIds = relatedIds,
+                ),
             )
         }
 
@@ -29,45 +28,62 @@ class AgenticOntologizer {
         val content = chunk.content.lowercase()
 
         return when {
-            content.contains("principe") || content.contains("fondateur") ||
+            content.contains("principe") ||
+                content.contains("fondateur") ||
                 content.contains("le verbe dit pourquoi") -> TaxonomySection.PRINCIPES
 
-            content.contains("taxonomie") || content.contains("quatre verbes") ||
-                content.contains("generer") && content.contains("collecter") &&
-                content.contains("transformer") && content.contains("deployer") -> TaxonomySection.TAXONOMIE
+            content.contains("taxonomie") ||
+                content.contains("quatre verbes") ||
+                content.contains("generer") &&
+                content.contains("collecter") &&
+                content.contains("transformer") &&
+                content.contains("deployer") -> TaxonomySection.TAXONOMIE
 
-            content.contains("format pivot") || content.contains("metadata.json") ||
+            content.contains("format pivot") ||
+                content.contains("metadata.json") ||
                 content.contains("contrat d'interface") -> TaxonomySection.FORMAT_PIVOT
 
             content.contains("convention over configuration") ||
-                content.contains("inférence") || content.contains("magic value") ||
+                content.contains("inférence") ||
+                content.contains("magic value") ||
                 content.contains("arborescence") -> TaxonomySection.CONVENTION_OVER_CONFIGURATION
 
             content.contains("configuration par domaine") ||
-                content.contains("namespace") && content.contains("extension") -> TaxonomySection.CONFIG_DOMAINE
+                content.contains("namespace") &&
+                content.contains("extension") -> TaxonomySection.CONFIG_DOMAINE
 
-            content.contains("mapping") && content.contains("borough") ||
-                content.contains("tâche actuelle") && content.contains("tâche renommée") -> TaxonomySection.MAPPING
+            content.contains("mapping") &&
+                content.contains("borough") ||
+                content.contains("tâche actuelle") &&
+                content.contains("tâche renommée") -> TaxonomySection.MAPPING
 
             content.contains("roadmap") || content.contains("phase") && content.contains("k-") -> TaxonomySection.ROADMAP_IMPLEMENTATION
 
-            content.contains("dépendance") || content.contains("epic g") ||
+            content.contains("dépendance") ||
+                content.contains("epic g") ||
                 content.contains("parallélisable") -> TaxonomySection.DEPENDANCES
 
-            content.contains("ordre d'attaque") || content.contains("phase 0") ||
+            content.contains("ordre d'attaque") ||
+                content.contains("phase 0") ||
                 content.contains("bootstrap artisanal") -> TaxonomySection.ORDRE_ATTAQUE
 
-            content.contains("exemple") && content.contains("stdout") ||
-                content.contains("avant/après") || content.contains("gradlew tasks") -> TaxonomySection.EXEMPLES_STDOUT
+            content.contains("exemple") &&
+                content.contains("stdout") ||
+                content.contains("avant/après") ||
+                content.contains("gradlew tasks") -> TaxonomySection.EXEMPLES_STDOUT
 
-            content.contains("conclusion") || content.contains("ce qu'on importe") ||
+            content.contains("conclusion") ||
+                content.contains("ce qu'on importe") ||
                 content.contains("ce qu'on n'importe pas") -> TaxonomySection.CONCLUSION
 
             else -> TaxonomySection.UNKNOWN
         }
     }
 
-    private fun computeOntologyConfidence(chunk: AgenticChunk, section: TaxonomySection): Double {
+    private fun computeOntologyConfidence(
+        chunk: AgenticChunk,
+        section: TaxonomySection,
+    ): Double {
         var score = 0.0
 
         if (section != TaxonomySection.UNKNOWN) score += 0.4
@@ -83,7 +99,10 @@ class AgenticOntologizer {
         return score.coerceIn(0.0, 1.0)
     }
 
-    private fun findRelatedChunkIds(chunk: AgenticChunk, allChunks: List<AgenticChunk>): List<String> {
+    private fun findRelatedChunkIds(
+        chunk: AgenticChunk,
+        allChunks: List<AgenticChunk>,
+    ): List<String> {
         val related = mutableListOf<String>()
 
         for (other in allChunks) {

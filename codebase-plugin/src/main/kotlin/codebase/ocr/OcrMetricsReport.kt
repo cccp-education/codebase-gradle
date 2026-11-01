@@ -4,7 +4,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 object OcrMetricsReport {
-
     fun generateAsciiDoc(metrics: List<OcrMetrics>): String {
         val date = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
         val totalDuration = metrics.sumOf { it.ocrDurationMs + it.ingestDurationMs + it.embeddingDurationMs }

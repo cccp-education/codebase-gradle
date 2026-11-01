@@ -7,12 +7,12 @@ data class DispatcherSubtask(
     val prompt: String,
     val expectedOutputFormat: String,
     val validationCriteria: List<String>,
-    val priority: Int = 1
+    val priority: Int = 1,
 )
 
 data class DispatcherDecomposition(
     val taskId: String,
     val originalPrompt: String,
     val subtasks: List<DispatcherSubtask>,
-    val reasoning: String
+    val reasoning: String,
 )

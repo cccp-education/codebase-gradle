@@ -15,7 +15,6 @@ package codebase.finetuning
  * EPIC FT-PIPELINE US-3 (pattern `slider.pipeline.DeckLlm`).
  */
 interface FineTuningLlm {
-
     /**
      * Calls the LLM with the propose prompt; returns the proposal string
      * (e.g. a corpus-ratio tweak, an adjusted hyperparameter).

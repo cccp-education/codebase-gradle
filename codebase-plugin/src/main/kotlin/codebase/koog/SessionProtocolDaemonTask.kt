@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory
 
 @DisableCachingByDefault(because = "Session protocol daemon — stdin/stdout interactive, non-cacheable")
 abstract class SessionProtocolDaemonTask : DefaultTask() {
-
     private val log = LoggerFactory.getLogger(SessionProtocolDaemonTask::class.java)
 
     @get:Internal
@@ -27,11 +26,12 @@ abstract class SessionProtocolDaemonTask : DefaultTask() {
     @TaskAction
     fun executeDaemon() {
         log.info("[SessionProtocolDaemon] Starting server on stdin/stdout...")
-        val server = SessionProtocolServer(
-            workspaceRoot = project.rootDir.absolutePath,
-            toolRegistry = toolRegistry,
-            llmProvider = llmProvider
-        )
+        val server =
+            SessionProtocolServer(
+                workspaceRoot = project.rootDir.absolutePath,
+                toolRegistry = toolRegistry,
+                llmProvider = llmProvider,
+            )
         server.run(System.`in`, System.out)
     }
 }

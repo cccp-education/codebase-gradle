@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory
 import java.io.File
 
 class OpencodeInjector {
-
     private val log = LoggerFactory.getLogger(OpencodeInjector::class.java)
 
     fun inject(context: CompositeContext): String {
@@ -15,13 +14,12 @@ class OpencodeInjector {
         return injectChannelList(channels)
     }
 
-    fun injectChannels(channels: List<ContextChannel>): String {
-        return injectChannelList(channels)
-    }
+    fun injectChannels(channels: List<ContextChannel>): String = injectChannelList(channels)
 
-    fun injectChannels(channels: List<ContextChannel>, budget: ChannelBudget): String {
-        return injectChannelList(budget.applyBudget(channels))
-    }
+    fun injectChannels(
+        channels: List<ContextChannel>,
+        budget: ChannelBudget,
+    ): String = injectChannelList(budget.applyBudget(channels))
 
     private fun injectChannelList(channels: List<ContextChannel>): String {
         val sb = StringBuilder()
@@ -33,15 +31,20 @@ class OpencodeInjector {
         }
 
         val output = sb.toString()
-        log.info("OpencodeInjector: injected {} chars across {} channels (active={})",
+        log.info(
+            "OpencodeInjector: injected {} chars across {} channels (active={})",
             output.length,
             channels.size,
-            channels.count { it.content.isNotEmpty() })
+            channels.count { it.content.isNotEmpty() },
+        )
 
         return output
     }
 
-    fun injectToFile(context: CompositeContext, outputFile: File): File {
+    fun injectToFile(
+        context: CompositeContext,
+        outputFile: File,
+    ): File {
         val content = inject(context)
         outputFile.parentFile?.mkdirs()
         outputFile.writeText(content)

@@ -1,6 +1,5 @@
 package codebase.benchmark
 
-import codebase.benchmark.BenchmarkRunnerMain.ChannelConfig
 import codebase.rag.PgVectorConfig
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -14,14 +13,14 @@ object BenchmarkComparisonMain {
     data class ScenarioRecord(
         val id: String,
         val channels: List<String>,
-        val results: List<ThresholdRecord>
+        val results: List<ThresholdRecord>,
     )
 
     data class ThresholdRecord(
         val threshold: String,
         val errorRate: Double,
         val totalSamples: Int,
-        val errorCount: Int
+        val errorCount: Int,
     )
 
     @JvmStatic
@@ -42,15 +41,19 @@ object BenchmarkComparisonMain {
 
             log.info("Running scenario: {} (channels: {})", scenarioId, channelConfig.channels)
 
-            val runner = BenchmarkRunner(
-                baseUrl = baseUrl, modelName = modelName,
-                pgJdbcUrl = pgCfg.jdbcUrl, pgUser = pgCfg.user, pgPassword = pgCfg.password,
-                graphJsonPath = channelConfig.graphPath ?: graphJsonPath,
-                scopeFilter = channelConfig.scopeFilter
-            )
+            val runner =
+                BenchmarkRunner(
+                    baseUrl = baseUrl,
+                    modelName = modelName,
+                    pgJdbcUrl = pgCfg.jdbcUrl,
+                    pgUser = pgCfg.user,
+                    pgPassword = pgCfg.password,
+                    graphJsonPath = channelConfig.graphPath ?: graphJsonPath,
+                    scopeFilter = channelConfig.scopeFilter,
+                )
             val reportJson = runner.run(scenarioId, channelConfig.channels)
 
-            val reportFile = File(outputDir, "report-${scenarioId}.json")
+            val reportFile = File(outputDir, "report-$scenarioId.json")
             reportFile.writeText(reportJson)
             log.info("  -> {}", reportFile.name)
 
@@ -59,8 +62,8 @@ object BenchmarkComparisonMain {
                 ScenarioRecord(
                     id = scenarioId,
                     channels = channelConfig.channels,
-                    results = thresholdResults
-                )
+                    results = thresholdResults,
+                ),
             )
         }
 
@@ -82,12 +85,15 @@ object BenchmarkComparisonMain {
                 threshold = thresholdData.threshold,
                 totalSamples = thresholdData.totalSamples,
                 errorRate = thresholdData.errorRate,
-                errorCount = thresholdData.boundaryCrossings.size
+                errorCount = thresholdData.boundaryCrossings.size,
             )
         }
     }
 
-    internal fun generateComparisonAsciiDoc(records: List<ScenarioRecord>, modelName: String): String {
+    internal fun generateComparisonAsciiDoc(
+        records: List<ScenarioRecord>,
+        modelName: String,
+    ): String {
         val sb = StringBuilder()
 
         sb.appendLine("= EPIC 4 — Comparaison Multi-Canal Benchmark Perception Spatiale")

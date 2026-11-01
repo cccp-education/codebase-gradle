@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory
  */
 @DisableCachingByDefault(because = "Dashboard queries live data — non-cacheable")
 abstract class DashboardTask : DefaultTask() {
-
     private val log = LoggerFactory.getLogger(DashboardTask::class.java)
 
     /** ConnectionFactory injectable pour le SessionRepository. */
@@ -36,11 +35,12 @@ abstract class DashboardTask : DefaultTask() {
 
     @TaskAction
     fun executeDashboard() {
-        val cf = connectionFactory
-            ?: throw IllegalStateException(
-                "DashboardTask requires an injected ConnectionFactory. " +
-                "Ensure R2DBC connection pool is available."
-            )
+        val cf =
+            connectionFactory
+                ?: throw IllegalStateException(
+                    "DashboardTask requires an injected ConnectionFactory. " +
+                        "Ensure R2DBC connection pool is available.",
+                )
 
         val repo = SessionRepository(cf)
         runBlocking {

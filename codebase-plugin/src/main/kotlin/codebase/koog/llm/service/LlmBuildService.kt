@@ -34,7 +34,6 @@ import org.gradle.api.services.BuildServiceParameters
  * service delegates resolution to [LlmServiceResolver] (pure, testable).
  */
 abstract class LlmBuildService : BuildService<LlmBuildService.Params> {
-
     interface Params : BuildServiceParameters {
         /** LLM model identifier — "ollama", "gemini", or a custom model name. */
         val model: Property<String>

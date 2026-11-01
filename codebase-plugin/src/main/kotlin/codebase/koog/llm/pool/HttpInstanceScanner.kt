@@ -21,32 +21,40 @@ import java.time.Duration
  * Timeout : 2s par probe pour ne pas bloquer le scan des 29 ports.
  */
 class HttpInstanceScanner(
-    private val client: HttpClient = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(2))
-        .build()
+    private val client: HttpClient =
+        HttpClient
+            .newBuilder()
+            .connectTimeout(Duration.ofSeconds(2))
+            .build(),
 ) : InstanceScanner {
-
     private val log = LoggerFactory.getLogger(HttpInstanceScanner::class.java)
     private val timeout = Duration.ofSeconds(2)
 
-    override suspend fun probe(baseUrl: String, port: Int, model: String): LlmInstance? {
+    override suspend fun probe(
+        baseUrl: String,
+        port: Int,
+        model: String,
+    ): LlmInstance? {
         val url = "$baseUrl:$port/api/tags"
-        val request = HttpRequest.newBuilder()
-            .uri(URI.create(url))
-            .timeout(timeout)
-            .GET()
-            .build()
+        val request =
+            HttpRequest
+                .newBuilder()
+                .uri(URI.create(url))
+                .timeout(timeout)
+                .GET()
+                .build()
 
         return try {
-            val response = withContext(Dispatchers.IO) {
-                client.send(request, HttpResponse.BodyHandlers.ofString())
-            }
+            val response =
+                withContext(Dispatchers.IO) {
+                    client.send(request, HttpResponse.BodyHandlers.ofString())
+                }
             if (response.statusCode() == 200) {
                 log.debug("[HttpInstanceScanner] Live instance at {}", url)
                 LlmInstance(
                     id = "ollama-$port",
                     baseUrl = "$baseUrl:$port",
-                    model = model
+                    model = model,
                 )
             } else {
                 log.debug("[HttpInstanceScanner] Instance at {} returned HTTP {}", url, response.statusCode())

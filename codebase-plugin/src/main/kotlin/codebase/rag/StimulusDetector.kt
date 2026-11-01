@@ -2,39 +2,40 @@ package codebase.rag
 
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 
 data class StimulusFile(
     val name: String,
     val path: String,
     val lastModified: LocalDateTime,
     val size: Long,
-    val estimatedAgeDays: Long
+    val estimatedAgeDays: Long,
 )
 
 data class ActiveStimulus(
     val file: StimulusFile,
     val ageDays: Long,
-    val stale: Boolean
+    val stale: Boolean,
 )
 
-class StimulusDetector(private val workspaceRoot: String) {
+class StimulusDetector(
+    private val workspaceRoot: String,
+) {
     private val log = LoggerFactory.getLogger(StimulusDetector::class.java)
 
     companion object {
-        val EXCLUDED_FILES = setOf(
-            "WORKSPACE_VISION.adoc",
-            "WORKSPACE_AS_PRODUCT.adoc",
-            "WHAT_THE_GAMES_BEEN_MISSING.adoc",
-            "WORKSPACE_ORGANIZATION.adoc",
-            "AGENTS.adoc",
-            "BOOM_BAP.adoc",
-            "PROMPT_REPRISE.adoc",
-            "AUGMENTED_CONTEXT_PIPELINE.adoc"
-        )
+        val EXCLUDED_FILES =
+            setOf(
+                "WORKSPACE_VISION.adoc",
+                "WORKSPACE_AS_PRODUCT.adoc",
+                "WHAT_THE_GAMES_BEEN_MISSING.adoc",
+                "WORKSPACE_ORGANIZATION.adoc",
+                "AGENTS.adoc",
+                "BOOM_BAP.adoc",
+                "PROMPT_REPRISE.adoc",
+                "AUGMENTED_CONTEXT_PIPELINE.adoc",
+            )
 
         val STALE_THRESHOLD_DAYS = 2L
     }
@@ -42,23 +43,29 @@ class StimulusDetector(private val workspaceRoot: String) {
     fun scan(): List<StimulusFile> {
         val wsDir = File(workspaceRoot)
 
-        val adocFiles = wsDir.listFiles { file ->
-            file.isFile && file.name.endsWith(".adoc") && file.name !in EXCLUDED_FILES
-        } ?: emptyArray()
+        val adocFiles =
+            wsDir.listFiles { file ->
+                file.isFile && file.name.endsWith(".adoc") && file.name !in EXCLUDED_FILES
+            } ?: emptyArray()
 
-        return adocFiles.map { file ->
-            val lastModified = LocalDateTime.ofInstant(
-                java.time.Instant.ofEpochMilli(file.lastModified()),
-                java.time.ZoneId.systemDefault()
-            )
-            StimulusFile(
-                name = file.name,
-                path = file.absolutePath,
-                lastModified = lastModified,
-                size = file.length(),
-                estimatedAgeDays = java.time.Duration.between(lastModified, LocalDateTime.now()).toDays()
-            )
-        }.sortedByDescending { it.lastModified }
+        return adocFiles
+            .map { file ->
+                val lastModified =
+                    LocalDateTime.ofInstant(
+                        java.time.Instant.ofEpochMilli(file.lastModified()),
+                        java.time.ZoneId.systemDefault(),
+                    )
+                StimulusFile(
+                    name = file.name,
+                    path = file.absolutePath,
+                    lastModified = lastModified,
+                    size = file.length(),
+                    estimatedAgeDays =
+                        java.time.Duration
+                            .between(lastModified, LocalDateTime.now())
+                            .toDays(),
+                )
+            }.sortedByDescending { it.lastModified }
     }
 
     fun detectActive(): List<ActiveStimulus> {
@@ -67,19 +74,20 @@ class StimulusDetector(private val workspaceRoot: String) {
 
         val dilutedNames = collectDilutedStimulusNames()
 
-        val active = files.filter { sf ->
-            val baseName = sf.name.removeSuffix(".adoc")
-            !dilutedNames.any { dilutedName ->
-                dilutedName.contains(baseName, ignoreCase = true) ||
-                    baseName.contains(dilutedName, ignoreCase = true)
+        val active =
+            files.filter { sf ->
+                val baseName = sf.name.removeSuffix(".adoc")
+                !dilutedNames.any { dilutedName ->
+                    dilutedName.contains(baseName, ignoreCase = true) ||
+                        baseName.contains(dilutedName, ignoreCase = true)
+                }
             }
-        }
 
         return active.map { sf ->
             ActiveStimulus(
                 file = sf,
                 ageDays = sf.estimatedAgeDays,
-                stale = sf.estimatedAgeDays > STALE_THRESHOLD_DAYS
+                stale = sf.estimatedAgeDays > STALE_THRESHOLD_DAYS,
             )
         }
     }
@@ -171,7 +179,7 @@ class StimulusDetector(private val workspaceRoot: String) {
             "WORKSPACE_VISION.adoc",
             "WORKSPACE_AS_PRODUCT.adoc",
             "WHAT_THE_GAMES_BEEN_MISSING.adoc",
-            "WORKSPACE_ORGANIZATION.adoc"
+            "WORKSPACE_ORGANIZATION.adoc",
         )) {
             val file = File(workspaceRoot, docFile)
             if (!file.exists()) continue

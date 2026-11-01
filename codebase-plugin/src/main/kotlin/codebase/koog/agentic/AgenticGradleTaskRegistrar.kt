@@ -21,8 +21,10 @@ import java.time.Instant
  * - [ArtifactType.VALIDATION]       → tâche `validate_<id>`
  */
 class AgenticGradleTaskRegistrar {
-
-    fun register(project: Project, executables: List<ExecutableArtifact>): List<String> {
+    fun register(
+        project: Project,
+        executables: List<ExecutableArtifact>,
+    ): List<String> {
         val registered = mutableListOf<String>()
 
         for (executable in executables) {
@@ -50,21 +52,22 @@ class AgenticGradleTaskRegistrar {
             artifactType == ArtifactType.VALIDATION
 
     private fun computeTaskName(executable: ExecutableArtifact): String {
-        val prefix = when (executable.compiledArtifact.artifactType) {
-            ArtifactType.GRADLE_TASK -> "runProcedure"
-            ArtifactType.CONSTRAINT_CHECK -> "enforceRule"
-            ArtifactType.VALIDATION -> "validate"
-            else -> "governance"
-        }
-        val shortId = executable.compiledArtifact.sourceChunkId
-            .take(ID_TRUNCATION)
-            .replace(Regex("[^a-zA-Z0-9]"), "")
+        val prefix =
+            when (executable.compiledArtifact.artifactType) {
+                ArtifactType.GRADLE_TASK -> "runProcedure"
+                ArtifactType.CONSTRAINT_CHECK -> "enforceRule"
+                ArtifactType.VALIDATION -> "validate"
+                else -> "governance"
+            }
+        val shortId =
+            executable.compiledArtifact.sourceChunkId
+                .take(ID_TRUNCATION)
+                .replace(Regex("[^a-zA-Z0-9]"), "")
         return "${prefix}_$shortId"
     }
 
     @UntrackedTask(because = "governance executable marker — not cacheable")
     abstract class GovernanceExecutableTask : DefaultTask() {
-
         private val log = LoggerFactory.getLogger(GovernanceExecutableTask::class.java)
 
         @get:OutputFile
@@ -75,7 +78,7 @@ class AgenticGradleTaskRegistrar {
             val file = markerFile.get().asFile
             file.parentFile.mkdirs()
             file.writeText("executed at ${Instant.now()}")
-            log.info("[GovernanceTask] executed: ${path}")
+            log.info("[GovernanceTask] executed: $path")
         }
     }
 

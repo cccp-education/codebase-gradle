@@ -16,5 +16,5 @@ data class PlanState(
     val classification: String = "",
     val planJson: String = "",
     val plan: Plan? = null,
-    val error: String? = null
+    val error: String? = null,
 )

@@ -16,5 +16,5 @@ data class AugmentedState(
     val planJson: String = "",
     val plan: Plan? = null,
     val planError: String? = null,
-    val error: String? = null
+    val error: String? = null,
 )

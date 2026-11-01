@@ -28,54 +28,57 @@ class GovernanceContextLoader(
     private val graphFile: File? = null,
     private val lensConfig: LensConfig = LensConfig(),
 ) {
-
     companion object {
-        val EAGER_FILE_NAMES = listOf(
-            "AGENT.adoc",
-            ".agents/INDEX.adoc",
-            "PROMPT_REPRISE.adoc",
-            ".agents/SESSIONS_HISTORY.adoc",
-            ".agents/TEST_COVERAGE_ANALYSIS.adoc",
-        )
+        val EAGER_FILE_NAMES =
+            listOf(
+                "AGENT.adoc",
+                ".agents/INDEX.adoc",
+                "PROMPT_REPRISE.adoc",
+                ".agents/SESSIONS_HISTORY.adoc",
+                ".agents/TEST_COVERAGE_ANALYSIS.adoc",
+            )
 
-        val BACKLOG_FILE_NAMES = listOf(
-            "BACKLOG.adoc",
-            ".agents/BACKLOG.adoc",
-        )
+        val BACKLOG_FILE_NAMES =
+            listOf(
+                "BACKLOG.adoc",
+                ".agents/BACKLOG.adoc",
+            )
     }
 
     fun load(projectDir: File): AgentContext {
         require(projectDir.isDirectory) { "Project dir must be a directory: $projectDir" }
 
-        val eagerRules = buildString {
-            EAGER_FILE_NAMES.forEach { relativePath ->
-                val file = resolveFile(projectDir, relativePath)
-                if (file != null && file.exists()) {
-                    appendLine("== ${file.name} ==")
-                    appendLine(file.readText(Charsets.UTF_8))
-                    appendLine()
-                }
-            }
-        }.trim()
-
-        val backlogItems = BACKLOG_FILE_NAMES.mapNotNull { relativePath ->
-            resolveFile(projectDir, relativePath)
-        }.filter { it.exists() }
-            .flatMap { file ->
-                file.readText(Charsets.UTF_8)
-                    .lines()
-                    .filter { line ->
-                        line.startsWith("* [") || line.startsWith("* [x]") || line.startsWith("* [ ]")
+        val eagerRules =
+            buildString {
+                EAGER_FILE_NAMES.forEach { relativePath ->
+                    val file = resolveFile(projectDir, relativePath)
+                    if (file != null && file.exists()) {
+                        appendLine("== ${file.name} ==")
+                        appendLine(file.readText(Charsets.UTF_8))
+                        appendLine()
                     }
-                    .map { it.trim() }
-            }
-            .distinct()
+                }
+            }.trim()
+
+        val backlogItems =
+            BACKLOG_FILE_NAMES
+                .mapNotNull { relativePath ->
+                    resolveFile(projectDir, relativePath)
+                }.filter { it.exists() }
+                .flatMap { file ->
+                    file
+                        .readText(Charsets.UTF_8)
+                        .lines()
+                        .filter { line ->
+                            line.startsWith("* [") || line.startsWith("* [x]") || line.startsWith("* [ ]")
+                        }.map { it.trim() }
+                }.distinct()
 
         return AgentContext(
             eagerRules = eagerRules,
             backlogItems = backlogItems,
             graphRelations = graphFile?.let { GraphifyContextProvider(it, lensConfig).provide() } ?: "",
-            ragChunks = emptyList()
+            ragChunks = emptyList(),
         )
     }
 
@@ -84,7 +87,10 @@ class GovernanceContextLoader(
      * direct (utile pour les multi-modules Gradle où AGENT/INDEX sont dans
      * le sous-projet plugin).
      */
-    private fun resolveFile(projectDir: File, relativePath: String): File? {
+    private fun resolveFile(
+        projectDir: File,
+        relativePath: String,
+    ): File? {
         val rootCandidate = File(projectDir, relativePath)
         if (rootCandidate.exists()) return rootCandidate
 

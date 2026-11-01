@@ -64,11 +64,12 @@ abstract class CodebaseGovernanceExtension {
     /**
      * Expose une snapshot immuable du DSL sous forme de modèle DDD.
      */
-    fun toConfig(): GovernanceSummaryConfig = GovernanceSummaryConfig(
-        strictValidation = strictValidation.getOrElse(false),
-        outputEnabled = outputEnabled.getOrElse(true),
-        reportFormat = reportFormat.getOrElse("json"),
-        incremental = incremental.getOrElse(false),
-        chunkIncremental = chunkIncremental.getOrElse(false)
-    )
+    fun toConfig(): GovernanceSummaryConfig =
+        GovernanceSummaryConfig(
+            strictValidation = strictValidation.getOrElse(false),
+            outputEnabled = outputEnabled.getOrElse(true),
+            reportFormat = reportFormat.getOrElse("json"),
+            incremental = incremental.getOrElse(false),
+            chunkIncremental = chunkIncremental.getOrElse(false),
+        )
 }

@@ -10,7 +10,6 @@ import java.io.File
  * Each higher-priority source overrides the same key from lower-priority sources.
  */
 object FineTuningConfigMerger {
-
     /**
      * Merges configuration from all four sources.
      *
@@ -25,7 +24,7 @@ object FineTuningConfigMerger {
         projectDir: File,
         yamlConfig: FineTuningConfig,
         cliParams: Map<String, Any?>,
-        yamlLoaded: Boolean = true
+        yamlLoaded: Boolean = true,
     ): FineTuningConfig {
         val propertiesConfig = loadFromGradleProperties(projectDir)
         val envConfig = loadFromEnvironment()
@@ -37,10 +36,13 @@ object FineTuningConfigMerger {
             learningRate = mergeDouble(cliParams, "learningRate", yaml?.learningRate, propertiesConfig.learningRate),
             batchSize = mergeInt(cliParams, "batchSize", yaml?.batchSize, propertiesConfig.batchSize),
             corpusGlobs = mergeStrList(cliParams, "corpusGlobs", yaml?.corpusGlobs, propertiesConfig.corpusGlobs, envConfig.corpusGlobs),
-            continualPreTrainingRatio = mergeDouble(
-                cliParams, "continualPreTrainingRatio",
-                yaml?.continualPreTrainingRatio, propertiesConfig.continualPreTrainingRatio
-            )
+            continualPreTrainingRatio =
+                mergeDouble(
+                    cliParams,
+                    "continualPreTrainingRatio",
+                    yaml?.continualPreTrainingRatio,
+                    propertiesConfig.continualPreTrainingRatio,
+                ),
         )
     }
 
@@ -71,7 +73,7 @@ object FineTuningConfigMerger {
             learningRate = props["codebase.finetuning.learningRate"]?.toDoubleOrNull() ?: 2e-4,
             batchSize = props["codebase.finetuning.batchSize"]?.toIntOrNull() ?: 4,
             corpusGlobs = props["codebase.finetuning.corpusGlobs"]?.let { splitCommaList(it) } ?: emptyList(),
-            continualPreTrainingRatio = props["codebase.finetuning.continualPreTrainingRatio"]?.toDoubleOrNull() ?: 0.10
+            continualPreTrainingRatio = props["codebase.finetuning.continualPreTrainingRatio"]?.toDoubleOrNull() ?: 0.10,
         )
     }
 
@@ -89,7 +91,7 @@ object FineTuningConfigMerger {
             learningRate = env["CODEBASE_FINETUNING_LEARNING_RATE"]?.toDoubleOrNull() ?: 2e-4,
             batchSize = env["CODEBASE_FINETUNING_BATCH_SIZE"]?.toIntOrNull() ?: 4,
             corpusGlobs = env["CODEBASE_FINETUNING_CORPUS_GLOBS"]?.let { splitCommaList(it) } ?: emptyList(),
-            continualPreTrainingRatio = env["CODEBASE_FINETUNING_CONTINUAL_PRE_TRAINING_RATIO"]?.toDoubleOrNull() ?: 0.10
+            continualPreTrainingRatio = env["CODEBASE_FINETUNING_CONTINUAL_PRE_TRAINING_RATIO"]?.toDoubleOrNull() ?: 0.10,
         )
     }
 
@@ -99,7 +101,7 @@ object FineTuningConfigMerger {
         cli: Map<String, Any?>,
         key: String,
         yaml: Int?,
-        props: Int
+        props: Int,
     ): Int {
         cli.cliInt(key)?.let { return it }
         yaml?.let { return it }
@@ -110,7 +112,7 @@ object FineTuningConfigMerger {
         cli: Map<String, Any?>,
         key: String,
         yaml: Double?,
-        props: Double
+        props: Double,
     ): Double {
         cli.cliDouble(key)?.let { return it }
         yaml?.let { return it }
@@ -122,7 +124,7 @@ object FineTuningConfigMerger {
         key: String,
         yaml: List<String>?,
         props: List<String>,
-        env: List<String>
+        env: List<String>,
     ): List<String> {
         val cliValue = cli[key]?.toString()
         if (!cliValue.isNullOrBlank()) return splitCommaList(cliValue)
@@ -131,13 +133,10 @@ object FineTuningConfigMerger {
         return env
     }
 
-    private fun Map<String, Any?>.cliInt(key: String): Int? =
-        this[key]?.let { (it as? Int) ?: it.toString().toIntOrNull() }
+    private fun Map<String, Any?>.cliInt(key: String): Int? = this[key]?.let { (it as? Int) ?: it.toString().toIntOrNull() }
 
-    private fun Map<String, Any?>.cliDouble(key: String): Double? =
-        this[key]?.let { (it as? Double) ?: it.toString().toDoubleOrNull() }
+    private fun Map<String, Any?>.cliDouble(key: String): Double? = this[key]?.let { (it as? Double) ?: it.toString().toDoubleOrNull() }
 
     /** Splits a comma-separated string into a trimmed list of non-blank entries. */
-    internal fun splitCommaList(value: String): List<String> =
-        value.split(",").map { it.trim() }.filter { it.isNotBlank() }
+    internal fun splitCommaList(value: String): List<String> = value.split(",").map { it.trim() }.filter { it.isNotBlank() }
 }

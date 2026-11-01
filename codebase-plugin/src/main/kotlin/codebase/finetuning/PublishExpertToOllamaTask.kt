@@ -2,8 +2,8 @@ package codebase.finetuning
 
 import codebase.koog.expert.ExpertDomain
 import codebase.koog.expert.ExpertExposureTask
-import codebase.koog.expert.ExpertRegistry
 import codebase.koog.expert.ExpertRegistration
+import codebase.koog.expert.ExpertRegistry
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
@@ -39,7 +39,6 @@ import org.gradle.work.DisableCachingByDefault
  */
 @DisableCachingByDefault(because = "Expert exposure — génération non-déterministe, dépend du registre runtime")
 abstract class PublishExpertToOllamaTask : DefaultTask() {
-
     @get:Input
     abstract val outputModelName: Property<String>
 
@@ -87,20 +86,24 @@ abstract class PublishExpertToOllamaTask : DefaultTask() {
             throw GradleException("fineTuning.domainName must not be blank (publishExpertToOllama)")
         }
 
-        val registration = ExpertRegistration(
-            domain = ExpertDomain(name = domain, label = label),
-            modelName = modelName,
-            baseUrl = endpoint,
-            timeoutSeconds = 120L
-        )
+        val registration =
+            ExpertRegistration(
+                domain = ExpertDomain(name = domain, label = label),
+                modelName = modelName,
+                baseUrl = endpoint,
+                timeoutSeconds = 120L,
+            )
         expertRegistry.register(registration)
         logger.lifecycle(
             "[publishExpertToOllama] registered expert: domain={}, model={}, baseUrl={}",
-            domain, modelName, endpoint
+            domain,
+            modelName,
+            endpoint,
         )
 
-        val exposureTask = project.tasks.findByName("exposeExperts") as? ExpertExposureTask
-            ?: project.tasks.register("exposeExperts", ExpertExposureTask::class.java).get()
+        val exposureTask =
+            project.tasks.findByName("exposeExperts") as? ExpertExposureTask
+                ?: project.tasks.register("exposeExperts", ExpertExposureTask::class.java).get()
         exposureTask.expertRegistry = expertRegistry
         exposureTask.outputFile.set(manifestOutput)
         exposureTask.anonymizeEndpoints.set(anonymizeEndpoints)
@@ -108,7 +111,7 @@ abstract class PublishExpertToOllamaTask : DefaultTask() {
 
         logger.lifecycle(
             "[publishExpertToOllama] manifest written: {}",
-            manifestOutput.get().asFile.absolutePath
+            manifestOutput.get().asFile.absolutePath,
         )
     }
 }

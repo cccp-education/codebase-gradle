@@ -14,9 +14,8 @@ import java.time.Instant
  * Persiste les chunks invalides dans la table `invalid_chunks`.
  */
 class R2dbcInvalidChunkRepository(
-    private val connectionFactory: ConnectionFactory
+    private val connectionFactory: ConnectionFactory,
 ) : InvalidChunkRepository {
-
     override suspend fun initSchema() {
         MigrationRunner(connectionFactory).migrate()
     }
@@ -30,13 +29,17 @@ class R2dbcInvalidChunkRepository(
         }
     }
 
-    override suspend fun insertQuarantine(chunk: AgenticChunk, errors: List<ChunkValidationError>): Boolean {
-        return withConnection { conn ->
-            val statement = conn.createStatement(
-                "INSERT INTO invalid_chunks (id, source_file, source_lines, content, errors, quarantined_at)" +
-                " VALUES ($1, $2, $3, $4, $5::jsonb, $6)" +
-                " ON CONFLICT (id) DO NOTHING"
-            )
+    override suspend fun insertQuarantine(
+        chunk: AgenticChunk,
+        errors: List<ChunkValidationError>,
+    ): Boolean =
+        withConnection { conn ->
+            val statement =
+                conn.createStatement(
+                    "INSERT INTO invalid_chunks (id, source_file, source_lines, content, errors, quarantined_at)" +
+                        " VALUES ($1, $2, $3, $4, $5::jsonb, $6)" +
+                        " ON CONFLICT (id) DO NOTHING",
+                )
             statement.bind("$1", chunk.id)
             statement.bind("$2", chunk.sourceFile)
             statement.bind("$3", chunk.sourceLines)
@@ -44,23 +47,26 @@ class R2dbcInvalidChunkRepository(
             statement.bind("$5", Json.encodeToString(errors.map { it.toJsonModel() }))
             statement.bind("$6", Instant.now())
 
-            val updated = Mono.from(statement.execute())
-                .flatMap { Mono.from(it.rowsUpdated) }
-                .defaultIfEmpty(0L)
-                .awaitSingle()
+            val updated =
+                Mono
+                    .from(statement.execute())
+                    .flatMap { Mono.from(it.rowsUpdated) }
+                    .defaultIfEmpty(0L)
+                    .awaitSingle()
             updated > 0L
         }
-    }
 
-    override suspend fun listQuarantined(limit: Int): List<InvalidChunk> {
-        return withConnection { conn ->
-            val statement = conn.createStatement(
-                "SELECT id, source_file, source_lines, content, errors, quarantined_at" +
-                " FROM invalid_chunks ORDER BY quarantined_at DESC LIMIT $1"
-            )
+    override suspend fun listQuarantined(limit: Int): List<InvalidChunk> =
+        withConnection { conn ->
+            val statement =
+                conn.createStatement(
+                    "SELECT id, source_file, source_lines, content, errors, quarantined_at" +
+                        " FROM invalid_chunks ORDER BY quarantined_at DESC LIMIT $1",
+                )
             statement.bind("$1", limit)
 
-            Mono.from(statement.execute())
+            Mono
+                .from(statement.execute())
                 .flatMapMany { result ->
                     result.map { row, _ ->
                         val errorsJson = row.get("errors", String::class.java) ?: "[]"
@@ -71,24 +77,23 @@ class R2dbcInvalidChunkRepository(
                             sourceLines = row.get("source_lines", String::class.java)!!,
                             content = row.get("content", String::class.java)!!,
                             errors = errorsJsonList.map { it.toDomainModel() },
-                            quarantinedAt = row.get("quarantined_at", Instant::class.java)!!
+                            quarantinedAt = row.get("quarantined_at", Instant::class.java)!!,
                         )
                     }
-                }
-                .collectList()
+                }.collectList()
                 .awaitSingle()
         }
-    }
 
-    override suspend fun countQuarantined(): Int {
-        return withConnection { conn ->
-            Mono.from(
-                conn.createStatement("SELECT count(*) FROM invalid_chunks").execute()
-            ).flatMap { result ->
-                Mono.from(result.map { row, _ -> row.get(0, Long::class.java)!! })
-            }.awaitSingle().toInt()
+    override suspend fun countQuarantined(): Int =
+        withConnection { conn ->
+            Mono
+                .from(
+                    conn.createStatement("SELECT count(*) FROM invalid_chunks").execute(),
+                ).flatMap { result ->
+                    Mono.from(result.map { row, _ -> row.get(0, Long::class.java)!! })
+                }.awaitSingle()
+                .toInt()
         }
-    }
 
     private fun ChunkValidationError.toJsonModel(): ChunkValidationErrorJson =
         ChunkValidationErrorJson(
@@ -97,7 +102,7 @@ class R2dbcInvalidChunkRepository(
             lineStart = lineStart,
             lineEnd = lineEnd,
             errorType = errorType.name,
-            message = message
+            message = message,
         )
 
     private fun ChunkValidationErrorJson.toDomainModel(): ChunkValidationError =
@@ -107,7 +112,7 @@ class R2dbcInvalidChunkRepository(
             lineStart = lineStart,
             lineEnd = lineEnd,
             errorType = ChunkValidationErrorType.valueOf(errorType),
-            message = message
+            message = message,
         )
 
     @kotlinx.serialization.Serializable
@@ -117,6 +122,6 @@ class R2dbcInvalidChunkRepository(
         val lineStart: Int?,
         val lineEnd: Int?,
         val errorType: String,
-        val message: String
+        val message: String,
     )
 }

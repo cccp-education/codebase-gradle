@@ -20,7 +20,7 @@ data class FineTuningConfig(
     val learningRate: Double = 2e-4,
     val batchSize: Int = 4,
     val corpusGlobs: List<String> = emptyList(),
-    val continualPreTrainingRatio: Double = 0.10
+    val continualPreTrainingRatio: Double = 0.10,
 ) {
     init {
         require(epochs > 0) { "epochs must be positive, got $epochs" }

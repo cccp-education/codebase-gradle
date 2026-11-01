@@ -11,7 +11,7 @@ data class IngestionReport(
     val chunksInvalid: Int = 0,
     val validationErrors: List<ChunkValidationError> = emptyList(),
     val executables: List<ExecutableArtifact> = emptyList(),
-    val invalidChunks: List<InvalidChunk> = emptyList()
+    val invalidChunks: List<InvalidChunk> = emptyList(),
 )
 
 class AgenticIngestor(
@@ -21,9 +21,8 @@ class AgenticIngestor(
     private val compiler: AgenticCompiler = AgenticCompiler(),
     private val governanceOntologizer: GovernanceOntologizer? = null,
     private val chunkValidator: ChunkValidator = ChunkValidator(),
-    private val invalidChunkRepository: InvalidChunkRepository = InMemoryInvalidChunkRepository()
+    private val invalidChunkRepository: InvalidChunkRepository = InMemoryInvalidChunkRepository(),
 ) {
-
     suspend fun ingest(files: List<Pair<String, String>>): IngestionReport {
         if (files.isEmpty()) return IngestionReport(0, 0, 0, 0, 0)
 
@@ -46,8 +45,10 @@ class AgenticIngestor(
             if (newChunks.isEmpty()) continue
 
             val ontologized = ontologizer.ontologize(newChunks)
-            val existingChunks = repository.listChunks(Int.MAX_VALUE)
-                .filter { it.chunk.sourceFile == sourceFile }
+            val existingChunks =
+                repository
+                    .listChunks(Int.MAX_VALUE)
+                    .filter { it.chunk.sourceFile == sourceFile }
 
             for (chunk in ontologized) {
                 val validation = chunkValidator.validate(chunk.chunk)
@@ -59,9 +60,10 @@ class AgenticIngestor(
                 }
 
                 val section = governanceOntologizer?.classify(chunk.chunk)
-                val existing = existingChunks.firstOrNull {
-                    it.chunk.sourceLines == chunk.chunk.sourceLines
-                }
+                val existing =
+                    existingChunks.firstOrNull {
+                        it.chunk.sourceLines == chunk.chunk.sourceLines
+                    }
                 if (existing != null) {
                     if (existing.chunk.checksum == chunk.chunk.checksum) {
                         chunksSkipped++
@@ -98,7 +100,7 @@ class AgenticIngestor(
             chunksInvalid = chunksInvalid,
             validationErrors = validationErrors,
             executables = executables,
-            invalidChunks = invalidChunks
+            invalidChunks = invalidChunks,
         )
     }
 }

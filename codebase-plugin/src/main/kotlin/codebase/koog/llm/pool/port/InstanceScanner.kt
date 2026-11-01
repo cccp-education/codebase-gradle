@@ -18,5 +18,9 @@ fun interface InstanceScanner {
      * @param model modèle attendu sur cette instance
      * @return l'instance si elle répond, sinon `null`
      */
-    suspend fun probe(baseUrl: String, port: Int, model: String): LlmInstance?
+    suspend fun probe(
+        baseUrl: String,
+        port: Int,
+        model: String,
+    ): LlmInstance?
 }

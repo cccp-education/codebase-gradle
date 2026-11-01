@@ -16,7 +16,7 @@ class SessionProtocolEngine(
     val toolRegistry: ToolRegistry,
     val llmProvider: LlmProvider? = null,
     val eventStream: ToolEventStream? = null,
-    val liveContextInjector: LiveContextInjector? = null
+    val liveContextInjector: LiveContextInjector? = null,
 ) {
     fun executeVibecoding(
         promptText: String,
@@ -24,64 +24,69 @@ class SessionProtocolEngine(
         maxActions: Int,
         sessionId: java.util.UUID,
         agentContext: AgentContext,
-        model: String? = null
+        model: String? = null,
     ): SessionResponse {
         val tokenTracker = TokenTracker()
 
-        val graph = VibecodingGraph(
-            augmentedGraph = KoogAugmentedContextGraph(),
-            toolRegistry = toolRegistry,
-            llmProvider = llmProvider,
-            tokenTracker = tokenTracker,
-            eventStream = eventStream,
-            liveContextInjector = liveContextInjector
-        )
+        val graph =
+            VibecodingGraph(
+                augmentedGraph = KoogAugmentedContextGraph(),
+                toolRegistry = toolRegistry,
+                llmProvider = llmProvider,
+                tokenTracker = tokenTracker,
+                eventStream = eventStream,
+                liveContextInjector = liveContextInjector,
+            )
         graph.staticContext = agentContext
 
-        val state = VibecodingState(
-            intention = promptText,
-            workspaceRoot = workspaceRootPath,
-            dryRun = false,
-            maxActions = maxActions
-        )
+        val state =
+            VibecodingState(
+                intention = promptText,
+                workspaceRoot = workspaceRootPath,
+                dryRun = false,
+                maxActions = maxActions,
+            )
 
         val result = graph.execute(state)
 
-        val toolCalls = toolRegistry.auditEntries().map { entry ->
-            ToolCallRecord(
-                toolName = entry.tool,
-                args = emptyMap(),
-                result = entry.result,
-                timestamp = entry.timestamp
-            )
-        }
+        val toolCalls =
+            toolRegistry.auditEntries().map { entry ->
+                ToolCallRecord(
+                    toolName = entry.tool,
+                    args = emptyMap(),
+                    result = entry.result,
+                    timestamp = entry.timestamp,
+                )
+            }
 
-        val status = when {
-            result.error != null -> SessionStatus.ERROR
-            result.finished -> SessionStatus.COMPLETED
-            else -> SessionStatus.IN_PROGRESS
-        }
+        val status =
+            when {
+                result.error != null -> SessionStatus.ERROR
+                result.finished -> SessionStatus.COMPLETED
+                else -> SessionStatus.IN_PROGRESS
+            }
 
         return SessionResponse(
             sessionId = sessionId,
             output = buildOutput(result),
             toolCalls = toolCalls,
-            tokenUsage = TokenUsage(
-                promptTokens = tokenTracker.promptTokens.toInt(),
-                completionTokens = tokenTracker.completionTokens.toInt(),
-                totalTokens = (tokenTracker.promptTokens + tokenTracker.completionTokens).toInt(),
-                cost = tokenTracker.estimatedCost(model ?: "unknown")
-            ),
-            status = status
+            tokenUsage =
+                TokenUsage(
+                    promptTokens = tokenTracker.promptTokens.toInt(),
+                    completionTokens = tokenTracker.completionTokens.toInt(),
+                    totalTokens = (tokenTracker.promptTokens + tokenTracker.completionTokens).toInt(),
+                    cost = tokenTracker.estimatedCost(model ?: "unknown"),
+                ),
+            status = status,
         )
     }
 
     fun resolveAgentContext(
         context: AgentContext?,
         workspaceRootPath: String,
-        onContextResolved: (AgentContext) -> Unit = {}
-    ): AgentContext {
-        return context ?: try {
+        onContextResolved: (AgentContext) -> Unit = {},
+    ): AgentContext =
+        context ?: try {
             val root = File(workspaceRootPath)
             val ctx = GovernanceContextLoader(graphFile = root.resolve("office/graph.json")).load(root)
             onContextResolved(ctx)
@@ -89,20 +94,20 @@ class SessionProtocolEngine(
         } catch (e: Exception) {
             AgentContext()
         }
-    }
 
-    fun buildOutput(state: VibecodingState): String = buildString {
-        appendLine("=== Session Result ===")
-        appendLine("Intention: ${state.intention}")
-        appendLine("Classification: ${state.classification}")
-        appendLine("Iterations: ${state.iteration}")
-        appendLine("Finished: ${state.finished}")
-        if (state.error != null) {
-            appendLine("Error: ${state.error}")
+    fun buildOutput(state: VibecodingState): String =
+        buildString {
+            appendLine("=== Session Result ===")
+            appendLine("Intention: ${state.intention}")
+            appendLine("Classification: ${state.classification}")
+            appendLine("Iterations: ${state.iteration}")
+            appendLine("Finished: ${state.finished}")
+            if (state.error != null) {
+                appendLine("Error: ${state.error}")
+            }
+            if (state.planJson.isNotBlank()) {
+                appendLine("Plan: ${state.planJson}")
+            }
+            appendLine("Executed tasks: ${state.executedTasks.joinToString(", ")}")
         }
-        if (state.planJson.isNotBlank()) {
-            appendLine("Plan: ${state.planJson}")
-        }
-        appendLine("Executed tasks: ${state.executedTasks.joinToString(", ")}")
-    }
 }

@@ -1,25 +1,26 @@
 package codebase.koog.discovery
 
-import contracts.vibecoding.registry.ToolInfo
 import contracts.vibecoding.registry.ToolRegistry
 
-private val TASK_ALLOWLIST = listOf(
-    Regex("^(build|compileKotlin|compileTestKotlin|test|testFast|check|assemble|jar|publishToMavenLocal|tasks|help)$"),
-    Regex("^:?[\\w-]+:[\\w-]+$")
-)
+private val TASK_ALLOWLIST =
+    listOf(
+        Regex("^(build|compileKotlin|compileTestKotlin|test|testFast|check|assemble|jar|publishToMavenLocal|tasks|help)$"),
+        Regex("^:?[\\w-]+:[\\w-]+$"),
+    )
 
-private val TASK_DENYLIST = listOf(
-    Regex("publishToMavenCentral", RegexOption.IGNORE_CASE),
-    Regex("publishAggregation", RegexOption.IGNORE_CASE),
-    Regex("^clean$", RegexOption.IGNORE_CASE),
-    Regex("^purge$", RegexOption.IGNORE_CASE),
-    Regex("^wrapper$", RegexOption.IGNORE_CASE),
-    Regex("^bootstrap$", RegexOption.IGNORE_CASE)
-)
+private val TASK_DENYLIST =
+    listOf(
+        Regex("publishToMavenCentral", RegexOption.IGNORE_CASE),
+        Regex("publishAggregation", RegexOption.IGNORE_CASE),
+        Regex("^clean$", RegexOption.IGNORE_CASE),
+        Regex("^purge$", RegexOption.IGNORE_CASE),
+        Regex("^wrapper$", RegexOption.IGNORE_CASE),
+        Regex("^bootstrap$", RegexOption.IGNORE_CASE),
+    )
 
 class TaskDiscoveryRegistrar(
     private val scanner: TaskSchemaScanner,
-    private val registry: ToolRegistry
+    private val registry: ToolRegistry,
 ) {
     fun registerAll() {
         val schemas = scanner.scanAll()
@@ -60,13 +61,13 @@ class TaskDiscoveryRegistrar(
             val allowed = TASK_ALLOWLIST.any { it.matches(taskName) }
             if (!allowed) {
                 throw SecurityException(
-                    "Gradle task denied: not in allowlist (deny-by-default)"
+                    "Gradle task denied: not in allowlist (deny-by-default)",
                 )
             }
             for (pattern in TASK_DENYLIST) {
                 if (pattern.containsMatchIn(taskName)) {
                     throw SecurityException(
-                        "Gradle task denied: matches denied pattern '${pattern.pattern}'"
+                        "Gradle task denied: matches denied pattern '${pattern.pattern}'",
                     )
                 }
             }

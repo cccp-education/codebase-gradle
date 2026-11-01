@@ -1,5 +1,6 @@
 package codebase.koog
 
+import codebase.koog.agentic.GovernanceEnforcementWirer
 import codebase.koog.discovery.GradleTaskArgsMapper
 import codebase.koog.discovery.SchemaCache
 import codebase.koog.discovery.TaskDiscoveryRegistrar
@@ -7,11 +8,10 @@ import codebase.koog.discovery.TaskListFormatter
 import codebase.koog.discovery.TaskSchemaScanner
 import codebase.koog.llm.LlmProviderResolver
 import codebase.koog.session.SessionRepository
+import codebase.koog.state.VibecodingState
 import codebase.koog.tracking.TokenTracker
 import contracts.vibecoding.registry.ToolInfo
 import contracts.vibecoding.registry.ToolRegistry
-import codebase.koog.agentic.GovernanceEnforcementWirer
-import codebase.koog.state.VibecodingState
 import io.r2dbc.spi.ConnectionFactory
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
@@ -50,7 +50,6 @@ import java.time.Instant
  */
 @DisableCachingByDefault(because = "Vibecoding LLM agent — non-deterministic LLM calls, non-cacheable")
 abstract class VibecodingTask : DefaultTask() {
-
     private val log = LoggerFactory.getLogger(VibecodingTask::class.java)
 
     @get:Input
@@ -124,8 +123,12 @@ abstract class VibecodingTask : DefaultTask() {
 
         val cache = SchemaCache(project)
 
-        toolRegistry.register(ToolInfo("list_tasks",
-            "List available Gradle tasks with descriptions and options. Use 'group' arg to filter by task group, 'keyword' arg to search by name or description."))
+        toolRegistry.register(
+            ToolInfo(
+                "list_tasks",
+                "List available Gradle tasks with descriptions and options. Use 'group' arg to filter by task group, 'keyword' arg to search by name or description.",
+            ),
+        )
         toolRegistry.registerHandler("list_tasks") { _, arguments, _ ->
             val group = arguments["group"].takeUnless { it.isNullOrBlank() }
             val keyword = arguments["keyword"].takeUnless { it.isNullOrBlank() }
@@ -150,8 +153,12 @@ abstract class VibecodingTask : DefaultTask() {
 
         val tokenTracker = TokenTracker()
         val modelName = model.getOrElse("")
-        val llmProvider = if (modelName.isBlank()) null
-            else LlmProviderResolver.resolve(modelName)
+        val llmProvider =
+            if (modelName.isBlank()) {
+                null
+            } else {
+                LlmProviderResolver.resolve(modelName)
+            }
 
         // --resume flow : reconstruit le state depuis la DB,
         // sinon crée un nouveau state à partir des options Gradle.
@@ -160,75 +167,90 @@ abstract class VibecodingTask : DefaultTask() {
         // Permet la persistance automatique même sans --resume.
         val cf = connectionFactory
 
-        val (graph, state) = if (sessionId.isNotBlank()) {
-            val effectiveCf = cf
-                ?: throw IllegalStateException("Cannot resume session $sessionId: no ConnectionFactory injected. " +
-                    "Ensure R2DBC connection pool is available in your project.")
-            val repo = SessionRepository(effectiveCf)
-            runBlocking { repo.initSchema() }
-            val record = runBlocking { repo.getSession(sessionId) }
-                ?: throw IllegalStateException("Session not found: $sessionId")
-            log.info("Resuming session {} (intention={}, iterationCount={}, finished={})",
-                sessionId, record.intention, record.iterationCount, record.finished)
-            val resumedState = VibecodingGraph.resumeSession(record)
-            val resumedGraph = VibecodingGraph(
-                augmentedGraph = KoogAugmentedContextGraph(),
-                toolRegistry = wiredRegistry,
-                llmProvider = llmProvider,
-                sessionRepository = repo,
-                connectionFactory = effectiveCf,
-                tokenTracker = tokenTracker
-            )
-            Pair(resumedGraph, resumedState)
-        } else {
-            val freshGraph = VibecodingGraph(
-                augmentedGraph = KoogAugmentedContextGraph(),
-                toolRegistry = wiredRegistry,
-                llmProvider = llmProvider,
-                connectionFactory = cf,
-                tokenTracker = tokenTracker
-            )
-            val freshState = VibecodingState(
-                intention = intention.get(),
-                workspaceRoot = root.absolutePath,
-                dryRun = auditedDryRun,
-                maxActions = maxActions.get(),
-                sessionTimeoutSeconds = sessionTimeoutSeconds.get()
-            )
-            Pair(freshGraph, freshState)
-        }
+        val (graph, state) =
+            if (sessionId.isNotBlank()) {
+                val effectiveCf =
+                    cf
+                        ?: throw IllegalStateException(
+                            "Cannot resume session $sessionId: no ConnectionFactory injected. " +
+                                "Ensure R2DBC connection pool is available in your project.",
+                        )
+                val repo = SessionRepository(effectiveCf)
+                runBlocking { repo.initSchema() }
+                val record =
+                    runBlocking { repo.getSession(sessionId) }
+                        ?: throw IllegalStateException("Session not found: $sessionId")
+                log.info(
+                    "Resuming session {} (intention={}, iterationCount={}, finished={})",
+                    sessionId,
+                    record.intention,
+                    record.iterationCount,
+                    record.finished,
+                )
+                val resumedState = VibecodingGraph.resumeSession(record)
+                val resumedGraph =
+                    VibecodingGraph(
+                        augmentedGraph = KoogAugmentedContextGraph(),
+                        toolRegistry = wiredRegistry,
+                        llmProvider = llmProvider,
+                        sessionRepository = repo,
+                        connectionFactory = effectiveCf,
+                        tokenTracker = tokenTracker,
+                    )
+                Pair(resumedGraph, resumedState)
+            } else {
+                val freshGraph =
+                    VibecodingGraph(
+                        augmentedGraph = KoogAugmentedContextGraph(),
+                        toolRegistry = wiredRegistry,
+                        llmProvider = llmProvider,
+                        connectionFactory = cf,
+                        tokenTracker = tokenTracker,
+                    )
+                val freshState =
+                    VibecodingState(
+                        intention = intention.get(),
+                        workspaceRoot = root.absolutePath,
+                        dryRun = auditedDryRun,
+                        maxActions = maxActions.get(),
+                        sessionTimeoutSeconds = sessionTimeoutSeconds.get(),
+                    )
+                Pair(freshGraph, freshState)
+            }
 
         val result = graph.execute(state)
 
         // Écriture de l'audit de session
         val errorValue = result.error?.let { "\"${jsonlEscape(it)}\"" } ?: "null"
-        val sessionEntry = buildString {
-            append("{\"timestamp\":\"${Instant.now()}\"")
-            append(",\"iteration\":${result.iteration}")
-            append(",\"intention\":\"${jsonlEscape(result.intention)}\"")
-            append(",\"dryRun\":$auditedDryRun")
-            append(",\"action\":\"session_complete\"")
-            append(",\"classification\":\"${jsonlEscape(result.classification)}\"")
-            append(",\"error\":$errorValue")
-            append(",\"finished\":${result.finished}")
-            append("}")
-            appendLine()
-        }
+        val sessionEntry =
+            buildString {
+                append("{\"timestamp\":\"${Instant.now()}\"")
+                append(",\"iteration\":${result.iteration}")
+                append(",\"intention\":\"${jsonlEscape(result.intention)}\"")
+                append(",\"dryRun\":$auditedDryRun")
+                append(",\"action\":\"session_complete\"")
+                append(",\"classification\":\"${jsonlEscape(result.classification)}\"")
+                append(",\"error\":$errorValue")
+                append(",\"finished\":${result.finished}")
+                append("}")
+                appendLine()
+            }
         auditFile.appendText(sessionEntry)
 
         // Écriture de l'audit des outils
         for (entry in toolRegistry.auditEntries()) {
             val escapedTool = jsonlEscape(entry.tool)
             val errorStr = entry.error?.let { "\"${jsonlEscape(it)}\"" } ?: "null"
-            val toolEntry = buildString {
-                append("{\"timestamp\":\"${entry.timestamp}\"")
-                append(",\"tool\":\"$escapedTool\"")
-                append(",\"dryRun\":${entry.dryRun}")
-                append(",\"result\":\"${jsonlEscape(entry.result)}\"")
-                append(",\"error\":$errorStr")
-                append("}")
-                appendLine()
-            }
+            val toolEntry =
+                buildString {
+                    append("{\"timestamp\":\"${entry.timestamp}\"")
+                    append(",\"tool\":\"$escapedTool\"")
+                    append(",\"dryRun\":${entry.dryRun}")
+                    append(",\"result\":\"${jsonlEscape(entry.result)}\"")
+                    append(",\"error\":$errorStr")
+                    append("}")
+                    appendLine()
+                }
             auditFile.appendText(toolEntry)
         }
 
@@ -236,7 +258,8 @@ abstract class VibecodingTask : DefaultTask() {
     }
 
     private fun jsonlEscape(raw: String): String =
-        raw.replace("\\", "\\\\")
+        raw
+            .replace("\\", "\\\\")
             .replace("\"", "\\\"")
             .replace("\n", "\\n")
             .replace("\r", "\\r")

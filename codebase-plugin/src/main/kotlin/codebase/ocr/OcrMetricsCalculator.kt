@@ -3,20 +3,26 @@ package codebase.ocr
 import java.util.Locale
 
 object OcrMetricsCalculator {
-
     private const val CHARS_PER_TOKEN = 4.0
     private const val IMAGE_BASE_TOKENS = 258
 
-    private val geminiPricing = mapOf(
-        "gemini-2.5-flash" to Pricing(inputPerMillion = 0.15, outputPerMillion = 0.60),
-        "gemini-2.5-pro" to Pricing(inputPerMillion = 1.25, outputPerMillion = 5.00),
-        "gemini-1.5-flash" to Pricing(inputPerMillion = 0.075, outputPerMillion = 0.30),
-        "gemini-1.5-pro" to Pricing(inputPerMillion = 1.25, outputPerMillion = 5.00)
+    private val geminiPricing =
+        mapOf(
+            "gemini-2.5-flash" to Pricing(inputPerMillion = 0.15, outputPerMillion = 0.60),
+            "gemini-2.5-pro" to Pricing(inputPerMillion = 1.25, outputPerMillion = 5.00),
+            "gemini-1.5-flash" to Pricing(inputPerMillion = 0.075, outputPerMillion = 0.30),
+            "gemini-1.5-pro" to Pricing(inputPerMillion = 1.25, outputPerMillion = 5.00),
+        )
+
+    private data class Pricing(
+        val inputPerMillion: Double,
+        val outputPerMillion: Double,
     )
 
-    private data class Pricing(val inputPerMillion: Double, val outputPerMillion: Double)
-
-    fun estimateInputTokens(fileSizeBytes: Long, isImage: Boolean): Int {
+    fun estimateInputTokens(
+        fileSizeBytes: Long,
+        isImage: Boolean,
+    ): Int {
         if (isImage) {
             return IMAGE_BASE_TOKENS
         }
@@ -28,7 +34,11 @@ object OcrMetricsCalculator {
         return (outputLengthChars / CHARS_PER_TOKEN).toInt().coerceAtLeast(1)
     }
 
-    fun estimateCostUsd(model: String, inputTokens: Int, outputTokens: Int): Double {
+    fun estimateCostUsd(
+        model: String,
+        inputTokens: Int,
+        outputTokens: Int,
+    ): Double {
         val pricing = geminiPricing[model] ?: return 0.0
         val inputCost = (inputTokens / 1_000_000.0) * pricing.inputPerMillion
         val outputCost = (outputTokens / 1_000_000.0) * pricing.outputPerMillion
@@ -45,7 +55,7 @@ object OcrMetricsCalculator {
         ocrDurationMs: Long,
         outputLengthChars: Int,
         anonymizationReplacements: Int,
-        anonymizationCategories: List<String>
+        anonymizationCategories: List<String>,
     ): OcrMetrics {
         val inputTokens = estimateInputTokens(fileSizeBytes, isImage)
         val outputTokens = estimateOutputTokens(outputLengthChars)
@@ -63,7 +73,7 @@ object OcrMetricsCalculator {
             anonymizationCategories = anonymizationCategories,
             estimatedInputTokens = inputTokens,
             estimatedOutputTokens = outputTokens,
-            estimatedCostUsd = cost
+            estimatedCostUsd = cost,
         )
     }
 
@@ -71,14 +81,13 @@ object OcrMetricsCalculator {
         ocrMetrics: OcrMetrics,
         chunkCount: Int,
         ingestDurationMs: Long,
-        embeddingDurationMs: Long
-    ): OcrMetrics {
-        return ocrMetrics.copy(
+        embeddingDurationMs: Long,
+    ): OcrMetrics =
+        ocrMetrics.copy(
             chunkCount = chunkCount,
             ingestDurationMs = ingestDurationMs,
-            embeddingDurationMs = embeddingDurationMs
+            embeddingDurationMs = embeddingDurationMs,
         )
-    }
 
     fun formatDurationMs(ms: Long): String {
         if (ms == 0L) return "0ms"

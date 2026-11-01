@@ -39,5 +39,5 @@ data class RetrieveResult(
     val similarity: Double,
     val confidence: Double = DoubtMetadata.MAX_CONFIDENCE,
     val doubtful: Boolean = false,
-    val pages: List<Int> = emptyList()
+    val pages: List<Int> = emptyList(),
 )

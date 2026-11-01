@@ -25,7 +25,6 @@ package codebase.koog.pipeline
  * @param S the pipeline state type (e.g. `CapsuleState`, `DeckState`).
  */
 interface PipelineDefinition<S> {
-
     /**
      * Strategy name exposed by the built koog graph (e.g.
      * `"capsule-pipeline"`, `"deck-pipeline"`).
@@ -48,8 +47,14 @@ interface PipelineDefinition<S> {
     fun isFailed(state: S): Boolean
 
     /** Maps a [propose] failure (thrown [cause]) onto a failed [state]. */
-    fun onProposeFailure(state: S, cause: Throwable): S
+    fun onProposeFailure(
+        state: S,
+        cause: Throwable,
+    ): S
 
     /** Maps a [generate] failure (thrown [cause]) onto a failed [state]. */
-    fun onGenerateFailure(state: S, cause: Throwable): S
+    fun onGenerateFailure(
+        state: S,
+        cause: Throwable,
+    ): S
 }

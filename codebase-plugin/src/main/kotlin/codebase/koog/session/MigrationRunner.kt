@@ -17,22 +17,23 @@ import java.security.MessageDigest
  * - Undo files (V{n}__undo.sql) are ignored by the runner
  */
 class MigrationRunner(
-    private val connectionFactory: ConnectionFactory
+    private val connectionFactory: ConnectionFactory,
 ) {
     data class Migration(
         val version: String,
         val description: String,
         val sql: String,
-        val checksum: String
+        val checksum: String,
     )
 
     suspend fun migrate() {
         withConnection { conn ->
             ensureSchemaVersionTable(conn)
             val applied = getAppliedVersions(conn)
-            val pending = scanMigrations()
-                .filter { it.version !in applied }
-                .sortedBy { it.version.toInt() }
+            val pending =
+                scanMigrations()
+                    .filter { it.version !in applied }
+                    .sortedBy { it.version.toInt() }
 
             for (migration in pending) {
                 applyMigration(conn, migration)
@@ -51,26 +52,30 @@ class MigrationRunner(
     }
 
     private suspend fun ensureSchemaVersionTable(conn: Connection) {
-        Mono.from(
-            conn.createStatement(
-                "CREATE TABLE IF NOT EXISTS schema_version (" +
-                "  version    VARCHAR(50) PRIMARY KEY," +
-                "  applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()," +
-                "  checksum   VARCHAR(64) NOT NULL" +
-                ")"
-            ).execute()
-        ).flatMap { Mono.from(it.rowsUpdated) }
+        Mono
+            .from(
+                conn
+                    .createStatement(
+                        "CREATE TABLE IF NOT EXISTS schema_version (" +
+                            "  version    VARCHAR(50) PRIMARY KEY," +
+                            "  applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()," +
+                            "  checksum   VARCHAR(64) NOT NULL" +
+                            ")",
+                    ).execute(),
+            ).flatMap { Mono.from(it.rowsUpdated) }
             .defaultIfEmpty(0L)
             .awaitSingle()
     }
 
-    private suspend fun getAppliedVersions(conn: Connection): Set<String> {
-        return Mono.from(
-            conn.createStatement("SELECT version FROM schema_version").execute()
-        ).flatMapMany { result ->
-            result.map { row, _ -> row.get("version", String::class.java)!! }
-        }.collectList().awaitSingle().toSet()
-    }
+    private suspend fun getAppliedVersions(conn: Connection): Set<String> =
+        Mono
+            .from(
+                conn.createStatement("SELECT version FROM schema_version").execute(),
+            ).flatMapMany { result ->
+                result.map { row, _ -> row.get("version", String::class.java)!! }
+            }.collectList()
+            .awaitSingle()
+            .toSet()
 
     private fun scanMigrations(): List<Migration> {
         val classLoader = javaClass.classLoader
@@ -98,37 +103,48 @@ class MigrationRunner(
         return migrations.distinctBy { it.version }
     }
 
-    private suspend fun applyMigration(conn: Connection, migration: Migration) {
-        val statements = migration.sql
-            .lines()
-            .filter { it.isNotBlank() && !it.trimStart().startsWith("--") }
-            .joinToString("\n")
-            .split(';')
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
+    private suspend fun applyMigration(
+        conn: Connection,
+        migration: Migration,
+    ) {
+        val statements =
+            migration.sql
+                .lines()
+                .filter { it.isNotBlank() && !it.trimStart().startsWith("--") }
+                .joinToString("\n")
+                .split(';')
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
 
         for (stmt in statements) {
-            Mono.from(conn.createStatement(stmt).execute())
+            Mono
+                .from(conn.createStatement(stmt).execute())
                 .flatMap { Mono.from(it.rowsUpdated) }
                 .defaultIfEmpty(0L)
                 .awaitSingle()
         }
     }
 
-    private suspend fun recordMigration(conn: Connection, migration: Migration) {
-        val s = conn.createStatement(
-            "INSERT INTO schema_version (version, checksum) VALUES ($1, $2)"
-        )
+    private suspend fun recordMigration(
+        conn: Connection,
+        migration: Migration,
+    ) {
+        val s =
+            conn.createStatement(
+                "INSERT INTO schema_version (version, checksum) VALUES ($1, $2)",
+            )
         s.bind("$1", migration.version)
         s.bind("$2", migration.checksum)
-        Mono.from(s.execute())
+        Mono
+            .from(s.execute())
             .flatMap { Mono.from(it.rowsUpdated) }
             .awaitSingle()
     }
 
     private fun sha256(input: String): String {
         val digest = MessageDigest.getInstance("SHA-256")
-        return digest.digest(input.toByteArray())
+        return digest
+            .digest(input.toByteArray())
             .joinToString("") { "%02x".format(it) }
     }
 }

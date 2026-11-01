@@ -16,8 +16,9 @@ import org.slf4j.LoggerFactory
  * Le prompt est minimal : "Translate from <src> to <tgt>:\n<text>".
  * Pas de glossaire, pas de few-shot — baby-step.
  */
-class LlmTranslator(private val llm: LlmProvider) : TranslationService {
-
+class LlmTranslator(
+    private val llm: LlmProvider,
+) : TranslationService {
     private val log = LoggerFactory.getLogger(LlmTranslator::class.java)
 
     override fun translate(request: TranslationRequest): TranslationResult {
@@ -26,7 +27,7 @@ class LlmTranslator(private val llm: LlmProvider) : TranslationService {
             "[LlmTranslator] translate {}→{} ({} chars)",
             request.sourceLanguage,
             request.targetLanguage,
-            request.sourceText.length
+            request.sourceText.length,
         )
         return try {
             val raw = runBlocking { llm.call(prompt) }

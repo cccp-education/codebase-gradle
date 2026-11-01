@@ -26,26 +26,26 @@ import java.time.Instant
 class VisionOcrEngineAdapter(
     private val provider: VisionProvider,
     private val model: String = "gemini-2.5-flash",
-    private val maxTokens: Int = 8192
+    private val maxTokens: Int = 8192,
 ) : OcrEngine {
-
     override fun process(request: OcrRequest): OcrResult {
-        val text = runBlocking {
-            provider.processImage(
-                imageBytes = request.imageData,
-                mimeType = request.format,
-                language = request.language,
-                model = model,
-                maxTokens = maxTokens
-            )
-        }
+        val text =
+            runBlocking {
+                provider.processImage(
+                    imageBytes = request.imageData,
+                    mimeType = request.format,
+                    language = request.language,
+                    model = model,
+                    maxTokens = maxTokens,
+                )
+            }
         return OcrResult(
             structuredText = text,
             confidence = 1.0,
             language = request.language,
             sourceFormat = request.format,
             generatedAt = Instant.now().toString(),
-            model = model
+            model = model,
         )
     }
 }

@@ -30,20 +30,21 @@ import kotlinx.coroutines.runBlocking
 class LlmProviderChatModelAdapter(
     private val provider: LlmProvider,
 ) : ChatModel {
-
     override fun doChat(request: ChatRequest): ChatResponse {
         val prompt = request.messages().joinToString("\n") { it.text() }
         val raw = runBlocking { provider.call(prompt) }
-        return ChatResponse.builder()
+        return ChatResponse
+            .builder()
             .aiMessage(AiMessage.from(raw))
             .build()
     }
 
     /** ChatMessage.text() is not on the interface; resolve per concrete subtype. */
-    private fun ChatMessage.text(): String = when (this) {
-        is SystemMessage -> text()
-        is UserMessage -> if (hasSingleText()) singleText() else contents().joinToString { it.toString() }
-        is AiMessage -> text()
-        else -> toString()
-    }
+    private fun ChatMessage.text(): String =
+        when (this) {
+            is SystemMessage -> text()
+            is UserMessage -> if (hasSingleText()) singleText() else contents().joinToString { it.toString() }
+            is AiMessage -> text()
+            else -> toString()
+        }
 }

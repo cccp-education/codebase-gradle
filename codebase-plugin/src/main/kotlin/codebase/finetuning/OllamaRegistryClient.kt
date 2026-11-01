@@ -18,7 +18,6 @@ package codebase.finetuning
  * @see OllamaFineTunerAdapter
  */
 interface OllamaRegistryClient {
-
     /**
      * Crée un modèle dans le registre Ollama à partir du Modelfile
      * encapsulé dans [request].
@@ -48,7 +47,7 @@ interface OllamaRegistryClient {
 data class CreateModelRequest(
     val modelName: String,
     val modelfile: String,
-    val stream: Boolean = false
+    val stream: Boolean = false,
 )
 
 /**
@@ -59,7 +58,7 @@ data class CreateModelRequest(
  */
 data class PushModelRequest(
     val modelName: String,
-    val stream: Boolean = false
+    val stream: Boolean = false,
 )
 
 /**
@@ -71,20 +70,36 @@ data class PushModelRequest(
 sealed interface RegistryResponse {
     val isOk: Boolean
 
-    data class Ok(val statusCode: Int = 200, val body: String = "{}") : RegistryResponse {
+    data class Ok(
+        val statusCode: Int = 200,
+        val body: String = "{}",
+    ) : RegistryResponse {
         override val isOk: Boolean get() = true
     }
 
-    data class Fail(val statusCode: Int, val body: String) : RegistryResponse {
+    data class Fail(
+        val statusCode: Int,
+        val body: String,
+    ) : RegistryResponse {
         override val isOk: Boolean get() = false
 
         companion object {
-            fun of(statusCode: Int, body: String): Fail = Fail(statusCode, body)
+            fun of(
+                statusCode: Int,
+                body: String,
+            ): Fail = Fail(statusCode, body)
         }
     }
 
     companion object {
-        fun ok(statusCode: Int = 200, body: String = "{}"): RegistryResponse = Ok(statusCode, body)
-        fun fail(statusCode: Int, body: String): RegistryResponse = Fail(statusCode, body)
+        fun ok(
+            statusCode: Int = 200,
+            body: String = "{}",
+        ): RegistryResponse = Ok(statusCode, body)
+
+        fun fail(
+            statusCode: Int,
+            body: String,
+        ): RegistryResponse = Fail(statusCode, body)
     }
 }

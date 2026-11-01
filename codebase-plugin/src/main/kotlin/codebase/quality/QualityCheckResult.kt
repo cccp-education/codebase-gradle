@@ -5,7 +5,7 @@ data class QualityCheckResult(
     val verdict: QualityVerdict,
     val score: Double,
     val details: String,
-    val issues: List<QualityIssue> = emptyList()
+    val issues: List<QualityIssue> = emptyList(),
 ) {
     init {
         require(checkerName.isNotBlank()) { "checkerName must not be blank" }
@@ -13,10 +13,11 @@ data class QualityCheckResult(
         require(details.isNotBlank()) { "details must not be blank" }
     }
 
-    override fun toString(): String = buildString {
-        append("[$checkerName] ${verdict.name} (score=$score)")
-        if (issues.isNotEmpty()) {
-            append(" — ${issues.size} issue(s): ${issues.joinToString("; ")}")
+    override fun toString(): String =
+        buildString {
+            append("[$checkerName] ${verdict.name} (score=$score)")
+            if (issues.isNotEmpty()) {
+                append(" — ${issues.size} issue(s): ${issues.joinToString("; ")}")
+            }
         }
-    }
 }

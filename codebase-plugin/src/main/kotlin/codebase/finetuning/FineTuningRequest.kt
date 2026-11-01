@@ -22,7 +22,7 @@ data class FineTuningRequest(
     val baseModel: String,
     val dataset: List<String>,
     val outputModelName: String,
-    val corpusRatio: Double = 0.10
+    val corpusRatio: Double = 0.10,
 ) {
     init {
         require(baseModel.isNotBlank()) { "baseModel must not be blank" }

@@ -11,8 +11,9 @@ object OpencodeInjectorMain {
     fun main(args: Array<String>) {
         val ragQuestion = if (args.isNotEmpty()) args[0] else "architecture du workspace"
         val cfg = PgVectorConfig.fromEnv()
-        val workspaceRoot = System.getenv("CODEBASE_ROOT_DIR")?.let { File(it) }
-            ?: File(".").absoluteFile.parentFile.parentFile
+        val workspaceRoot =
+            System.getenv("CODEBASE_ROOT_DIR")?.let { File(it) }
+                ?: File(".").absoluteFile.parentFile.parentFile
         val outputFile = File("/tmp/opencode-context.txt")
 
         val store = cfg.toVectorStore()
@@ -40,7 +41,10 @@ object OpencodeInjectorMain {
         StdoutFormatter.result("Graphify: $graphifyNodes")
 
         StdoutFormatter.separator()
-        log.info("OpencodeInjector complete: {} chars written to {}",
-            injected.readText().length, outputFile.absolutePath)
+        log.info(
+            "OpencodeInjector complete: {} chars written to {}",
+            injected.readText().length,
+            outputFile.absolutePath,
+        )
     }
 }

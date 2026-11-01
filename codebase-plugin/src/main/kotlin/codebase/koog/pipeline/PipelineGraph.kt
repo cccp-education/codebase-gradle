@@ -41,7 +41,6 @@ class PipelineGraph<S : Any>(
     val definition: PipelineDefinition<S>,
     val graph: AIAgentGraphStrategy<S, S>,
 ) {
-
     private val log = LoggerFactory.getLogger(PipelineGraph::class.java)
 
     /**
@@ -50,12 +49,13 @@ class PipelineGraph<S : Any>(
      * state returned by the definition's failure mapper.
      */
     fun execute(initialState: S): S {
-        var state = try {
-            definition.propose(initialState)
-        } catch (e: Exception) {
-            log.warn("[{}] propose-context failed: {}", definition.name, e.message)
-            definition.onProposeFailure(initialState, e)
-        }
+        var state =
+            try {
+                definition.propose(initialState)
+            } catch (e: Exception) {
+                log.warn("[{}] propose-context failed: {}", definition.name, e.message)
+                definition.onProposeFailure(initialState, e)
+            }
 
         if (definition.isFailed(state)) return state
 
@@ -84,20 +84,21 @@ class PipelineGraph<S : Any>(
  * let `S` be inferred.
  */
 inline fun <reified S : Any> pipelineGraph(definition: PipelineDefinition<S>): PipelineGraph<S> {
-    val graph = strategy<S, S>(
-        name = definition.name,
-        toolSelectionStrategy = ToolSelectionStrategy.NONE,
-    ) {
-        val proposeNode by node<S, S> { state -> definition.propose(state) }
-        val validateNode by node<S, S> { state -> definition.validate(state) }
-        val generateNode by node<S, S> { state -> definition.generate(state) }
+    val graph =
+        strategy<S, S>(
+            name = definition.name,
+            toolSelectionStrategy = ToolSelectionStrategy.NONE,
+        ) {
+            val proposeNode by node<S, S> { state -> definition.propose(state) }
+            val validateNode by node<S, S> { state -> definition.validate(state) }
+            val generateNode by node<S, S> { state -> definition.generate(state) }
 
-        edge(nodeStart forwardTo proposeNode onCondition { _ -> true } transformed { it })
-        edge(proposeNode forwardTo validateNode onCondition { _ -> true } transformed { it })
-        edge(validateNode forwardTo generateNode onCondition { definition.isValid(it) } transformed { it })
-        edge(validateNode forwardTo nodeFinish onCondition { !definition.isValid(it) } transformed { it })
-        edge(generateNode forwardTo nodeFinish onCondition { _ -> true } transformed { it })
-    }
+            edge(nodeStart forwardTo proposeNode onCondition { _ -> true } transformed { it })
+            edge(proposeNode forwardTo validateNode onCondition { _ -> true } transformed { it })
+            edge(validateNode forwardTo generateNode onCondition { definition.isValid(it) } transformed { it })
+            edge(validateNode forwardTo nodeFinish onCondition { !definition.isValid(it) } transformed { it })
+            edge(generateNode forwardTo nodeFinish onCondition { _ -> true } transformed { it })
+        }
 
     return PipelineGraph(definition, graph)
 }

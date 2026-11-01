@@ -13,7 +13,6 @@ package codebase.store
  * Pure policy object — no I/O, no state, unit-testable in isolation.
  */
 object DoubtPolicy {
-
     /** Stable OCR marker documented in `book-ocr-issues.json`. */
     const val ILLISIBLE_MARKER = "[ILLISIBLE]"
 
@@ -29,8 +28,7 @@ object DoubtPolicy {
         }
 
     /** Wraps every chunk with its derived doubt metadata. */
-    fun mark(chunks: List<DocumentChunk>): List<DoubtfulChunk> =
-        chunks.map { DoubtfulChunk(chunk = it, doubt = derive(it)) }
+    fun mark(chunks: List<DocumentChunk>): List<DoubtfulChunk> = chunks.map { DoubtfulChunk(chunk = it, doubt = derive(it)) }
 
     private fun isDoubtful(chunk: DocumentChunk): Boolean =
         chunk.content.contains(ILLISIBLE_MARKER) ||

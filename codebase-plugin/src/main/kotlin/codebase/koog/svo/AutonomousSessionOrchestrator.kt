@@ -37,7 +37,6 @@ data class AutonomousSessionReport(
  * The chain loop itself is pure: the Gradle task is a thin adapter.
  */
 object AutonomousSessionOrchestrator {
-
     const val STOP_BRAINSTORMING: String = "brainstorming"
     const val STOP_MAX_SESSIONS: String = "maxChainedSessions"
     const val STOP_ERROR: String = "sessionError"
@@ -59,27 +58,30 @@ object AutonomousSessionOrchestrator {
             // Attempt 1 resolves the mission prompt (CLI > borough default);
             // chained attempts re-resolve the borough default — the fake/loop
             // keeps consuming the backlog items it wrote.
-            val resolved = SessionPromptResolver.resolve(
-                cliPrompt = if (attempt == 1) prompt else null,
-                borough = borough,
-                projectDir = projectDir,
-            )
+            val resolved =
+                SessionPromptResolver.resolve(
+                    cliPrompt = if (attempt == 1) prompt else null,
+                    borough = borough,
+                    projectDir = projectDir,
+                )
             val intention = resolved.prompt
             if (attempt == 1) missionIntention = intention
-            val state = VibecodingState(
-                intention = intention,
-                workspaceRoot = projectDir.absolutePath,
-                dryRun = false,
-                maxActions = maxActionsPerSession,
-            )
-            val result = try {
-                runSession(state)
-            } catch (e: Exception) {
-                auditAppend(jsonLine(borough, attempt, intention, error = e.message))
-                sessionsExecuted = attempt
-                stopReason = STOP_ERROR
-                break
-            }
+            val state =
+                VibecodingState(
+                    intention = intention,
+                    workspaceRoot = projectDir.absolutePath,
+                    dryRun = false,
+                    maxActions = maxActionsPerSession,
+                )
+            val result =
+                try {
+                    runSession(state)
+                } catch (e: Exception) {
+                    auditAppend(jsonLine(borough, attempt, intention, error = e.message))
+                    sessionsExecuted = attempt
+                    stopReason = STOP_ERROR
+                    break
+                }
             auditAppend(jsonLine(borough, attempt, intention, error = null, result = result.take(200)))
             sessionsExecuted = attempt
 
@@ -92,19 +94,21 @@ object AutonomousSessionOrchestrator {
             val brainstormingIntention =
                 "BRAINSTORM: vision of the $borough borough (autofocus BIG_PICTURE, cadrage global)"
             if (attempt < maxChainedSessions) {
-                val brainstormState = VibecodingState(
-                    intention = brainstormingIntention,
-                    workspaceRoot = projectDir.absolutePath,
-                    dryRun = false,
-                    maxActions = maxActionsPerSession,
-                )
-                val brainstormResult = try {
-                    runSession(brainstormState)
-                } catch (e: Exception) {
-                    auditAppend(jsonLine(borough, attempt + 1, brainstormingIntention, error = e.message))
-                    stopReason = STOP_ERROR
-                    break
-                }
+                val brainstormState =
+                    VibecodingState(
+                        intention = brainstormingIntention,
+                        workspaceRoot = projectDir.absolutePath,
+                        dryRun = false,
+                        maxActions = maxActionsPerSession,
+                    )
+                val brainstormResult =
+                    try {
+                        runSession(brainstormState)
+                    } catch (e: Exception) {
+                        auditAppend(jsonLine(borough, attempt + 1, brainstormingIntention, error = e.message))
+                        stopReason = STOP_ERROR
+                        break
+                    }
                 auditAppend(jsonLine(borough, attempt + 1, brainstormingIntention, error = null, result = brainstormResult.take(200)))
                 sessionsExecuted = attempt + 1
             }
@@ -113,19 +117,21 @@ object AutonomousSessionOrchestrator {
 
         if (stopReason.isEmpty()) stopReason = STOP_MAX_SESSIONS
 
-        val openItems = readBacklogLines(projectDir)
-            .let(BacklogDetector::parse)
-            .let(BacklogDetector::openItems)
-            .map { it.summary() }
+        val openItems =
+            readBacklogLines(projectDir)
+                .let(BacklogDetector::parse)
+                .let(BacklogDetector::openItems)
+                .map { it.summary() }
 
-        val resumption = SessionResumptionPlanner.plan(
-            SessionResumptionState(
-                borough = borough,
-                openItems = openItems,
-                doneItems = emptyList(),
-                lastIntention = missionIntention.take(200),
+        val resumption =
+            SessionResumptionPlanner.plan(
+                SessionResumptionState(
+                    borough = borough,
+                    openItems = openItems,
+                    doneItems = emptyList(),
+                    lastIntention = missionIntention.take(200),
+                ),
             )
-        )
         val path = writeResumptionPrompt(projectDir, resumption)
 
         return AutonomousSessionReport(
@@ -134,18 +140,22 @@ object AutonomousSessionOrchestrator {
             stopReason = stopReason,
             resumptionPrompt = resumption,
             resumptionPromptPath = path,
-            brainstormingIntention = if (stopReason == STOP_BRAINSTORMING) {
-                "BRAINSTORM: vision of the $borough borough (autofocus BIG_PICTURE, cadrage global)"
-            } else null,
+            brainstormingIntention =
+                if (stopReason == STOP_BRAINSTORMING) {
+                    "BRAINSTORM: vision of the $borough borough (autofocus BIG_PICTURE, cadrage global)"
+                } else {
+                    null
+                },
             backlogOpenItems = openItems,
         )
     }
 
     private fun readBacklogLines(projectDir: File): List<String> {
-        val candidates = listOf(
-            projectDir.resolve("BACKLOG.adoc"),
-            projectDir.resolve(".agents/BACKLOG.adoc"),
-        )
+        val candidates =
+            listOf(
+                projectDir.resolve("BACKLOG.adoc"),
+                projectDir.resolve(".agents/BACKLOG.adoc"),
+            )
         val file = candidates.firstOrNull { it.isFile } ?: return emptyList()
         return try {
             file.readLines()
@@ -154,7 +164,10 @@ object AutonomousSessionOrchestrator {
         }
     }
 
-    private fun writeResumptionPrompt(projectDir: File, prompt: String): String {
+    private fun writeResumptionPrompt(
+        projectDir: File,
+        prompt: String,
+    ): String {
         val dir = File(projectDir, "build/vibecoding")
         dir.mkdirs()
         val file = File(dir, "resumption-prompt.adoc")
@@ -162,20 +175,28 @@ object AutonomousSessionOrchestrator {
         return file.absolutePath
     }
 
-    private fun jsonLine(borough: String, session: Int, intention: String, error: String?, result: String? = null): String = buildString {
-        append("{\"timestamp\":\"${Instant.now()}\"")
-        append(",\"borough\":\"$borough\"")
-        append(",\"session\":$session")
-        append(",\"action\":\"autonomous_session\"")
-        append(",\"intention\":\"${jsonlEscape(intention.take(120))}\"")
-        if (result != null) append(",\"result\":\"${jsonlEscape(result.take(120))}\"")
-        append(",\"error\":${error?.let { "\"${jsonlEscape(it)}\"" } ?: "null"}")
-        append("}")
-        appendLine()
-    }
+    private fun jsonLine(
+        borough: String,
+        session: Int,
+        intention: String,
+        error: String?,
+        result: String? = null,
+    ): String =
+        buildString {
+            append("{\"timestamp\":\"${Instant.now()}\"")
+            append(",\"borough\":\"$borough\"")
+            append(",\"session\":$session")
+            append(",\"action\":\"autonomous_session\"")
+            append(",\"intention\":\"${jsonlEscape(intention.take(120))}\"")
+            if (result != null) append(",\"result\":\"${jsonlEscape(result.take(120))}\"")
+            append(",\"error\":${error?.let { "\"${jsonlEscape(it)}\"" } ?: "null"}")
+            append("}")
+            appendLine()
+        }
 
     private fun jsonlEscape(raw: String): String =
-        raw.replace("\\", "\\\\")
+        raw
+            .replace("\\", "\\\\")
             .replace("\"", "\\\"")
             .replace("\n", "\\n")
             .replace("\r", "\\r")

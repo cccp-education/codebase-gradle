@@ -1,5 +1,10 @@
 package codebase.koog
 
+import ai.koog.agents.core.agent.asMermaidDiagram
+import ai.koog.agents.core.agent.entity.AIAgentGraphStrategy
+import ai.koog.agents.core.agent.entity.ToolSelectionStrategy
+import ai.koog.agents.core.dsl.builder.node
+import ai.koog.agents.core.dsl.builder.strategy
 import codebase.koog.autofocus.AutofocusClassifier
 import codebase.koog.autofocus.AutofocusLevel
 import codebase.koog.autofocus.AutofocusStack
@@ -14,19 +19,14 @@ import codebase.koog.planning.VibecodingPlan
 import codebase.koog.planning.VibecodingStep
 import codebase.koog.session.SessionRecord
 import codebase.koog.session.SessionRepository
+import codebase.koog.state.AugmentedState
+import codebase.koog.state.VibecodingState
 import codebase.koog.tracking.TokenTracker
 import contracts.vibecoding.registry.ToolRegistry
 import io.r2dbc.spi.ConnectionFactory
-import codebase.koog.state.AugmentedState
-import codebase.koog.state.VibecodingState
-import ai.koog.agents.core.agent.asMermaidDiagram
-import ai.koog.agents.core.agent.entity.AIAgentGraphStrategy
-import ai.koog.agents.core.agent.entity.ToolSelectionStrategy
-import ai.koog.agents.core.dsl.builder.node
-import ai.koog.agents.core.dsl.builder.strategy
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.TimeoutCancellationException
 import org.slf4j.LoggerFactory
 
 /**
@@ -65,9 +65,8 @@ class VibecodingGraph(
     val contextZoomer: ContextZoomer = ContextZoomer(),
     val autofocusStack: AutofocusStack = AutofocusStack(),
     val eventStream: ToolEventStream? = null,
-    val liveContextInjector: LiveContextInjector? = null
+    val liveContextInjector: LiveContextInjector? = null,
 ) {
-
     var staticContext: contracts.session.AgentContext? = null
 
     private val log = LoggerFactory.getLogger(VibecodingGraph::class.java)
@@ -82,42 +81,47 @@ class VibecodingGraph(
     /**
      * Graphe koog déclaratif — 5 nœuds (V-5 : callLLM + persistState ajoutés).
      */
-    val graph: AIAgentGraphStrategy<VibecodingState, VibecodingState> = strategy<VibecodingState, VibecodingState>(
-        name = "vibecoding",
-        toolSelectionStrategy = ToolSelectionStrategy.NONE
-    ) {
-        val buildContext by node<VibecodingState, VibecodingState> { state ->
-            buildContextNode(state)
-        }
+    val graph: AIAgentGraphStrategy<VibecodingState, VibecodingState> =
+        strategy<VibecodingState, VibecodingState>(
+            name = "vibecoding",
+            toolSelectionStrategy = ToolSelectionStrategy.NONE,
+        ) {
+            val buildContext by node<VibecodingState, VibecodingState> { state ->
+                buildContextNode(state)
+            }
 
-        val callLLM by node<VibecodingState, VibecodingState> { state ->
-            callLLMNode(state)
-        }
+            val callLLM by node<VibecodingState, VibecodingState> { state ->
+                callLLMNode(state)
+            }
 
-        val executeTools by node<VibecodingState, VibecodingState> { state ->
-            executeToolsNode(state)
-        }
+            val executeTools by node<VibecodingState, VibecodingState> { state ->
+                executeToolsNode(state)
+            }
 
-        val persistState by node<VibecodingState, VibecodingState> { state ->
-            persistStateNode(state)
-        }
+            val persistState by node<VibecodingState, VibecodingState> { state ->
+                persistStateNode(state)
+            }
 
-        val checkProgress by node<VibecodingState, VibecodingState> { state ->
-            checkProgressNode(state)
-        }
+            val checkProgress by node<VibecodingState, VibecodingState> { state ->
+                checkProgressNode(state)
+            }
 
-        edge(nodeStart forwardTo buildContext onCondition { _ -> true } transformed { it })
-        edge(buildContext forwardTo callLLM onCondition { _ -> true } transformed { it })
-        edge(callLLM forwardTo executeTools onCondition { _ -> true } transformed { it })
-        edge(executeTools forwardTo persistState onCondition { _ -> true } transformed { it })
-        edge(persistState forwardTo checkProgress onCondition { _ -> true } transformed { it })
-        edge(checkProgress forwardTo callLLM onCondition { state ->
-            !state.finished && !state.isFinal && state.error == null
-        } transformed { it })
-        edge(checkProgress forwardTo nodeFinish onCondition { state ->
-            state.finished || state.isFinal || state.error != null
-        } transformed { it })
-    }
+            edge(nodeStart forwardTo buildContext onCondition { _ -> true } transformed { it })
+            edge(buildContext forwardTo callLLM onCondition { _ -> true } transformed { it })
+            edge(callLLM forwardTo executeTools onCondition { _ -> true } transformed { it })
+            edge(executeTools forwardTo persistState onCondition { _ -> true } transformed { it })
+            edge(persistState forwardTo checkProgress onCondition { _ -> true } transformed { it })
+            edge(
+                checkProgress forwardTo callLLM onCondition { state ->
+                    !state.finished && !state.isFinal && state.error == null
+                } transformed { it },
+            )
+            edge(
+                checkProgress forwardTo nodeFinish onCondition { state ->
+                    state.finished || state.isFinal || state.error != null
+                } transformed { it },
+            )
+        }
 
     /**
      * Point d'entrée principal — pipeline complet (V-5 : callLLM + persistState).
@@ -133,51 +137,59 @@ class VibecodingGraph(
 
         // Vérification timeout avant de démarrer
         if (isTimedOut(initialState)) {
-            log.warn("[VibecodingGraph] Session timed out before starting (elapsed=${elapsedSeconds(initialState)}s, timeout=${initialState.sessionTimeoutSeconds}s)")
+            log.warn(
+                "[VibecodingGraph] Session timed out before starting (elapsed=${elapsedSeconds(
+                    initialState,
+                )}s, timeout=${initialState.sessionTimeoutSeconds}s)",
+            )
             return initialState.withError("Timeout: session exceeded ${initialState.sessionTimeoutSeconds}s (elapsed ${elapsedSeconds(initialState)}s)")
         }
 
         // Persistance initiale — crée la session avant la boucle
         var state = initialState
-        sessionId = try {
-            runBlocking { effectiveSessionRepository?.createSession(state) }?.also {
-                log.info("[VibecodingGraph] Session created: id={}", it)
+        sessionId =
+            try {
+                runBlocking { effectiveSessionRepository?.createSession(state) }?.also {
+                    log.info("[VibecodingGraph] Session created: id={}", it)
+                }
+            } catch (e: Exception) {
+                log.warn("[VibecodingGraph] createSession failed: {}", e.message)
+                null
             }
-        } catch (e: Exception) {
-            log.warn("[VibecodingGraph] createSession failed: {}", e.message)
-            null
-        }
 
         // Étape 0 : classify (Z-5 Autofocus) — détermine le niveau de zoom
-        state = try {
-            eventStream?.thinking(0, "Classifying intention: ${state.intention}")
-            classifyNode(state)
-        } catch (e: Exception) {
-            log.warn("[VibecodingGraph] classify failed: {}", e.message)
-            eventStream?.error(0, "Classify failed: ${e.message}")
-            state
-        }
+        state =
+            try {
+                eventStream?.thinking(0, "Classifying intention: ${state.intention}")
+                classifyNode(state)
+            } catch (e: Exception) {
+                log.warn("[VibecodingGraph] classify failed: {}", e.message)
+                eventStream?.error(0, "Classify failed: ${e.message}")
+                state
+            }
         if (state.error != null) return state
 
         // Étape 0b : zoom (Z-5 Autofocus) — ajuste le focus stack
-        state = try {
-            eventStream?.progress(0, state.maxActions, "Zooming to ${state.focusLevel}")
-            zoomNode(state)
-        } catch (e: Exception) {
-            log.warn("[VibecodingGraph] zoom failed: {}", e.message)
-            eventStream?.error(0, "Zoom failed: ${e.message}")
-            state
-        }
+        state =
+            try {
+                eventStream?.progress(0, state.maxActions, "Zooming to ${state.focusLevel}")
+                zoomNode(state)
+            } catch (e: Exception) {
+                log.warn("[VibecodingGraph] zoom failed: {}", e.message)
+                eventStream?.error(0, "Zoom failed: ${e.message}")
+                state
+            }
 
         // Étape 1 : buildContext
-        state = try {
-            eventStream?.thinking(0, "Building augmented context")
-            buildContextNode(state)
-        } catch (e: Exception) {
-            log.warn("[VibecodingGraph] buildContext failed: {}", e.message)
-            eventStream?.error(0, "BuildContext failed: ${e.message}")
-            state.withError("BuildContextFailed: ${e.message}")
-        }
+        state =
+            try {
+                eventStream?.thinking(0, "Building augmented context")
+                buildContextNode(state)
+            } catch (e: Exception) {
+                log.warn("[VibecodingGraph] buildContext failed: {}", e.message)
+                eventStream?.error(0, "BuildContext failed: ${e.message}")
+                state.withError("BuildContextFailed: ${e.message}")
+            }
         if (state.error != null) return state
         if (state.isFinal) return state.finish()
 
@@ -185,7 +197,11 @@ class VibecodingGraph(
         while (!state.finished && !state.isFinal) {
             // Vérification timeout à chaque itération (erreur fatale)
             if (isTimedOut(state)) {
-                log.warn("[VibecodingGraph] Session timed out during loop (elapsed=${elapsedSeconds(state)}s > timeout=${state.sessionTimeoutSeconds}s, iteration=${state.iteration})")
+                log.warn(
+                    "[VibecodingGraph] Session timed out during loop (elapsed=${elapsedSeconds(
+                        state,
+                    )}s > timeout=${state.sessionTimeoutSeconds}s, iteration=${state.iteration})",
+                )
                 state = state.withError("Timeout: session exceeded ${state.sessionTimeoutSeconds}s at iteration ${state.iteration}")
                 return state
             }
@@ -197,13 +213,14 @@ class VibecodingGraph(
                 if (llmProvider != null) {
                     eventStream?.thinking(state.iteration, "LLM deciding next action")
                     eventStream?.toolCall(state.iteration, "call_llm", mapOf("intention" to state.intention))
-                    state = try {
-                        callLLMNode(state)
-                    } catch (e: Exception) {
-                        log.warn("[VibecodingGraph] callLLM failed: {}", e.message)
-                        eventStream?.error(state.iteration, "LLM call failed: ${e.message}")
-                        state.withError("CallLLMFailed: ${e.message}")
-                    }
+                    state =
+                        try {
+                            callLLMNode(state)
+                        } catch (e: Exception) {
+                            log.warn("[VibecodingGraph] callLLM failed: {}", e.message)
+                            eventStream?.error(state.iteration, "LLM call failed: ${e.message}")
+                            state.withError("CallLLMFailed: ${e.message}")
+                        }
                     if (state.error != null) {
                         eventStream?.toolResult(state.iteration, "call_llm", state.error, success = false)
                         eventStream?.error(state.iteration, state.error)
@@ -220,24 +237,27 @@ class VibecodingGraph(
                 // Mode plan déterministe : executeTools sur les tâches du plan
                 val nextTask = extractCurrentTaskDescription(state)
                 eventStream?.toolCall(state.iteration, "exec_gradle", mapOf("task" to (nextTask ?: "unknown")))
-                state = try {
-                    executeToolsNode(state)
-                } catch (e: Exception) {
-                    log.warn("[VibecodingGraph] executeTools failed: {}", e.message)
-                    eventStream?.error(state.iteration, "Execute tools failed: ${e.message}")
-                    state.withError("ExecuteToolsFailed: ${e.message}")
-                }
+                state =
+                    try {
+                        executeToolsNode(state)
+                    } catch (e: Exception) {
+                        log.warn("[VibecodingGraph] executeTools failed: {}", e.message)
+                        eventStream?.error(state.iteration, "Execute tools failed: ${e.message}")
+                        state.withError("ExecuteToolsFailed: ${e.message}")
+                    }
 
                 if (state.error == null) {
                     eventStream?.toolResult(state.iteration, "exec_gradle", state.lastToolResult, success = true)
                 }
 
                 // X-3 verify→adapt : StepVerifier parse le résultat et gère le verdict
-                if (state.error == null && state.lastToolResult.isNotBlank()
-                    && !state.lastToolResult.startsWith("Replan:")
-                    && !state.lastToolResult.startsWith("All plan tasks executed")
-                    && !state.lastToolResult.startsWith("SKIPPED:")
-                    && !state.lastToolResult.startsWith("REVERT_AND_CONTINUE:")) {
+                if (state.error == null &&
+                    state.lastToolResult.isNotBlank() &&
+                    !state.lastToolResult.startsWith("Replan:") &&
+                    !state.lastToolResult.startsWith("All plan tasks executed") &&
+                    !state.lastToolResult.startsWith("SKIPPED:") &&
+                    !state.lastToolResult.startsWith("REVERT_AND_CONTINUE:")
+                ) {
                     state = verifyStepNode(state)
                 }
 
@@ -255,22 +275,25 @@ class VibecodingGraph(
                             val replanPrompt = buildReplanPrompt(state)
                             tokenTracker.trackPrompt(replanPrompt)
                             try {
-                                val replanResponse = runBlocking {
-                                    withTimeout(llmTimeoutMs) { llmProvider.call(replanPrompt) }
-                                }
+                                val replanResponse =
+                                    runBlocking {
+                                        withTimeout(llmTimeoutMs) { llmProvider.call(replanPrompt) }
+                                    }
                                 tokenTracker.trackCompletion(replanResponse)
                                 log.info("[VibecodingGraph] Replan response: {} chars", replanResponse.length)
-                                state = state.clearError().nextIteration().copy(
-                                    lastToolResult = "Replan: $replanResponse"
-                                )
+                                state =
+                                    state.clearError().nextIteration().copy(
+                                        lastToolResult = "Replan: $replanResponse",
+                                    )
                                 // Z-6 : le zoom IMPLEMENTATION persiste pendant les retries —
                                 // la stack est vidée en fin de session (drainAutofocusStack)
                             } catch (e: TimeoutCancellationException) {
                                 log.warn("[VibecodingGraph] Replan LLM call timed out after {}ms", llmTimeoutMs)
                                 eventStream?.error(state.iteration, "Replan LLM timeout: ${llmTimeoutMs}ms")
-                                state = state.clearError().nextIteration().copy(
-                                    lastToolResult = "LLMTimeout: ${llmTimeoutMs}ms exceeded"
-                                )
+                                state =
+                                    state.clearError().nextIteration().copy(
+                                        lastToolResult = "LLMTimeout: ${llmTimeoutMs}ms exceeded",
+                                    )
                             } catch (e: Exception) {
                                 log.warn("[VibecodingGraph] Replan LLM call failed: {}", e.message)
                                 eventStream?.error(state.iteration, "Replan failed: ${e.message}")
@@ -294,12 +317,13 @@ class VibecodingGraph(
             }
 
             // persistState après chaque itération
-            state = try {
-                persistStateNode(state)
-            } catch (e: Exception) {
-                log.warn("[VibecodingGraph] persistState failed: {}", e.message)
-                state // ne casse pas la boucle sur erreur de persistence
-            }
+            state =
+                try {
+                    persistStateNode(state)
+                } catch (e: Exception) {
+                    log.warn("[VibecodingGraph] persistState failed: {}", e.message)
+                    state // ne casse pas la boucle sur erreur de persistence
+                }
 
             state = checkProgressNode(state)
         }
@@ -334,7 +358,7 @@ class VibecodingGraph(
                 plan = null, // sera reconstruit par buildContext si nécessaire
                 classification = record.classification,
                 finished = record.finished,
-                error = record.error
+                error = record.error,
             )
         }
     }
@@ -356,21 +380,23 @@ class VibecodingGraph(
             log.info("[VibecodingGraph] No augmented graph — skipping buildContext")
             return state.withPlan(planJson = "", plan = null, classification = "simple")
         }
-        val augmentedState = AugmentedState(
-            intention = state.intention,
-            workspaceRoot = state.workspaceRoot
-        )
+        val augmentedState =
+            AugmentedState(
+                intention = state.intention,
+                workspaceRoot = state.workspaceRoot,
+            )
         return try {
             val result = augmentedGraph.execute(augmentedState)
             if (result.error != null) {
                 log.info("[VibecodingGraph] buildContext returned error: {}", result.error)
                 state.withPlan(planJson = "", plan = null, classification = "simple")
             } else {
-                state.withPlan(
-                    planJson = result.planJson,
-                    plan = result.plan,
-                    classification = result.classification
-                ).copy(compositeContext = result.compositeContext)
+                state
+                    .withPlan(
+                        planJson = result.planJson,
+                        plan = result.plan,
+                        classification = result.classification,
+                    ).copy(compositeContext = result.compositeContext)
             }
         } catch (e: Exception) {
             log.warn("[VibecodingGraph] buildContext exception: {}", e.message)
@@ -391,14 +417,15 @@ class VibecodingGraph(
         tokenTracker.trackPrompt(prompt)
 
         return try {
-            val response = runBlocking {
-                withTimeout(llmTimeoutMs) { llmProvider.call(prompt) }
-            }
+            val response =
+                runBlocking {
+                    withTimeout(llmTimeoutMs) { llmProvider.call(prompt) }
+                }
             tokenTracker.trackCompletion(response)
             log.info("[VibecodingGraph] LLM response: {} chars, first 80: {}", response.length, response.take(80))
 
             state.nextIteration().copy(
-                lastToolResult = "LLM decided: $response"
+                lastToolResult = "LLM decided: $response",
             )
         } catch (e: TimeoutCancellationException) {
             log.warn("[VibecodingGraph] LLM call timed out after {}ms", llmTimeoutMs)
@@ -523,7 +550,13 @@ class VibecodingGraph(
             runBlocking {
                 repo.updateSession(sid, state, "unknown", tracker)
             }
-            log.debug("[VibecodingGraph] Session {} updated: iteration={}, promptTokens={}, cost={}", sessionId, state.iteration, tracker.promptTokens, tracker.estimatedCost("gemma4:31b-cloud"))
+            log.debug(
+                "[VibecodingGraph] Session {} updated: iteration={}, promptTokens={}, cost={}",
+                sessionId,
+                state.iteration,
+                tracker.promptTokens,
+                tracker.estimatedCost("gemma4:31b-cloud"),
+            )
             state
         } catch (e: Exception) {
             log.warn("[VibecodingGraph] persistState failed: {}", e.message)
@@ -531,23 +564,29 @@ class VibecodingGraph(
         }
     }
 
-    private fun executePlanTasks(state: VibecodingState, realExecution: Boolean): VibecodingState {
+    private fun executePlanTasks(
+        state: VibecodingState,
+        realExecution: Boolean,
+    ): VibecodingState {
         // Cherche la prochaine tâche à exécuter dans le plan
         val plan = state.plan
         // Si pas de plan ou plan vide, on itère simplement (mode résilient)
         if (plan == null || plan.epics.isEmpty()) {
             log.info("[VibecodingGraph] No plan to execute, iteration ${state.iteration + 1}/${state.maxActions}")
             return state.nextIteration().copy(
-                lastToolResult = "No plan tasks to execute"
+                lastToolResult = "No plan tasks to execute",
             )
         }
 
         // Exécute la prochaine tâche non faite
-        val allTasks = plan.epics.flatMap { epic ->
-            epic.userStories.flatMap { story -> story.tasks.map { task ->
-                Triple(epic.name, story.description, task)
-            }}
-        }
+        val allTasks =
+            plan.epics.flatMap { epic ->
+                epic.userStories.flatMap { story ->
+                    story.tasks.map { task ->
+                        Triple(epic.name, story.description, task)
+                    }
+                }
+            }
 
         val nextIndex = state.executedTasks.size
         if (nextIndex >= allTasks.size) {
@@ -559,12 +598,13 @@ class VibecodingGraph(
         log.info("[VibecodingGraph] Executing task: ${task.description} (${task.gradleTask})")
 
         return try {
-            val result = toolRegistry.execute(
-                toolName = "exec_gradle",
-                arguments = mapOf("task" to task.gradleTask),
-                workspaceRoot = state.workspaceRoot,
-                dryRun = state.dryRun
-            )
+            val result =
+                toolRegistry.execute(
+                    toolName = "exec_gradle",
+                    arguments = mapOf("task" to task.gradleTask),
+                    workspaceRoot = state.workspaceRoot,
+                    dryRun = state.dryRun,
+                )
             val isFailure = result.contains("BUILD FAILED") || result.contains("FAILED")
             if (isFailure) {
                 log.warn("[VibecodingGraph] Task '{}' returned failure: {}", task.description, result.take(200))
@@ -572,13 +612,13 @@ class VibecodingGraph(
                     lastToolResult = result,
                     currentTaskDescription = task.description,
                     error = "TaskFailed: ${result.take(200)}",
-                    finished = false
+                    finished = false,
                 )
             } else {
                 state.nextIteration().copy(
                     executedTasks = state.executedTasks + task.description,
                     lastToolResult = result,
-                    currentTaskDescription = task.description
+                    currentTaskDescription = task.description,
                 )
             }
         } catch (e: Exception) {
@@ -587,7 +627,7 @@ class VibecodingGraph(
                 lastToolResult = "Failed: ${e.message}",
                 currentTaskDescription = task.description,
                 error = "TaskFailed: ${e.message}",
-                finished = false
+                finished = false,
             )
         }
     }
@@ -604,9 +644,10 @@ class VibecodingGraph(
         if (state.finished) return state
 
         // Vérifie si toutes les tâches du plan sont exécutées (sans erreur en cours)
-        val allTasks = state.plan?.epics?.flatMap { epic ->
-            epic.userStories.flatMap { story -> story.tasks }
-        } ?: emptyList()
+        val allTasks =
+            state.plan?.epics?.flatMap { epic ->
+                epic.userStories.flatMap { story -> story.tasks }
+            } ?: emptyList()
         if (allTasks.isNotEmpty() && state.executedTasks.size >= allTasks.size && state.iteration > 0) {
             drainAutofocusStack()
             return state.finish()
@@ -642,9 +683,12 @@ class VibecodingGraph(
         val level = AutofocusLevel.fromName(levelName) ?: return state
         autofocusStack.push(level)
         val rawContext = state.compositeContext
-        val zoomed = if (rawContext != null) {
-            contextZoomer.zoom(level, rawContext)
-        } else null
+        val zoomed =
+            if (rawContext != null) {
+                contextZoomer.zoom(level, rawContext)
+            } else {
+                null
+            }
         log.info("[VibecodingGraph] Autofocus zoomed to {} (stack size={}, zoomed={})", level.name, autofocusStack.size(), zoomed != null)
         return state.copy(zoomedContext = zoomed)
     }
@@ -652,9 +696,12 @@ class VibecodingGraph(
     private fun zoomInOnError(state: VibecodingState): VibecodingState {
         autofocusStack.push(AutofocusLevel.IMPLEMENTATION)
         val rawContext = state.compositeContext
-        val zoomed = if (rawContext != null) {
-            contextZoomer.zoom(AutofocusLevel.IMPLEMENTATION, rawContext)
-        } else null
+        val zoomed =
+            if (rawContext != null) {
+                contextZoomer.zoom(AutofocusLevel.IMPLEMENTATION, rawContext)
+            } else {
+                null
+            }
         log.info("[VibecodingGraph] Autofocus zoom-in on error to IMPLEMENTATION (stack size={}, zoomed={})", autofocusStack.size(), zoomed != null)
         return state.copy(focusLevel = AutofocusLevel.IMPLEMENTATION.name, zoomedContext = zoomed)
     }
@@ -681,9 +728,10 @@ class VibecodingGraph(
      */
     internal fun extractCurrentStep(state: VibecodingState): VibecodingStep? {
         val plan = state.plan ?: return null
-        val allTasks = plan.epics.flatMap { epic ->
-            epic.userStories.flatMap { story -> story.tasks }
-        }
+        val allTasks =
+            plan.epics.flatMap { epic ->
+                epic.userStories.flatMap { story -> story.tasks }
+            }
         val nextIndex = state.executedTasks.size
         if (nextIndex >= allTasks.size || nextIndex < 0) return null
         val task = allTasks[nextIndex]
@@ -692,15 +740,16 @@ class VibecodingGraph(
             gradleTask = task.gradleTask,
             expectedOutput = task.expectedOutput,
             maxRetries = task.maxRetries,
-            verifyHook = task.verifyHook
+            verifyHook = task.verifyHook,
         )
     }
 
     private fun extractCurrentTaskDescription(state: VibecodingState): String? {
         val plan = state.plan ?: return null
-        val allTasks = plan.epics.flatMap { epic ->
-            epic.userStories.flatMap { story -> story.tasks }
-        }
+        val allTasks =
+            plan.epics.flatMap { epic ->
+                epic.userStories.flatMap { story -> story.tasks }
+            }
         val nextIndex = state.executedTasks.size
         if (nextIndex >= allTasks.size || nextIndex < 0) return null
         return allTasks[nextIndex].gradleTask
@@ -709,34 +758,38 @@ class VibecodingGraph(
     // ── X-4 Rollback Strategy ──
 
     private fun executeRollbackStrategy(state: VibecodingState): VibecodingState {
-        val executor = rollbackExecutor ?: run {
-            log.warn("[VibecodingGraph] No rollback executor — defaulting to STOP_ON_ERROR")
-            return state.copy(
-                finished = true,
-                error = "MaxRetriesExhausted: ${state.error}"
+        val executor =
+            rollbackExecutor ?: run {
+                log.warn("[VibecodingGraph] No rollback executor — defaulting to STOP_ON_ERROR")
+                return state.copy(
+                    finished = true,
+                    error = "MaxRetriesExhausted: ${state.error}",
+                )
+            }
+
+        val step =
+            extractCurrentStep(state) ?: run {
+                val task = state.currentTaskDescription.ifBlank { "unknown" }
+                log.warn("[VibecodingGraph] No current step for rollback — using fallback defaults for '{}'", task)
+                VibecodingStep(
+                    description = task,
+                    gradleTask = "unknown",
+                    expectedOutput = "BUILD SUCCESSFUL",
+                )
+            }
+
+        val strategy =
+            try {
+                RollbackStrategy.valueOf(state.rollbackStrategy)
+            } catch (e: IllegalArgumentException) {
+                RollbackStrategy.STOP_ON_ERROR
+            }
+
+        val plan =
+            VibecodingPlan(
+                steps = listOf(step),
+                rollbackStrategy = strategy,
             )
-        }
-
-        val step = extractCurrentStep(state) ?: run {
-            val task = state.currentTaskDescription.ifBlank { "unknown" }
-            log.warn("[VibecodingGraph] No current step for rollback — using fallback defaults for '{}'", task)
-            VibecodingStep(
-                description = task,
-                gradleTask = "unknown",
-                expectedOutput = "BUILD SUCCESSFUL"
-            )
-        }
-
-        val strategy = try {
-            RollbackStrategy.valueOf(state.rollbackStrategy)
-        } catch (e: IllegalArgumentException) {
-            RollbackStrategy.STOP_ON_ERROR
-        }
-
-        val plan = VibecodingPlan(
-            steps = listOf(step),
-            rollbackStrategy = strategy
-        )
 
         log.info("[VibecodingGraph] Executing rollback strategy: {} for step '{}'", strategy, step.description)
         return executor.execute(state, plan, step)
@@ -744,11 +797,7 @@ class VibecodingGraph(
 
     // ── Timeout helpers ──
 
-    private fun isTimedOut(state: VibecodingState): Boolean {
-        return elapsedSeconds(state) > state.sessionTimeoutSeconds
-    }
+    private fun isTimedOut(state: VibecodingState): Boolean = elapsedSeconds(state) > state.sessionTimeoutSeconds
 
-    private fun elapsedSeconds(state: VibecodingState): Long {
-        return (System.currentTimeMillis() - state.sessionStartTimeMs) / 1000
-    }
+    private fun elapsedSeconds(state: VibecodingState): Long = (System.currentTimeMillis() - state.sessionStartTimeMs) / 1000
 }

@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DoubtMetadata(
     val confidence: Double = MAX_CONFIDENCE,
-    val doubtful: Boolean = confidence < DEFAULT_THRESHOLD
+    val doubtful: Boolean = confidence < DEFAULT_THRESHOLD,
 ) {
     init {
         require(confidence in 0.0..1.0) { "confidence must be in [0.0, 1.0], was $confidence" }
@@ -30,7 +30,9 @@ data class DoubtMetadata(
         const val MAX_CONFIDENCE = 1.0
 
         /** Derives a [DoubtMetadata] from a raw OCR confidence score. */
-        fun fromConfidence(confidence: Double, threshold: Double = DEFAULT_THRESHOLD): DoubtMetadata =
-            DoubtMetadata(confidence = confidence, doubtful = confidence < threshold)
+        fun fromConfidence(
+            confidence: Double,
+            threshold: Double = DEFAULT_THRESHOLD,
+        ): DoubtMetadata = DoubtMetadata(confidence = confidence, doubtful = confidence < threshold)
     }
 }

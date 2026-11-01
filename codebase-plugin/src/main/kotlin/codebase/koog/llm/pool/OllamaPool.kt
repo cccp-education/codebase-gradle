@@ -16,9 +16,8 @@ import contracts.llmpool.RotationStrategy
  */
 class OllamaPool(
     private val instances: List<LlmInstance>,
-    private val rotationStrategy: RotationStrategy = RotationStrategy.ROUND_ROBIN
+    private val rotationStrategy: RotationStrategy = RotationStrategy.ROUND_ROBIN,
 ) : LlmInstancePool {
-
     private var currentIndex = 0
     private val usageCounts = mutableMapOf<String, Long>()
 
@@ -38,12 +37,14 @@ class OllamaPool(
         }
 
         // Cherche la prochaine instance non saturée
-        val startIndex = when (rotationStrategy) {
-            RotationStrategy.ROUND_ROBIN -> currentIndex
-            RotationStrategy.LEAST_USED -> instances.indices.minByOrNull { i ->
-                usageCounts[instances[i].id] ?: 0
-            } ?: 0
-        }
+        val startIndex =
+            when (rotationStrategy) {
+                RotationStrategy.ROUND_ROBIN -> currentIndex
+                RotationStrategy.LEAST_USED ->
+                    instances.indices.minByOrNull { i ->
+                        usageCounts[instances[i].id] ?: 0
+                    } ?: 0
+            }
 
         var attempts = 0
         var idx = startIndex

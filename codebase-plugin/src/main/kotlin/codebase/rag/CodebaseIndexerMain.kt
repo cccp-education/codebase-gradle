@@ -28,27 +28,36 @@ object CodebaseIndexerMain {
         var totalChunks = 0
         for (wf in files) {
             val file = java.io.File(wf.filePath)
-            val rawText = try {
-                file.readText()
-            } catch (e: Exception) {
-                log.error("Cannot read {}: {}", wf.filePath, e.message)
-                continue
-            }
-            val text = if (wf.extension in configExtensions) {
-                YamlConfigAnonymizer.anonymize(rawText, wf.extension)
-            } else rawText
+            val rawText =
+                try {
+                    file.readText()
+                } catch (e: Exception) {
+                    log.error("Cannot read {}: {}", wf.filePath, e.message)
+                    continue
+                }
+            val text =
+                if (wf.extension in configExtensions) {
+                    YamlConfigAnonymizer.anonymize(rawText, wf.extension)
+                } else {
+                    rawText
+                }
 
             val chunks = ChunkTokenizer.splitIntoSentenceLevelChunks(text)
-            val metadata = if (wf.extension == "kt") {
-                metadataExtractor.extract(wf.filePath, rawText)
-            } else {
-                KotlinMetadata(packageName = null, className = null, repoName = rootDir.name)
-            }
+            val metadata =
+                if (wf.extension == "kt") {
+                    metadataExtractor.extract(wf.filePath, rawText)
+                } else {
+                    KotlinMetadata(packageName = null, className = null, repoName = rootDir.name)
+                }
             store.insertDocument(wf.fileName, wf.filePath, wf.fileSize, chunks, metadata.packageName, metadata.className, metadata.repoName)
             totalChunks += chunks.size
-            log.info("  {}: {} chunks{}{}", wf.fileName, chunks.size,
+            log.info(
+                "  {}: {} chunks{}{}",
+                wf.fileName,
+                chunks.size,
                 if (metadata.packageName != null) " (pkg=${metadata.packageName})" else "",
-                if (wf.extension in configExtensions) " [anonymized]" else "")
+                if (wf.extension in configExtensions) " [anonymized]" else "",
+            )
         }
 
         log.info("Total: {} documents, {} chunks", files.size, totalChunks)

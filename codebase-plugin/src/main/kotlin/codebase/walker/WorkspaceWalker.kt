@@ -4,11 +4,12 @@ data class WorkspaceFile(
     val fileName: String,
     val filePath: String,
     val fileSize: Long,
-    val extension: String
+    val extension: String,
 )
 
-class WorkspaceWalker(private val rootDir: java.io.File) {
-
+class WorkspaceWalker(
+    private val rootDir: java.io.File,
+) {
     private val skipDirs = setOf("build", ".git", ".gradle", "node_modules", ".kotlin")
 
     fun walk(): List<WorkspaceFile> {
@@ -17,7 +18,10 @@ class WorkspaceWalker(private val rootDir: java.io.File) {
         return results.sortedBy { it.filePath }
     }
 
-    private fun walkRecursive(dir: java.io.File, results: MutableList<WorkspaceFile>) {
+    private fun walkRecursive(
+        dir: java.io.File,
+        results: MutableList<WorkspaceFile>,
+    ) {
         val files = dir.listFiles() ?: return
         for (file in files) {
             if (file.isDirectory) {
@@ -31,8 +35,8 @@ class WorkspaceWalker(private val rootDir: java.io.File) {
                         fileName = file.name,
                         filePath = file.path,
                         fileSize = file.length(),
-                        extension = ext
-                    )
+                        extension = ext,
+                    ),
                 )
             }
         }

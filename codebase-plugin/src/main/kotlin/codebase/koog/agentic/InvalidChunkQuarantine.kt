@@ -7,22 +7,25 @@ package codebase.koog.agentic
  * et fournit un point d'entrée unique pour l'AgenticIngestor.
  */
 class InvalidChunkQuarantine(
-    private val repository: InvalidChunkRepository
+    private val repository: InvalidChunkRepository,
 ) {
-
-    suspend fun quarantineIfInvalid(chunk: AgenticChunk, validationResult: ValidationResult): Boolean {
+    suspend fun quarantineIfInvalid(
+        chunk: AgenticChunk,
+        validationResult: ValidationResult,
+    ): Boolean {
         if (validationResult.valid) return false
         return repository.insertQuarantine(chunk, validationResult.errors)
     }
 
-    suspend fun quarantineChunk(chunk: AgenticChunk, validator: ChunkValidator = ChunkValidator()): Boolean {
+    suspend fun quarantineChunk(
+        chunk: AgenticChunk,
+        validator: ChunkValidator = ChunkValidator(),
+    ): Boolean {
         val result = validator.validate(chunk)
         return quarantineIfInvalid(chunk, result)
     }
 
-    suspend fun listQuarantined(limit: Int = 100): List<InvalidChunk> =
-        repository.listQuarantined(limit)
+    suspend fun listQuarantined(limit: Int = 100): List<InvalidChunk> = repository.listQuarantined(limit)
 
-    suspend fun countQuarantined(): Int =
-        repository.countQuarantined()
+    suspend fun countQuarantined(): Int = repository.countQuarantined()
 }

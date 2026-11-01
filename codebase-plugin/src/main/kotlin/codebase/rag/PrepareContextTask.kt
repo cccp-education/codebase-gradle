@@ -17,7 +17,6 @@ import java.io.File
 
 @DisableCachingByDefault(because = "LLM-based RAG context generation is probabilistic")
 abstract class PrepareContextTask : DefaultTask() {
-
     @get:InputDirectory
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val workspaceRoot: DirectoryProperty
@@ -61,15 +60,21 @@ abstract class PrepareContextTask : DefaultTask() {
         val output = outputFile.get().asFile
         injector.injectToFile(composite, output)
 
-        logger.lifecycle("[collectFromCodebase] {}: {} bytes (EAGER={}, RAG={}, Graphify={})",
+        logger.lifecycle(
+            "[collectFromCodebase] {}: {} bytes (EAGER={}, RAG={}, Graphify={})",
             name,
             output.length(),
             composite.eagerSection.length,
             composite.ragSection.length,
-            composite.graphifySection.length)
+            composite.graphifySection.length,
+        )
     }
 
-    private fun indexBoroughSources(rootDir: File, store: VectorStore, boroughName: String) {
+    private fun indexBoroughSources(
+        rootDir: File,
+        store: VectorStore,
+        boroughName: String,
+    ) {
         logger.lifecycle("[collectFromCodebase] No indexed documents — indexing {}...", boroughName)
         val walker = codebase.walker.WorkspaceWalker(rootDir)
         val sourceExtensions = listOf("kt", "adoc", "kts")
@@ -81,22 +86,27 @@ abstract class PrepareContextTask : DefaultTask() {
 
         for (wf in files) {
             val file = File(wf.filePath)
-            val rawText = try {
-                file.readText()
-            } catch (e: Exception) {
-                logger.warn("Cannot read {}: {}", wf.filePath, e.message)
-                continue
-            }
-            val text = if (wf.extension in configExtensions) {
-                YamlConfigAnonymizer.anonymize(rawText, wf.extension)
-            } else rawText
+            val rawText =
+                try {
+                    file.readText()
+                } catch (e: Exception) {
+                    logger.warn("Cannot read {}: {}", wf.filePath, e.message)
+                    continue
+                }
+            val text =
+                if (wf.extension in configExtensions) {
+                    YamlConfigAnonymizer.anonymize(rawText, wf.extension)
+                } else {
+                    rawText
+                }
 
             val chunks = ChunkTokenizer.splitIntoSentenceLevelChunks(text)
-            val metadata = if (wf.extension == "kt") {
-                metadataExtractor.extract(wf.filePath, rawText)
-            } else {
-                KotlinMetadata(packageName = null, className = null, repoName = boroughName)
-            }
+            val metadata =
+                if (wf.extension == "kt") {
+                    metadataExtractor.extract(wf.filePath, rawText)
+                } else {
+                    KotlinMetadata(packageName = null, className = null, repoName = boroughName)
+                }
             store.insertDocument(wf.fileName, wf.filePath, wf.fileSize, chunks, metadata.packageName, metadata.className, metadata.repoName)
             totalChunks += chunks.size
         }

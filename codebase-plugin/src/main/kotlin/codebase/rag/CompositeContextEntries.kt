@@ -15,21 +15,21 @@ import java.util.Locale
  * byte-identical to the pre-EPIC format (backward compat total).
  */
 object CompositeContextEntries {
-
     /**
      * JSON entry shape for [CodebaseCompositeContextTask]. Gains the `pages`
      * field when the chunk carries page provenance (additive, omitted when empty).
      */
     fun codexEntry(r: RetrieveResult): Map<String, Any> {
-        val entry = mutableMapOf<String, Any>(
-            "source" to "codex",
-            "chunkId" to r.chunkId,
-            "chunkText" to r.chunkText.take(500),
-            "sectionPath" to r.sectionPath,
-            "headingLevel" to r.headingLevel,
-            "sourceDocument" to r.sourceDocument,
-            "similarity" to r.similarity
-        )
+        val entry =
+            mutableMapOf<String, Any>(
+                "source" to "codex",
+                "chunkId" to r.chunkId,
+                "chunkText" to r.chunkText.take(500),
+                "sectionPath" to r.sectionPath,
+                "headingLevel" to r.headingLevel,
+                "sourceDocument" to r.sourceDocument,
+                "similarity" to r.similarity,
+            )
         if (r.pages.isNotEmpty()) {
             entry["pages"] = r.pages
         }

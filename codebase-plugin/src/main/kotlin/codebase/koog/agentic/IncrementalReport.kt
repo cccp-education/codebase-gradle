@@ -11,7 +11,7 @@ data class IncrementalReport(
     val modified: List<String>,
     val removed: List<String>,
     val unchanged: List<String>,
-    val skippedDueToIncremental: List<String>
+    val skippedDueToIncremental: List<String>,
 ) {
     fun hasChanges(): Boolean = added.isNotEmpty() || modified.isNotEmpty() || removed.isNotEmpty()
 }

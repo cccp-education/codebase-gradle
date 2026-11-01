@@ -9,7 +9,7 @@ data class BenchmarkReport(
     val scenario: String = "",
     val channels: List<String> = emptyList(),
     val summary: String = "",
-    val results: List<ThresholdData> = emptyList()
+    val results: List<ThresholdData> = emptyList(),
 )
 
 @Serializable
@@ -17,7 +17,7 @@ data class ThresholdData(
     val threshold: String = "",
     val totalSamples: Int = 0,
     val errorRate: Double = 0.0,
-    val boundaryCrossings: List<CrossingData> = emptyList()
+    val boundaryCrossings: List<CrossingData> = emptyList(),
 )
 
 @Serializable
@@ -26,39 +26,53 @@ data class CrossingData(
     val expectedCircle: Int = 0,
     val actualCircle: Int = 0,
     val confidenceScore: Double = 0.0,
-    val excerpt: String = ""
+    val excerpt: String = "",
 )
 
-data class Crossing(val documentId: String, val expectedCircle: Int, val actualCircle: Int, val confidenceScore: Double)
-data class ThresholdResult(val threshold: String, val totalSamples: Int, val errorRate: Double, val crossings: List<Crossing>)
+data class Crossing(
+    val documentId: String,
+    val expectedCircle: Int,
+    val actualCircle: Int,
+    val confidenceScore: Double,
+)
+
+data class ThresholdResult(
+    val threshold: String,
+    val totalSamples: Int,
+    val errorRate: Double,
+    val crossings: List<Crossing>,
+)
 
 object BenchmarkReportExporter {
-
     private val json = Json { ignoreUnknownKeys = true }
 
-    internal fun parseObject(jsonString: String): BenchmarkReport =
-        json.decodeFromString<BenchmarkReport>(jsonString)
+    internal fun parseObject(jsonString: String): BenchmarkReport = json.decodeFromString<BenchmarkReport>(jsonString)
 
-    fun exportAsciiDoc(jsonReport: String, scenarioId: String): String {
+    fun exportAsciiDoc(
+        jsonReport: String,
+        scenarioId: String,
+    ): String {
         val root = json.decodeFromString<BenchmarkReport>(jsonReport.trim())
 
         val scenarioName = root.scenario.ifEmpty { scenarioId }
         val channels = root.channels
-        val results = root.results.map { thresholdData ->
-            ThresholdResult(
-                threshold = thresholdData.threshold,
-                totalSamples = thresholdData.totalSamples,
-                errorRate = thresholdData.errorRate,
-                crossings = thresholdData.boundaryCrossings.map { crossing ->
-                    Crossing(
-                        documentId = crossing.documentId,
-                        expectedCircle = crossing.expectedCircle,
-                        actualCircle = crossing.actualCircle,
-                        confidenceScore = crossing.confidenceScore
-                    )
-                }
-            )
-        }
+        val results =
+            root.results.map { thresholdData ->
+                ThresholdResult(
+                    threshold = thresholdData.threshold,
+                    totalSamples = thresholdData.totalSamples,
+                    errorRate = thresholdData.errorRate,
+                    crossings =
+                        thresholdData.boundaryCrossings.map { crossing ->
+                            Crossing(
+                                documentId = crossing.documentId,
+                                expectedCircle = crossing.expectedCircle,
+                                actualCircle = crossing.actualCircle,
+                                confidenceScore = crossing.confidenceScore,
+                            )
+                        },
+                )
+            }
 
         val sb = StringBuilder()
 

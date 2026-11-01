@@ -3,7 +3,7 @@ package codebase.quality
 data class QualityIssue(
     val category: String,
     val description: String,
-    val confidence: Double
+    val confidence: Double,
 ) {
     init {
         require(category.isNotBlank()) { "category must not be blank" }

@@ -1,11 +1,10 @@
 package codebase.rag
 
-import contracts.context.CompositeContext
-import contracts.context.CompositeContextConfig
 import codebase.graph.GraphifyContextProvider
-import codebase.walker.WorkspaceWalker
 import codebase.store.DoubtExposure
 import codebase.store.RagVectorStore
+import contracts.context.CompositeContext
+import contracts.context.CompositeContextConfig
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.Locale
@@ -30,24 +29,32 @@ class CompositeContextBuilder(
         return assembleContext(eagerContent, ragQuestion)
     }
 
-    fun buildScoped(boroughName: String, ragQuestion: String): CompositeContext {
+    fun buildScoped(
+        boroughName: String,
+        ragQuestion: String,
+    ): CompositeContext {
         val eagerContent = collectEagerForBorough(boroughName)
         return assembleContext(eagerContent, ragQuestion)
     }
 
-    private fun assembleContext(eagerContent: String, ragQuestion: String): CompositeContext {
+    private fun assembleContext(
+        eagerContent: String,
+        ragQuestion: String,
+    ): CompositeContext {
         val truncatedEager = truncateTokens(eagerContent, config.eagerLazyTokens)
 
-        val truncatedRag = try {
-            val ragResults = queryService.query(ragQuestion, topK = 10)
-            val ragContent = ragResults.joinToString("\n") { r ->
-                "[sim=${"%.3f".format(Locale.US, r.similarity)}] ${r.text.take(300)}"
+        val truncatedRag =
+            try {
+                val ragResults = queryService.query(ragQuestion, topK = 10)
+                val ragContent =
+                    ragResults.joinToString("\n") { r ->
+                        "[sim=${"%.3f".format(Locale.US, r.similarity)}] ${r.text.take(300)}"
+                    }
+                truncateTokens(ragContent, config.ragTokens)
+            } catch (e: Exception) {
+                log.debug("RAG section unavailable (pgvector down?): {}", e.message)
+                "[RAG] pgvector indisponible — section non generee"
             }
-            truncateTokens(ragContent, config.ragTokens)
-        } catch (e: Exception) {
-            log.debug("RAG section unavailable (pgvector down?): {}", e.message)
-            "[RAG] pgvector indisponible — section non generee"
-        }
 
         val graphifyContent = graphifyProvider.provide()
         val truncatedGraphify = truncateTokens(graphifyContent, config.graphifyTokens)
@@ -59,7 +66,7 @@ class CompositeContextBuilder(
             ragSection = truncatedRag,
             graphifySection = truncatedGraphify,
             docsSection = truncatedDocs,
-            config = config
+            config = config,
         )
     }
 
@@ -126,11 +133,12 @@ class CompositeContextBuilder(
             if (!agentsDir.isDirectory) return@forEach
 
             for (eagerFile in listOf("INDEX.adoc", "PROMPT_REPRISE.adoc")) {
-                val eagerPath = if (eagerFile == "PROMPT_REPRISE.adoc") {
-                    projectDir.resolve(eagerFile)
-                } else {
-                    agentsDir.resolve(eagerFile)
-                }
+                val eagerPath =
+                    if (eagerFile == "PROMPT_REPRISE.adoc") {
+                        projectDir.resolve(eagerFile)
+                    } else {
+                        agentsDir.resolve(eagerFile)
+                    }
                 if (!eagerPath.isFile) continue
 
                 try {
@@ -146,7 +154,10 @@ class CompositeContextBuilder(
         return sb.toString()
     }
 
-    private fun truncateTokens(text: String, maxTokens: Int): String {
+    private fun truncateTokens(
+        text: String,
+        maxTokens: Int,
+    ): String {
         val lines = text.lines()
         val result = mutableListOf<String>()
         var tokenCount = 0

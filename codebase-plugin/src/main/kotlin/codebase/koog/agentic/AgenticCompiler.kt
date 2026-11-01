@@ -1,7 +1,6 @@
 package codebase.koog.agentic
 
 class AgenticCompiler {
-
     fun compile(chunk: OntologizedChunk): CompiledArtifact? {
         if (!shouldCompile(chunk)) return null
         val executable = compileExecutable(chunk)
@@ -15,59 +14,70 @@ class AgenticCompiler {
         val confidence = computeConfidence(chunk)
         val payload = buildPayload(c, artifactType, description)
 
-        val compiled = CompiledArtifact(
-            sourceChunkId = c.id,
-            artifactType = artifactType,
-            description = description,
-            targetHint = c.domain,
-            confidence = confidence,
-            payload = payload
-        )
+        val compiled =
+            CompiledArtifact(
+                sourceChunkId = c.id,
+                artifactType = artifactType,
+                description = description,
+                targetHint = c.domain,
+                confidence = confidence,
+                payload = payload,
+            )
 
         return ExecutableArtifact(compiled, payload)
     }
 
-    private fun determineArtifactType(chunkType: ChunkType, verb: TaxonomyVerb?): ArtifactType {
-        return when (chunkType) {
-            ChunkType.RULE -> when (verb) {
-                TaxonomyVerb.INTERDIRE -> ArtifactType.PRE_HOOK
-                else -> ArtifactType.CI_GATE
-            }
-            ChunkType.PROCEDURE -> when (verb) {
-                TaxonomyVerb.GENERER, TaxonomyVerb.DEPLOYER,
-                TaxonomyVerb.TRANSFORMER, TaxonomyVerb.COLLECTER -> ArtifactType.GRADLE_TASK
-                TaxonomyVerb.VALIDER -> ArtifactType.VALIDATION
-                else -> ArtifactType.VALIDATION
-            }
+    private fun determineArtifactType(
+        chunkType: ChunkType,
+        verb: TaxonomyVerb?,
+    ): ArtifactType =
+        when (chunkType) {
+            ChunkType.RULE ->
+                when (verb) {
+                    TaxonomyVerb.INTERDIRE -> ArtifactType.PRE_HOOK
+                    else -> ArtifactType.CI_GATE
+                }
+            ChunkType.PROCEDURE ->
+                when (verb) {
+                    TaxonomyVerb.GENERER, TaxonomyVerb.DEPLOYER,
+                    TaxonomyVerb.TRANSFORMER, TaxonomyVerb.COLLECTER,
+                    -> ArtifactType.GRADLE_TASK
+                    TaxonomyVerb.VALIDER -> ArtifactType.VALIDATION
+                    else -> ArtifactType.VALIDATION
+                }
             ChunkType.CONSTRAINT -> ArtifactType.CONSTRAINT_CHECK
-            ChunkType.CONCEPT -> when (verb) {
-                TaxonomyVerb.INTERDIRE -> ArtifactType.PROMPT_TEMPLATE
-                else -> ArtifactType.METADATA
-            }
+            ChunkType.CONCEPT ->
+                when (verb) {
+                    TaxonomyVerb.INTERDIRE -> ArtifactType.PROMPT_TEMPLATE
+                    else -> ArtifactType.METADATA
+                }
             ChunkType.METADATA -> ArtifactType.METADATA
         }
-    }
 
-    fun shouldCompile(chunk: OntologizedChunk): Boolean {
-        return when (chunk.chunk.chunkType) {
+    fun shouldCompile(chunk: OntologizedChunk): Boolean =
+        when (chunk.chunk.chunkType) {
             ChunkType.RULE -> true
             ChunkType.PROCEDURE -> true
             ChunkType.CONSTRAINT -> true
             ChunkType.CONCEPT -> true
             ChunkType.METADATA -> true
         }
-    }
 
-    private fun buildDescription(content: String, chunkType: ChunkType, verb: TaxonomyVerb?): String {
+    private fun buildDescription(
+        content: String,
+        chunkType: ChunkType,
+        verb: TaxonomyVerb?,
+    ): String {
         val lines = content.lines()
         val firstLine = lines.firstOrNull { it.trim().isNotEmpty() && !it.trim().startsWith("=") } ?: content
-        val prefix = when (chunkType) {
-            ChunkType.RULE -> "Rule"
-            ChunkType.PROCEDURE -> "Procedure"
-            ChunkType.CONSTRAINT -> "Constraint"
-            ChunkType.CONCEPT -> "Concept"
-            ChunkType.METADATA -> "Metadata"
-        }
+        val prefix =
+            when (chunkType) {
+                ChunkType.RULE -> "Rule"
+                ChunkType.PROCEDURE -> "Procedure"
+                ChunkType.CONSTRAINT -> "Constraint"
+                ChunkType.CONCEPT -> "Concept"
+                ChunkType.METADATA -> "Metadata"
+            }
         val verbSuffix = if (verb != null) " (${verb.name})" else ""
         return "$prefix$verbSuffix: ${firstLine.trim().take(120)}"
     }
@@ -77,64 +87,78 @@ class AgenticCompiler {
         return base.coerceIn(0.0, 1.0)
     }
 
-    private fun buildPayload(chunk: AgenticChunk, artifactType: ArtifactType, description: String): ArtifactPayload {
-        return when (artifactType) {
-            ArtifactType.PRE_HOOK -> ArtifactPayload.PreHookPayload(
-                toolName = inferToolName(chunk.content),
-                forbiddenPatterns = extractForbiddenPatterns(chunk.content),
-                allowedPattern = extractAllowedPattern(chunk.content)
-            )
+    private fun buildPayload(
+        chunk: AgenticChunk,
+        artifactType: ArtifactType,
+        description: String,
+    ): ArtifactPayload =
+        when (artifactType) {
+            ArtifactType.PRE_HOOK ->
+                ArtifactPayload.PreHookPayload(
+                    toolName = inferToolName(chunk.content),
+                    forbiddenPatterns = extractForbiddenPatterns(chunk.content),
+                    allowedPattern = extractAllowedPattern(chunk.content),
+                )
 
-            ArtifactType.POST_HOOK -> ArtifactPayload.PostHookPayload(
-                toolName = inferToolName(chunk.content),
-                forbiddenPatterns = extractForbiddenPatterns(chunk.content),
-                allowedPattern = extractAllowedPattern(chunk.content)
-            )
+            ArtifactType.POST_HOOK ->
+                ArtifactPayload.PostHookPayload(
+                    toolName = inferToolName(chunk.content),
+                    forbiddenPatterns = extractForbiddenPatterns(chunk.content),
+                    allowedPattern = extractAllowedPattern(chunk.content),
+                )
 
-            ArtifactType.CI_GATE -> ArtifactPayload.ValidationPayload(
-                checkDescription = description
-            )
+            ArtifactType.CI_GATE ->
+                ArtifactPayload.ValidationPayload(
+                    checkDescription = description,
+                )
 
-            ArtifactType.GRADLE_TASK -> ArtifactPayload.GradleTaskPayload(
-                taskName = inferGradleTaskName(chunk.content),
-                description = description
-            )
+            ArtifactType.GRADLE_TASK ->
+                ArtifactPayload.GradleTaskPayload(
+                    taskName = inferGradleTaskName(chunk.content),
+                    description = description,
+                )
 
-            ArtifactType.VALIDATION -> ArtifactPayload.ValidationPayload(
-                checkDescription = description
-            )
+            ArtifactType.VALIDATION ->
+                ArtifactPayload.ValidationPayload(
+                    checkDescription = description,
+                )
 
             ArtifactType.METADATA -> {
                 val (key, value) = extractMetadataPair(chunk.content, description)
                 ArtifactPayload.MetadataPayload(
                     metadataKey = key,
-                    metadataValue = value
+                    metadataValue = value,
                 )
             }
 
-            ArtifactType.PROMPT_TEMPLATE -> ArtifactPayload.PromptTemplatePayload(
-                templateName = chunk.chunkType.name.lowercase(),
-                promptText = chunk.content.take(500)
-            )
+            ArtifactType.PROMPT_TEMPLATE ->
+                ArtifactPayload.PromptTemplatePayload(
+                    templateName = chunk.chunkType.name.lowercase(),
+                    promptText = chunk.content.take(500),
+                )
 
             ArtifactType.CONSTRAINT_CHECK -> {
                 val (maxTokens, maxLines) = extractConstraintBounds(chunk.content)
                 ArtifactPayload.ConstraintPayload(
                     constraintDescription = description,
                     maxTokens = maxTokens,
-                    maxLines = maxLines
+                    maxLines = maxLines,
                 )
             }
         }
-    }
 
     private fun inferToolName(content: String): String {
         val lower = content.lowercase()
         return when {
             lower.contains("gradle") || lower.contains("gradlew") || lower.contains("task") -> "exec_gradle"
-            lower.contains("git") || lower.contains("commit") || lower.contains("merge") ||
-                lower.contains("push") || lower.contains("bash") || lower.contains("shell") ||
-                lower.contains("rm ") || lower.contains("command") -> "exec_shell"
+            lower.contains("git") ||
+                lower.contains("commit") ||
+                lower.contains("merge") ||
+                lower.contains("push") ||
+                lower.contains("bash") ||
+                lower.contains("shell") ||
+                lower.contains("rm ") ||
+                lower.contains("command") -> "exec_shell"
             else -> "exec_gradle"
         }
     }
@@ -179,7 +203,10 @@ class AgenticCompiler {
         }
     }
 
-    private fun extractMetadataPair(content: String, description: String): Pair<String, String> {
+    private fun extractMetadataPair(
+        content: String,
+        description: String,
+    ): Pair<String, String> {
         val attributePattern = Regex(""":([\w-]+):\s*(.+)""")
         val match = attributePattern.find(content)
         return if (match != null) {
@@ -192,8 +219,19 @@ class AgenticCompiler {
     private fun extractConstraintBounds(content: String): Pair<Int?, Int?> {
         val tokenPattern = Regex("""(\d+)\s*k?\s*tokens?""", RegexOption.IGNORE_CASE)
         val linePattern = Regex("""(\d+)\s*lignes?""", RegexOption.IGNORE_CASE)
-        val maxTokens = tokenPattern.find(content)?.groupValues?.get(1)?.toIntOrNull()?.let { it * 1000 }
-        val maxLines = linePattern.find(content)?.groupValues?.get(1)?.toIntOrNull()
+        val maxTokens =
+            tokenPattern
+                .find(content)
+                ?.groupValues
+                ?.get(1)
+                ?.toIntOrNull()
+                ?.let { it * 1000 }
+        val maxLines =
+            linePattern
+                .find(content)
+                ?.groupValues
+                ?.get(1)
+                ?.toIntOrNull()
         return maxTokens to maxLines
     }
 }

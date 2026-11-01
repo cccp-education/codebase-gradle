@@ -16,5 +16,5 @@ data class OcrInputFile(
     /** Modèle Gemini */
     val model: String = "gemini-2.5-flash",
     /** Nombre maximum de tokens pour la requête */
-    val maxTokens: Int = 8192
+    val maxTokens: Int = 8192,
 )

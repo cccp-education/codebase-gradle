@@ -16,9 +16,8 @@ import contracts.llmpool.RotationStrategy
  */
 class GeminiKeyPool(
     private val instances: List<LlmInstance>,
-    private val rotationStrategy: RotationStrategy = RotationStrategy.ROUND_ROBIN
+    private val rotationStrategy: RotationStrategy = RotationStrategy.ROUND_ROBIN,
 ) : LlmInstancePool {
-
     private var currentIndex = 0
     private val usageCounts = mutableMapOf<String, Long>()
     private val rateLimitedIds = mutableSetOf<String>()
@@ -44,8 +43,7 @@ class GeminiKeyPool(
     /**
      * Vrai si l'instance a été marquée comme rate-limited (HTTP 429 reçu).
      */
-    fun isRateLimited(instance: LlmInstance): Boolean =
-        instance.id in rateLimitedIds
+    fun isRateLimited(instance: LlmInstance): Boolean = instance.id in rateLimitedIds
 
     override fun nextInstance(): LlmInstance {
         if (instances.isEmpty()) {
@@ -53,12 +51,14 @@ class GeminiKeyPool(
         }
 
         // Cherche la prochaine instance non saturée et non rate-limited
-        val startIndex = when (rotationStrategy) {
-            RotationStrategy.ROUND_ROBIN -> currentIndex
-            RotationStrategy.LEAST_USED -> instances.indices.minByOrNull { i ->
-                usageCounts[instances[i].id] ?: 0
-            } ?: 0
-        }
+        val startIndex =
+            when (rotationStrategy) {
+                RotationStrategy.ROUND_ROBIN -> currentIndex
+                RotationStrategy.LEAST_USED ->
+                    instances.indices.minByOrNull { i ->
+                        usageCounts[instances[i].id] ?: 0
+                    } ?: 0
+            }
 
         var attempts = 0
         var idx = startIndex
@@ -77,8 +77,9 @@ class GeminiKeyPool(
         }
 
         // Toutes les instances sont saturées ou rate-limited — retourne la première non rate-limited (best-effort)
-        val fallback = instances.firstOrNull { it.id !in rateLimitedIds }
-            ?: instances[startIndex % instances.size]
+        val fallback =
+            instances.firstOrNull { it.id !in rateLimitedIds }
+                ?: instances[startIndex % instances.size]
         usageCounts[fallback.id] = (usageCounts[fallback.id] ?: 0) + 1
         currentIndex = (startIndex + 1) % instances.size
         return fallback

@@ -1,10 +1,13 @@
 package codebase.koog.agentic
 
 class AgenticExternalImporter(
-    private val ingestor: AgenticIngestor
+    private val ingestor: AgenticIngestor,
 ) {
-
-    suspend fun import(externalSystem: String, sourceName: String, content: String): IngestionReport {
+    suspend fun import(
+        externalSystem: String,
+        sourceName: String,
+        content: String,
+    ): IngestionReport {
         if (content.isBlank()) return IngestionReport(0, 0, 0, 0, 0)
 
         val normalizedContent = normalizeContent(externalSystem, sourceName, content)
@@ -13,7 +16,11 @@ class AgenticExternalImporter(
         return ingestor.ingest(listOf(sourceFile to normalizedContent))
     }
 
-    private fun normalizeContent(externalSystem: String, sourceName: String, content: String): String {
+    private fun normalizeContent(
+        externalSystem: String,
+        sourceName: String,
+        content: String,
+    ): String {
         val header = buildHeader(externalSystem, sourceName)
         val normalized = formatForChunking(content)
 
@@ -21,12 +28,13 @@ class AgenticExternalImporter(
             |$header
             |
             |$normalized
-        """.trimMargin()
+            """.trimMargin()
     }
 
-    private fun buildHeader(externalSystem: String, sourceName: String): String {
-        return "= External Agentic Literature — $externalSystem : $sourceName"
-    }
+    private fun buildHeader(
+        externalSystem: String,
+        sourceName: String,
+    ): String = "= External Agentic Literature — $externalSystem : $sourceName"
 
     private fun formatForChunking(content: String): String {
         val lines = content.lines()
@@ -43,8 +51,11 @@ class AgenticExternalImporter(
                 result.add("=== ${trimmed.removePrefix("### ").trim()}")
             } else if (trimmed.startsWith("---") && trimmed == "---") {
                 result.add("")
-            } else if (trimmed.startsWith("name:") || trimmed.startsWith("version:") ||
-                trimmed.startsWith("rules:") || trimmed.startsWith("description:")) {
+            } else if (trimmed.startsWith("name:") ||
+                trimmed.startsWith("version:") ||
+                trimmed.startsWith("rules:") ||
+                trimmed.startsWith("description:")
+            ) {
                 result.add(":$trimmed")
             } else if (trimmed == "---") {
                 result.add("")

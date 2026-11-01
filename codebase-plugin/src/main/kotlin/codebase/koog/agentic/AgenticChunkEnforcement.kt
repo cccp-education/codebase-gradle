@@ -1,12 +1,11 @@
 package codebase.koog.agentic
 
 class AgenticChunkEnforcement {
-
     private val rules = mutableListOf<EnforcementRule>()
 
     fun registerFromCompiled(
         artifacts: List<CompiledArtifact>,
-        chunks: List<OntologizedChunk>
+        chunks: List<OntologizedChunk>,
     ): Int {
         var registered = 0
         val chunkMap = chunks.associateBy { it.chunk.id }
@@ -34,7 +33,10 @@ class AgenticChunkEnforcement {
         return registered
     }
 
-    fun check(toolName: String, arguments: Map<String, String>): EnforcementResult {
+    fun check(
+        toolName: String,
+        arguments: Map<String, String>,
+    ): EnforcementResult {
         for (rule in rules) {
             if (rule.toolName != toolName) continue
 
@@ -50,7 +52,7 @@ class AgenticChunkEnforcement {
 
             return EnforcementResult.blocked(
                 ruleId = rule.sourceChunkId,
-                reason = rule.description
+                reason = rule.description,
             )
         }
 
@@ -63,7 +65,10 @@ class AgenticChunkEnforcement {
         rules.clear()
     }
 
-    private fun extractRules(chunk: OntologizedChunk, artifact: CompiledArtifact): List<EnforcementRule> {
+    private fun extractRules(
+        chunk: OntologizedChunk,
+        artifact: CompiledArtifact,
+    ): List<EnforcementRule> {
         val content = chunk.chunk.content
         val lower = content.lowercase()
 
@@ -80,7 +85,7 @@ class AgenticChunkEnforcement {
                 forbiddenPattern = pattern,
                 allowedPattern = allowedPattern,
                 toolName = toolName,
-                description = artifact.description
+                description = artifact.description,
             )
         }
     }
@@ -96,7 +101,7 @@ class AgenticChunkEnforcement {
                 forbiddenPattern = pattern,
                 allowedPattern = payload.allowedPattern,
                 toolName = payload.toolName,
-                description = artifact.description
+                description = artifact.description,
             )
         }
     }
@@ -143,15 +148,23 @@ class AgenticChunkEnforcement {
     private fun inferToolName(content: String): String {
         val lower = content.lowercase()
 
-        if (lower.contains("gradle") || lower.contains("gradlew") ||
-            lower.contains("./gradlew") || lower.contains("task")
-        ) return "exec_gradle"
+        if (lower.contains("gradle") ||
+            lower.contains("gradlew") ||
+            lower.contains("./gradlew") ||
+            lower.contains("task")
+        ) {
+            return "exec_gradle"
+        }
 
         val gitVerbs = listOf("git", "commit", "merge", "push", "rebase", "pull")
         if (gitVerbs.any { lower.contains(it) } ||
-            lower.contains("bash") || lower.contains("shell") ||
-            lower.contains("rm ") || lower.contains("command")
-        ) return "exec_shell"
+            lower.contains("bash") ||
+            lower.contains("shell") ||
+            lower.contains("rm ") ||
+            lower.contains("command")
+        ) {
+            return "exec_shell"
+        }
 
         return "exec_gradle"
     }

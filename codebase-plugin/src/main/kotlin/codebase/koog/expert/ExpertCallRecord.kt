@@ -15,5 +15,5 @@ data class ExpertCallRecord(
     val completionTokens: Int,
     val validationPassed: Boolean,
     val error: String?,
-    val createdAt: Instant = Instant.now()
+    val createdAt: Instant = Instant.now(),
 )

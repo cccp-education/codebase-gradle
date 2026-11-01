@@ -1,7 +1,6 @@
 package codebase.rag
 
 object PertinenceReportExporter {
-
     fun exportJson(report: PertinenceBenchmarkReport): String {
         val sb = StringBuilder()
         sb.appendLine("{")
@@ -100,7 +99,14 @@ object PertinenceReportExporter {
             val q = PertinenceQuestions.all.first { it.id == id }
             val baseRelevant = if (pair.baseline.isRelevant) "[.text-success]#OUI#" else "[.text-danger]#NON#"
             val augRelevant = if (pair.augmented.isRelevant) "[.text-success]#OUI#" else "[.text-danger]#NON#"
-            val deltaIcon = if (pair.improvement) "📈" else if (pair.deltaKeywords < 0) "📉" else "➡️"
+            val deltaIcon =
+                if (pair.improvement) {
+                    "📈"
+                } else if (pair.deltaKeywords < 0) {
+                    "📉"
+                } else {
+                    "➡️"
+                }
             val deltaHits = if (pair.deltaKeywords > 0) "+${pair.deltaKeywords}" else "${pair.deltaKeywords}"
             val deltaLen = if (pair.deltaLength > 0) "+${pair.deltaLength}" else "${pair.deltaLength}"
 
@@ -113,7 +119,9 @@ object PertinenceReportExporter {
             sb.appendLine("|===")
             sb.appendLine("| Scenario | Pertinent | Mots-cles | Longueur | $deltaIcon Delta")
             sb.appendLine("| Baseline | $baseRelevant | ${pair.baseline.keywordHits}/${pair.baseline.totalKeywords} | ${pair.baseline.answerLength} chars | —")
-            sb.appendLine("| Augmente | $augRelevant | ${pair.augmented.keywordHits}/${pair.augmented.totalKeywords} | ${pair.augmented.answerLength} chars | $deltaHits hits / $deltaLen chars")
+            sb.appendLine(
+                "| Augmente | $augRelevant | ${pair.augmented.keywordHits}/${pair.augmented.totalKeywords} | ${pair.augmented.answerLength} chars | $deltaHits hits / $deltaLen chars",
+            )
             sb.appendLine("|===")
             sb.appendLine()
 
@@ -127,7 +135,7 @@ object PertinenceReportExporter {
             sb.appendLine("[TIP]")
             sb.appendLine("====")
             sb.appendLine("*MVP0 EPIC 9 VALIDE*. Le vecteur composite de contexte ameliore significativement")
-            sb.appendLine("la qualite des reponses LLM sur ${ratePct}% des questions metier (seuil 70%).")
+            sb.appendLine("la qualite des reponses LLM sur $ratePct% des questions metier (seuil 70%).")
             sb.appendLine("")
             sb.appendLine("La gate est franchie. EPIC 9 est operationnel : le pipeline `augmentOpencode`")
             sb.appendLine("peut etre active en permanence dans les sessions opencode.")
@@ -135,7 +143,7 @@ object PertinenceReportExporter {
         } else {
             sb.appendLine("[WARNING]")
             sb.appendLine("====")
-            sb.appendLine("*MVP0 EPIC 9 NON ATTEINT*. Le taux d'amelioration est de ${ratePct}% (seuil 70%).")
+            sb.appendLine("*MVP0 EPIC 9 NON ATTEINT*. Le taux d'amelioration est de $ratePct% (seuil 70%).")
             sb.appendLine("")
             sb.appendLine("Prochaines actions : reexaminer la qualite du contexte injecte, ajuster les mots-cles,")
             sb.appendLine("ou affiner le prompt systeme d'injection.")

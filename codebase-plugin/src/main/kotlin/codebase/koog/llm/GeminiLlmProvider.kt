@@ -13,15 +13,15 @@ import org.slf4j.LoggerFactory
  * Le logger est limité à INFO et ne doit jamais afficher la clé.
  */
 class GeminiLlmProvider(
-    private val config: GeminiConfig
+    private val config: GeminiConfig,
 ) : LlmProvider {
-
     private val log = LoggerFactory.getLogger(GeminiLlmProvider::class.java)
 
     private val model: GoogleAiGeminiChatModel by lazy {
         val apiKey = config.resolveApiKey()
         log.info("[GeminiLlmProvider] Creating Gemini chat model: model={}, baseUrl={}", config.model, config.baseUrl)
-        GoogleAiGeminiChatModel.builder()
+        GoogleAiGeminiChatModel
+            .builder()
             .apiKey(apiKey)
             .modelName(config.model)
             .build()
@@ -29,9 +29,10 @@ class GeminiLlmProvider(
 
     override suspend fun call(prompt: String): String {
         log.info("[GeminiLlmProvider] Calling Gemini: model={}, promptLength={}", config.model, prompt.length)
-        val response = withContext(Dispatchers.IO) {
-            model.chat(prompt)
-        }
+        val response =
+            withContext(Dispatchers.IO) {
+                model.chat(prompt)
+            }
         log.info("[GeminiLlmProvider] Gemini response received: length={}", response.length)
         return response
     }

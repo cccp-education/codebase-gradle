@@ -1,7 +1,6 @@
 package codebase.ocr
 
 object TextAnonymizer {
-
     private val emailRegex = Regex("""[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}""")
     private val phoneRegex = Regex("""(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{2,4}[-.\s]?\d{2,4}[-.\s]?\d{2,4}""")
     private val apiKeyRegex = Regex("""(?:sk|api|key|token|secret)[_-][a-zA-Z0-9_-]{15,}""")
@@ -18,7 +17,10 @@ object TextAnonymizer {
         return result
     }
 
-    fun countReplacements(original: String, anonymized: String): Int {
+    fun countReplacements(
+        original: String,
+        anonymized: String,
+    ): Int {
         val emailCount = emailRegex.findAll(original).count()
         val phoneCount = phoneRegex.findAll(original).count()
         val apiKeyCount = apiKeyRegex.findAll(original).count()

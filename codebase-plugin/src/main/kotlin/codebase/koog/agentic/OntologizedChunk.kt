@@ -12,12 +12,12 @@ enum class TaxonomySection {
     ORDRE_ATTAQUE,
     EXEMPLES_STDOUT,
     CONCLUSION,
-    UNKNOWN
+    UNKNOWN,
 }
 
 data class OntologizedChunk(
     val chunk: AgenticChunk,
     val taxonomySection: TaxonomySection,
     val ontologyConfidence: Double,
-    val relatedChunkIds: List<String>
+    val relatedChunkIds: List<String>,
 )

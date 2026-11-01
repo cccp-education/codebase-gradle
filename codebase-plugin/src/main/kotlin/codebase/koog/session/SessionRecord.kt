@@ -19,7 +19,7 @@ data class SessionRecord(
     val iterationCount: Int,
     val confidentialityLevel: String,
     val createdAt: Instant,
-    val updatedAt: Instant
+    val updatedAt: Instant,
 ) {
     val startTime: Instant get() = createdAt
     val endTime: Instant? get() = if (finished) updatedAt else null

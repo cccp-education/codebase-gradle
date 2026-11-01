@@ -1,15 +1,14 @@
 package codebase.koog
 
+import codebase.koog.state.VibecodingState
 import contracts.session.AgentContext
 import contracts.vibecoding.registry.AuditEntry
-import codebase.koog.state.VibecodingState
 
 class LiveContextInjector {
-
     fun injectLiveContext(
         state: VibecodingState,
         auditEntries: List<AuditEntry>,
-        staticContext: AgentContext? = null
+        staticContext: AgentContext? = null,
     ): String {
         val liveSection = buildLiveSection(state, auditEntries)
         val staticSection = buildStaticSection(staticContext)
@@ -29,17 +28,21 @@ class LiveContextInjector {
         }.trimEnd()
     }
 
-    private fun buildLiveSection(state: VibecodingState, auditEntries: List<AuditEntry>): String {
-        return buildString {
+    private fun buildLiveSection(
+        state: VibecodingState,
+        auditEntries: List<AuditEntry>,
+    ): String =
+        buildString {
             appendLine("Intention: ${state.intention}")
             appendLine("Iteration: ${state.iteration + 1}/${state.maxActions}")
             appendLine("Dry run: ${state.dryRun}")
-            val status = when {
-                state.error != null && state.finished -> "ERROR"
-                state.finished -> "FINISHED"
-                state.error != null -> "RECOVERING"
-                else -> "OK"
-            }
+            val status =
+                when {
+                    state.error != null && state.finished -> "ERROR"
+                    state.finished -> "FINISHED"
+                    state.error != null -> "RECOVERING"
+                    else -> "OK"
+                }
             appendLine("Status: $status")
             if (state.error != null) {
                 appendLine("Error: ${state.error}")
@@ -58,23 +61,26 @@ class LiveContextInjector {
                 appendLine()
                 appendLine("Tool call history:")
                 auditEntries.forEach { entry ->
-                    val args = if (entry.arguments.isNotEmpty()) {
-                        entry.arguments.values.joinToString(", ")
-                    } else ""
+                    val args =
+                        if (entry.arguments.isNotEmpty()) {
+                            entry.arguments.values.joinToString(", ")
+                        } else {
+                            ""
+                        }
                     val resultPreview = entry.result.take(200)
                     val errorSuffix = entry.error?.let { " [ERROR: $it]" } ?: ""
                     appendLine("  - ${entry.tool}($args) → ${resultPreview}$errorSuffix")
                 }
             }
         }
-    }
 
     private fun buildStaticSection(staticContext: AgentContext?): String {
         if (staticContext == null) return ""
-        val hasContent = staticContext.eagerRules.isNotBlank()
-                || staticContext.ragChunks.isNotEmpty()
-                || staticContext.graphRelations.isNotBlank()
-                || staticContext.backlogItems.isNotEmpty()
+        val hasContent =
+            staticContext.eagerRules.isNotBlank() ||
+                staticContext.ragChunks.isNotEmpty() ||
+                staticContext.graphRelations.isNotBlank() ||
+                staticContext.backlogItems.isNotEmpty()
         if (!hasContent) return "(none)"
 
         return buildString {

@@ -21,8 +21,13 @@ object MetadataValidator {
     private val log = LoggerFactory.getLogger(MetadataValidator::class.java)
 
     sealed class ValidationResult {
-        data class Valid(val metadata: Metadata) : ValidationResult()
-        data class Invalid(val reason: String) : ValidationResult()
+        data class Valid(
+            val metadata: Metadata,
+        ) : ValidationResult()
+
+        data class Invalid(
+            val reason: String,
+        ) : ValidationResult()
     }
 
     fun validate(
@@ -45,10 +50,11 @@ object MetadataValidator {
             return violation("metadata.json introuvable : ${file.absolutePath}")
         }
 
-        val metadata: Metadata = when (val parsed = Either.catch { Metadata.fromFile(file) }) {
-            is Either.Left -> return violation("metadata.json illisible : ${parsed.value.message}")
-            is Either.Right -> parsed.value
-        }
+        val metadata: Metadata =
+            when (val parsed = Either.catch { Metadata.fromFile(file) }) {
+                is Either.Left -> return violation("metadata.json illisible : ${parsed.value.message}")
+                is Either.Right -> parsed.value
+            }
 
         val errors: List<String> =
             listOfNotNull(
@@ -72,12 +78,18 @@ object MetadataValidator {
         }
     }
 
-    private fun violation(message: String): Either<NonEmptyList<String>, Metadata> =
-        NonEmptyList(message, emptyList()).left()
+    private fun violation(message: String): Either<NonEmptyList<String>, Metadata> = NonEmptyList(message, emptyList()).left()
 
-    private fun versionViolation(metadata: Metadata, expectedVersion: String?): String? {
+    private fun versionViolation(
+        metadata: Metadata,
+        expectedVersion: String?,
+    ): String? {
         if (expectedVersion == null) return null
-        val providedMajor = metadata.version.split(".").firstOrNull()?.toIntOrNull() ?: return null
+        val providedMajor =
+            metadata.version
+                .split(".")
+                .firstOrNull()
+                ?.toIntOrNull() ?: return null
         val expectedMajor = expectedVersion.split(".").firstOrNull()?.toIntOrNull() ?: return null
         return if (providedMajor != expectedMajor) {
             "Version incompatible : fourni=${metadata.version}, attendu majeure $expectedVersion"
@@ -86,14 +98,20 @@ object MetadataValidator {
         }
     }
 
-    private fun typeViolation(metadata: Metadata, expectedType: String?): String? =
+    private fun typeViolation(
+        metadata: Metadata,
+        expectedType: String?,
+    ): String? =
         if (expectedType != null && metadata.type != expectedType) {
             "Type inattendu : fourni=${metadata.type}, attendu=$expectedType"
         } else {
             null
         }
 
-    fun isVersionCompatible(provided: String, expected: String): Boolean {
+    fun isVersionCompatible(
+        provided: String,
+        expected: String,
+    ): Boolean {
         val providedMajor = provided.split(".").firstOrNull()?.toIntOrNull() ?: return false
         val expectedMajor = expected.split(".").firstOrNull()?.toIntOrNull() ?: return false
         return providedMajor == expectedMajor
