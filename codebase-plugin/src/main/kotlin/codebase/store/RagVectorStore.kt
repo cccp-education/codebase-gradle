@@ -1,13 +1,16 @@
 package codebase.store
 
+import arrow.core.Either
+import arrow.fx.coroutines.resourceScope
 import dev.langchain4j.data.segment.TextSegment
 import dev.langchain4j.model.embedding.onnx.allminilml6v2.AllMiniLmL6V2EmbeddingModel
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration
 import io.r2dbc.postgresql.PostgresqlConnectionFactory
+import io.r2dbc.spi.Connection
 import io.r2dbc.spi.ConnectionFactory
 import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.runBlocking
+import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
 
 /**
@@ -36,6 +39,8 @@ open class RagVectorStore(
     private val username: String = "codex",
     private val password: String = "codex",
 ) {
+    private val log = LoggerFactory.getLogger(RagVectorStore::class.java)
+
     private val model: AllMiniLmL6V2EmbeddingModel by lazy { AllMiniLmL6V2EmbeddingModel() }
 
     /**
@@ -63,8 +68,7 @@ open class RagVectorStore(
         topK: Int = 10,
     ): List<RetrieveResult> {
         val embedding = computeEmbedding(query)
-        val factory = buildConnectionFactory()
-        return searchSimilar(factory, embedding, topK)
+        return searchSimilar(embedding, topK)
     }
 
     /**
@@ -85,10 +89,8 @@ open class RagVectorStore(
     open suspend fun ingestWithDoubt(
         chunks: List<DoubtfulChunk>,
         batchLogger: (String) -> Unit = {},
-    ): Int {
-        val factory = buildConnectionFactory()
-        val conn = factory.create().awaitFirst()
-        try {
+    ): Int =
+        withConnection { conn ->
             (
                 StoreStatements.initSchema() +
                     StoreStatements.doubtSchema() +
@@ -139,11 +141,8 @@ open class RagVectorStore(
                 docCount++
                 batchLogger("$source (${docChunks.size} chunks, avg_confidence=${"%.2f".format(avgConfidence)})")
             }
-            return docCount
-        } finally {
-            conn.close().awaitFirstOrNull()
+            docCount
         }
-    }
 
     /**
      * Synchronous wrapper for [searchWithDoubt] — semantic search that
@@ -170,8 +169,7 @@ open class RagVectorStore(
         topK: Int = 10,
     ): List<RetrieveResult> {
         val embedding = computeEmbedding(query)
-        val factory = buildConnectionFactory()
-        return searchSimilarWithDoubt(factory, embedding, topK)
+        return searchSimilarWithDoubt(embedding, topK)
     }
 
     private fun buildConnectionFactory(): ConnectionFactory {
@@ -187,18 +185,31 @@ open class RagVectorStore(
         return PostgresqlConnectionFactory(config)
     }
 
+    /**
+     * XF-FP2-5: scoped R2DBC connection. The release runs on success, failure
+     * and cancellation (Arrow finalizers are `NonCancellable`); a failing
+     * `close()` is captured and logged instead of being silently swallowed by
+     * the historical `try/finally`.
+     */
+    private suspend fun <A> withConnection(block: suspend (Connection) -> A): A =
+        resourceScope {
+            val connection =
+                install({ buildConnectionFactory().create().awaitFirst() }) { conn, _ ->
+                    Either.catch { conn.close().awaitFirst() }.onLeft { log.warn("[rag] close failed", it) }
+                }
+            block(connection)
+        }
+
     private fun computeEmbedding(text: String): String {
         val embedding = model.embed(TextSegment.from(text)).content()
         return embedding.vector().joinToString(",", "[", "]")
     }
 
     private suspend fun searchSimilar(
-        factory: ConnectionFactory,
         vectorStr: String,
         k: Int,
-    ): List<RetrieveResult> {
-        val conn = factory.create().awaitFirst()
-        try {
+    ): List<RetrieveResult> =
+        withConnection { conn ->
             val sql =
                 """
                 SELECT
@@ -236,7 +247,7 @@ open class RagVectorStore(
                     .execute()
                     .awaitFirst()
 
-            return Flux
+            Flux
                 .from(
                     result.map { row, _ ->
                         @Suppress("UNCHECKED_CAST")
@@ -258,10 +269,7 @@ open class RagVectorStore(
                     },
                 ).collectList()
                 .awaitFirst()
-        } finally {
-            conn.close().awaitFirstOrNull()
         }
-    }
 
     /**
      * Semantic search with doubt columns — mirrors [searchSimilar] but
@@ -269,12 +277,10 @@ open class RagVectorStore(
      * [StoreStatements.doubtSchema] (EPIC OCR-QUALITY US-4).
      */
     private suspend fun searchSimilarWithDoubt(
-        factory: ConnectionFactory,
         vectorStr: String,
         k: Int,
-    ): List<RetrieveResult> {
-        val conn = factory.create().awaitFirst()
-        try {
+    ): List<RetrieveResult> =
+        withConnection { conn ->
             val sql =
                 """
                 SELECT
@@ -316,7 +322,7 @@ open class RagVectorStore(
                     .execute()
                     .awaitFirst()
 
-            return Flux
+            Flux
                 .from(
                     result.map { row, _ ->
                         @Suppress("UNCHECKED_CAST")
@@ -342,8 +348,5 @@ open class RagVectorStore(
                     },
                 ).collectList()
                 .awaitFirst()
-        } finally {
-            conn.close().awaitFirstOrNull()
         }
-    }
 }
