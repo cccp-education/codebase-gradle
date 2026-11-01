@@ -72,7 +72,7 @@ object GraphGeneratorMain {
                     community = community,
                     metadata =
                         mapOf(
-                            "extension" to (filePath.extension ?: ""),
+                            "extension" to filePath.extension,
                             "size" to Files.size(filePath),
                         ),
                 ),

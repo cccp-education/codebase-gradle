@@ -39,7 +39,7 @@ object PlannerPortResolver {
      */
     private fun extractPort(registration: BuildServiceRegistration<*, *>): PlannerPort? =
         try {
-            val service = registration.getService().get() ?: return null
+            val service = registration.getService().get()
             val portMethod =
                 service.javaClass.methods.firstOrNull { m -> m.name == "port" && m.parameterCount == 0 }
                     ?: return null

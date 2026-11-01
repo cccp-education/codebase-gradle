@@ -70,7 +70,7 @@ open class GeminiVisionProvider(
             if (message.contains("429") || message.contains("Too Many Requests", ignoreCase = true)) {
                 instance?.let { pool ->
                     log.warn("[GeminiVision] HTTP 429 detected — marking key {} as rate-limited", pool.id)
-                    keyPool?.markRateLimited(pool)
+                    keyPool.markRateLimited(pool)
                 }
             }
             throw IllegalStateException(

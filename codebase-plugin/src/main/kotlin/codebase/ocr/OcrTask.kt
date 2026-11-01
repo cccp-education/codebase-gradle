@@ -269,7 +269,7 @@ abstract class OcrTask : DefaultTask() {
             logger.lifecycle("[OCR] File does not exist!")
         }
         logger.lifecycle("[OCR] File extension (file.extension): {}", file.extension)
-        val fileExt = file.extension?.lowercase() ?: ""
+        val fileExt = file.extension.lowercase()
         logger.lifecycle("[OCR] file.extension raw: {}", file.extension)
         logger.lifecycle("[OCR] Extension: {}", if (fileExt.isEmpty()) "<no extension>" else fileExt)
         logger.lifecycle("[OCR] IMAGE_EXTENSIONS: {}", IMAGE_EXTENSIONS)
