@@ -67,6 +67,7 @@ dependencies {
     // decomposition now flows through the N1 `PlannerPort` (fun interface,
     // codebase.koog.plannerport); the planner borough wires an adapter at
     // Gradle level (registerPlannerPort, mirror of registerLlmBuildService).
+    // Single arrow: planner (N2) -> codebase (N1).
     implementation(libs.graphify.plugin)
 
     // N0 codebase contracts — source unique de vérité (ContextChannel, ChannelBudget, CompositeContext, CompositeContextConfig)
@@ -79,7 +80,7 @@ dependencies {
     implementation(libs.opencode.session.contracts)
     // N0 i18n contracts — SupportedLanguage, LanguageCatalog, I18nConfig (TranslationService)
     implementation(libs.i18n.contracts)
-    // XB-FP-5 (S-320) — Arrow removed: declared but never imported (225 files).
+    implementation(libs.bundles.arrow)
     implementation(libs.koog.agents) {
         exclude(group = "org.jetbrains", module = "annotations")
     }
