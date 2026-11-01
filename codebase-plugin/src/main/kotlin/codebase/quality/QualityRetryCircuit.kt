@@ -15,6 +15,16 @@ data class QualityResult(
     val summary: String
 )
 
+/**
+ * Bounded quality-retry circuit.
+ *
+ * XB-FP-5 (arrow-kt adoption): the loop used three mutable variables
+ * (`currentPrompt`, `best`, `history`) and an imperative `for` with early
+ * `return`. It is now a `fold` over the attempt range carrying an immutable
+ * [CircuitState] — no `var`, no `MutableList`, no early return. The `fold` is
+ * inline, so the suspend LLM call is still allowed; a passed state short-circuits
+ * the remaining attempts by returning the accumulated state unchanged.
+ */
 class QualityRetryCircuit(
     private val llm: suspend (String) -> String,
     private val gate: QualityGate,
@@ -22,51 +32,66 @@ class QualityRetryCircuit(
     private val maxRetries: Int = gate.config.maxRetries
 ) {
 
+    /** Immutable state carried from one attempt to the next. */
+    private data class CircuitState(
+        val prompt: String,
+        val history: List<QualityAttempt>,
+        val firstOutput: String?,
+        val passed: Boolean
+    )
+
     suspend fun invoke(initialPrompt: String): QualityResult {
-        val history = mutableListOf<QualityAttempt>()
-        var currentPrompt = initialPrompt
-        var best: String? = null
-
         val totalAttempts = maxRetries + 1
-        for (attempt in 1..totalAttempts) {
-            val output = llm(currentPrompt)
-            best = best ?: output
 
+        val finalState = (1..totalAttempts).fold(
+            CircuitState(prompt = initialPrompt, history = emptyList(), firstOutput = null, passed = false)
+        ) { state, attempt ->
+            if (state.passed) {
+                return@fold state
+            }
+
+            val output = llm(state.prompt)
             val assessment = gate.evaluate(output, domain)
-            history.add(
-                QualityAttempt(
-                    attempt = attempt,
-                    output = output,
-                    prompt = currentPrompt,
-                    qualityAssessment = assessment
-                )
+            val record = QualityAttempt(
+                attempt = attempt,
+                output = output,
+                prompt = state.prompt,
+                qualityAssessment = assessment
             )
+            val nextPrompt =
+                if (assessment.passed || attempt == totalAttempts) {
+                    state.prompt
+                } else {
+                    "$initialPrompt\n\n${gate.buildFeedback(assessment)}"
+                }
 
-            if (assessment.passed) {
-                return QualityResult(
-                    bestOutput = output,
-                    attempts = attempt,
-                    passed = true,
-                    history = history,
-                    summary = "GATE: PASS — $attempt attempt(s)"
-                )
-            }
-
-            if (attempt < totalAttempts) {
-                val feedback = gate.buildFeedback(assessment)
-                currentPrompt = "$initialPrompt\n\n$feedback"
-            }
+            CircuitState(
+                prompt = nextPrompt,
+                history = state.history + record,
+                firstOutput = state.firstOutput ?: output,
+                passed = assessment.passed
+            )
         }
 
-        val bestAttempt = history.maxByOrNull { it.qualityAssessment.results.sumOf { r -> (r.score * 1000).toLong() } }
-        val bestOutput = bestAttempt?.output ?: best
-
-        return QualityResult(
-            bestOutput = bestOutput,
-            attempts = totalAttempts,
-            passed = false,
-            history = history,
-            summary = "GATE: FAIL — $totalAttempts attempt(s)"
-        )
+        return if (finalState.passed) {
+            val passing = finalState.history.last()
+            QualityResult(
+                bestOutput = passing.output,
+                attempts = passing.attempt,
+                passed = true,
+                history = finalState.history,
+                summary = "GATE: PASS — ${passing.attempt} attempt(s)"
+            )
+        } else {
+            val bestAttempt = finalState.history
+                .maxByOrNull { it.qualityAssessment.results.sumOf { r -> (r.score * 1000).toLong() } }
+            QualityResult(
+                bestOutput = bestAttempt?.output ?: finalState.firstOutput,
+                attempts = totalAttempts,
+                passed = false,
+                history = finalState.history,
+                summary = "GATE: FAIL — $totalAttempts attempt(s)"
+            )
+        }
     }
 }
