@@ -66,6 +66,12 @@ jobs:
         env:
           CI: "true"
 
+      # The pipeline is test-only (no `check`), so the lint convention plugin is
+      # adopted but never enforced by CI. Run ktlint in the same daemon as `test`
+      # (no extra job, no extra checkout) so formatting drift fails the PR gate.
+      - name: Lint (ktlint)
+        run: ./gradlew ktlintCheck
+
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
