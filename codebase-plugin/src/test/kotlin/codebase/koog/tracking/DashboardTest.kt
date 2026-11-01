@@ -142,9 +142,9 @@ class DashboardTest {
             assertEquals(1, summary.sessionsLast7Days)
             assertEquals(1, summary.sessionsLast30Days)
             assertNotNull(summary.mostExpensiveSession)
-            assertEquals("s2", summary.mostExpensiveSession!!.id)
+            assertEquals("s2", summary.mostExpensiveSession.id)
             assertNotNull(summary.lastSession)
-            assertEquals("s1", summary.lastSession!!.id)
+            assertEquals("s1", summary.lastSession.id)
             assertEquals(2, summary.confidentialityCosts.size)
             assertEquals(2, summary.confidentialitySessions.size)
         }

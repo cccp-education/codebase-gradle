@@ -45,7 +45,7 @@ class OcrTaskTest {
     fun `FakeOcrEngine is an OcrEngine`() {
         val engine: OcrEngine = FakeOcrEngine()
         assertNotNull(engine)
-        assertTrue(engine is OcrEngine)
+        assertEquals<Class<*>>(FakeOcrEngine::class.java, engine.javaClass)
     }
 
     @Test

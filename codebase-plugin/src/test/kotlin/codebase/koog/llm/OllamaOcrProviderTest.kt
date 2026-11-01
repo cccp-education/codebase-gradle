@@ -13,8 +13,8 @@ class OllamaOcrProviderTest {
 
     @Test
     fun `should implement VisionProvider interface`() {
-        val provider = OllamaOcrProvider()
-        assertThat(provider is VisionProvider).isTrue()
+        val provider: VisionProvider = OllamaOcrProvider()
+        assertThat(provider.javaClass).isEqualTo(OllamaOcrProvider::class.java)
     }
 
     @Test
@@ -36,7 +36,7 @@ class OllamaOcrProviderTest {
 
     @Test
     fun `FakeOllamaOcrProvider implements VisionProvider`() {
-        val provider = FakeOllamaOcrProvider()
-        assertThat(provider is VisionProvider).isTrue()
+        val provider: VisionProvider = FakeOllamaOcrProvider()
+        assertThat(provider.javaClass).isEqualTo(FakeOllamaOcrProvider::class.java)
     }
 }

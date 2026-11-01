@@ -95,7 +95,7 @@ class FineTuningFunctionalTest {
         assertEquals(1, registry.size())
         val resolved = registry.resolveByName("coding")
         assertNotNull(resolved)
-        assertEquals("expert-coding", resolved?.modelName)
+        assertEquals("expert-coding", resolved.modelName)
         assertTrue(
             publish.manifestOutput
                 .get()

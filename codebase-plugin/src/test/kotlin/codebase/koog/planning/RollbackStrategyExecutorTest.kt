@@ -128,7 +128,7 @@ class RollbackStrategyExecutorTest {
 
         assertNotNull(result.error)
         assertTrue(result.error!!.contains("FALLBACK_HUMAN"))
-        assertTrue(result.error!!.contains("compile"))
+        assertTrue(result.error.contains("compile"))
         assertTrue(result.finished)
     }
 

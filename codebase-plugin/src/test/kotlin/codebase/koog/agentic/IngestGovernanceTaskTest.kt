@@ -48,7 +48,7 @@ class IngestGovernanceTaskTest {
 
         val report = task.lastIngestionReport
         assertTrue(report != null, "IngestionReport should be set")
-        assertTrue(report!!.filesScanned >= 1, "Should scan at least AGENT.adoc, got ${report.filesScanned}")
+        assertTrue(report.filesScanned >= 1, "Should scan at least AGENT.adoc, got ${report.filesScanned}")
         assertTrue(report.chunksAdded > 0, "Should add chunks, got ${report.chunksAdded}")
     }
 
@@ -325,7 +325,7 @@ class IngestGovernanceTaskTest {
 
         val report = task.lastIngestionReport
         assertNotNull(report)
-        assertTrue(report!!.chunksInvalid > 0, "Should count invalid chunks")
+        assertTrue(report.chunksInvalid > 0, "Should count invalid chunks")
         assertEquals(report.chunksInvalid, report.invalidChunks.size, "invalidChunks list size should match count")
         assertTrue(report.invalidChunks.all { it.errors.isNotEmpty() }, "Each quarantined chunk should carry errors")
     }
@@ -347,7 +347,7 @@ class IngestGovernanceTaskTest {
 
         val report = task.lastIngestionReport
         assertNotNull(report)
-        assertEquals(0, report!!.invalidChunks.size, "Valid chunks should not be quarantined")
+        assertEquals(0, report.invalidChunks.size, "Valid chunks should not be quarantined")
     }
 
     @Test
@@ -425,7 +425,7 @@ class IngestGovernanceTaskTest {
 
         val report = task.lastIngestionReport
         assertNotNull(report)
-        assertTrue(report!!.invalidChunks.isNotEmpty(), "Invalid chunks should be quarantined")
+        assertTrue(report.invalidChunks.isNotEmpty(), "Invalid chunks should be quarantined")
     }
 
     @Test
@@ -486,7 +486,7 @@ class IngestGovernanceTaskTest {
 
         val report = task.lastIngestionReport
         assertNotNull(report)
-        assertTrue(report!!.invalidChunks.isEmpty(), "No invalid chunks expected")
+        assertTrue(report.invalidChunks.isEmpty(), "No invalid chunks expected")
     }
 
     @Test
@@ -601,7 +601,7 @@ class IngestGovernanceTaskTest {
 
         val report = task.lastIngestionReport
         assertNotNull(report)
-        assertTrue(report!!.filesScanned >= 2, "First incremental run should ingest all files")
+        assertTrue(report.filesScanned >= 2, "First incremental run should ingest all files")
         assertTrue(report.chunksAdded > 0, "First incremental run should add chunks")
         val incremental = task.lastIncrementalReport
         assertNotNull(incremental, "Incremental report should be populated in incremental mode")

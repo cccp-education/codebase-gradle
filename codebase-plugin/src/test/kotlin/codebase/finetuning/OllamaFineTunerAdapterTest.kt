@@ -123,7 +123,8 @@ class OllamaFineTunerAdapterTest {
                 registryClient = client,
                 ggufOutputDir = tmpDir,
             )
-        assertTrue(adapter is FineTuningPipeline)
+        val pipeline: FineTuningPipeline = adapter
+        assertTrue(pipeline.fineTune(request).isSuccess)
     }
 
     private class StubOllamaRegistryClient(

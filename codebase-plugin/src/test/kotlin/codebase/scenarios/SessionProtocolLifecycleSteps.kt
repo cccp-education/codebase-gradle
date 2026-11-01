@@ -102,7 +102,7 @@ class SessionProtocolLifecycleSteps(
     ) {
         val session = world.lifecycleManager.get(sessionId)
         assertNotNull(session, "Session $sessionId not found")
-        assertTrue(session?.prompt == expectedPrompt, "Expected prompt '$expectedPrompt', got: ${session?.prompt}")
+        assertTrue(session.prompt == expectedPrompt, "Expected prompt '$expectedPrompt', got: ${session.prompt}")
     }
 
     @Then("the lifecycle shows a child of {string} with status RUNNING")
@@ -110,14 +110,14 @@ class SessionProtocolLifecycleSteps(
         val sessions = world.lifecycleManager.list()
         val child = sessions.find { it.parentSessionId == parentId }
         assertNotNull(child, "No child session found for parent $parentId in: ${sessions.map { "${it.sessionId}->${it.parentSessionId}" }}")
-        assertTrue(child?.status == LifecycleStatus.RUNNING, "Expected child RUNNING, got ${child?.status}")
+        assertTrue(child.status == LifecycleStatus.RUNNING, "Expected child RUNNING, got ${child.status}")
     }
 
     @Then("the lifecycle session {string} has status CLOSED")
     fun `lifecycle session has status CLOSED`(sessionId: String) {
         val session = world.lifecycleManager.get(sessionId)
         assertNotNull(session, "Session $sessionId not found")
-        assertTrue(session?.status == LifecycleStatus.CLOSED, "Expected CLOSED, got ${session?.status}")
+        assertTrue(session.status == LifecycleStatus.CLOSED, "Expected CLOSED, got ${session.status}")
     }
 
     @Then("the list response contains {string}")

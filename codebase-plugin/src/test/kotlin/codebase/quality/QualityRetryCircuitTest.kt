@@ -19,7 +19,7 @@ class QualityRetryCircuitTest {
                 )
             val result = circuit.invoke("Write a Calculator class")
             assertNotNull(result.bestOutput)
-            assertTrue(result.bestOutput?.contains("Calculator") == true)
+            assertTrue(result.bestOutput.contains("Calculator"))
             assertEquals(1, result.attempts)
             assertTrue(result.passed)
             assertEquals(1, result.history.size)

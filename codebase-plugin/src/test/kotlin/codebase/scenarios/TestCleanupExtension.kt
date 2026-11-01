@@ -21,7 +21,7 @@ class TestCleanupExtension {
         trackedContainerId?.let { containerId ->
             try {
                 log.info("Stopping tracked container $containerId")
-                Runtime.getRuntime().exec("docker stop $containerId")
+                Runtime.getRuntime().exec(arrayOf("docker", "stop", containerId))
             } catch (e: Exception) {
                 log.warn("Failed to stop container $containerId: ${e.message}")
             }

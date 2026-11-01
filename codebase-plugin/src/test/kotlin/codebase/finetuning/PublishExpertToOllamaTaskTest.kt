@@ -70,8 +70,8 @@ class PublishExpertToOllamaTaskTest {
 
         val resolved = registry.resolve(ExpertDomain("coding", "Coding expert — Referentiel"))
         assertNotNull(resolved, "Expert should be registered in the registry")
-        assertEquals("expert-coding", resolved?.modelName)
-        assertEquals("http://localhost:11440", resolved?.baseUrl)
+        assertEquals("expert-coding", resolved.modelName)
+        assertEquals("http://localhost:11440", resolved.baseUrl)
 
         val manifestFile = task.manifestOutput.get().asFile
         assertTrue(manifestFile.exists(), "Manifest file should exist")
@@ -235,6 +235,6 @@ class PublishExpertToOllamaTaskTest {
 
         val resolved = registry.resolve(ExpertDomain("coding", "coding"))
         assertNotNull(resolved)
-        assertEquals(120L, resolved?.timeoutSeconds)
+        assertEquals(120L, resolved.timeoutSeconds)
     }
 }

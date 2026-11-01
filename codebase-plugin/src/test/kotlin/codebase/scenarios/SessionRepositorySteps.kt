@@ -192,7 +192,7 @@ class SessionRepositorySteps(
             val id = world.lastCreatedSessionId
             assertNotNull(id, "Session ID should not be null")
             assertTrue(
-                id!!.matches(Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")),
+                id.matches(Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")),
                 "ID should be UUID format, got: $id",
             )
             val record = world.repository.getSession(id)
@@ -207,7 +207,7 @@ class SessionRepositorySteps(
                 world.lastCreatedSessionId?.let { world.repository.getSession(it) }
                     ?: world.lastGetResult
             assertNotNull(record, "Session should exist")
-            assertEquals(expected, record!!.confidentialityLevel)
+            assertEquals(expected, record.confidentialityLevel)
         }
 
     @Then("the vibecoding session intention is {string}")
@@ -217,7 +217,7 @@ class SessionRepositorySteps(
                 world.lastCreatedSessionId?.let { world.repository.getSession(it) }
                     ?: world.lastGetResult
             assertNotNull(record, "Session should exist")
-            assertEquals(expected, record!!.intention)
+            assertEquals(expected, record.intention)
         }
 
     @Then("I can list vibecoding sessions by confidentiality {string} and find exactly {int}")
@@ -238,7 +238,7 @@ class SessionRepositorySteps(
         runBlocking {
             val record = world.repository.getSession(world.lastCreatedSessionId!!)
             assertNotNull(record)
-            assertEquals(expected, record!!.error)
+            assertEquals(expected, record.error)
         }
 
     @Then("the vibecoding session is marked as finished")
@@ -246,7 +246,7 @@ class SessionRepositorySteps(
         runBlocking {
             val record = world.repository.getSession(world.lastCreatedSessionId!!)
             assertNotNull(record)
-            assertTrue(record!!.finished, "Session should be marked as finished")
+            assertTrue(record.finished, "Session should be marked as finished")
         }
 
     @Then("the vibecoding session iteration count is {int}")
@@ -254,7 +254,7 @@ class SessionRepositorySteps(
         runBlocking {
             val record = world.repository.getSession(world.lastCreatedSessionId!!)
             assertNotNull(record)
-            assertEquals(expected, record!!.iterationCount)
+            assertEquals(expected, record.iterationCount)
         }
 
     @Then("exactly {int} vibecoding steps are linked to the session")
@@ -268,7 +268,7 @@ class SessionRepositorySteps(
                             conn
                                 .createStatement(
                                     "SELECT count(*) FROM vibecoding_steps WHERE session_id = \$1",
-                                ).bind(0, world.lastCreatedSessionId)
+                                ).bind(0, requireNotNull(world.lastCreatedSessionId))
                                 .execute(),
                         ).flatMap { result ->
                             Mono.from(result.map { row, _ -> row.get(0, Long::class.java)!! })
@@ -293,7 +293,7 @@ class SessionRepositorySteps(
                         conn
                             .createStatement(
                                 "SELECT step_type, error FROM vibecoding_steps WHERE session_id = \$1 ORDER BY id LIMIT 1",
-                            ).bind(0, world.lastCreatedSessionId)
+                            ).bind(0, requireNotNull(world.lastCreatedSessionId))
                             .execute(),
                     ).flatMap { result ->
                         Mono.from(
@@ -323,7 +323,7 @@ class SessionRepositorySteps(
                     conn
                         .createStatement(
                             "SELECT step_type, error FROM vibecoding_steps WHERE session_id = \$1 ORDER BY id LIMIT 1 OFFSET 1",
-                        ).bind(0, world.lastCreatedSessionId)
+                        ).bind(0, requireNotNull(world.lastCreatedSessionId))
                         .execute(),
                 ).flatMap { result ->
                     Mono.from(
@@ -359,7 +359,7 @@ class SessionRepositorySteps(
                             conn
                                 .createStatement(
                                     "SELECT count(*) FROM vibecoding_steps WHERE session_id = \$1",
-                                ).bind(0, world.lastCreatedSessionId)
+                                ).bind(0, requireNotNull(world.lastCreatedSessionId))
                                 .execute(),
                         ).flatMap { result ->
                             Mono.from(result.map { row, _ -> row.get(0, Long::class.java)!! })
