@@ -1,5 +1,6 @@
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+import org.gradle.plugin.compatibility.compatibility
 import java.time.Duration
 
 fun isCI() = System.getenv("CI") == "true"
@@ -17,7 +18,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version "2.4.10"
     id("org.jetbrains.kotlinx.kover") version "0.9.8"
     id("education.cccp.build.gradle-plugin") version "0.0.14"
-    id("com.gradle.plugin-publish") version "2.1.0"
+    id("com.gradle.plugin-publish") version "2.2.1"
     id("education.cccp.build.publishing") version "0.0.14"
     id("education.cccp.build.lint") version "0.0.14"
     // Self-application (dogfooding) — pinned to the *real* published version.
@@ -566,6 +567,12 @@ gradlePlugin {
                 benchmark, and STIMULUS cascade tasks.
                 """.trimIndent()
             tags.set(listOf("rag", "pgvector", "langchain4j", "anonymization", "benchmark"))
+            compatibility {
+                features {
+                    configurationCache.set(false)
+                    isolatedProjects.set(false)
+                }
+            }
         }
     }
 }
