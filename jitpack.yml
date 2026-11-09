@@ -1,0 +1,11 @@
+# CNV-16 — JitPack build recipe (N1 codebase-plugin).
+before_install:
+  - sdk install java 25.0.5.0+8-tem
+  - sdk use java 25.0.5.0+8-tem
+install:
+  # Publish the plugin + its marker to ~/.m2, where JitPack harvests them.
+  - ./gradlew -p codebase-plugin publishToMavenLocal
+env:
+  # No GPG key on JitPack; the conventions `publishing` plugin skips signing
+  # when CI=true (and plugin-publish therefore sees no signing plugin).
+  CI: "true"
