@@ -1,7 +1,6 @@
 package codebase.publishing
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -61,18 +60,25 @@ class CodebasePluginPublicationTest {
     }
 
     @Test
-    fun `workspace bom platform pin is dynamic, never a stale literal`() {
+    fun `workspace bom platform pin matches the injected published bom version`() {
         val buildScript = pluginDir.resolve("build.gradle.kts").readText(UTF_8)
+        val wsBomVersion = publishedBomVersion()
 
-        assertTrue(
-            buildScript
-                .withoutWhitespace()
-                .contains("platform(\"education.cccp:workspace-bom:\${ws.versions.workspace.bom.get()}\")"),
-            "build.gradle.kts must pin the workspace-bom platform dynamically from ws.versions.workspace.bom (no stale literal, piège #13)",
-        )
-        assertFalse(
-            Regex("""platform\("education\.cccp:workspace-bom:0\.0\.\d+"\)""").containsMatchIn(buildScript),
-            "build.gradle.kts must not hardcode a workspace-bom literal (published catalog BOM is ${publishedBomVersion()})",
+        // CNV-16 — the JitPack BOM POM is not a valid *platform* (rewritten as
+        // plain dependencies, no module metadata): the platform stays on the last
+        // Maven Central release, so a literal is legitimate. The guard is now an
+        // anti-drift check: every `workspace-bom:<version>` pin must equal the
+        // version injected from the single source of truth.
+        val literals =
+            Regex("""workspace-bom:([0-9][0-9A-Za-z.\-]*)""")
+                .findAll(buildScript)
+                .map { it.groupValues[1] }
+                .toSet()
+
+        assertEquals(
+            setOf(wsBomVersion),
+            literals,
+            "every workspace-bom platform pin must equal the injected published BOM version ($wsBomVersion)",
         )
     }
 

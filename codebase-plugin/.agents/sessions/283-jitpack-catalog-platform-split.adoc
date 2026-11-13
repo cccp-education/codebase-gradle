@@ -1,0 +1,33 @@
+= Session 283 — catalogue JitPack `v0.0.133` + plateforme BOM découplée (codebase)
+:toc:
+
+:_date_: 2026-11-13
+:_borough_: Queens (codebase-gradle, N1)
+:_session_precedente_: 282 (synchronisation backlog)
+:_statut_: ✅ version build = artefact déployé (0.0.18)
+
+== Contexte
+
+Suite du P2 de la session hyperframes S-059 : canal **JitPack uniquement**, les
+versions des build scripts doivent être celles déployées.
+
+== Livré
+
+* `settings.gradle.kts` : catalogue `ws` ← JitPack
+  `com.github.cccp-education.workspace-bom:workspace-catalog:v0.0.133`
+  (était Central `0.0.92`) + dépôt `https://jitpack.io` ajouté à
+  `dependencyResolutionManagement.repositories`.
+* `build.gradle.kts` : plateforme BOM **littérale Central `0.0.115`** (le BOM
+  JitPack n'est pas une `platform` valide : POM réécrit en `<dependencies>`, pas
+  de `.module`) ; la version injectée dans la garde est le **même littéral**
+  (anti-dérive).
+* `CodebasePluginPublicationTest` — la garde « plateforme **dynamique**, jamais
+  de littéral » est remplacée par « **tous** les pins `workspace-bom:<v>` ==
+  version injectée » : le littéral redevient légitime sous CNV-16, la dérive
+  reste détectée.
+* Version build : `0.0.18` (== artefact publié).
+
+== Gates
+
+Local = Build : `compileKotlin`, `compileTestKotlin`, `ktlintCheck` VERTS ;
+`properties` → `version: 0.0.18`. Tests = CI du commit.

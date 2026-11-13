@@ -1,10 +1,19 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 282
-:session: 282
+= Prompt de Reprise — Codebase (Queens N1) — Session 283
+:session: 283
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
 :session_precedente: 281 — JitPack mirror (CNV-16) ✅
 :session_pre_precedente: 272 — Bloc B (publication N1→N2) ✅ — `codebase-plugin 0.0.17` Central.
 
 == Session 282 — synchronisation backlog (gouvernance pure, zéro code)
+
+== Session 283 — catalogue JitPack v0.0.133 + plateforme BOM découplée
+
+* Catalogue `ws` ← JitPack `workspace-catalog:v0.0.133` (était Central 0.0.92) ;
+  dépôt JitPack ajouté à `dependencyResolutionManagement`.
+* Plateforme BOM littérale Central `0.0.115` (le BOM JitPack n'est pas une
+  `platform` valide) ; garde réécrite « tous les pins == version injectée ».
+* Version build `0.0.18` == publiée. Rapport
+  `.agents/sessions/283-jitpack-catalog-platform-split.adoc`.
 
 Deux marqueurs périmés « 🟡 EN COURS » corrigés dans `INDEX.adoc` / `BACKLOG.adoc`
 alors que les EPICs sont terminés :

@@ -49,9 +49,10 @@ publishing {
 }
 
 dependencies {
-    // MEM-CAT — BOM platform aligned on the published catalog (ws), never a
-    // stale literal (0.0.50 was neutralised by transitive resolution, piège #13).
-    implementation(platform("education.cccp:workspace-bom:${ws.versions.workspace.bom.get()}"))
+    // CNV-16 — the JitPack BOM POM is not a valid *platform* (rewritten as plain
+    // dependencies, no module metadata), so the platform stays on the last Maven
+    // Central release; the guard's injected value is the same literal (no drift).
+    implementation(platform("education.cccp:workspace-bom:0.0.115"))
     implementation(libs.kotlin.stdlib.jdk8)
     implementation(gradleApi())
     implementation(gradleKotlinDsl())
@@ -136,8 +137,7 @@ tasks.named<Test>("test") {
     )
     systemProperty(
         "codebase.publishedCatalog.bomVersion",
-        ws.versions.workspace.bom
-            .get(),
+        "0.0.115",
     )
     // CI only: the standard GitHub runner has 4 vCPU, and the ~1860 JUnit tests
     // are mostly CPU-bound. Two forks roughly halve the `:test` wall-clock. Kept
@@ -176,8 +176,7 @@ tasks.register<Test>("unitOllama") {
     )
     systemProperty(
         "codebase.publishedCatalog.bomVersion",
-        ws.versions.workspace.bom
-            .get(),
+        "0.0.115",
     )
     maxHeapSize = "1g"
     timeout.set(Duration.ofMinutes(15))
