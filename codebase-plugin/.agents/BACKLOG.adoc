@@ -63,7 +63,7 @@ _RÉVISION Vague 4 (2026-09-10, arbitrage pilote) : tout le champ lexical métie
 *Vague 4 transverse — TERMINÉE (vérification S-266, 2026-09-18)* : gate D16 étendue rejouée sur `src/` des 4 boroughs restants (**bakery, capsule, plantuml, graphify, codex**) = zéro match (χ0). Transfusions déjà actées en S-255/264 (`TRANSFER_LEXIQUE_FORMATION.adoc` § 1bis + § 2 : document `ContentPageResolver` + 5 raisons `BookOcrFailureDetector`, bakery whitelist i18n + landing, capsule contrat enveloppe K-2 `content`, plantuml registre non-traductible, planner prompts SPG/SPD). Graphify/codex = gouvernance only (baby-step 6, zéro logique à transfuser). Backlogs bakery/capsule/plantuml sans US RENAME restante. **EPIC RENAME TERMINÉ 7/7 baby-steps (codebase S-212/254/255, document S-251/253/254/264, bakery S-212, capsule S-135, plantuml S-216/254, graphify/codex gouvernance).**
 
 '''
-== EPIC OCR-QUALITY — Détection automatique images problématiques + transcriptions douteuses 🟡 EN COURS (P0, transverse — US-4 codebase ✅ S-213)
+== EPIC OCR-QUALITY — Détection automatique images problématiques + transcriptions douteuses ✅ TERMINÉ 4/4 (P0, transverse — US-4 codebase ✅ S-213, US-1/2 codex ✅ S-218, US-3 document ✅ S-251)
 
 _Origine : demande pilote 2026-09-07. Cadrage transverse : `.agents/CADRAGE_EPIC_OCR_QUALITY.adoc` (identique dans codex/document/codebase)._
 

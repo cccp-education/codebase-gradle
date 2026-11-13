@@ -1,36 +1,40 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 273
-:session: 273
+= Prompt de Reprise — Codebase (Queens N1) — Session 282
+:session: 282
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
-:session_precedente: 272 — Bloc B (publication N1→N2) ✅ — `codebase-plugin 0.0.17` Central (bundle `7d5a340d`) + MEMPHIS BOM/catalog 0.0.62 (bundle `7baf6567`) + codex-plugin 0.0.12 (bundle `79d0ad3d`). Propagation repo1 HTTP 200 ×4. Preuve CI codex US-2 débloquée.
-:session_pre_precedente: 271 — CB-PAGE-PROVENANCE US-2 (N2 codex, Brooklyn) ✅ — EPIC clos 5/5.
+:session_precedente: 281 — JitPack mirror (CNV-16) ✅
+:session_pre_precedente: 272 — Bloc B (publication N1→N2) ✅ — `codebase-plugin 0.0.17` Central.
 
-== Mission Session 273 — à la demande du pilote
+== Session 282 — synchronisation backlog (gouvernance pure, zéro code)
 
-. **Bloc C-3 (préféré, suite ordonnée)** : dead code N1 — `StoreStatements.insertChunk()`
-   (5 binds) + `IngestIndexing.assignLocalIndices` sans appelant de production
-   (constat S-225 #4). Décision Queens : suppression (privilégiée si confirmée)
-   vs conservation (API publique d'un artefact Central). Baby-step TDD strict
-   (characterization avant, retrait, compile VERT). Voir
-   `codex-gradle/codex-plugin/.agents/CADRAGE_ROADMAP_S227_C_A_B.adoc` § C-3
-   + 8 désync gouvernance codex (côté codex).
-. **Migration codebase → conventions 0.0.7 + dette self-application** :
-   `codebase-plugin/build.gradle.kts:17` épingle `education.cccp.codebase`
-   `0.0.10` (build 0.0.10 / toml 0.0.11 / project 0.0.17 divergents). Aligner +
-   garde anti-drift (pattern `BakeryPluginPublicationTest` whitespace-insensitive).
-   Conventions 0.0.7 disponible sur le Plugin Portal (vérifié S-272).
-. **Bloc C-4** : pollution TOC chunking (99/387 chunks) — détection/exclusion
-   `SemanticChunker` ou marquage `doubtful` (zéro re-vectorisation).
+Deux marqueurs périmés « 🟡 EN COURS » corrigés dans `INDEX.adoc` / `BACKLOG.adoc`
+alors que les EPICs sont terminés :
 
-== Contexte technique (S-272)
+* **OCR-QUALITY** → ✅ TERMINÉ 4/4 (US-1/2 codex S-218, US-3 document S-251,
+  US-4 codebase S-213).
+* **KOOG-PIPELINE-DEDUP** → ✅ TERMINÉ (BS-1 S-276, BS-2 `codebase-plugin 0.0.18`
+  + BOM MEMPHIS `0.0.92`, adopté capsule + slider).
+
+Aucun EPIC/US ouvert dans le borough. Zéro bump, zéro publication, zéro secret.
+
+== Mission Session 283 — à la demande du pilote
+
+Aucune US ouverte. Candidats (maintenance, sans publication) :
+
+. **Drift de pins** : `settings.gradle.kts` épingle `workspace-catalog:0.0.92`
+   (catalogue workspace courant `0.0.129`) ; conventions de build `0.0.14`.
+   Repin à faire quand le catalogue cible sera publié (Central suspendu
+   jusqu'au 2026-12-01).
+. **Auto-application** : `codebase-gradle-plugin = 0.0.17` (split-ref bootstrap)
+   vs version projet dérivée du catalogue — documenté, pas de dette active.
+. Tout autre item à la demande explicite du pilote.
+
+== Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25).
-* Version locale **0.0.17** (Central 0.0.17). Conventions 0.0.4. BOM/catalog 0.0.62.
-* **EPIC CB-PAGE-PROVENANCE TERMINÉ 5/5 US** — publié (bloc B ✅).
-* EPIC CDX-OCR-CONTRACTS + CDX-RAG-SOCLE TERMINÉS.
-
-== Échecs préexistants (orthogonaux)
-
-* 2 × `OcrTaskTest` (drift S-211, stash-confirmés) — à re-vérifier en CI.
+* Version locale **0.0.18** (Central 0.0.18). Conventions 0.0.14. BOM/catalog 0.0.92.
+* **EPICs TERMINÉS** : CB-PAGE-PROVENANCE 5/5, CDX-OCR-CONTRACTS, CDX-RAG-SOCLE,
+  FT-PIPELINE 7/7, KOOG-PIPELINE-DEDUP, OCR-QUALITY 4/4.
+* CI codebase verte (dernier run de référence S-280, wall-clock 2m44s).
 
 == Règles absolues
 

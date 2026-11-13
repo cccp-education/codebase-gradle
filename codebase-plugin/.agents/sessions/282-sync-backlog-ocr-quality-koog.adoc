@@ -1,0 +1,41 @@
+= Session 282 — Synchronisation backlog (OCR-QUALITY, KOOG-PIPELINE-DEDUP)
+:toc:
+
+:_date_: 2026-11-13
+:_borough_: Queens (codebase-gradle, N1)
+:_session_precedente_: 281
+:_statut_: ✅ gouvernance synchronisée — aucun EPIC/US ouvert
+
+'''
+
+== Contexte
+
+Reprise du backlog de codebase à la demande du pilote (« continue sur le reste
+de tous les boroughs »). Aucun code à livrer : deux EPICs terminés gardaient un
+marqueur `🟡 EN COURS` périmé, ce qui faussait l'ouverture de session suivante.
+
+== Corrigé
+
+* `INDEX.adoc` / `BACKLOG.adoc` :
+  - **OCR-QUALITY** → ✅ TERMINÉ **4/4** (US-1/2 codex S-218, US-3 document
+    S-251, US-4 codebase S-213 — doute transporté à l'ingestion RAG, zéro
+    re-vectorisation).
+  - **KOOG-PIPELINE-DEDUP** → ✅ TERMINÉ (BS-1 S-276 squelette
+    `PipelineDefinition`/`PipelineGraph` ; BS-2 publication
+    `codebase-plugin 0.0.18` + BOM MEMPHIS `0.0.92`, adopté capsule + slider).
+* `PROMPT_REPRISE.adoc` : session 273 (mission C-3, déjà soldée) → session 283.
+
+== État réel
+
+* **Aucun EPIC/US ouvert** dans le borough.
+* CI codebase verte (référence S-280 : wall-clock 2m44s).
+* Version locale **0.0.18** (Central 0.0.18).
+
+== Reste (maintenance, sans publication)
+
+1. Drift de pins : `workspace-catalog:0.0.92` vs catalogue courant `0.0.129`
+   (Central suspendu jusqu'au 2026-12-01) + conventions `0.0.14`.
+2. Auto-application `codebase-gradle-plugin = 0.0.17` (split-ref bootstrap),
+   documentée — pas de dette active.
+
+Zéro bump, zéro publication, zéro secret, zéro Python. Tests = CI.
