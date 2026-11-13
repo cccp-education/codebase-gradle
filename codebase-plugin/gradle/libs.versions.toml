@@ -52,15 +52,14 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 # (le BOM en implementation(platform()) ne propage pas ses contraintes aux consommateurs transitifs)
 # codex-plugin REMOVED (EPIC CDX-RAG-4 FINAL S-104 — N1->N2 inversion dead,
 # OCR port now consumed via ocr-contracts N0)
-planner-plugin = { module = "education.cccp:planner-plugin", version = "0.0.1" }
-graphify-plugin = { module = "education.cccp:graphify-plugin", version.ref = "graphify" }
-codebase-contracts = { module = "education.cccp:codebase-contracts", version = "0.0.2" }
-agent-contracts = { module = "education.cccp:agent-contracts", version = "0.0.4" }
-vibecoding-contracts = { module = "education.cccp:vibecoding-contracts", version = "0.0.1" }
-llm-pool-contracts = { module = "education.cccp:llm-pool-contracts", version = "0.0.2" }
-opencode-session-contracts = { module = "education.cccp:opencode-session-contracts", version = "0.0.2" }
-i18n-contracts = { module = "education.cccp:i18n-contracts", version = "0.0.2" }
-ocr-contracts = { module = "education.cccp:ocr-contracts", version = "0.0.1" }
+planner-plugin = { module = "com.github.cccp-education.planner-gradle:planner-plugin", version = "0.0.1" }
+graphify-plugin = { module = "com.github.cccp-education.graphify-gradle:graphify-plugin", version.ref = "graphify" }
+codebase-contracts = { module = "com.github.cccp-education.workspace-bom:codebase-contracts", version = "0.0.136" }
+agent-contracts = { module = "com.github.cccp-education.workspace-bom:agent-contracts", version = "0.0.136" }
+llm-pool-contracts = { module = "com.github.cccp-education.workspace-bom:llm-pool-contracts", version = "0.0.136" }
+opencode-session-contracts = { module = "com.github.cccp-education.workspace-bom:opencode-session-contracts", version = "0.0.136" }
+i18n-contracts = { module = "com.github.cccp-education.workspace-bom:i18n-contracts", version = "0.0.136" }
+ocr-contracts = { module = "com.github.cccp-education.workspace-bom:ocr-contracts", version = "0.0.136" }
 
 [bundles]
 cucumber = [

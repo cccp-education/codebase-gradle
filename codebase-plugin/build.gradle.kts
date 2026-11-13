@@ -52,7 +52,7 @@ dependencies {
     // CNV-16 — the JitPack BOM POM is not a valid *platform* (rewritten as plain
     // dependencies, no module metadata), so the platform stays on the last Maven
     // Central release; the guard's injected value is the same literal (no drift).
-    implementation(platform("education.cccp:workspace-bom:0.0.115"))
+    implementation(platform("com.github.cccp-education.workspace-bom:workspace-bom:0.0.136"))
     implementation(libs.kotlin.stdlib.jdk8)
     implementation(gradleApi())
     implementation(gradleKotlinDsl())
