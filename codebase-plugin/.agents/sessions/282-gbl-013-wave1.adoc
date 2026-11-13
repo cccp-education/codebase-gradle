@@ -1,0 +1,21 @@
+= Session 282 — GBL-013 vague 1 : job `unit` dans l'image (socket Docker)
+:date: 2026-11-14
+:borough: Queens (codebase-gradle)
+
+== Livré
+
+* `ci/run.sh` (`fast` = `testFast` ; `test` = `test ktlintCheck`).
+* `.github/workflows/test.yml` : job `unit` migré (`container:` épinglé sur
+  `cccpeducation/cccp-ci-base@sha256:4722c1bc…`,
+  `options: --volume /var/run/docker.sock:/var/run/docker.sock` pour
+  testcontainers/pgvector, `ci/run.sh test`). Run `43496396273` **VERT**.
+
+== Garde aligné
+
+`CodebaseCiOllamaDecouplingTest` exigeait `./gradlew test` dans le job : il valide
+désormais la délégation `ci/run.sh test` et vérifie que le script lance
+`./gradlew test`, tout en conservant l'absence d'Ollama dans le job `unit`.
+
+== Reste
+
+`unit-ollama` et les 7 shards BDD restent sur l'hôte.

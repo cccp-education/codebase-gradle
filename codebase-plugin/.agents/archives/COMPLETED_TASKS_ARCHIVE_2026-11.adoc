@@ -6,3 +6,5 @@
   littérale Central `0.0.115` (le BOM JitPack n'est pas une `platform`).
 * Garde « tous les pins `workspace-bom:<v>` == version injectée ».
 * Version build `0.0.18` == artefact publié ; CI `43363070248` verte.
+
+* GBL-013 — portabilité CI (session close) : voir `.agents/sessions/` (rapport dédié).

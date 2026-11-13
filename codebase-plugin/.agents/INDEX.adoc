@@ -131,3 +131,6 @@ Lire AGENT.adoc — Directives completes pour le travail, seguridad, methodologi
 == Session 281 — JitPack mirror (CNV-16)
 
 Publication JitPack de codebase-plugin 0.0.18. JitPack : 0.0.18 — POM/jar HTTP 200.
+
+== Session 282 — GBL-013 (clôture) — 2026-11-14
+Job unit dans l'image (socket Docker) ; run 43496396273.

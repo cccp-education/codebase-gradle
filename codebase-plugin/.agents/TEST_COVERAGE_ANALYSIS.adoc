@@ -810,3 +810,7 @@ Aucun test existant modifié. Zéro régression.
   (« tous les pins `workspace-bom:<v>` == version injectée »), littéral Central
   redevenu légitime sous CNV-16.
 - Aucun test de production modifié ; couverture inchangée (CI `43363070248`).
+
+== GBL-013 (S-282) — delta tests
+
+* `CodebaseCiOllamaDecouplingTest` — garde `unit` aligné sur la délégation `ci/run.sh test` ; l’absence d’Ollama dans le job est conservée.

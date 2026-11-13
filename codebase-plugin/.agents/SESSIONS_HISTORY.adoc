@@ -570,3 +570,7 @@ une version. Contrats N0 au groupe
 Correctif ktlint (`chain-method-continuation`). **CI verte** : `CI`
 `43474986941` + `OCR` `43474986955` (commit `e74fb11`). Zéro bump, zéro
 publication, zéro secret. Rapport `.agents/sessions/284-cnv-17-jitpack-channel.adoc`.
+
+== Session 282 — GBL-013 vague 1 : job unit dans l'image (socket Docker) — 2026-11-14
+
+ci/run.sh (test = test ktlintCheck) + job unit migré avec --volume /var/run/docker.sock (testcontainers/pgvector) ; CodebaseCiOllamaDecouplingTest aligné. Run 43496396273 VERT. unit-ollama + 7 shards restent hôte. Rapport `.agents/sessions/282-gbl-013-wave1.adoc`.

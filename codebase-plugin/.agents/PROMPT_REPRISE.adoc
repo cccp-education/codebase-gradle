@@ -56,3 +56,8 @@
 * `.agents/sessions/280-ci-wallclock-ollama-native-junit-forks.adoc` (rapport S-280)
 * `.agents/sessions/279-ci-ollama-decoupling-parallel-start.adoc` (rapport S-279)
 * `.agents/sessions/278-ci-sharding-parallel-matrix.adoc` (rapport S-278)
+
+== GBL-013 (clôture) — 2026-11-14
+Portabilité CI livrée : image \`cccp-ci-base\`, \`ci/run.sh\`, adapter fin.
+Rapport \`.agents/sessions/282-gbl-013-wave1.adoc\`. Reste : US-5→US-9 (cadrage racine
+\`.agents/CADRAGE_EPIC_GBL_013_PORTABILITE_CI.adoc\`).
