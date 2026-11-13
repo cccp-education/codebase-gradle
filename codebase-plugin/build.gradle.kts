@@ -137,7 +137,7 @@ tasks.named<Test>("test") {
     )
     systemProperty(
         "codebase.publishedCatalog.bomVersion",
-        "0.0.115",
+        ws.versions.workspace.bom.get(),
     )
     // CI only: the standard GitHub runner has 4 vCPU, and the ~1860 JUnit tests
     // are mostly CPU-bound. Two forks roughly halve the `:test` wall-clock. Kept
@@ -176,7 +176,7 @@ tasks.register<Test>("unitOllama") {
     )
     systemProperty(
         "codebase.publishedCatalog.bomVersion",
-        "0.0.115",
+        ws.versions.workspace.bom.get(),
     )
     maxHeapSize = "1g"
     timeout.set(Duration.ofMinutes(15))

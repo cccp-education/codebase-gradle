@@ -31,7 +31,11 @@ class VersionCatalogTransitiveVersionsTest {
     @Test
     fun `all transitive education cccp artifacts have explicit versions`() {
         for (artifact in transitiveArtifacts) {
-            val matchingLines = tomlContent.lines().filter { it.contains(artifact) && it.contains("education.cccp") }
+            val matchingLines =
+                tomlContent.lines().filter {
+                    it.contains(artifact) &&
+                        (it.contains("education.cccp") || it.contains("com.github.cccp-education"))
+                }
             assertTrue(
                 matchingLines.isNotEmpty(),
                 "Artifact '$artifact' not found in libs.versions.toml.",
