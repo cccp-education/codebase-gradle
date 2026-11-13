@@ -1,61 +1,54 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 284
-:session: 284
+= Prompt de Reprise — Codebase (Queens N1) — Session 285
+:session: 285
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
-:session_precedente: 281 — JitPack mirror (CNV-16) ✅
-:session_pre_precedente: 272 — Bloc B (publication N1→N2) ✅ — `codebase-plugin 0.0.17` Central.
+:session_precedente: 284 — CNV-17 JitPack canal unique ✅
+:session_pre_precedente: 283 — catalogue JitPack + plateforme BOM découplée ✅
 
-== Session 282 — synchronisation backlog (gouvernance pure, zéro code)
+== Session 284 (TERMINÉE) — CNV-17 : JitPack canal unique
 
-== Session 283 — catalogue JitPack v0.0.133 + plateforme BOM découplée
+* Décision pilote S-045 : JitPack = canal **unique** des artefacts publics
+  (`foundry/private/**` et `office/**` exclus) — un artefact = un canal = un nom
+  = une version.
+* Contrats N0 au groupe JitPack
+  `com.github.cccp-education.workspace-bom:*:0.0.136` ; plateforme BOM JitPack
+  `0.0.136` ; version injectée `ws.versions.workspace.bom` (fin du littéral
+  `0.0.115`) ; `VersionCatalogTransitiveVersionsTest` accepte le groupe JitPack.
+* Correctif ktlint (`chain-method-continuation`).
+* **CI verte** : `CI` `43474986941` + `OCR` `43474986955` (commit `e74fb11`).
+* Rapport `.agents/sessions/284-cnv-17-jitpack-channel.adoc`.
 
-* Catalogue `ws` ← JitPack `workspace-catalog:v0.0.133` (était Central 0.0.92) ;
-  dépôt JitPack ajouté à `dependencyResolutionManagement`.
-* Plateforme BOM littérale Central `0.0.115` (le BOM JitPack n'est pas une
-  `platform` valide) ; garde réécrite « tous les pins == version injectée ».
-* Version build `0.0.18` == publiée. Rapport
-  `.agents/sessions/283-jitpack-catalog-platform-split.adoc`.
-
-Deux marqueurs périmés « 🟡 EN COURS » corrigés dans `INDEX.adoc` / `BACKLOG.adoc`
-alors que les EPICs sont terminés :
-
-* **OCR-QUALITY** → ✅ TERMINÉ 4/4 (US-1/2 codex S-218, US-3 document S-251,
-  US-4 codebase S-213).
-* **KOOG-PIPELINE-DEDUP** → ✅ TERMINÉ (BS-1 S-276, BS-2 `codebase-plugin 0.0.18`
-  + BOM MEMPHIS `0.0.92`, adopté capsule + slider).
-
-Aucun EPIC/US ouvert dans le borough. Zéro bump, zéro publication, zéro secret.
-
-== Mission Session 284 — à la demande du pilote
+== Mission Session 285 — à la demande du pilote
 
 Aucune US ouverte. Candidats (maintenance, sans publication) :
 
-. **Drift de pins** : `settings.gradle.kts` épingle `workspace-catalog:0.0.92`
-   (catalogue workspace courant `0.0.129`) ; conventions de build `0.0.14`.
-   Repin à faire quand le catalogue cible sera publié (Central suspendu
-   jusqu'au 2026-12-01).
-. **Auto-application** : `codebase-gradle-plugin = 0.0.17` (split-ref bootstrap)
-   vs version projet dérivée du catalogue — documenté, pas de dette active.
+. **GBL-013-4** — migrer ce dépôt sur l'image `cccp-ci-base` + `ci/run.sh <job>`
+  (vague 1 de l'EPIC racine portabilité CI).
+. **Repin N0** quand `workspace-bom` évoluera : le catalogue `ws` (JitPack,
+  `0.0.136`) est la source unique ; garde `CodebasePluginPublicationTest`.
 . Tout autre item à la demande explicite du pilote.
 
 == Contexte technique
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25).
-* Version locale **0.0.18** (Central 0.0.18). Conventions 0.0.14. BOM/catalog 0.0.92.
+* Version locale **0.0.18** (artefact JitPack `0.0.18`). Conventions 0.0.17.
+* N0 : `workspace-bom 0.0.136` (JitPack). Canal public = **JitPack uniquement**
+  (Central/Portal désactivés pour `foundry/public/**`).
 * **EPICs TERMINÉS** : CB-PAGE-PROVENANCE 5/5, CDX-OCR-CONTRACTS, CDX-RAG-SOCLE,
   FT-PIPELINE 7/7, KOOG-PIPELINE-DEDUP, OCR-QUALITY 4/4.
-* CI codebase verte (dernier run de référence S-280, wall-clock 2m44s).
+* CI codebase verte (référence S-284, correctif ktlint inclus).
 
 == Règles absolues
 
 * Baby-step TDD/BDD/DDD strict (RED → GREEN → REFACTOR), 1 fichier à la fois.
 * **Local = Build, Tests = CI** : compiler/builder en local seulement ;
   `test`/`cucumberTest`/`check` s'exécutent en CI après push.
-* Git autorisé — zéro secret commité. Publication Central = accord pilote.
+* Git autorisé — zéro secret commité. Publication = JitPack (CNV-17) ;
+  `foundry/private/**` et `office/**` restent hors périmètre.
 * Vérifier le working tree avant toute mission (`git status`).
 
 == References
 
-* `.agents/sessions/272-bloc-b-publication-n1-n2.adoc`
-* `codex-gradle/codex-plugin/.agents/sessions/231-bloc-b-publication-n1-n2.adoc`
-* `codex-gradle/codex-plugin/.agents/CADRAGE_ROADMAP_S227_C_A_B.adoc` (§ C-3/C-4)
-* `.agents/sessions/271-cb-page-provenance-us2-n2-transport.adoc`
+* `.agents/sessions/284-cnv-17-jitpack-channel.adoc`
+* `conventions-gradle/conventions-plugin/.agents/CADRAGE_EPIC_CNV_17_JITPACK_PRIMARY.adoc`
+* `.agents/BACKLOG.adoc` (§ GBL-013-4, US ouverte)
+* `.agents/sessions/283-jitpack-catalog-platform-split.adoc`

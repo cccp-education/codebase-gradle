@@ -1,0 +1,59 @@
+= Session 284 — CNV-17 : JitPack canal unique (codebase)
+:toc:
+
+:_date_: 2026-11-13
+:_borough_: Queens (codebase-gradle, N1)
+:_session_precedente_: 283 (catalogue JitPack + plateforme BOM découplée)
+:_statut_: ✅ migration CNV-17
+
+== Contexte
+
+Décision pilote S-045 : « mise en sécurité de la chaîne de publication en optant
+pour la totalité vers JitPack ». JitPack devient le canal **unique** des
+artefacts publics `education.cccp` — un artefact = un canal = un nom = une
+version. `foundry/private/**` et `office/**` restent hors périmètre.
+Cadrage : `conventions-gradle/conventions-plugin/.agents/CADRAGE_EPIC_CNV_17_JITPACK_PRIMARY.adoc`.
+
+N0 de référence : `workspace-bom 0.0.136` (BOM + catalogue + 10 contrats,
+11 modules HTTP 200) et `conventions-plugin 0.0.17` (JitPack déclaré dans
+`configureRepositories`).
+
+== Mission
+
+Aligner le borough sur le canal unique : coordonnées JitPack, plateforme BOM
+`0.0.136`, garde de publication et injection de versions ; zéro modification
+du code métier.
+
+== Changements
+
+* `gradle/libs.versions.toml` — les contrats N0 passent au groupe JitPack
+  `com.github.cccp-education.workspace-bom:*:0.0.136`.
+* `build.gradle.kts` — plateforme
+  `com.github.cccp-education.workspace-bom:workspace-bom:0.0.136` ; la version
+  injectée dans la garde est `ws.versions.workspace.bom` (fin du littéral
+  `0.0.115`).
+* `settings.gradle.kts` — catalogue `ws` lu depuis JitPack `0.0.136`.
+* `VersionCatalogTransitiveVersionsTest` — accepte le groupe
+  `com.github.cccp-education` (les contrats conservent une version explicite).
+* Correctif ktlint (`chain-method-continuation` sur la version du BOM).
+* Aucun code de production métier modifié ; aucun test exécuté en local.
+
+== Preuves CI
+
+* `CI` run `43474986941` ✅ et `OCR` run `43474986955` ✅ — commit `e74fb11`
+  (correctif ktlint ; le commit `7ef34d2` avait la `CI` rouge).
+* Local = Build : compiles + `ktlintCheck` VERTS ; preuve = CI du commit poussé.
+* Zéro secret, zéro publication, zéro bump.
+
+== Fichiers touchés
+
+* `settings.gradle.kts`
+* `build.gradle.kts`
+* `gradle/libs.versions.toml`
+* `src/test/kotlin/codebase/publishing/VersionCatalogTransitiveVersionsTest.kt`
+
+== Suite
+
+Maintenance. Aucun EPIC/US ouvert. Candidats : GBL-013-4 (migration
+`cccp-ci-base` + `ci/run.sh <job>`) et repin du catalogue quand le N0 évoluera
+(`workspace-bom` = source unique des versions).

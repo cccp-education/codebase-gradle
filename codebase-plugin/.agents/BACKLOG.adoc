@@ -716,3 +716,19 @@ US-3 BOM 0.0.27 Central S-024, US-4 codebase 0.0.10 Central S-209, US-5
 capsule fix S-120).
 *Pattern* : baby-step TDD (gate résolution Gradle + POM Central HTTP 200).
 *Zéro secret, zéro code production modifié (catalogue + publications).*
+
+'''
+
+== Session 284 — CNV-17 (JitPack canal unique)
+
+_Note de gouvernance (aucune US créée)._ Décision pilote S-045 : JitPack devient
+le **canal unique** des artefacts publics `education.cccp` (`foundry/private/**`
+et `office/**` exclus) — un artefact = un canal = un nom = une version. Le
+borough est aligné sur le N0 `workspace-bom 0.0.136` (BOM + catalogue + 10
+contrats) et `conventions-plugin 0.0.17` : contrats au groupe
+`com.github.cccp-education.workspace-bom:*:0.0.136`, plateforme BOM JitPack,
+version injectée `ws.versions.workspace.bom`, garde
+`VersionCatalogTransitiveVersionsTest` acceptant le groupe JitPack. CI verte
+`43474986941`/`43474986955`. Zéro bump, zéro publication. Rapport
+`.agents/sessions/284-cnv-17-jitpack-channel.adoc`. EPIC transversal :
+`conventions-plugin/.agents/CADRAGE_EPIC_CNV_17_JITPACK_PRIMARY.adoc`.

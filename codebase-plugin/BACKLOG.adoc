@@ -1354,3 +1354,20 @@ _Pourquoi_ : Transformer la littérature agentique (AGENT.adoc, INDEX.adoc, BACK
 === Référence
 
 - `CODE_REVIEW_DEEP_ANALYSIS.adoc` — analyse complète 1535 lignes, score 4.0/5.0
+
+== EPIC GBL-013 — Portabilité de la CI (transverse) — S-226
+
+_Cadrage racine : `.agents/CADRAGE_EPIC_GBL_013_PORTABILITE_CI.adoc` (jardin secret)._
+_Vague 1 : migrer ce dépôt sur l'image `cccp-ci-base` + `ci/run.sh <job>` ; adapter
+GitHub Actions réduit à `uses:`/`ci/run.sh`. Points portés par l'EPIC racine (pas de
+double compte)._
+
+|===
+| US | Contenu | Pts | Statut
+
+| GBL-013-4
+| Vague 1 — migrer `codebase-gradle` (image + scripts + adapter), preuve P1→P4 en CI
+| —
+| 🟡 À FAIRE
+|===
+

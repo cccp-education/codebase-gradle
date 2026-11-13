@@ -558,3 +558,15 @@ n'est pas une `platform` : réécrit en `<dependencies>`, pas de `.module`) ; ga
 `CodebasePluginPublicationTest` réécrite « tous les pins == version injectée »
 (l'anti-dérive reste). Version build `0.0.18` == publiée. CI `43363070248` verte.
 Rapport `.agents/sessions/283-jitpack-catalog-platform-split.adoc`.
+
+== Session 284 — CNV-17 : JitPack canal unique — 2026-11-13
+
+Décision pilote S-045 : JitPack = canal unique des artefacts publics
+(`foundry/private/**` et `office/**` exclus) — un artefact = un canal = un nom =
+une version. Contrats N0 au groupe
+`com.github.cccp-education.workspace-bom:*:0.0.136` ; plateforme BOM JitPack
+`0.0.136` ; version injectée `ws.versions.workspace.bom` (fin du littéral
+`0.0.115`) ; `VersionCatalogTransitiveVersionsTest` accepte le groupe JitPack.
+Correctif ktlint (`chain-method-continuation`). **CI verte** : `CI`
+`43474986941` + `OCR` `43474986955` (commit `e74fb11`). Zéro bump, zéro
+publication, zéro secret. Rapport `.agents/sessions/284-cnv-17-jitpack-channel.adoc`.
