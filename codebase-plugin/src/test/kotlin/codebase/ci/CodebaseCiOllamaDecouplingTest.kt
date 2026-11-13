@@ -36,6 +36,7 @@ class CodebaseCiOllamaDecouplingTest {
     private val testSourcesDir = repoRoot.resolve("codebase-plugin/src/test/kotlin")
     private val buildScript = repoRoot.resolve("codebase-plugin/build.gradle.kts")
     private val workflow = repoRoot.resolve(".github/workflows/test.yml")
+    private val contract = repoRoot.resolve("ci/run.sh")
 
     /** Extracts the YAML block of a top-level job (2-space indented `name:`). */
     private fun jobBlock(name: String): String {
@@ -56,7 +57,10 @@ class CodebaseCiOllamaDecouplingTest {
     fun `the plain unit job no longer sets up Ollama`() {
         val unit = jobBlock("unit")
         assertThat(unit)
-            .describedAs("the unit job must run the plain test task")
+            .describedAs("the unit job must delegate to the ci contract (GBL-013)")
+            .contains("ci/run.sh test")
+        assertThat(contract.readText())
+            .describedAs("ci/run.sh must run the plain test task")
             .contains("./gradlew test")
         assertThat(unit)
             .describedAs("the unit job must NOT pull the Ollama Docker image")
