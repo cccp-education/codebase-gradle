@@ -804,3 +804,9 @@ Aucun test existant modifié. Zéro régression.
 | Tests modifiés | 0 |
 | Régressions | 0 |
 | Coverage Kover | inchangée (≥80%, minBound 79) |
+== Session 283 — catalogue JitPack + plateforme BOM découplée
+
+- Test-only : `CodebasePluginPublicationTest` — garde plateforme réécrite
+  (« tous les pins `workspace-bom:<v>` == version injectée »), littéral Central
+  redevenu légitime sous CNV-16.
+- Aucun test de production modifié ; couverture inchangée (CI `43363070248`).

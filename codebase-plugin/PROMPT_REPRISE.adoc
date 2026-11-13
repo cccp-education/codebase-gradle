@@ -1,5 +1,5 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 283
-:session: 283
+= Prompt de Reprise — Codebase (Queens N1) — Session 284
+:session: 284
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO)
 :session_precedente: 281 — JitPack mirror (CNV-16) ✅
 :session_pre_precedente: 272 — Bloc B (publication N1→N2) ✅ — `codebase-plugin 0.0.17` Central.
@@ -25,7 +25,7 @@ alors que les EPICs sont terminés :
 
 Aucun EPIC/US ouvert dans le borough. Zéro bump, zéro publication, zéro secret.
 
-== Mission Session 283 — à la demande du pilote
+== Mission Session 284 — à la demande du pilote
 
 Aucune US ouverte. Candidats (maintenance, sans publication) :
 
