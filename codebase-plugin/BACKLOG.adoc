@@ -1368,6 +1368,6 @@ double compte)._
 | GBL-013-4
 | Vague 1 — migrer `codebase-gradle` (image + scripts + adapter), preuve P1→P4 en CI
 | —
-| 🟡 À FAIRE
+| ✅ S-226 — job `unit` dans `cccp-ci-base@sha256:4722…` via `ci/run.sh test`, socket Docker monté (testcontainers/pgvector), run `43496396273` **VERT**. Garde `CodebaseCiOllamaDecouplingTest` aligné sur le contrat. `unit-ollama` + 7 shards BDD restent sur l'hôte.
 |===
 
