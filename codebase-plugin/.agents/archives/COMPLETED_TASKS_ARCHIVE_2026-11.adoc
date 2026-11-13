@@ -1,0 +1,8 @@
+= COMPLETED_TASKS_ARCHIVE — 2026-11 — codebase-gradle
+
+== S-283 — catalogue JitPack v0.0.133 + plateforme BOM découplée ✅
+
+* Catalogue depuis JitPack (`workspace-catalog:v0.0.133`), plateforme BOM
+  littérale Central `0.0.115` (le BOM JitPack n'est pas une `platform`).
+* Garde « tous les pins `workspace-bom:<v>` == version injectée ».
+* Version build `0.0.18` == artefact publié ; CI `43363070248` verte.

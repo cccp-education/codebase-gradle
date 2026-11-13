@@ -543,3 +543,18 @@ Zéro bump/publication/secret. Rapport `.agents/sessions/bump-catalog-0.0.78.ado
 Publication JitPack de codebase-plugin 0.0.18. JitPack : 0.0.18 — POM/jar HTTP 200. Shim `useModule` pour
 `education.cccp.build.*` (tag JitPack `0.0.15`). Rapport
 `codebase-plugin/.agents/sessions/281-jitpack-mirror.adoc`.
+
+== Session 282 — synchronisation backlog (OCR-QUALITY, KOOG-PIPELINE-DEDUP) — 2026-11-13
+
+Deux marqueurs `🟡 EN COURS` périmés corrigés alors que les EPICs sont terminés :
+`OCR-QUALITY` → ✅ 4/4, `KOOG-PIPELINE-DEDUP` → ✅. Aucun code. Rapport
+`.agents/sessions/282-sync-backlog-ocr-quality-koog.adoc`.
+
+== Session 283 — catalogue JitPack `v0.0.133` + plateforme BOM découplée — 2026-11-13
+
+Catalogue `ws` lu depuis JitPack (`workspace-catalog:v0.0.133`, était Central
+`0.0.92`) ; plateforme BOM **littérale Central `0.0.115`** (le POM JitPack du BOM
+n'est pas une `platform` : réécrit en `<dependencies>`, pas de `.module`) ; garde
+`CodebasePluginPublicationTest` réécrite « tous les pins == version injectée »
+(l'anti-dérive reste). Version build `0.0.18` == publiée. CI `43363070248` verte.
+Rapport `.agents/sessions/283-jitpack-catalog-platform-split.adoc`.
