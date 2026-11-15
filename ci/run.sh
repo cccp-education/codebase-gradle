@@ -11,13 +11,15 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT/codebase-plugin"
 
 job="${1:-}"
+# GBL-014 — publication channel (jitpack default until the Sonatype reset).
+channel="${CHANNEL:-jitpack}"
 
 case "$job" in
   fast)
-    ./gradlew testFast --no-daemon --console=plain
+    ./gradlew testFast verifyChannel -Pchannel="$channel" --no-daemon --console=plain
     ;;
   test)
-    ./gradlew test ktlintCheck --no-daemon --console=plain
+    ./gradlew test ktlintCheck verifyChannel -Pchannel="$channel" --no-daemon --console=plain
     ;;
   *)
     printf 'unsupported job for codebase-gradle: %s\n' "${job:-<none>}" >&2
