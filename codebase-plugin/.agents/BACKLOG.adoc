@@ -732,3 +732,17 @@ version injectée `ws.versions.workspace.bom`, garde
 `43474986941`/`43474986955`. Zéro bump, zéro publication. Rapport
 `.agents/sessions/284-cnv-17-jitpack-channel.adoc`. EPIC transversal :
 `conventions-plugin/.agents/CADRAGE_EPIC_CNV_17_JITPACK_PRIMARY.adoc`.
+
+== Session 285 — GBL-014-5 (canal) + GBL-014-4 (shim) + GBL-013-10 (Node 26)
+
+_Note de gouvernance (aucune US créée)._ Rollout du canal de publication
+(GBL-014-5) : `settings.gradle.kts` (racine + `codebase-plugin`) conditionnels
+sur `-Pchannel` (défaut `jitpack`) — dépôt JitPack + shim `useModule(...)`
+seulement en `jitpack` ; `ci/run.sh` passe `-Pchannel` et ajoute
+`verifyChannel`. GBL-014-4 : shim `conventions-plugin` `0.0.19` et hygiène du
+`dependencyResolutionManagement` (`dae06b9`). GBL-013-10 : actions
+`node24`-natives et image `cccp-ci-base` re-pinée `sha256:03ead378…` (Node
+26.13.1). **✅ TERMINÉ (S-285)** — CI `CI`/`OCR` vertes sur les 5 commits.
+Reste transverse : dette `bakery` (relabel `0.0.136`), Sonatype 130791
+(US-6/US-7), GBL-013 US-7 (`office`). Rapport
+`.agents/sessions/285-gbl-014-5-channel-rollout.adoc`.

@@ -1,46 +1,37 @@
-= Prompt de Reprise — Codebase (Queens N1) — Session 281
-:session: 281
+= Prompt de Reprise — Codebase (Queens N1) — Session 285
+:session: 285
+:date: 2026-11-15
 :borough: Queens — codebase-gradle (N1, socle LLM pool + RAG pgvector + SVO + koog)
-:session_precedente: 280 — **Wall-clock CI réduit (Ollama natif + 2 forks JUnit) ✅** — Ollama tourne **nativement** (install officielle, CDN GitHub, ~80 s constant) au lieu du tarball `docker save` de 3,0 GB (53 s restore + 82 s load) ; cache modèles réparé (`chown`) ; suite JUnit en **2 forks** en CI (`:test` 116 s → 84 s). Cache image pgvector évalué puis **reverté** (neutre). Wall-clock **4m28s → 3m06s-3m27s**. CI verte runs `38623171057` + `38623944061` + `38626416184` + `38627930005`. Rapport `.agents/sessions/280-ci-wallclock-ollama-native-junit-forks.adoc`.
+:etat: S-285 — **GBL-014-5 rollout + GBL-014-4 + GBL-013-10** ✅ — settings channel-conditionnels (`-Pchannel`, défaut `jitpack`) racine et sous-build, dépôt JitPack + shim `useModule(...)` seulement en `jitpack`, shim conventions `0.0.19`, `ci/run.sh` (`-Pchannel` + `verifyChannel`), actions `node24`-natives, image `cccp-ci-base` Node 26.13.1. 5 commits, CI `CI`/`OCR` vertes à chaque push.
 
-== Mission Session 281 — à la demande du pilote
+== Mission Session 286 — à la demande du pilote
 
-*Priorité 1 (optionnelle) — **poursuivre l'optimisation CI** : le chemin
-  critique est `unit-ollama` (~3m), borné par l'install Ollama native (~80 s) +
-  l'inférence des 4 tests (53-106 s, variable). Pistes : cacher l'installation
-  native extraite (`/usr/local/lib/ollama`, ~2,5 GB → restore ~40 s vs 80 s), ou
-  déplacer le coût d'inférence. Gain attendu modéré — accord pilote.
+* Aucun EPIC/US ouvert côté codebase. Le prochain chantier connu dépend d'un
+  arbitrage pilote (publication, dette bakery, quota Sonatype).
+* Candidats actionnables sans accord : revue de cohérence des pins de canal
+  (`.agents/PROMPT_REPRISE.adoc`), vérification que le sous-build autonome
+  conserve bien ses deux canaux après les futurs bumps de catalogue.
 
-*Autres items au choix (actionnables sans accord pilote) :
-* **EPIC V-FLYWAY** (P2 conditionnel) : seuil 5 migrations (actuellement 4).
-* **Arbitrage RENAME-13+** : `agent-contracts.afnorCorpus` prod N0 (hors
-  codebase), `academy-gradle` enum SPG/SPD.
-* **EPIC PUB** : tag `v*` (accord pilote).
-* **Bloc C-4** : pollution TOC chunking — a priori traité N2 côté codex S-233,
-  vérifier qu'aucune US N1 ne reste (a priori non).
-
-== Contexte technique (S-280)
+== Contexte technique (S-285)
 
 * Build autonome : `cd codebase-plugin && ./gradlew ...` (JDK 25).
-* Version locale **0.0.18** (Central 0.0.18). Conventions **0.0.7**. BOM/catalog **0.0.92**.
-* Self-application : catalog ws `ws.versions.codebase.plugin` → toml local 0.0.18,
-  split-ref `codebase-gradle-plugin = "0.0.17"` (dernier marker publié).
+* Version locale **0.0.18** ; conventions **0.0.19** ; N0/BOM JitPack `0.0.136`.
+* Canal : propriété `-Pchannel` (`jitpack` par défaut, `central` opt-in après
+  le reset Sonatype du 2026-12-01). Jamais de branche de canal.
+* Self-application : catalogue ws `ws.versions.codebase.plugin` → toml local
+  `0.0.18`, split-ref `codebase-gradle-plugin = "0.0.17"` (dernier marker publié).
 * Pas de source set `functionalTest` — les runners Cucumber vivent dans `test`.
-* **CI test.yml** : `fast-tests` (gate PR `testFast`) **∥** `unit` (`test`,
-  JUnit-only, sans Ollama, **`maxParallelForks = 2` en CI**) **∥** `unit-ollama`
-  (`unitOllama`, **Ollama natif** 0.40.4 sur 11466-11467, readiness fail-loud)
-  **∥** `bdd-shard` (matrice 7) → `publish` (tags, gaté sur TOUS). Les jobs
-  lourds n'ont **plus** `needs: [fast-tests]` (démarrage parallèle).
-* **Tags** : `test` = JUnit-only (`includeEngines("junit-jupiter")`) +
-  `excludeTags("ollama")` ; `unitOllama` = `includeTags("ollama")` ; le tag
-  `integration` reste exclu partout (base `withType<Test>`).
-* **Gardes** : `codebase.ci.CodebaseCucumberShardCoverageTest` (partition
-  features) + `codebase.ci.CodebaseCiOllamaDecouplingTest` (découplage Ollama +
-  parallélisme ; `unit-ollama` doit lancer `ollama serve`).
+* **CI `test.yml`** : `fast-tests` (gate PR `testFast`) **∥** `unit`
+  (`test`/`ktlintCheck`/`verifyChannel` dans `cccp-ci-base@sha256:03ead378…`)
+  **∥** `unit-ollama` (Ollama natif 11466-11467) **∥** `bdd-shard` (matrice 7)
+  → `publish` (tags, gaté sur TOUS).
+* **Gardes** : `CodebaseCucumberShardCoverageTest` (partition features) +
+  `CodebaseCiOllamaDecouplingTest` (découplage Ollama + parallélisme) +
+  `verifyChannel` (garde de canal, conventions 0.0.19).
 
 == Échecs préexistants (orthogonaux)
 
-* Aucun identifié à HEAD (CI verte, 370 scénarios shardés + 1860 unit + 4 ollama).
+* Aucun identifié à HEAD (CI verte sur les 5 commits du 2026-11-15).
 
 == Règles absolues
 
@@ -48,16 +39,12 @@
 * **Local = Build, Tests = CI** : compiler/builder en local seulement ;
   `test`/`unitOllama`/`cucumberTest`/`check` s'exécutent en CI après push.
 * **Règle 0** : `publishToMavenLocal` OBLIGATOIRE après toute modif source.
-* Git autorisé — zéro secret commité. Publication Central = accord pilote.
+* Git autorisé — zéro secret commité. Publication = canal `-Pchannel`.
 * Vérifier le working tree avant toute mission (`git status`).
 
 == References
 
-* `.agents/sessions/280-ci-wallclock-ollama-native-junit-forks.adoc` (rapport S-280)
-* `.agents/sessions/279-ci-ollama-decoupling-parallel-start.adoc` (rapport S-279)
-* `.agents/sessions/278-ci-sharding-parallel-matrix.adoc` (rapport S-278)
-
-== GBL-013 (clôture) — 2026-11-14
-Portabilité CI livrée : image \`cccp-ci-base\`, \`ci/run.sh\`, adapter fin.
-Rapport \`.agents/sessions/282-gbl-013-wave1.adoc\`. Reste : US-5→US-9 (cadrage racine
-\`.agents/CADRAGE_EPIC_GBL_013_PORTABILITE_CI.adoc\`).
+* `.agents/sessions/285-gbl-014-5-channel-rollout.adoc` (rapport S-285)
+* `.agents/sessions/284-cnv-17-jitpack-channel.adoc` (rapport S-284)
+* `.agents/CADRAGE_EPIC_GBL_014_DUAL_CHANNEL.adoc` (racine workspace)
+* `.agents/CADRAGE_EPIC_GBL_013_PORTABILITE_CI.adoc` (racine workspace)
